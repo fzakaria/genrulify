@@ -1,139 +1,316 @@
-# Nixsplice
+# nixsplice
 
-Nixsplice converts a recorded Nix build into Bazel and Buck2 genrules.
-The C++23 compiler imports the derivation and Rewind events into an MLIR
-dialect, emits both build files and checks the resulting archive against
-an independent Nix build.
+Any Nix build, as Bazel and Buck2 genrules.
 
-The current importer accepts one builder language on x86_64 Linux. The
-pinned Bash runs a straight-line script of GNU dd copies and appends over
-regular files. This narrow example exercises in-place writes, an actual
-MLIR optimization and both build systems. It gives us a regression test
-for the conversion before taking on compiler drivers and stdenv hooks.
+nixsplice takes a build that [Rewind](https://rewindvm.dev) recorded and
+compiles it into a `BUILD.bazel` and a `BUCK` file with one `genrule` per
+process group. It has no rules for C, Rust, autotools or any other
+toolchain, and it never reads the derivation's build script. The graph
+comes from the trace: which processes ran, what each one found on disk,
+and what each one left behind.
 
-## Try the conversion
-
-Run the interactive explorer locally with `nix run .#serve`. Open
-<http://127.0.0.1:8136>. The site build generates the downloadable
-MLIR, BUILD.bazel and BUCK files with the compiler.
-
-For the recorded fixture, run the following in the checkout with a new
-destination directory. Building the example realizes its store inputs.
-
-```sh
-nix build --no-link .#example
-nix run . -- import tests/data/derivation.json tests/data/events.jsonl > recorded.mlir
-nix run . -- opt recorded.mlir > folded.mlir
-nix run . -- emit folded.mlir workspace
+```console
+$ tools/convert.sh nixpkgs#hello
+70 process groups: 12 replayed and reproduced, 1 kept as recorded bytes, 57 dead
+...
+out: Nix, Bazel and Buck2 agree on sha256:cca3804d340495150db44b1e762655d8a0b4fe6d37b8350f1a0d8fa33c27c8cc
 ```
 
-For a fresh recording, run `tools/reproduce.sh` from a machine with Nix,
-Rewind, jq and working KVM. It builds the Nix reference, records the
-builder in Rewind, generates two workspaces, builds both with the pinned
-Bazel and Buck2, and compares all four archives. The script prints the
-directory containing the results. The workers use the local Nix store.
+That hash is the NAR hash [cache.nixos.org](https://cache.nixos.org) serves
+for `hello-2.12.3`. Bazel and Buck2 arrived at it by running `tar`,
+`configure`, `make` and `strip` as genrules.
 
-## What the conversion does
+## The idea
 
-1. **Import.** Read format 4 from `nix derivation show` and the JSONL
-   from `rewind events --json`. Check the complete script, expected argv,
-   successful write opens and child exits. Derive each read from the
-   semantics of the accepted command. An unrecognized script fails
-   import. The checked-in event fixture retains the exec, open and exit
-   records from run `16b4e3d79a715325`.
-2. **Assign file values.** In the fixture, the write at step 746 produces
-   the first version of `/build/bundle`. The write at step 775 appends a
-   second input. The append takes the first version as an operand. Its
-   result has a different SSA identity even though both writes name the
-   same pathname. The final command copies that result to the Nix output.
-3. **Fold copies.** A `!splice.file` represents the complete contents of
-   a non-executable regular file. The registered `splice.copy` folder
-   returns its operand. MLIR's canonicalizer removes both copies and
-   keeps the append's two operands in byte order. This optimization
-   relies on the file type's restricted semantics.
-4. **Lower.** Emit one genrule per surviving file operation. Each rule
-   consumes declared source files or prior targets and writes a fresh
-   output. A final rule serializes the published file with its Nix mode.
-   Running `emit` on the original module keeps the three file operations.
-   Running it after `opt` emits one. Both graphs have the archive rule.
-5. **Verify.** Hash the backend's NAR and a separate `nix-store --dump`
-   of the original Nix output. Require both SHA-256 digests to equal
-   Rewind's recorded output digest. For the fixture the digest is
-   `1c763cb553edd9c4e7632da40b6b2466b54b89b818844c85ed2033df7cf9eab9`.
+A build system is a way to decide which processes to run and in what
+order. Once a build has run, that decision is a fact you can observe. If
+the observation is complete, every build system reduces to the same thing:
+a list of `execve` calls and the files that flowed between them.
 
-The complete compiler is C++ with Abseil and MLIR's TableGen operation
-definitions. `nix develop` provides matching MLIR headers and TableGen.
-`nix flake check` builds the compiler, runs the native CLI regression
-tests and builds the explorer.
+The catch has always been the observation. `strace` misses what happens
+inside a process, races with the build, and cannot tell you what a
+directory looked like a moment ago. Rewind runs the build in a
+deterministic VM and can return to any step of it, so the question "what
+was in `/build` when this compiler started" has an exact answer.
 
-## Fixed-build verification
+nixsplice asks that question at the start and end of every process group
+and turns the answers into single static assignment over files.
 
-The reference is a successful execution with a specific input closure
-and execution platform. Matching every output NAR establishes equality
-of the archived trees for that execution, including executable bits,
-symlink targets and directory entries where applicable. Nix store
-registration metadata, including references, is a separate comparison
-for a converter that also promises interchangeable store objects.
+## How a build becomes a graph
 
-A matching final archive cannot certify that a proposed action is safe
-to cache on another machine or reuse after an edit. For that claim,
-every observation that affects the action must be in its inputs or its
-execution platform. A stronger verifier would rerun isolated actions,
-check intermediate artifacts at each cut, and retrace or reject a build
-when a recorded assumption changes. Adding a header changes the fixed
-input set and establishes a new verification case.
+### 1. Find the cuts
 
-## Extending the importer to stdenv
+The builder is the first process the sandbox starts, usually `bash`
+running stdenv's `setup.sh`. The builder and the subshells it forks are
+*driver* code: `cd`, `export`, `$(...)`, redirections. None of that has a
+command line to run again.
 
-Rewind has two relevant streams. Its exec event has a filename and up to
-1,024 bytes of argv. It has no envp. Its separate binary I/O log tracks
-regular-file read and write opens, write offsets and lengths, and lost
-records. The public event stream's read-open event has the narrower
-meaning of a read open concurrent with a writer. Neither interface
-supplies a complete account of failed lookups and directory walks.
-See the [guest exec probe](https://github.com/fzakaria/rewindvm/blob/8e713840570c/guest/linux/rewind-guest.patch),
-[event types](https://github.com/fzakaria/rewindvm/blob/8e713840570c/crates/rewind-trace/src/event.rs)
-and [I/O record types](https://github.com/fzakaria/rewindvm/blob/8e713840570c/crates/rewind-trace/src/io_records.rs).
+A *cut* is where a driver process calls `execve`. Everything from that
+call until the process and its descendants exit is one unit of replay.
+Cuts that share a pipe, or that were alive at the same time, are merged
+into a *group*, because a snapshot cannot separate what they did.
 
-For a real compile, start with the compiler driver and its descendants as
-one action. The driver already knows how to run its children. A useful
-cut needs the exact argv, environment, working directory, inherited
-descriptors and input tree. Record object identity through renames, links
-and unlinks. Version bytes at observable changes, since opening an
-existing file for writing can leave every byte untouched. Keep pipes,
-shared mappings and concurrent writers within one action until their
-state can be represented across a cut. Shell builtins can write files
-without introducing any exec boundary.
+`colstr-1.0.0`, a single-file C++ program from nixpkgs, runs 83 `execve`
+calls in 62 cuts and 52 groups.
 
-Include the complete tool closure in a worker image or stage it under
-its original store paths and bind the platform identity into the action
-key. Materializing an empty directory for a failed lookup can turn
-`ENOENT` into success. Reproduce the observed filesystem and track the
-directory membership that justified the absence. A broad fallback is to
-rerun the enclosing builder in its recorded environment, with fewer
-independent actions available for caching.
+### 2. Snapshot around each group
 
-A close precedent is Riker's TraceIR. Its treatment of filesystem state
-and command re-execution is relevant to the step from fixed builds to
-incremental reuse. [Riker, USENIX ATC 2022](https://www.usenix.org/conference/atc22/presentation/curtsinger)
+nixsplice asks Rewind for the contents of `/build` and of each output
+path at the step a group starts and the step it ends. The difference
+between the two is the group's effect: every file, directory and symlink
+it created or changed, with mode and content hash.
 
-## A compiler boundary in colstr
+Nothing is inferred from system calls, so `mkdir`, `chmod`, `rename` and
+`ln -s` need no special handling. They are differences between two
+states like any other write.
 
-I recorded the locked nixpkgs package `colstr-1.0.0` in Rewind run
-`534fa58c62c668f8`. Its 83 exec events include the GCC wrapper, driver,
-compiler, assembler, linker and stdenv fixup tools. Rewind matched the
-package's Nix store NAR. The `g++` exec at step 2660 ends mid-argument
-in the event stream.
+Whatever changed *between* groups was written by the builder itself, for
+example `echo "$flags" > env-vars`. Those bytes have no `execve` behind
+them, so they enter the graph as constants.
 
-At that step, `rewind cat 534fa58c62c668f8 2660 /proc/106/cmdline`
-recovered 1,291 bytes of NUL-delimited arguments. The same interface
-returned the process environment from `/proc/106/environ`. I unpacked a
-snapshot of `/build` from before compilation, mounted it at the recorded
-path in a fresh mount namespace with the input store closure, and ran
-the recovered driver in `/build/source`. The snapshot contained
-`main.cpp`, its license and the stdenv environment dump.
+### 3. Assign versions
 
-The rebuilt `a.out` and the guest's `a.out` at step 2982 both hashed to
-`bd25c4990c4631046d50dc0a711b878941fb24bc27e31e6d34512633b9615812`.
-This was a manually selected compiler boundary. Automating the boundaries
-and carrying installation and fixup through both backends are open work.
+Each write produces a new SSA value for its path. A value is one version
+of one filesystem entry. This derivation appends to a file in place:
+
+```nix
+${dd} if=${header} of=bundle status=none
+${dd} if=${body} of=bundle oflag=append conv=notrunc status=none
+${dd} if=bundle of="$out" status=none
+```
+
+and its graph, in nixsplice's MLIR dialect, is:
+
+```mlir
+%0 = splice.literal "sandbox" at 717 -> [
+    #splice.entry<"/build" dir 700 mtime 1>
+]
+%1 = splice.exec "dd" at 735(%0) -> [
+    #splice.entry<"/build/bundle" file 644 mtime 1 "b08e44f9…">
+]
+%2 = splice.exec "dd" at 764(%0, %1) -> [
+    #splice.entry<"/build/bundle" file 644 mtime 1 "c82437d3…">
+]
+%3 = splice.exec "dd" at 782(%0, %2) -> [
+    #splice.entry<"/nix/store/r8mgc2hq…-nixsplice-example" file 644 mtime 1 "c82437d3…">
+]
+splice.output "out" "/nix/store/r8mgc2hq…-nixsplice-example"(%3)
+```
+
+`/build/bundle` has two values. The append takes the first as an operand
+and defines the second. A build system that requires every file to have
+one producer is satisfied, because `%1` and `%2` are different artifacts
+that happen to share a path inside the sandbox.
+
+The dialect has three operations.
+
+| Operation | Meaning |
+| --- | --- |
+| `splice.exec` | Run a recorded process group. Operands are the entry versions it is given, results are the versions it leaves. |
+| `splice.literal` | Entries copied from the recording: the sandbox Nix prepared, the builder's own writes, or a group that could not be replayed. |
+| `splice.output` | The final version of every path under a derivation output. |
+
+### 4. Delete what the output does not need
+
+`splice.exec` and `splice.literal` carry MLIR's `Pure` trait. That is a
+claim about the build: a group's writes are a function of the entries it
+was given and of the store closure. Under that claim an operation whose
+results are never used is dead, and MLIR's stock canonicalizer removes
+it. No nixsplice-specific pass is involved.
+
+For `colstr` this deletes 45 of 52 groups: every `date +%s`, every
+`find` that only looked, `mktemp` and `rm` pairs, the compiler's
+temporary files, and stdenv's `env-vars` dump.
+
+### 5. Replay every survivor, alone
+
+The `Pure` claim is checked, not assumed. `nixsplice check` runs each
+remaining group by itself in [bubblewrap](https://github.com/containers/bubblewrap):
+
+- the store closure is mounted read-only at its original paths;
+- the filesystem holds exactly the group's operands, taken from the
+  recording, with their recorded modes and mtimes;
+- each process gets its recorded program, `argv`, environment, working
+  directory and file descriptors, and pipes between them are rebuilt;
+- processes start in the order the recording allows: one starts only
+  after every process that had exited before its `execve`.
+
+The group passes if every process ends with its recorded status and every
+result that something uses has the recorded kind, mode and SHA-256.
+
+A group that fails moves down a ladder:
+
+1. **Narrow.** Operands are the files the group opened or executed, the
+   prior version of anything it modified, and the directories leading to
+   them.
+2. **Wide.** Operands are every entry that existed. `make` needs this: it
+   calls `stat` on `Makefile.am` without opening it, and Rewind's I/O log
+   records opens.
+3. **Pinned.** The group replays, and the specific results that differ
+   are taken from the recording. `configure` writes the same `Makefile`
+   every time and a different `config.log`.
+4. **Literal.** The group is not replayed and all of its writes come from
+   the recording. `mktemp` lands here: the file name is random and later
+   commands carry the recorded name in their `argv`.
+
+### 6. Lower to genrules
+
+Each `splice.exec` becomes a `genrule` whose command is
+`nixsplice replay plan.json`. Its output is a *layer*: the entries it
+wrote, with full modes, as one file. Its `srcs` are the layers of the
+operations that define its operands. Each `splice.literal` is a layer
+checked into the workspace. `splice.output` assembles the final entries
+and writes a NAR.
+
+A replay rule verifies its results on every build, so a process that
+stops reproducing its recorded output fails that rule. It cannot pass a
+different file downstream.
+
+## Why the result is the same build
+
+Let a recorded build have states *σ₀ … σₙ*, where a state maps paths to
+entries. For a group *G* running from step *a* to step *b*, let *R* be its
+operand paths and *W* the results that have a use.
+
+**Check.** Running *G*'s processes over the platform with a filesystem
+equal to *σₐ* restricted to *R* ends with the recorded statuses and
+leaves *σ_b(p)* at every *p* in *W*.
+
+**Claim.** If every `splice.exec` in a graph passes its check, and each
+is a function of its staged inputs and the platform, then evaluating the
+graph in any topological order produces, for every value, the recorded
+version. The NAR of each output is the recorded NAR.
+
+**Proof.** By induction over a topological order. A `splice.literal` is
+the recorded bytes by construction. For a `splice.exec`, each operand
+equals its recorded version by the induction hypothesis, so the staged
+filesystem is *σₐ* restricted to *R*, the same one the check ran on. The
+group is a function of that filesystem, so it leaves what it left during
+the check, which was the recorded version. ∎
+
+Two properties follow.
+
+*The conversion is total.* Replace every group with a literal and every
+check passes trivially, so a graph that satisfies the claim always
+exists. Each step down the ladder strictly reduces what replay has to
+reproduce, so `check` terminates.
+
+*The scheduler is free.* The proof uses a topological order and nothing
+else. Bazel and Buck2 may run independent rules in parallel, cache them,
+or skip them, and the output is unchanged.
+
+What varies between packages is how much of the build is computed and
+how much is carried as recorded bytes. `check.json` reports it per group.
+
+## Results
+
+Recorded with Rewind 0.16.0 on x86_64-linux, nixpkgs from `flake.lock`.
+
+| Package | Groups | Replayed | Pinned files | Literal | Dead | NAR, as built by Nix, Bazel and Buck2 |
+| --- | ---: | ---: | ---: | ---: | ---: | --- |
+| `nixsplice-example` | 3 | 3 | 0 | 0 | 0 | `sha256:1c763cb5…` |
+| `colstr-1.0.0` | 52 | 6 | 0 | 1 | 45 | `sha256:bf76491a…` |
+| `hello-2.12.3` | 70 | 12 | 2 | 1 | 57 | `sha256:cca3804d…` |
+| `hello-2.12.3`, `make` opened | 445 | 164 | 1 | 1 | 280 | `sha256:cca3804d…` |
+
+The pinned files in `hello` are `config.log` and `test-suite.log`. The
+literal in both real packages is the `mktemp` that names `strip`'s error
+file. Every row was built by the Bazel and Buck2 that `flake.lock` pins
+and compared against the hash Rewind recorded; for `hello` that hash is
+also the one cache.nixos.org serves.
+
+## Finer cuts
+
+By default a whole `make` invocation is one cut, so `hello`'s build phase
+is a single genrule. Name a program to *open* and its processes become
+driver code, which moves the cuts down to its children:
+
+```console
+$ tools/convert.sh nixpkgs#hello make
+445 process groups: 164 replayed and reproduced, 1 kept as recorded bytes, 280 dead
+```
+
+A shell is opened along with the program it leads to, so the recipe that
+runs `make all-recursive` does not hide the inner `make`. A recipe shell
+with nothing opened below it stays one cut and is replayed whole, with
+its pipelines and builtins. Programs that are not shells are never opened
+on account of what they run: `configure` runs `make` to test it and is
+still one group.
+
+The 13 genrules become 165. 155 of them are individual `make` recipes,
+84 of which run `gcc`, and every group except `configure` passes on the
+narrow rung: a compile is given its source, the headers it opened, and
+nothing else. Nix ran this build with `make -j1`. Bazel and Buck2 run the
+compiles in parallel, because the graph says they are independent.
+
+## Limits
+
+These are properties of the current implementation, and each one is
+either checked or reported.
+
+- **One build, one graph.** The graph recomputes the build that was
+  recorded. Editing a source file is a different build, and the narrow
+  operand sets say nothing about which unopened files would have
+  mattered. Re-record after a change.
+- **A check is a sample.** A process that is nondeterministic but
+  happened to reproduce its output during `check` will be caught by its
+  own genrule on a later build, which fails. It is not caught earlier.
+- **`stat` and directory listings are not in the trace.** Groups that
+  depend on them fall to the wide rung, where they are correct and
+  coarse. Recording lookups in Rewind would let them stay narrow.
+- **Bytes written by the builder through a pipe are not recorded.** A
+  command fed by a here-document cannot be replayed and becomes a
+  literal.
+- **The platform is part of the input.** Rules read the host's
+  `/nix/store` and are marked local-only. The kernel and CPU are whatever
+  the host has.
+- **Not captured:** FIFOs, sockets and devices inside the build tree,
+  writes under `/tmp`, sub-second mtimes, and directory mtimes.
+
+## Layout
+
+```
+src/Splice.td      the dialect: entry type, entry attribute, three operations
+src/trace.cpp      events and I/O log to cuts
+src/record.cpp     Rewind run to a recording: process details and snapshots
+src/import.cpp     recording to file SSA
+src/check.cpp      the replay ladder
+src/replay.cpp     the sandbox a genrule runs
+src/emit.cpp       graph to BUILD.bazel and BUCK
+tests/             CLI tests over a checked-in recording
+tools/convert.sh   record, check, emit, build with both systems, verify
+```
+
+## Running
+
+```console
+$ nix build                 # compiler, with tests
+$ nix develop               # MLIR, TableGen, CMake
+$ nix flake check
+```
+
+Recording needs Rewind and KVM. Everything after `nixsplice record` works
+from the recording directory alone:
+
+```console
+$ nixsplice record RUN /nix/store/…-hello-2.12.3.drv recording
+$ nixsplice check recording
+$ nixsplice import recording > recorded.mlir
+$ nixsplice opt recorded.mlir > graph.mlir
+$ nixsplice emit recording graph.mlir workspace
+$ cd workspace && bazel build //:archive
+```
+
+## Credits
+
+[Riker](https://www.usenix.org/conference/atc22/presentation/curtsinger)
+(Curtsinger and Barowy, USENIX ATC 2022) builds from a trace of commands
+and their filesystem effects, and its TraceIR is the closest relative of
+this dialect. Memoize and Fabricate used `strace` to discover
+dependencies after the fact. The snapshots, the fd tables
+and the determinism that make the replay check meaningful all come from
+[Rewind](https://rewindvm.dev).
+
+## License
+
+MIT, please see [LICENSE](LICENSE).
