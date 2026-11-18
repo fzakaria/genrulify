@@ -261,6 +261,11 @@ either checked or reported.
   that is nondeterministic and still matched both times will be caught by
   its own genrule on a later build, which fails. It is not caught
   earlier.
+- **Record with one job.** Rewind's default tells the build it has one
+  core, so `make` and `ninja` run one command at a time and each command
+  can be its own group. A recording made with `--cores N` interleaves
+  commands, and commands that overlap are merged into one group, which is
+  still correct and coarser. The emitted graph is parallel either way.
 - **`stat` and directory listings are not in the trace.** Groups that
   depend on them fall to the wide rung, where they are correct and
   coarse. Recording lookups in Rewind would let them stay narrow.
