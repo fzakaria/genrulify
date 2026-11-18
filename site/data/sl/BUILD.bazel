@@ -1,4 +1,6 @@
-genrule(
+load(":genrulify.bzl", "cc_binary", "nix_archive", "recorded")
+
+recorded(
     name = "s2098_cp",
     srcs = [
         ":actions/s2098_cp.manifest",
@@ -11,71 +13,26 @@ genrule(
         ":sandbox.sh",
     ],
     outs = [
-        "s2098_cp/build/source/.gitignore",
-        "s2098_cp/build/source/LICENSE",
-        "s2098_cp/build/source/Makefile",
-        "s2098_cp/build/source/README.ja.md",
-        "s2098_cp/build/source/README.md",
-        "s2098_cp/build/source/demo.gif",
         "s2098_cp/build/source/sl.1",
         "s2098_cp/build/source/sl.1.ja",
         "s2098_cp/build/source/sl.c",
         "s2098_cp/build/source/sl.h",
-        "s2098_cp.ok",
     ],
-    cmd = " ".join([
+    cmd = [
         "./sandbox.sh --in . --in $(RULEDIR) --out $(RULEDIR)",
         "--name s2098_cp --timeout 300",
         "run --cwd /build --env 13 --argv0 cp --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 7 --",
         "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/cp -r --preserve=timestamps --reflink=auto -- /nix/store/pyyddwilxjwq3n7065zd6xpk8r01hqjm-source source",
-    ]),
-    tags = ["no-remote"],
+    ],
 )
 
-genrule(
-    name = "s2140_chmod",
-    srcs = [
-        ":actions/s2140_chmod.manifest",
-        ":closure.txt",
-        ":env/14.env",
-        ":platform/bin/sh",
-        ":platform/etc/group",
-        ":platform/etc/hosts",
-        ":platform/etc/passwd",
-        ":sandbox.sh",
-        ":s2098_cp/build/source/.gitignore",
-        ":s2098_cp/build/source/LICENSE",
-        ":s2098_cp/build/source/Makefile",
-        ":s2098_cp/build/source/README.ja.md",
-        ":s2098_cp/build/source/README.md",
-        ":s2098_cp/build/source/demo.gif",
-        ":s2098_cp/build/source/sl.1",
-        ":s2098_cp/build/source/sl.1.ja",
-        ":s2098_cp/build/source/sl.c",
-        ":s2098_cp/build/source/sl.h",
-        ":s2098_cp.ok",
-    ],
-    outs = [
-        "s2140_chmod/build/source/Makefile",
-        "s2140_chmod/build/source/sl.1",
-        "s2140_chmod/build/source/sl.1.ja",
-        "s2140_chmod/build/source/sl.c",
-        "s2140_chmod/build/source/sl.h",
-        "s2140_chmod.ok",
-    ],
-    cmd = " ".join([
-        "./sandbox.sh --in . --in $(RULEDIR) --out $(RULEDIR)",
-        "--name s2140_chmod --timeout 300",
-        "run --cwd /build --env 14 --argv0 chmod --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 5 --",
-        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/chmod -R u+w -- source",
-    ]),
-    tags = ["no-remote"],
-)
-
-genrule(
-    name = "s2762_make",
-    srcs = [
-        ":actions/s2762_make.manifest",
+cc_binary(
+    name = "s2851_gcc",
+    objs = [],
+    deps = [],
+    out = "s2851_gcc/build/source/sl",
+    data = [
+        ":actions/s2851_gcc.manifest",
         ":closure.txt",
         ":env/25.env",
         ":platform/bin/sh",
@@ -83,83 +40,19 @@ genrule(
         ":platform/etc/hosts",
         ":platform/etc/passwd",
         ":sandbox.sh",
-        ":s2140_chmod/build/source/Makefile",
-        ":s2140_chmod/build/source/sl.c",
-        ":s2140_chmod/build/source/sl.h",
-        ":s2140_chmod.ok",
+        ":s2098_cp/build/source/sl.c",
+        ":s2098_cp/build/source/sl.h",
+        ":s2098_cp.ok",
     ],
-    outs = [
-        "s2762_make/build/source/sl",
-        "s2762_make.ok",
-    ],
-    cmd = " ".join([
+    cmd = [
         "./sandbox.sh --in . --in $(RULEDIR) --out $(RULEDIR)",
-        "--name s2762_make --timeout 300",
-        "run --cwd /build/source --env 25 --argv0 make --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 3 --",
-        "/nix/store/p5frwjlmkgj2987iy9plr7nav9l72xz4-gnumake-4.4.1/bin/make SHELL=/nix/store/10dxp0qxqxxsyiljrh2kp0xqhz6arhcx-bash-5.3p15/bin/bash 'CC:=$$(CC)'",
-    ]),
-    tags = ["no-remote"],
+        "--name s2851_gcc --timeout 300",
+        "run --cwd /build/source --env 25 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 46 --",
+        "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -Wl,-dynamic-linker=/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ld-linux-x86-64.so.2 -O3 -Wall -o sl sl.c -lncurses -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=0n7j2s7faw -isystem /nix/store/dgvn2c174c1fy0lcfyx0hzq76qn6jmnn-ncurses-6.6-dev/include -isystem /nix/store/dgvn2c174c1fy0lcfyx0hzq76qn6jmnn-ncurses-6.6-dev/include -Wl,-rpath -Wl,/nix/store/0n7j2s7fawm2m7m3zmqapsjwv8xlq3yf-sl-5.05/lib -L/nix/store/hzqwc6pv8sb9qrwivc4h42cr811gs1mk-ncurses-6.6/lib -L/nix/store/hzqwc6pv8sb9qrwivc4h42cr811gs1mk-ncurses-6.6/lib -L/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib -L/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0 -L/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -L/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib",
+    ],
 )
 
-genrule(
-    name = "s3345_install",
-    srcs = [
-        ":actions/s3345_install.manifest",
-        ":closure.txt",
-        ":env/26.env",
-        ":platform/bin/sh",
-        ":platform/etc/group",
-        ":platform/etc/hosts",
-        ":platform/etc/passwd",
-        ":sandbox.sh",
-        ":s2762_make/build/source/sl",
-        ":s2140_chmod.ok",
-        ":s2762_make.ok",
-    ],
-    outs = [
-        "s3345_install/nix/store/0n7j2s7fawm2m7m3zmqapsjwv8xlq3yf-sl-5.05/bin/sl",
-        "s3345_install.ok",
-    ],
-    cmd = " ".join([
-        "./sandbox.sh --in . --in $(RULEDIR) --out $(RULEDIR)",
-        "--name s3345_install --timeout 300",
-        "run --cwd /build/source --env 26 --argv0 install --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 5 --",
-        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/install -Dm755 -t /nix/store/0n7j2s7fawm2m7m3zmqapsjwv8xlq3yf-sl-5.05/bin sl",
-    ]),
-    tags = ["no-remote"],
-)
-
-genrule(
-    name = "s3372_install",
-    srcs = [
-        ":actions/s3372_install.manifest",
-        ":closure.txt",
-        ":env/26.env",
-        ":platform/bin/sh",
-        ":platform/etc/group",
-        ":platform/etc/hosts",
-        ":platform/etc/passwd",
-        ":sandbox.sh",
-        ":s2140_chmod/build/source/sl.1",
-        ":s2140_chmod/build/source/sl.1.ja",
-        ":s2140_chmod.ok",
-        ":s3345_install.ok",
-    ],
-    outs = [
-        "s3372_install/nix/store/0n7j2s7fawm2m7m3zmqapsjwv8xlq3yf-sl-5.05/share/man/man1/sl.1",
-        "s3372_install/nix/store/0n7j2s7fawm2m7m3zmqapsjwv8xlq3yf-sl-5.05/share/man/man1/sl.1.ja",
-        "s3372_install.ok",
-    ],
-    cmd = " ".join([
-        "./sandbox.sh --in . --in $(RULEDIR) --out $(RULEDIR)",
-        "--name s3372_install --timeout 300",
-        "run --cwd /build/source --env 26 --argv0 install --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 6 --",
-        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/install -Dm644 -t /nix/store/0n7j2s7fawm2m7m3zmqapsjwv8xlq3yf-sl-5.05/share/man/man1 sl.1 sl.1.ja",
-    ]),
-    tags = ["no-remote"],
-)
-
-genrule(
+recorded(
     name = "s3607_find_patchelf",
     srcs = [
         ":actions/s3607_find_patchelf.manifest",
@@ -171,145 +64,114 @@ genrule(
         ":platform/etc/hosts",
         ":platform/etc/passwd",
         ":sandbox.sh",
-        ":s3345_install/nix/store/0n7j2s7fawm2m7m3zmqapsjwv8xlq3yf-sl-5.05/bin/sl",
-        ":s2140_chmod.ok",
-        ":s3345_install.ok",
+        ":s2851_gcc/build/source/sl",
+        ":s2851_gcc.ok",
     ],
     outs = [
         "s3607_find_patchelf/nix/store/0n7j2s7fawm2m7m3zmqapsjwv8xlq3yf-sl-5.05/bin/sl",
-        "s3607_find_patchelf.ok",
     ],
-    cmd = " ".join([
+    cmd = [
         "./sandbox.sh --in . --in $(RULEDIR) --out $(RULEDIR)",
         "--name s3607_find_patchelf --timeout 300 --pipe 488:0:1:0",
         "run --cwd /build/source --env 28 --argv0 find --fd 0=null --fd 1=pipe-w:488 --fd 2=err --status 0 --argc 5 --",
         "/nix/store/ycrbcy9sg4knpnik6a01dk70l0m673x7-findutils-4.11.0/bin/find /nix/store/0n7j2s7fawm2m7m3zmqapsjwv8xlq3yf-sl-5.05 -type f -print0",
         "run --cwd /build/source --env 29 --argv0 patchelf --fd 0=pipe-r:488 --fd 1=err --fd 2=err --fd 63=pipe-r:488 --after 0 --status 0 --argc 3 --",
         "/nix/store/qcwnw71iksl68k7fipizi6wn0s1xms9v-patchelf-0.15.2/bin/patchelf --shrink-rpath /nix/store/0n7j2s7fawm2m7m3zmqapsjwv8xlq3yf-sl-5.05/bin/sl",
-    ]),
-    tags = ["no-remote"],
+    ],
 )
 
-genrule(
-    name = "s3901_find_xargs",
+recorded(
+    name = "s3931_gzip",
     srcs = [
-        ":actions/s3901_find_xargs.manifest",
+        ":actions/s3931_gzip.manifest",
         ":closure.txt",
-        ":env/33.env",
-        ":env/35.env",
-        ":platform/bin/sh",
-        ":platform/etc/group",
-        ":platform/etc/hosts",
-        ":platform/etc/passwd",
-        ":sandbox.sh",
-        ":s3372_install/nix/store/0n7j2s7fawm2m7m3zmqapsjwv8xlq3yf-sl-5.05/share/man/man1/sl.1",
-        ":s3372_install/nix/store/0n7j2s7fawm2m7m3zmqapsjwv8xlq3yf-sl-5.05/share/man/man1/sl.1.ja",
-        ":s2140_chmod.ok",
-        ":s3345_install.ok",
-        ":s3372_install.ok",
-    ],
-    outs = [
-        "s3901_find_xargs/nix/store/0n7j2s7fawm2m7m3zmqapsjwv8xlq3yf-sl-5.05/share/man/man1/sl.1.gz",
-        "s3901_find_xargs/nix/store/0n7j2s7fawm2m7m3zmqapsjwv8xlq3yf-sl-5.05/share/man/man1/sl.1.ja.gz",
-        "s3901_find_xargs.ok",
-    ],
-    cmd = " ".join([
-        "./sandbox.sh --in . --in $(RULEDIR) --out $(RULEDIR)",
-        "--name s3901_find_xargs --timeout 300 --pipe 512:0:1:0",
-        "run --cwd /build/source --env 33 --argv0 find --fd 0=null --fd 1=pipe-w:512 --fd 2=err --status 0 --argc 9 --",
-        "/nix/store/ycrbcy9sg4knpnik6a01dk70l0m673x7-findutils-4.11.0/bin/find /nix/store/0n7j2s7fawm2m7m3zmqapsjwv8xlq3yf-sl-5.05/share/man/ -type f -a '!' -regex '.*\\.\\(bz2\\|gz\\|xz\\)$$' -print0",
-        "run --cwd /build/source --env 35 --argv0 xargs --fd 0=pipe-r:512 --fd 1=err --fd 2=err --after 0 --status 0 --argc 8 --",
-        "/nix/store/ycrbcy9sg4knpnik6a01dk70l0m673x7-findutils-4.11.0/bin/xargs -0 -n1 -P 1 gzip -n -f",
-    ]),
-    tags = ["no-remote"],
-)
-
-genrule(
-    name = "s4090_mktemp",
-    srcs = [
-        ":actions/s4090_mktemp.manifest",
-        ":closure.txt",
-        ":env/30.env",
-        ":platform/bin/sh",
-        ":platform/etc/group",
-        ":platform/etc/hosts",
-        ":platform/etc/passwd",
-        ":sandbox.sh",
-        ":s2140_chmod.ok",
-    ],
-    outs = [
-        "s4090_mktemp/build/striperr.51ZNK0",
-        "s4090_mktemp.ok",
-    ],
-    cmd = " ".join([
-        "./sandbox.sh --in . --in $(RULEDIR) --out $(RULEDIR)",
-        "--name s4090_mktemp --timeout 300",
-        "run --cwd /build/source --env 30 --argv0 mktemp --fd 0=null --fd 1=null --fd 2=err --status 0 --argc 3 --",
-        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/mktemp --tmpdir=/build striperr.XXXXXX",
-    ]),
-    tags = ["no-remote"],
-)
-
-genrule(
-    name = "s4121_find_sort_cut_xargs",
-    srcs = [
-        ":actions/s4121_find_sort_cut_xargs.manifest",
-        ":closure.txt",
-        ":env/33.env",
-        ":env/35.env",
-        ":env/36.env",
         ":env/37.env",
         ":platform/bin/sh",
         ":platform/etc/group",
         ":platform/etc/hosts",
         ":platform/etc/passwd",
         ":sandbox.sh",
-        ":s3607_find_patchelf/nix/store/0n7j2s7fawm2m7m3zmqapsjwv8xlq3yf-sl-5.05/bin/sl",
-        ":s4090_mktemp/build/striperr.51ZNK0",
-        ":s2140_chmod.ok",
-        ":s3345_install.ok",
-        ":s3607_find_patchelf.ok",
-        ":s4090_mktemp.ok",
+        ":s2098_cp/build/source/sl.1.ja",
+        ":s2098_cp.ok",
     ],
     outs = [
-        "s4121_find_sort_cut_xargs/nix/store/0n7j2s7fawm2m7m3zmqapsjwv8xlq3yf-sl-5.05/bin/sl",
-        "s4121_find_sort_cut_xargs.ok",
+        "s3931_gzip/nix/store/0n7j2s7fawm2m7m3zmqapsjwv8xlq3yf-sl-5.05/share/man/man1/sl.1.ja.gz",
     ],
-    cmd = " ".join([
+    cmd = [
         "./sandbox.sh --in . --in $(RULEDIR) --out $(RULEDIR)",
-        "--name s4121_find_sort_cut_xargs --timeout 300 --pipe 527:0:1:0 --pipe 528:1:2:0 --pipe 529:2:3:0",
-        "run --cwd /build/source --env 33 --argv0 find --fd 0=null --fd 1=pipe-w:527 --fd 2=err --status 0 --argc 10 --",
-        "/nix/store/ycrbcy9sg4knpnik6a01dk70l0m673x7-findutils-4.11.0/bin/find /nix/store/0n7j2s7fawm2m7m3zmqapsjwv8xlq3yf-sl-5.05/bin -type f -a '!' -path '/nix/store/0n7j2s7fawm2m7m3zmqapsjwv8xlq3yf-sl-5.05/lib/debug/*' -printf '%D-%i,%p\\0'",
-        "run --cwd /build/source --env 36 --argv0 sort --fd 0=pipe-r:527 --fd 1=pipe-w:528 --fd 2=err --after 0 --status 0 --argc 5 --",
-        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/sort -t, -k1,1 -u -z",
-        "run --cwd /build/source --env 37 --argv0 cut --fd 0=pipe-r:528 --fd 1=pipe-w:529 --fd 2=err --after 0,1 --status 0 --argc 4 --",
-        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/cut -d, -f2- -z",
-        "run --cwd /build/source --env 35 --argv0 xargs --fd 0=pipe-r:529 --fd 1=err --fd 2=file:w:/build/striperr.51ZNK0 --after 0,1,2 --status 0 --argc 10 --",
-        "/nix/store/ycrbcy9sg4knpnik6a01dk70l0m673x7-findutils-4.11.0/bin/xargs -r -0 -n1 -P 1 -- strip -S -p",
-    ]),
-    tags = ["no-remote"],
+        "--name s3931_gzip --timeout 300",
+        "run --cwd /build/source --env 37 --argv0 gzip --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 4 --",
+        "/nix/store/yr6ar7lsk3yfas4d464z1ysaxwcq2gc5-gzip-1.14/bin/gzip -n -f /nix/store/0n7j2s7fawm2m7m3zmqapsjwv8xlq3yf-sl-5.05/share/man/man1/sl.1.ja",
+    ],
 )
 
-genrule(
+recorded(
+    name = "s3957_gzip",
+    srcs = [
+        ":actions/s3957_gzip.manifest",
+        ":closure.txt",
+        ":env/37.env",
+        ":platform/bin/sh",
+        ":platform/etc/group",
+        ":platform/etc/hosts",
+        ":platform/etc/passwd",
+        ":sandbox.sh",
+        ":s2098_cp/build/source/sl.1",
+        ":s2098_cp.ok",
+    ],
+    outs = [
+        "s3957_gzip/nix/store/0n7j2s7fawm2m7m3zmqapsjwv8xlq3yf-sl-5.05/share/man/man1/sl.1.gz",
+    ],
+    cmd = [
+        "./sandbox.sh --in . --in $(RULEDIR) --out $(RULEDIR)",
+        "--name s3957_gzip --timeout 300",
+        "run --cwd /build/source --env 37 --argv0 gzip --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 4 --",
+        "/nix/store/yr6ar7lsk3yfas4d464z1ysaxwcq2gc5-gzip-1.14/bin/gzip -n -f /nix/store/0n7j2s7fawm2m7m3zmqapsjwv8xlq3yf-sl-5.05/share/man/man1/sl.1",
+    ],
+)
+
+recorded(
+    name = "s4196_strip",
+    srcs = [
+        ":actions/s4196_strip.manifest",
+        ":closure.txt",
+        ":env/40.env",
+        ":platform/bin/sh",
+        ":platform/etc/group",
+        ":platform/etc/hosts",
+        ":platform/etc/passwd",
+        ":sandbox.sh",
+        ":const_4090_mktemp/build/striperr.51ZNK0",
+        ":s3607_find_patchelf/nix/store/0n7j2s7fawm2m7m3zmqapsjwv8xlq3yf-sl-5.05/bin/sl",
+        ":s3607_find_patchelf.ok",
+    ],
+    outs = [
+        "s4196_strip/nix/store/0n7j2s7fawm2m7m3zmqapsjwv8xlq3yf-sl-5.05/bin/sl",
+    ],
+    cmd = [
+        "./sandbox.sh --in . --in $(RULEDIR) --out $(RULEDIR)",
+        "--name s4196_strip --timeout 300",
+        "run --cwd /build/source --env 40 --fd 0=null --fd 1=err --fd 2=file:w:/build/striperr.51ZNK0 --status 0 --argc 5 --",
+        "/nix/store/y5sgl0vvrpbcwgjwpjs60r1hg0gi7i0n-binutils-2.46/bin/strip --enable-deterministic-archives -S -p /nix/store/0n7j2s7fawm2m7m3zmqapsjwv8xlq3yf-sl-5.05/bin/sl",
+    ],
+)
+
+nix_archive(
     name = "archive",
     srcs = [
         ":actions/archive.manifest",
         ":sandbox.sh",
-        ":s3901_find_xargs/nix/store/0n7j2s7fawm2m7m3zmqapsjwv8xlq3yf-sl-5.05/share/man/man1/sl.1.gz",
-        ":s3901_find_xargs/nix/store/0n7j2s7fawm2m7m3zmqapsjwv8xlq3yf-sl-5.05/share/man/man1/sl.1.ja.gz",
-        ":s4121_find_sort_cut_xargs/nix/store/0n7j2s7fawm2m7m3zmqapsjwv8xlq3yf-sl-5.05/bin/sl",
-        ":s3345_install.ok",
-        ":s3372_install.ok",
-        ":s3901_find_xargs.ok",
-        ":s4121_find_sort_cut_xargs.ok",
+        ":s3931_gzip/nix/store/0n7j2s7fawm2m7m3zmqapsjwv8xlq3yf-sl-5.05/share/man/man1/sl.1.ja.gz",
+        ":s3957_gzip/nix/store/0n7j2s7fawm2m7m3zmqapsjwv8xlq3yf-sl-5.05/share/man/man1/sl.1.gz",
+        ":s4196_strip/nix/store/0n7j2s7fawm2m7m3zmqapsjwv8xlq3yf-sl-5.05/bin/sl",
+        ":s3931_gzip.ok",
+        ":s3957_gzip.ok",
+        ":s4196_strip.ok",
     ],
-    outs = [
-        "archive.nar",
-    ],
-    cmd = " ".join([
+    out = "archive.nar",
+    cmd = [
         "./sandbox.sh --in . --in $(RULEDIR) --out $(RULEDIR)",
         "--name archive pack /nix/store/0n7j2s7fawm2m7m3zmqapsjwv8xlq3yf-sl-5.05",
-    ]),
-    tags = ["no-remote"],
+    ],
 )
 

@@ -1,4 +1,6 @@
-genrule(
+load(":genrulify.buck.bzl", "cc_object", "cc_shared_library", "nix_archive", "recorded")
+
+recorded(
     name = "s2140_cp",
     srcs = [
         "actions/s2140_cp.manifest",
@@ -8,56 +10,15 @@ genrule(
         "sandbox.sh",
     ],
     out = "s2140_cp",
-    cmd = " ".join([
+    cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
         "--name s2140_cp --timeout 300",
         "run --cwd /build --env 13 --argv0 cp --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 7 --",
         "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/cp -r --preserve=timestamps --reflink=auto -- /nix/store/zj1vni7ggkd3bk1w4035gvibwgkp8pv9-source source",
-    ]),
-    remote = False,
-)
-
-genrule(
-    name = "s2709_chmod",
-    srcs = [
-        "actions/s2709_chmod.manifest",
-        "closure.txt",
-        "env/14.env",
-        "platform",
-        "sandbox.sh",
-        ":s2140_cp",
     ],
-    out = "s2709_chmod",
-    cmd = " ".join([
-        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name s2709_chmod --timeout 300",
-        "run --cwd /build --env 14 --argv0 chmod --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 5 --",
-        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/chmod -R u+w -- source",
-    ]),
-    remote = False,
 )
 
-genrule(
-    name = "s3122_mkdir",
-    srcs = [
-        "actions/s3122_mkdir.manifest",
-        "closure.txt",
-        "env/21.env",
-        "platform",
-        "sandbox.sh",
-        ":s2709_chmod",
-    ],
-    out = "s3122_mkdir",
-    cmd = " ".join([
-        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name s3122_mkdir --timeout 300",
-        "run --cwd /build/source --env 21 --argv0 mkdir --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 3 --",
-        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/mkdir -p build",
-    ]),
-    remote = False,
-)
-
-genrule(
+recorded(
     name = "s3495_cmake",
     srcs = [
         "actions/s3495_cmake.manifest",
@@ -65,183 +26,111 @@ genrule(
         "env/24.env",
         "platform",
         "sandbox.sh",
-        ":s2709_chmod",
-        ":s3122_mkdir",
+        ":s2140_cp",
     ],
     out = "s3495_cmake",
-    cmd = " ".join([
+    cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
         "--name s3495_cmake --timeout 300",
         "run --cwd /build/source/build --env 24 --argv0 cmake --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 26 --",
         "/nix/store/jcvvpih1046akxcwh9hdiak5q24jqcf0-cmake-4.4.3/bin/cmake .. -DCMAKE_FIND_USE_SYSTEM_PACKAGE_REGISTRY=OFF -DCMAKE_FIND_USE_PACKAGE_REGISTRY=OFF -DCMAKE_EXPORT_NO_PACKAGE_REGISTRY=ON -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF -DCMAKE_INSTALL_LOCALEDIR=/nix/store/zxzky44n1nngijv1n5xvgcbf005fajq5-tinyxml2-11.0.0/share/locale -DCMAKE_INSTALL_LIBEXECDIR=/nix/store/zxzky44n1nngijv1n5xvgcbf005fajq5-tinyxml2-11.0.0/libexec -DCMAKE_INSTALL_LIBDIR=/nix/store/zxzky44n1nngijv1n5xvgcbf005fajq5-tinyxml2-11.0.0/lib -DCMAKE_INSTALL_DOCDIR=/nix/store/zxzky44n1nngijv1n5xvgcbf005fajq5-tinyxml2-11.0.0/share/doc/tinyxml2 -DCMAKE_INSTALL_INFODIR=/nix/store/zxzky44n1nngijv1n5xvgcbf005fajq5-tinyxml2-11.0.0/share/info -DCMAKE_INSTALL_MANDIR=/nix/store/zxzky44n1nngijv1n5xvgcbf005fajq5-tinyxml2-11.0.0/share/man -DCMAKE_INSTALL_INCLUDEDIR=/nix/store/zxzky44n1nngijv1n5xvgcbf005fajq5-tinyxml2-11.0.0/include -DCMAKE_INSTALL_SBINDIR=/nix/store/zxzky44n1nngijv1n5xvgcbf005fajq5-tinyxml2-11.0.0/sbin -DCMAKE_INSTALL_BINDIR=/nix/store/zxzky44n1nngijv1n5xvgcbf005fajq5-tinyxml2-11.0.0/bin -DCMAKE_INSTALL_NAME_DIR=/nix/store/zxzky44n1nngijv1n5xvgcbf005fajq5-tinyxml2-11.0.0/lib -DCMAKE_STRIP=/nix/store/j1938gsbvbhkyz4kbmvjk56r479mkw3s-gcc-wrapper-16.2.0/bin/strip -DCMAKE_RANLIB=/nix/store/j1938gsbvbhkyz4kbmvjk56r479mkw3s-gcc-wrapper-16.2.0/bin/ranlib -DCMAKE_AR=/nix/store/j1938gsbvbhkyz4kbmvjk56r479mkw3s-gcc-wrapper-16.2.0/bin/ar -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ -DCMAKE_INSTALL_PREFIX=/nix/store/zxzky44n1nngijv1n5xvgcbf005fajq5-tinyxml2-11.0.0 -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_INCLUDEDIR=include -DCMAKE_INSTALL_LIBDIR=lib",
-    ]),
-    remote = False,
+    ],
 )
 
-genrule(
-    name = "s9613_make",
+cc_object(
+    name = "s9941_g__",
     srcs = [
-        "actions/s9613_make.manifest",
+        "actions/s9941_g__.manifest",
         "closure.txt",
-        "env/26.env",
-        "lit_3495_cmake",
+        "env/29.env",
         "platform",
         "sandbox.sh",
-        ":s2709_chmod",
-        ":s3122_mkdir",
+        ":s2140_cp",
+    ],
+    out = "s9941_g__",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s9941_g__ --timeout 300",
+        "run --cwd /build/source/build --env 29 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 44 --",
+        "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/g++ -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -DTINYXML2_EXPORT -D_FILE_OFFSET_BITS=64 -I/build/source -O3 -DNDEBUG -fPIC -fvisibility=hidden -fvisibility-inlines-hidden -MD -MT CMakeFiles/tinyxml2.dir/tinyxml2.cpp.o -MF CMakeFiles/tinyxml2.dir/tinyxml2.cpp.o.d -o CMakeFiles/tinyxml2.dir/tinyxml2.cpp.o -c /build/source/tinyxml2.cpp -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=zxzky44n1n",
+    ],
+)
+
+cc_shared_library(
+    name = "s10176_g__",
+    srcs = [
+        "actions/s10176_g__.manifest",
+        "closure.txt",
+        "env/30.env",
+        "platform",
+        "sandbox.sh",
         ":s3495_cmake",
+        ":s9941_g__",
     ],
-    out = "s9613_make",
-    cmd = " ".join([
+    out = "s10176_g__",
+    cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name s9613_make --timeout 300",
-        "run --cwd /build/source/build --env 26 --argv0 make --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 3 --",
-        "/nix/store/p5frwjlmkgj2987iy9plr7nav9l72xz4-gnumake-4.4.1/bin/make -j1 SHELL=/nix/store/10dxp0qxqxxsyiljrh2kp0xqhz6arhcx-bash-5.3p15/bin/bash",
-    ]),
-    remote = False,
+        "--name s10176_g__ --timeout 300",
+        "run --cwd /build/source/build --env 30 --fd 0=null --fd 1=err --fd 2=err --fd 3=file:r@245:/build/source/build/CMakeFiles/tinyxml2.dir/link.txt --status 0 --argc 43 --",
+        "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/g++ -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -Wl,-dynamic-linker=/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ld-linux-x86-64.so.2 -fPIC -O3 -DNDEBUG -shared -Wl,--dependency-file=CMakeFiles/tinyxml2.dir/link.d -Wl,-soname,libtinyxml2.so.11 -o libtinyxml2.so.11.0.0 CMakeFiles/tinyxml2.dir/tinyxml2.cpp.o -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=zxzky44n1n -Wl,-rpath -Wl,/nix/store/zxzky44n1nngijv1n5xvgcbf005fajq5-tinyxml2-11.0.0/lib -L/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib -L/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0 -L/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -L/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib",
+    ],
 )
 
-genrule(
-    name = "s10712_mkdir",
-    srcs = [
-        "actions/s10712_mkdir.manifest",
-        "closure.txt",
-        "env/27.env",
-        "platform",
-        "sandbox.sh",
-        ":s2709_chmod",
-        ":s3122_mkdir",
-    ],
-    out = "s10712_mkdir",
-    cmd = " ".join([
-        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name s10712_mkdir --timeout 300",
-        "run --cwd /build/source/build --env 27 --argv0 mkdir --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 3 --",
-        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/mkdir -p /nix/store/zxzky44n1nngijv1n5xvgcbf005fajq5-tinyxml2-11.0.0",
-    ]),
-    remote = False,
-)
-
-genrule(
-    name = "s10777_make",
-    srcs = [
-        "actions/s10777_make.manifest",
-        "closure.txt",
-        "env/26.env",
-        "lit_3495_cmake",
-        "platform",
-        "sandbox.sh",
-        ":s10712_mkdir",
-        ":s2709_chmod",
-        ":s3122_mkdir",
-        ":s3495_cmake",
-        ":s9613_make",
-    ],
-    out = "s10777_make",
-    cmd = " ".join([
-        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name s10777_make --timeout 300",
-        "run --cwd /build/source/build --env 26 --argv0 make --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 4 --",
-        "/nix/store/p5frwjlmkgj2987iy9plr7nav9l72xz4-gnumake-4.4.1/bin/make -j1 SHELL=/nix/store/10dxp0qxqxxsyiljrh2kp0xqhz6arhcx-bash-5.3p15/bin/bash install",
-    ]),
-    remote = False,
-)
-
-genrule(
+recorded(
     name = "s11553_find_patchelf",
     srcs = [
         "actions/s11553_find_patchelf.manifest",
         "closure.txt",
-        "env/29.env",
-        "env/30.env",
-        "platform",
-        "sandbox.sh",
-        ":s10712_mkdir",
-        ":s10777_make",
-        ":s2709_chmod",
-        ":s3122_mkdir",
-    ],
-    out = "s11553_find_patchelf",
-    cmd = " ".join([
-        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name s11553_find_patchelf --timeout 300 --pipe 762:0:1:0",
-        "run --cwd /build/source/build --env 29 --argv0 find --fd 0=null --fd 1=pipe-w:762 --fd 2=err --status 0 --argc 5 --",
-        "/nix/store/ycrbcy9sg4knpnik6a01dk70l0m673x7-findutils-4.11.0/bin/find /nix/store/zxzky44n1nngijv1n5xvgcbf005fajq5-tinyxml2-11.0.0 -type f -print0",
-        "run --cwd /build/source/build --env 30 --argv0 patchelf --fd 0=pipe-r:762 --fd 1=err --fd 2=err --fd 63=pipe-r:762 --after 0 --status 0 --argc 3 --",
-        "/nix/store/qcwnw71iksl68k7fipizi6wn0s1xms9v-patchelf-0.15.2/bin/patchelf --shrink-rpath /nix/store/zxzky44n1nngijv1n5xvgcbf005fajq5-tinyxml2-11.0.0/lib/libtinyxml2.so.11.0.0",
-    ]),
-    remote = False,
-)
-
-genrule(
-    name = "s11906_mktemp",
-    srcs = [
-        "actions/s11906_mktemp.manifest",
-        "closure.txt",
-        "env/31.env",
-        "platform",
-        "sandbox.sh",
-        ":s2709_chmod",
-        ":s3122_mkdir",
-    ],
-    out = "s11906_mktemp",
-    cmd = " ".join([
-        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name s11906_mktemp --timeout 300",
-        "run --cwd /build/source/build --env 31 --argv0 mktemp --fd 0=null --fd 1=null --fd 2=err --status 0 --argc 3 --",
-        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/mktemp --tmpdir=/build striperr.XXXXXX",
-    ]),
-    remote = False,
-)
-
-genrule(
-    name = "s11937_find_sort_cut_xargs",
-    srcs = [
-        "actions/s11937_find_sort_cut_xargs.manifest",
-        "closure.txt",
-        "env/34.env",
         "env/36.env",
         "env/37.env",
-        "env/38.env",
         "platform",
         "sandbox.sh",
-        ":s10712_mkdir",
-        ":s10777_make",
-        ":s11553_find_patchelf",
-        ":s11906_mktemp",
-        ":s2709_chmod",
-        ":s3122_mkdir",
+        ":s10176_g__",
     ],
-    out = "s11937_find_sort_cut_xargs",
-    cmd = " ".join([
+    out = "s11553_find_patchelf",
+    cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name s11937_find_sort_cut_xargs --timeout 300 --pipe 788:0:1:0 --pipe 789:1:2:0 --pipe 790:2:3:0",
-        "run --cwd /build/source/build --env 34 --argv0 find --fd 0=null --fd 1=pipe-w:788 --fd 2=err --status 0 --argc 10 --",
-        "/nix/store/ycrbcy9sg4knpnik6a01dk70l0m673x7-findutils-4.11.0/bin/find /nix/store/zxzky44n1nngijv1n5xvgcbf005fajq5-tinyxml2-11.0.0/lib -type f -a '!' -path '/nix/store/zxzky44n1nngijv1n5xvgcbf005fajq5-tinyxml2-11.0.0/lib/debug/*' -printf '%D-%i,%p\\0'",
-        "run --cwd /build/source/build --env 36 --argv0 sort --fd 0=pipe-r:788 --fd 1=pipe-w:789 --fd 2=err --after 0 --status 0 --argc 5 --",
-        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/sort -t, -k1,1 -u -z",
-        "run --cwd /build/source/build --env 37 --argv0 cut --fd 0=pipe-r:789 --fd 1=pipe-w:790 --fd 2=err --after 0,1 --status 0 --argc 4 --",
-        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/cut -d, -f2- -z",
-        "run --cwd /build/source/build --env 38 --argv0 xargs --fd 0=pipe-r:790 --fd 1=err --fd 2=file:w:/build/striperr.3qCf8T --after 0,1,2 --status 123 --argc 10 --",
-        "/nix/store/ycrbcy9sg4knpnik6a01dk70l0m673x7-findutils-4.11.0/bin/xargs -r -0 -n1 -P 1 -- strip -S -p",
-    ]),
-    remote = False,
+        "--name s11553_find_patchelf --timeout 300 --pipe 762:0:1:0",
+        "run --cwd /build/source/build --env 36 --argv0 find --fd 0=null --fd 1=pipe-w:762 --fd 2=err --status 0 --argc 5 --",
+        "/nix/store/ycrbcy9sg4knpnik6a01dk70l0m673x7-findutils-4.11.0/bin/find /nix/store/zxzky44n1nngijv1n5xvgcbf005fajq5-tinyxml2-11.0.0 -type f -print0",
+        "run --cwd /build/source/build --env 37 --argv0 patchelf --fd 0=pipe-r:762 --fd 1=err --fd 2=err --fd 63=pipe-r:762 --after 0 --status 0 --argc 3 --",
+        "/nix/store/qcwnw71iksl68k7fipizi6wn0s1xms9v-patchelf-0.15.2/bin/patchelf --shrink-rpath /nix/store/zxzky44n1nngijv1n5xvgcbf005fajq5-tinyxml2-11.0.0/lib/libtinyxml2.so.11.0.0",
+    ],
 )
 
-genrule(
+recorded(
+    name = "s12012_strip",
+    srcs = [
+        "actions/s12012_strip.manifest",
+        "closure.txt",
+        "const_11906_mktemp",
+        "env/47.env",
+        "platform",
+        "sandbox.sh",
+        ":s11553_find_patchelf",
+    ],
+    out = "s12012_strip",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s12012_strip --timeout 300",
+        "run --cwd /build/source/build --env 47 --fd 0=null --fd 1=err --fd 2=file:w:/build/striperr.3qCf8T --status 0 --argc 5 --",
+        "/nix/store/y5sgl0vvrpbcwgjwpjs60r1hg0gi7i0n-binutils-2.46/bin/strip --enable-deterministic-archives -S -p /nix/store/zxzky44n1nngijv1n5xvgcbf005fajq5-tinyxml2-11.0.0/lib/libtinyxml2.so.11.0.0",
+    ],
+)
+
+nix_archive(
     name = "archive",
     srcs = [
         "actions/archive.manifest",
         "sandbox.sh",
-        ":s10712_mkdir",
-        ":s10777_make",
-        ":s11937_find_sort_cut_xargs",
+        ":s12012_strip",
+        ":s2140_cp",
+        ":s3495_cmake",
     ],
     out = "archive.nar",
-    cmd = " ".join([
+    cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
         "--name archive pack /nix/store/zxzky44n1nngijv1n5xvgcbf005fajq5-tinyxml2-11.0.0",
-    ]),
-    remote = False,
+    ],
 )
 

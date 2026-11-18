@@ -1,33 +1,18 @@
 [
   {
-    "id": "hello-make",
-    "label": "hello, make opened",
-    "note": "GNU hello 2.12.3, autotools, with make treated as driver code: one genrule per make recipe"
-  },
-  {
     "id": "hello",
     "label": "hello",
-    "note": "GNU hello 2.12.3: autotools, make, make check, make install"
+    "note": "GNU hello 2.12.3: autotools, 84 compiles, tests, install"
+  },
+  {
+    "id": "hello-coarse",
+    "label": "hello, coarse cuts",
+    "note": "GNU hello cut only at the commands the builder runs: make is one rule"
   },
   {
     "id": "hello-cores4",
     "label": "hello, four jobs",
-    "note": "GNU hello recorded with --cores 4 and make opened: recipes that overlapped are merged into two large groups"
-  },
-  {
-    "id": "bash",
-    "label": "bash",
-    "note": "GNU bash 5.3: autotools, 11,847 execve calls, six outputs"
-  },
-  {
-    "id": "sqlite",
-    "label": "sqlite",
-    "note": "SQLite 3.53.3 with its test phase off: one 9 MB C file, six outputs"
-  },
-  {
-    "id": "hexyl",
-    "label": "hexyl (Rust)",
-    "note": "hexyl 0.17.0: a Rust crate built by cargo, 176 rustc invocations"
+    "note": "GNU hello recorded with --cores 4: commands that overlapped are merged into large groups"
   },
   {
     "id": "ninja",
@@ -35,19 +20,9 @@
     "note": "ninja 1.13.2: bootstrapped by a Python script, then built by itself"
   },
   {
-    "id": "gawk",
-    "label": "gawk",
-    "note": "GNU awk 5.4.1: autoreconf and autotools, three outputs"
-  },
-  {
-    "id": "lua-make",
-    "label": "lua, make opened",
-    "note": "Lua 5.2.4 with make treated as driver code: one genrule per recipe"
-  },
-  {
-    "id": "gnused",
-    "label": "sed",
-    "note": "GNU sed 4.10: autotools and gnulib, 8,848 execve calls, two outputs"
+    "id": "lua",
+    "label": "lua",
+    "note": "Lua 5.2.4: a plain Makefile"
   },
   {
     "id": "jsoncpp",

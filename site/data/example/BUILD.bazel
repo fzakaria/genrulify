@@ -1,4 +1,6 @@
-genrule(
+load(":genrulify.bzl", "nix_archive", "recorded")
+
+recorded(
     name = "s735_dd",
     srcs = [
         ":actions/s735_dd.manifest",
@@ -12,18 +14,16 @@ genrule(
     ],
     outs = [
         "s735_dd/build/bundle",
-        "s735_dd.ok",
     ],
-    cmd = " ".join([
+    cmd = [
         "./sandbox.sh --in . --in $(RULEDIR) --out $(RULEDIR)",
         "--name s735_dd --timeout 300",
         "run --cwd /build --env 0 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 4 --",
         "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/dd if=/nix/store/xzgjbcyd85zn18pfyrjvl2ravhi5snlh-header.txt of=bundle status=none",
-    ]),
-    tags = ["no-remote"],
+    ],
 )
 
-genrule(
+recorded(
     name = "s764_dd",
     srcs = [
         ":actions/s764_dd.manifest",
@@ -39,59 +39,27 @@ genrule(
     ],
     outs = [
         "s764_dd/build/bundle",
-        "s764_dd.ok",
     ],
-    cmd = " ".join([
+    cmd = [
         "./sandbox.sh --in . --in $(RULEDIR) --out $(RULEDIR)",
         "--name s764_dd --timeout 300",
         "run --cwd /build --env 0 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 6 --",
         "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/dd if=/nix/store/vr613az0762zqyzplvw8cdm1vk2f6bvc-body.txt of=bundle oflag=append conv=notrunc status=none",
-    ]),
-    tags = ["no-remote"],
+    ],
 )
 
-genrule(
-    name = "s782_dd",
-    srcs = [
-        ":actions/s782_dd.manifest",
-        ":closure.txt",
-        ":env/1.env",
-        ":platform/bin/sh",
-        ":platform/etc/group",
-        ":platform/etc/hosts",
-        ":platform/etc/passwd",
-        ":sandbox.sh",
-        ":s764_dd/build/bundle",
-        ":s764_dd.ok",
-    ],
-    outs = [
-        "s782_dd/nix/store/l1dx8g9mr73bdp8y6i2yp92xprmz8xzg-genrulify-example",
-        "s782_dd.ok",
-    ],
-    cmd = " ".join([
-        "./sandbox.sh --in . --in $(RULEDIR) --out $(RULEDIR)",
-        "--name s782_dd --timeout 300",
-        "run --cwd /build --env 1 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 4 --",
-        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/dd if=bundle of=/nix/store/l1dx8g9mr73bdp8y6i2yp92xprmz8xzg-genrulify-example status=none",
-    ]),
-    tags = ["no-remote"],
-)
-
-genrule(
+nix_archive(
     name = "archive",
     srcs = [
         ":actions/archive.manifest",
         ":sandbox.sh",
-        ":s782_dd/nix/store/l1dx8g9mr73bdp8y6i2yp92xprmz8xzg-genrulify-example",
-        ":s782_dd.ok",
+        ":s764_dd/build/bundle",
+        ":s764_dd.ok",
     ],
-    outs = [
-        "archive.nar",
-    ],
-    cmd = " ".join([
+    out = "archive.nar",
+    cmd = [
         "./sandbox.sh --in . --in $(RULEDIR) --out $(RULEDIR)",
         "--name archive pack /nix/store/l1dx8g9mr73bdp8y6i2yp92xprmz8xzg-genrulify-example",
-    ]),
-    tags = ["no-remote"],
+    ],
 )
 

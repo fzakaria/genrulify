@@ -1,4 +1,6 @@
-genrule(
+load(":genrulify.buck.bzl", "nix_archive", "recorded")
+
+recorded(
     name = "s2232_cp",
     srcs = [
         "actions/s2232_cp.manifest",
@@ -8,36 +10,15 @@ genrule(
         "sandbox.sh",
     ],
     out = "s2232_cp",
-    cmd = " ".join([
+    cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
         "--name s2232_cp --timeout 533",
         "run --cwd /build --env 27 --argv0 cp --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 7 --",
         "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/cp -r --preserve=timestamps --reflink=auto -- /nix/store/rawihb8wn1qdv7ylxims26whxgw8hsb0-source source",
-    ]),
-    remote = False,
-)
-
-genrule(
-    name = "s2624_chmod",
-    srcs = [
-        "actions/s2624_chmod.manifest",
-        "closure.txt",
-        "env/28.env",
-        "platform",
-        "sandbox.sh",
-        ":s2232_cp",
     ],
-    out = "s2624_chmod",
-    cmd = " ".join([
-        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name s2624_chmod --timeout 533",
-        "run --cwd /build --env 28 --argv0 chmod --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 5 --",
-        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/chmod -R u+w -- source",
-    ]),
-    remote = False,
 )
 
-genrule(
+recorded(
     name = "s2847_cat_patch",
     srcs = [
         "actions/s2847_cat_patch.manifest",
@@ -46,21 +27,20 @@ genrule(
         "env/35.env",
         "platform",
         "sandbox.sh",
-        ":s2624_chmod",
+        ":s2232_cp",
     ],
     out = "s2847_cat_patch",
-    cmd = " ".join([
+    cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
         "--name s2847_cat_patch --timeout 533 --pipe 453:0:1:0",
         "run --cwd /build/source --env 34 --argv0 cat --fd 0=store:/nix/store/fw7yyzr7iby63y0qr5dl9j9y4538gb7z-0001-spawn-sh-instead-of-bin-sh.patch --fd 1=pipe-w:453 --fd 2=pipe-w:453 --status 0 --argc 1 --",
         "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/cat",
         "run --cwd /build/source --env 35 --argv0 patch --fd 0=pipe-r:453 --fd 1=err --fd 2=err --after 0 --status 0 --argc 2 --",
         "/nix/store/dsfqcffzgwhrnkq1v9g9s3p55czrxk8l-patch-2.8/bin/patch -p1",
-    ]),
-    remote = False,
+    ],
 )
 
-genrule(
+recorded(
     name = "s3266_python",
     srcs = [
         "actions/s3266_python.manifest",
@@ -69,20 +49,19 @@ genrule(
         "glue_2916",
         "platform",
         "sandbox.sh",
-        ":s2624_chmod",
+        ":s2232_cp",
         ":s2847_cat_patch",
     ],
     out = "s3266_python",
-    cmd = " ".join([
+    cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
         "--name s3266_python --timeout 533",
         "run --cwd /build/source --env 42 --argv0 python --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 3 --",
         "/nix/store/lb41b0anx1f98y9y5s9mdv97gjgsq740-python3-3.14.7/bin/python configure.py --bootstrap",
-    ]),
-    remote = False,
+    ],
 )
 
-genrule(
+recorded(
     name = "s18308_python",
     srcs = [
         "actions/s18308_python.manifest",
@@ -91,20 +70,19 @@ genrule(
         "glue_2916",
         "platform",
         "sandbox.sh",
-        ":s2624_chmod",
+        ":s2232_cp",
         ":s3266_python",
     ],
     out = "s18308_python",
-    cmd = " ".join([
+    cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
         "--name s18308_python --timeout 533",
         "run --cwd /build/source --env 43 --argv0 python --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 2 --",
         "/nix/store/lb41b0anx1f98y9y5s9mdv97gjgsq740-python3-3.14.7/bin/python configure.py",
-    ]),
-    remote = False,
+    ],
 )
 
-genrule(
+recorded(
     name = "s18707_ninja",
     srcs = [
         "actions/s18707_ninja.manifest",
@@ -114,42 +92,39 @@ genrule(
         "platform",
         "sandbox.sh",
         ":s18308_python",
-        ":s2624_chmod",
+        ":s2232_cp",
         ":s2847_cat_patch",
         ":s3266_python",
     ],
     out = "s18707_ninja",
-    cmd = " ".join([
+    cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
         "--name s18707_ninja --timeout 533",
         "run --cwd /build/source --env 44 --argv0 ./ninja --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 1 --",
         "/build/source/ninja",
-    ]),
-    remote = False,
+    ],
 )
 
-genrule(
-    name = "s30567_asciidoc",
+recorded(
+    name = "s30581_.asciidoc-wrapped",
     srcs = [
-        "actions/s30567_asciidoc.manifest",
+        "actions/s30581_.asciidoc-wrapped.manifest",
         "closure.txt",
         "env/45.env",
         "platform",
         "sandbox.sh",
-        ":s2624_chmod",
-        ":s3266_python",
+        ":s2232_cp",
     ],
-    out = "s30567_asciidoc",
-    cmd = " ".join([
+    out = "s30581_.asciidoc-wrapped",
+    cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name s30567_asciidoc --timeout 533",
-        "run --cwd /build/source --env 45 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 10 --",
-        "/nix/store/10dxp0qxqxxsyiljrh2kp0xqhz6arhcx-bash-5.3p15/bin/bash -e /nix/store/z3m7m4fx3xvps2cxv5jk297qd641jqxs-asciidoc-10.2.1/bin/asciidoc -b docbook -d book -o build/manual.xml doc/manual.asciidoc",
-    ]),
-    remote = False,
+        "--name s30581_.asciidoc-wrapped --timeout 533",
+        "run --cwd /build/source --env 45 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 9 --",
+        "/nix/store/lb41b0anx1f98y9y5s9mdv97gjgsq740-python3-3.14.7/bin/python3.14 /nix/store/z3m7m4fx3xvps2cxv5jk297qd641jqxs-asciidoc-10.2.1/bin/.asciidoc-wrapped -b docbook -d book -o build/manual.xml doc/manual.asciidoc",
+    ],
 )
 
-genrule(
+recorded(
     name = "s31727_xsltproc",
     srcs = [
         "actions/s31727_xsltproc.manifest",
@@ -158,131 +133,19 @@ genrule(
         "glue_31727",
         "platform",
         "sandbox.sh",
-        ":s2624_chmod",
-        ":s30567_asciidoc",
-        ":s3266_python",
+        ":s2232_cp",
+        ":s30581_.asciidoc-wrapped",
     ],
     out = "s31727_xsltproc",
-    cmd = " ".join([
+    cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
         "--name s31727_xsltproc --timeout 533",
         "run --cwd /build/source --env 46 --argv0 xsltproc --fd 0=null --fd 1=file:w:/build/source/doc/manual.html --fd 2=err --status 0 --argc 4 --",
         "/nix/store/k2m6vahi01nhjg1xyj95plrnpvfykimk-libxslt-1.1.45-bin/bin/xsltproc --nonet doc/docbook.xsl build/manual.xml",
-    ]),
-    remote = False,
-)
-
-genrule(
-    name = "s31829_install",
-    srcs = [
-        "actions/s31829_install.manifest",
-        "closure.txt",
-        "env/47.env",
-        "platform",
-        "sandbox.sh",
-        ":s18707_ninja",
-        ":s2624_chmod",
     ],
-    out = "s31829_install",
-    cmd = " ".join([
-        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name s31829_install --timeout 533",
-        "run --cwd /build/source --env 47 --argv0 install --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 5 --",
-        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/install -Dm555 -t /nix/store/4nsdla28c4177ssp0hlyv5l2yzj8wcba-ninja-1.13.2/bin ninja",
-    ]),
-    remote = False,
 )
 
-genrule(
-    name = "s31892_install",
-    srcs = [
-        "actions/s31892_install.manifest",
-        "closure.txt",
-        "env/49.env",
-        "platform",
-        "sandbox.sh",
-        ":s2624_chmod",
-        ":s31829_install",
-    ],
-    out = "s31892_install",
-    cmd = " ".join([
-        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name s31892_install --timeout 533",
-        "run --cwd /build/source --env 49 --argv0 install --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 6 --",
-        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/install -D --mode=644 --no-target-directory misc/bash-completion /nix/store/4nsdla28c4177ssp0hlyv5l2yzj8wcba-ninja-1.13.2/share/bash-completion/completions/ninja",
-    ]),
-    remote = False,
-)
-
-genrule(
-    name = "s31953_install",
-    srcs = [
-        "actions/s31953_install.manifest",
-        "closure.txt",
-        "env/51.env",
-        "platform",
-        "sandbox.sh",
-        ":s2624_chmod",
-        ":s31829_install",
-        ":s31892_install",
-    ],
-    out = "s31953_install",
-    cmd = " ".join([
-        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name s31953_install --timeout 533",
-        "run --cwd /build/source --env 51 --argv0 install --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 6 --",
-        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/install -D --mode=644 --no-target-directory misc/zsh-completion /nix/store/4nsdla28c4177ssp0hlyv5l2yzj8wcba-ninja-1.13.2/share/zsh/site-functions/_zsh-completion",
-    ]),
-    remote = False,
-)
-
-genrule(
-    name = "s31978_install",
-    srcs = [
-        "actions/s31978_install.manifest",
-        "closure.txt",
-        "env/47.env",
-        "platform",
-        "sandbox.sh",
-        ":s2624_chmod",
-        ":s31727_xsltproc",
-        ":s31829_install",
-        ":s31892_install",
-    ],
-    out = "s31978_install",
-    cmd = " ".join([
-        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name s31978_install --timeout 533",
-        "run --cwd /build/source --env 47 --argv0 install --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 6 --",
-        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/install -Dm444 -t /nix/store/4nsdla28c4177ssp0hlyv5l2yzj8wcba-ninja-1.13.2/share/doc/ninja doc/manual.asciidoc doc/manual.html",
-    ]),
-    remote = False,
-)
-
-genrule(
-    name = "s32085_chmod",
-    srcs = [
-        "actions/s32085_chmod.manifest",
-        "closure.txt",
-        "env/52.env",
-        "platform",
-        "sandbox.sh",
-        ":s2624_chmod",
-        ":s31829_install",
-        ":s31892_install",
-        ":s31978_install",
-    ],
-    out = "s32085_chmod",
-    cmd = " ".join([
-        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name s32085_chmod --timeout 533",
-        "run --cwd /build/source --env 52 --argv0 chmod --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 4 --",
-        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/chmod -R u+w,u-s,g-s /nix/store/4nsdla28c4177ssp0hlyv5l2yzj8wcba-ninja-1.13.2",
-    ]),
-    remote = False,
-)
-
-genrule(
+recorded(
     name = "s32223_find_patchelf",
     srcs = [
         "actions/s32223_find_patchelf.manifest",
@@ -291,114 +154,53 @@ genrule(
         "env/54.env",
         "platform",
         "sandbox.sh",
-        ":s2624_chmod",
-        ":s31829_install",
-        ":s32085_chmod",
+        ":s18707_ninja",
     ],
     out = "s32223_find_patchelf",
-    cmd = " ".join([
+    cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
         "--name s32223_find_patchelf --timeout 533 --pipe 648:0:1:0",
         "run --cwd /build/source --env 53 --argv0 find --fd 0=null --fd 1=pipe-w:648 --fd 2=err --status 0 --argc 5 --",
         "/nix/store/ycrbcy9sg4knpnik6a01dk70l0m673x7-findutils-4.11.0/bin/find /nix/store/4nsdla28c4177ssp0hlyv5l2yzj8wcba-ninja-1.13.2 -type f -print0",
         "run --cwd /build/source --env 54 --argv0 patchelf --fd 0=pipe-r:648 --fd 1=err --fd 2=err --fd 63=pipe-r:648 --after 0 --status 0 --argc 3 --",
         "/nix/store/qcwnw71iksl68k7fipizi6wn0s1xms9v-patchelf-0.15.2/bin/patchelf --shrink-rpath /nix/store/4nsdla28c4177ssp0hlyv5l2yzj8wcba-ninja-1.13.2/bin/ninja",
-    ]),
-    remote = False,
-)
-
-genrule(
-    name = "s32573_mktemp",
-    srcs = [
-        "actions/s32573_mktemp.manifest",
-        "closure.txt",
-        "env/55.env",
-        "platform",
-        "sandbox.sh",
-        ":s2624_chmod",
     ],
-    out = "s32573_mktemp",
-    cmd = " ".join([
-        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name s32573_mktemp --timeout 533",
-        "run --cwd /build/source --env 55 --argv0 mktemp --fd 0=null --fd 1=null --fd 2=err --status 0 --argc 3 --",
-        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/mktemp --tmpdir=/build striperr.XXXXXX",
-    ]),
-    remote = False,
 )
 
-genrule(
-    name = "s32604_find_sort_cut_xargs",
+recorded(
+    name = "s32679_strip",
     srcs = [
-        "actions/s32604_find_sort_cut_xargs.manifest",
+        "actions/s32679_strip.manifest",
         "closure.txt",
-        "env/58.env",
-        "env/60.env",
-        "env/61.env",
-        "env/62.env",
+        "const_32573_mktemp",
+        "env/64.env",
         "platform",
         "sandbox.sh",
-        ":s2624_chmod",
-        ":s31829_install",
         ":s32223_find_patchelf",
-        ":s32573_mktemp",
     ],
-    out = "s32604_find_sort_cut_xargs",
-    cmd = " ".join([
+    out = "s32679_strip",
+    cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name s32604_find_sort_cut_xargs --timeout 533 --pipe 674:0:1:0 --pipe 675:1:2:0 --pipe 676:2:3:0",
-        "run --cwd /build/source --env 58 --argv0 find --fd 0=null --fd 1=pipe-w:674 --fd 2=err --status 0 --argc 10 --",
-        "/nix/store/ycrbcy9sg4knpnik6a01dk70l0m673x7-findutils-4.11.0/bin/find /nix/store/4nsdla28c4177ssp0hlyv5l2yzj8wcba-ninja-1.13.2/bin -type f -a '!' -path '/nix/store/4nsdla28c4177ssp0hlyv5l2yzj8wcba-ninja-1.13.2/lib/debug/*' -printf '%D-%i,%p\\0'",
-        "run --cwd /build/source --env 60 --argv0 sort --fd 0=pipe-r:674 --fd 1=pipe-w:675 --fd 2=err --after 0 --status 0 --argc 5 --",
-        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/sort -t, -k1,1 -u -z",
-        "run --cwd /build/source --env 61 --argv0 cut --fd 0=pipe-r:675 --fd 1=pipe-w:676 --fd 2=err --after 0,1 --status 0 --argc 4 --",
-        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/cut -d, -f2- -z",
-        "run --cwd /build/source --env 62 --argv0 xargs --fd 0=pipe-r:676 --fd 1=err --fd 2=file:w:/build/striperr.co0Upa --after 0,1,2 --status 0 --argc 10 --",
-        "/nix/store/ycrbcy9sg4knpnik6a01dk70l0m673x7-findutils-4.11.0/bin/xargs -r -0 -n1 -P 1 -- strip -S -p",
-    ]),
-    remote = False,
+        "--name s32679_strip --timeout 533",
+        "run --cwd /build/source --env 64 --fd 0=null --fd 1=err --fd 2=file:w:/build/striperr.co0Upa --status 0 --argc 5 --",
+        "/nix/store/y5sgl0vvrpbcwgjwpjs60r1hg0gi7i0n-binutils-2.46/bin/strip --enable-deterministic-archives -S -p /nix/store/4nsdla28c4177ssp0hlyv5l2yzj8wcba-ninja-1.13.2/bin/ninja",
+    ],
 )
 
-genrule(
-    name = "s32761_mkdir",
-    srcs = [
-        "actions/s32761_mkdir.manifest",
-        "closure.txt",
-        "env/63.env",
-        "platform",
-        "sandbox.sh",
-        ":s2624_chmod",
-        ":s31829_install",
-    ],
-    out = "s32761_mkdir",
-    cmd = " ".join([
-        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name s32761_mkdir --timeout 533",
-        "run --cwd /build/source --env 63 --argv0 mkdir --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 3 --",
-        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/mkdir -p /nix/store/4nsdla28c4177ssp0hlyv5l2yzj8wcba-ninja-1.13.2/nix-support",
-    ]),
-    remote = False,
-)
-
-genrule(
+nix_archive(
     name = "archive",
     srcs = [
         "actions/archive.manifest",
         "glue_32821",
         "sandbox.sh",
-        ":s31829_install",
-        ":s31892_install",
-        ":s31953_install",
-        ":s31978_install",
-        ":s32085_chmod",
-        ":s32604_find_sort_cut_xargs",
-        ":s32761_mkdir",
+        ":s2232_cp",
+        ":s31727_xsltproc",
+        ":s32679_strip",
     ],
     out = "archive.nar",
-    cmd = " ".join([
+    cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
         "--name archive pack /nix/store/4nsdla28c4177ssp0hlyv5l2yzj8wcba-ninja-1.13.2",
-    ]),
-    remote = False,
+    ],
 )
 

@@ -1,4 +1,6 @@
-genrule(
+load(":genrulify.buck.bzl", "cc_binary", "cc_object", "nix_archive", "recorded")
+
+recorded(
     name = "s1274_tar",
     srcs = [
         "actions/s1274_tar.manifest",
@@ -8,307 +10,127 @@ genrule(
         "sandbox.sh",
     ],
     out = "s1274_tar",
-    cmd = " ".join([
+    cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
         "--name s1274_tar --timeout 300",
         "run --cwd /build --env 12 --argv0 tar --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 5 --",
         "/nix/store/5ixf6i3kxcs512kl5glglb0y51rdgaar-gnutar-static-1.35/bin/tar xf /nix/store/9bangizlrzva6iv0ldyk51dq0j95d1ix-patchelf-0.15.2.tar.bz2 --mode=+w --warning=no-timestamp",
-    ]),
-    remote = False,
-)
-
-genrule(
-    name = "s1573_chmod",
-    srcs = [
-        "actions/s1573_chmod.manifest",
-        "closure.txt",
-        "env/13.env",
-        "platform",
-        "sandbox.sh",
-        ":s1274_tar",
     ],
-    out = "s1573_chmod",
-    cmd = " ".join([
-        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name s1573_chmod --timeout 300",
-        "run --cwd /build --env 13 --argv0 chmod --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 5 --",
-        "/nix/store/flqxa8p0n5wpvycmnjx23l1m147c6z89-coreutils-static-9.11/bin/chmod -R u+w -- patchelf-0.15.2",
-    ]),
-    remote = False,
 )
 
-genrule(
-    name = "s1936_find_basename_stat_mktemp__4",
+cc_object(
+    name = "s9291_g__",
     srcs = [
-        "actions/s1936_find_basename_stat_mktemp__4.manifest",
-        "closure.txt",
-        "env/21.env",
-        "env/22.env",
-        "env/24.env",
-        "env/25.env",
-        "env/26.env",
-        "env/27.env",
-        "env/28.env",
-        "env/29.env",
-        "platform",
-        "sandbox.sh",
-        ":s1274_tar",
-    ],
-    out = "s1936_find_basename_stat_mktemp__4",
-    cmd = " ".join([
-        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name s1936_find_basename_stat_mktemp__4 --timeout 300 --pipe 442:0:1,2,3,4,5,6,7:0",
-        "run --cwd /build/patchelf-0.15.2 --env 24 --argv0 find --fd 0=null --fd 1=pipe-w:442 --fd 2=err --status 0 --argc 7 --",
-        "/nix/store/kvb0b2rhgripxnbnckzinlisghg0yrrg-findutils-static-4.11.0/bin/find ./configure -type f -perm -0100 -print0",
-        "run --cwd /build/patchelf-0.15.2 --env 25 --argv0 basename --fd 0=pipe-r:442 --fd 1=null --fd 2=err --fd 63=pipe-r:442 --after 0 --status 0 --argc 2 --",
-        "/nix/store/flqxa8p0n5wpvycmnjx23l1m147c6z89-coreutils-static-9.11/bin/basename /bin/sh",
-        "run --cwd /build/patchelf-0.15.2 --env 26 --argv0 stat --fd 0=pipe-r:442 --fd 1=null --fd 2=err --fd 63=pipe-r:442 --after 0,1 --status 0 --argc 4 --",
-        "/nix/store/flqxa8p0n5wpvycmnjx23l1m147c6z89-coreutils-static-9.11/bin/stat --printf %y ./configure",
-        "run --cwd /build/patchelf-0.15.2 --env 21 --argv0 mktemp --fd 0=pipe-r:442 --fd 1=null --fd 2=err --fd 63=pipe-r:442 --after 0,1,2 --status 0 --argc 3 --",
-        "/nix/store/flqxa8p0n5wpvycmnjx23l1m147c6z89-coreutils-static-9.11/bin/mktemp -t patchShebangs.XXXXXXXXXX",
-        "run --cwd /build/patchelf-0.15.2 --env 27 --argv0 sed --fd 0=pipe-r:442 --fd 1=file:w:/build/patchShebangs.wZZnw9Tc2o --fd 2=err --fd 63=pipe-r:442 --after 0,1,2,3 --status 0 --argc 4 --",
-        "/nix/store/9hi4vvvkajwmnxp02wyg9svkhqhhhafy-gnused-static-4.10/bin/sed -e '1 s|.*|#\\!/nix/store/h1ikzxwsf6dc1jlijjcrzwxzanhlw9xj-bash-static-5.3/bin/sh|' ./configure",
-        "run --cwd /build/patchelf-0.15.2 --env 28 --argv0 cat --fd 0=pipe-r:442 --fd 1=file:w:/build/patchelf-0.15.2/configure --fd 2=err --fd 63=pipe-r:442 --after 0,1,2,3,4 --status 0 --argc 2 --",
-        "/nix/store/flqxa8p0n5wpvycmnjx23l1m147c6z89-coreutils-static-9.11/bin/cat /build/patchShebangs.wZZnw9Tc2o",
-        "run --cwd /build/patchelf-0.15.2 --env 22 --argv0 rm --fd 0=pipe-r:442 --fd 1=err --fd 2=err --fd 63=pipe-r:442 --after 0,1,2,3,4,5 --status 0 --argc 2 --",
-        "/nix/store/flqxa8p0n5wpvycmnjx23l1m147c6z89-coreutils-static-9.11/bin/rm /build/patchShebangs.wZZnw9Tc2o",
-        "run --cwd /build/patchelf-0.15.2 --env 29 --argv0 touch --fd 0=pipe-r:442 --fd 1=err --fd 2=err --fd 63=pipe-r:442 --after 0,1,2,3,4,5,6 --status 0 --argc 4 --",
-        "/nix/store/flqxa8p0n5wpvycmnjx23l1m147c6z89-coreutils-static-9.11/bin/touch --date '2025-08-12 21:18:43.000000000 +0000' ./configure",
-    ]),
-    remote = False,
-)
-
-genrule(
-    name = "s2066_configure",
-    srcs = [
-        "actions/s2066_configure.manifest",
-        "closure.txt",
-        "env/30.env",
-        "platform",
-        "sandbox.sh",
-        ":s1274_tar",
-        ":s1573_chmod",
-        ":s1936_find_basename_stat_mktemp__4",
-    ],
-    out = "s2066_configure",
-    cmd = " ".join([
-        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name s2066_configure --timeout 300",
-        "run --cwd /build/patchelf-0.15.2 --env 30 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 4 --",
-        "/nix/store/h1ikzxwsf6dc1jlijjcrzwxzanhlw9xj-bash-static-5.3/bin/sh ./configure --disable-dependency-tracking --prefix=/nix/store/qcwnw71iksl68k7fipizi6wn0s1xms9v-patchelf-0.15.2",
-    ]),
-    remote = False,
-)
-
-genrule(
-    name = "s9216_make",
-    srcs = [
-        "actions/s9216_make.manifest",
-        "closure.txt",
-        "env/32.env",
-        "lit_2066_configure",
-        "platform",
-        "sandbox.sh",
-        ":s1274_tar",
-        ":s1936_find_basename_stat_mktemp__4",
-        ":s2066_configure",
-    ],
-    out = "s9216_make",
-    cmd = " ".join([
-        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name s9216_make --timeout 300",
-        "run --cwd /build/patchelf-0.15.2 --env 32 --argv0 make --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 3 --",
-        "/nix/store/9jvbbrpc0spwaq1g3np1lhhjswrf6hs9-gnumake-static-4.4.1/bin/make -j1 SHELL=/nix/store/h1ikzxwsf6dc1jlijjcrzwxzanhlw9xj-bash-static-5.3/bin/bash",
-    ]),
-    remote = False,
-)
-
-genrule(
-    name = "s9780_mkdir",
-    srcs = [
-        "actions/s9780_mkdir.manifest",
+        "actions/s9291_g__.manifest",
         "closure.txt",
         "env/33.env",
         "platform",
         "sandbox.sh",
         ":s1274_tar",
     ],
-    out = "s9780_mkdir",
-    cmd = " ".join([
+    out = "s9291_g__",
+    cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name s9780_mkdir --timeout 300",
-        "run --cwd /build/patchelf-0.15.2 --env 33 --argv0 mkdir --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 3 --",
-        "/nix/store/flqxa8p0n5wpvycmnjx23l1m147c6z89-coreutils-static-9.11/bin/mkdir -p /nix/store/qcwnw71iksl68k7fipizi6wn0s1xms9v-patchelf-0.15.2",
-    ]),
-    remote = False,
+        "--name s9291_g__ --timeout 300",
+        "run --cwd /build/patchelf-0.15.2/src --env 33 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 50 --",
+        "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/g++ -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -std=gnu++11 -std=c++17 '-DPACKAGE_NAME=\"patchelf\"' '-DPACKAGE_TARNAME=\"patchelf\"' '-DPACKAGE_VERSION=\"0.15.2\"' '-DPACKAGE_STRING=\"patchelf 0.15.2\"' '-DPACKAGE_BUGREPORT=\"\"' '-DPACKAGE_URL=\"\"' '-DPACKAGE=\"patchelf\"' '-DVERSION=\"0.15.2\"' -DHAVE_CXX17=1 -I. -Wall -Wextra -Wcast-qual -std=c++17 -D_FILE_OFFSET_BITS=64 -g -O2 -c -o patchelf.o patchelf.cc -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=qcwnw71iks",
+    ],
 )
 
-genrule(
-    name = "s9838_make",
+cc_binary(
+    name = "s9464_g__",
     srcs = [
-        "actions/s9838_make.manifest",
+        "actions/s9464_g__.manifest",
         "closure.txt",
-        "env/32.env",
-        "lit_2066_configure",
+        "env/35.env",
         "platform",
         "sandbox.sh",
-        ":s1274_tar",
-        ":s1936_find_basename_stat_mktemp__4",
-        ":s2066_configure",
-        ":s9216_make",
-        ":s9780_mkdir",
+        ":s9291_g__",
     ],
-    out = "s9838_make",
-    cmd = " ".join([
+    out = "s9464_g__",
+    cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name s9838_make --timeout 300",
-        "run --cwd /build/patchelf-0.15.2 --env 32 --argv0 make --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 4 --",
-        "/nix/store/9jvbbrpc0spwaq1g3np1lhhjswrf6hs9-gnumake-static-4.4.1/bin/make -j1 SHELL=/nix/store/h1ikzxwsf6dc1jlijjcrzwxzanhlw9xj-bash-static-5.3/bin/bash install",
-    ]),
-    remote = False,
+        "--name s9464_g__ --timeout 300",
+        "run --cwd /build/patchelf-0.15.2/src --env 35 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 46 --",
+        "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/g++ -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -Wl,-dynamic-linker=/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ld-linux-x86-64.so.2 -std=gnu++11 -std=c++17 -Wall -Wextra -Wcast-qual -std=c++17 -D_FILE_OFFSET_BITS=64 -g -O2 -o patchelf patchelf.o -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=qcwnw71iks -Wl,-rpath -Wl,/nix/store/qcwnw71iksl68k7fipizi6wn0s1xms9v-patchelf-0.15.2/lib -L/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib -L/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0 -L/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -L/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib",
+    ],
 )
 
-genrule(
+recorded(
     name = "s10503_find_patchelf",
     srcs = [
         "actions/s10503_find_patchelf.manifest",
         "closure.txt",
-        "env/35.env",
-        "env/36.env",
+        "env/48.env",
+        "env/49.env",
         "platform",
         "sandbox.sh",
-        ":s1274_tar",
-        ":s9780_mkdir",
-        ":s9838_make",
+        ":s9464_g__",
     ],
     out = "s10503_find_patchelf",
-    cmd = " ".join([
+    cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
         "--name s10503_find_patchelf --timeout 300 --pipe 819:0:1:0",
-        "run --cwd /build/patchelf-0.15.2 --env 35 --argv0 find --fd 0=null --fd 1=pipe-w:819 --fd 2=err --status 0 --argc 5 --",
+        "run --cwd /build/patchelf-0.15.2 --env 48 --argv0 find --fd 0=null --fd 1=pipe-w:819 --fd 2=err --status 0 --argc 5 --",
         "/nix/store/kvb0b2rhgripxnbnckzinlisghg0yrrg-findutils-static-4.11.0/bin/find /nix/store/qcwnw71iksl68k7fipizi6wn0s1xms9v-patchelf-0.15.2 -type f -print0",
-        "run --cwd /build/patchelf-0.15.2 --env 36 --argv0 patchelf --fd 0=pipe-r:819 --fd 1=err --fd 2=err --fd 63=pipe-r:819 --after 0 --status 0 --argc 3 --",
+        "run --cwd /build/patchelf-0.15.2 --env 49 --argv0 patchelf --fd 0=pipe-r:819 --fd 1=err --fd 2=err --fd 63=pipe-r:819 --after 0 --status 0 --argc 3 --",
         "/nix/store/f8sz16l0d7ms0bvfsfgkqkp5wb7zdkki-patchelf-0.15.2/bin/patchelf --shrink-rpath /nix/store/qcwnw71iksl68k7fipizi6wn0s1xms9v-patchelf-0.15.2/bin/patchelf",
-    ]),
-    remote = False,
-)
-
-genrule(
-    name = "s10711_find_xargs",
-    srcs = [
-        "actions/s10711_find_xargs.manifest",
-        "closure.txt",
-        "env/40.env",
-        "env/42.env",
-        "platform",
-        "sandbox.sh",
-        ":s1274_tar",
-        ":s9780_mkdir",
-        ":s9838_make",
     ],
-    out = "s10711_find_xargs",
-    cmd = " ".join([
-        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name s10711_find_xargs --timeout 300 --pipe 840:0:1:0",
-        "run --cwd /build/patchelf-0.15.2 --env 40 --argv0 find --fd 0=null --fd 1=pipe-w:840 --fd 2=err --status 0 --argc 9 --",
-        "/nix/store/kvb0b2rhgripxnbnckzinlisghg0yrrg-findutils-static-4.11.0/bin/find /nix/store/qcwnw71iksl68k7fipizi6wn0s1xms9v-patchelf-0.15.2/share/man/ -type f -a '!' -regex '.*\\.\\(bz2\\|gz\\|xz\\)$' -print0",
-        "run --cwd /build/patchelf-0.15.2 --env 42 --argv0 xargs --fd 0=pipe-r:840 --fd 1=err --fd 2=err --after 0 --status 0 --argc 8 --",
-        "/nix/store/kvb0b2rhgripxnbnckzinlisghg0yrrg-findutils-static-4.11.0/bin/xargs -0 -n1 -P 1 gzip -n -f",
-    ]),
-    remote = False,
 )
 
-genrule(
-    name = "s10799_mktemp",
+recorded(
+    name = "s10724_gzip",
     srcs = [
-        "actions/s10799_mktemp.manifest",
+        "actions/s10724_gzip.manifest",
         "closure.txt",
-        "env/37.env",
+        "env/57.env",
         "platform",
         "sandbox.sh",
         ":s1274_tar",
     ],
-    out = "s10799_mktemp",
-    cmd = " ".join([
+    out = "s10724_gzip",
+    cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name s10799_mktemp --timeout 300",
-        "run --cwd /build/patchelf-0.15.2 --env 37 --argv0 mktemp --fd 0=null --fd 1=null --fd 2=err --status 0 --argc 3 --",
-        "/nix/store/flqxa8p0n5wpvycmnjx23l1m147c6z89-coreutils-static-9.11/bin/mktemp --tmpdir=/build striperr.XXXXXX",
-    ]),
-    remote = False,
+        "--name s10724_gzip --timeout 300",
+        "run --cwd /build/patchelf-0.15.2 --env 57 --argv0 gzip --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 4 --",
+        "/nix/store/1bgh8202bdz32ya2x4yp7lvccpq16bxl-gzip-static-1.14/bin/gzip -n -f /nix/store/qcwnw71iksl68k7fipizi6wn0s1xms9v-patchelf-0.15.2/share/man/man1/patchelf.1",
+    ],
 )
 
-genrule(
-    name = "s10820_find_sort_cut_xargs",
+recorded(
+    name = "s10841_strip",
     srcs = [
-        "actions/s10820_find_sort_cut_xargs.manifest",
+        "actions/s10841_strip.manifest",
         "closure.txt",
-        "env/40.env",
-        "env/42.env",
-        "env/43.env",
-        "env/44.env",
+        "const_10799_mktemp",
+        "env/57.env",
         "platform",
         "sandbox.sh",
         ":s10503_find_patchelf",
-        ":s10799_mktemp",
-        ":s1274_tar",
-        ":s9780_mkdir",
-        ":s9838_make",
     ],
-    out = "s10820_find_sort_cut_xargs",
-    cmd = " ".join([
+    out = "s10841_strip",
+    cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name s10820_find_sort_cut_xargs --timeout 300 --pipe 851:0:1:0 --pipe 852:1:2:0 --pipe 853:2:3:0",
-        "run --cwd /build/patchelf-0.15.2 --env 40 --argv0 find --fd 0=null --fd 1=pipe-w:851 --fd 2=err --status 0 --argc 10 --",
-        "/nix/store/kvb0b2rhgripxnbnckzinlisghg0yrrg-findutils-static-4.11.0/bin/find /nix/store/qcwnw71iksl68k7fipizi6wn0s1xms9v-patchelf-0.15.2/bin -type f -a '!' -path '/nix/store/qcwnw71iksl68k7fipizi6wn0s1xms9v-patchelf-0.15.2/lib/debug/*' -printf '%D-%i,%p\\0'",
-        "run --cwd /build/patchelf-0.15.2 --env 43 --argv0 sort --fd 0=pipe-r:851 --fd 1=pipe-w:852 --fd 2=err --after 0 --status 0 --argc 5 --",
-        "/nix/store/flqxa8p0n5wpvycmnjx23l1m147c6z89-coreutils-static-9.11/bin/sort -t, -k1,1 -u -z",
-        "run --cwd /build/patchelf-0.15.2 --env 44 --argv0 cut --fd 0=pipe-r:852 --fd 1=pipe-w:853 --fd 2=err --after 0,1 --status 0 --argc 4 --",
-        "/nix/store/flqxa8p0n5wpvycmnjx23l1m147c6z89-coreutils-static-9.11/bin/cut -d, -f2- -z",
-        "run --cwd /build/patchelf-0.15.2 --env 42 --argv0 xargs --fd 0=pipe-r:853 --fd 1=err --fd 2=file:w:/build/striperr.jgN6CC --after 0,1,2 --status 0 --argc 10 --",
-        "/nix/store/kvb0b2rhgripxnbnckzinlisghg0yrrg-findutils-static-4.11.0/bin/xargs -r -0 -n1 -P 1 -- strip -S -p",
-    ]),
-    remote = False,
+        "--name s10841_strip --timeout 300",
+        "run --cwd /build/patchelf-0.15.2 --env 57 --argv0 strip --fd 0=null --fd 1=err --fd 2=file:w:/build/striperr.jgN6CC --status 0 --argc 4 --",
+        "/nix/store/wdjg34rmvz8hhnd5m5bkblzlbpv5hrwm-binutils-patchelfed-ld-2.46/bin/strip -S -p /nix/store/qcwnw71iksl68k7fipizi6wn0s1xms9v-patchelf-0.15.2/bin/patchelf",
+    ],
 )
 
-genrule(
-    name = "s10903_mkdir",
-    srcs = [
-        "actions/s10903_mkdir.manifest",
-        "closure.txt",
-        "env/33.env",
-        "platform",
-        "sandbox.sh",
-        ":s1274_tar",
-        ":s9780_mkdir",
-    ],
-    out = "s10903_mkdir",
-    cmd = " ".join([
-        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name s10903_mkdir --timeout 300",
-        "run --cwd /build/patchelf-0.15.2 --env 33 --argv0 mkdir --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 3 --",
-        "/nix/store/flqxa8p0n5wpvycmnjx23l1m147c6z89-coreutils-static-9.11/bin/mkdir -p /nix/store/qcwnw71iksl68k7fipizi6wn0s1xms9v-patchelf-0.15.2/nix-support",
-    ]),
-    remote = False,
-)
-
-genrule(
+nix_archive(
     name = "archive",
     srcs = [
         "actions/archive.manifest",
         "glue_10943",
         "sandbox.sh",
-        ":s10711_find_xargs",
-        ":s10820_find_sort_cut_xargs",
-        ":s10903_mkdir",
-        ":s9780_mkdir",
-        ":s9838_make",
+        ":s10724_gzip",
+        ":s10841_strip",
+        ":s1274_tar",
     ],
     out = "archive.nar",
-    cmd = " ".join([
+    cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
         "--name archive pack /nix/store/qcwnw71iksl68k7fipizi6wn0s1xms9v-patchelf-0.15.2",
-    ]),
-    remote = False,
+    ],
 )
 

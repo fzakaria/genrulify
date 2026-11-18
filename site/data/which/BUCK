@@ -1,4 +1,6 @@
-genrule(
+load(":genrulify.buck.bzl", "cc_binary", "cc_object", "nix_archive", "recorded")
+
+recorded(
     name = "s1374_tar",
     srcs = [
         "actions/s1374_tar.manifest",
@@ -8,16 +10,15 @@ genrule(
         "sandbox.sh",
     ],
     out = "s1374_tar",
-    cmd = " ".join([
+    cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
         "--name s1374_tar --timeout 300",
         "run --cwd /build --env 12 --argv0 tar --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 5 --",
         "/nix/store/d1x966y2brfy9pwlrzwjmbnq9rpir7xb-gnutar-1.35/bin/tar xf /nix/store/vwg6xrgr2874vc5d63r1h8flzbbvq834-which-2.25.tar.gz --mode=+w --warning=no-timestamp",
-    ]),
-    remote = False,
+    ],
 )
 
-genrule(
+recorded(
     name = "s1871_cat_patch",
     srcs = [
         "actions/s1871_cat_patch.manifest",
@@ -29,18 +30,17 @@ genrule(
         ":s1374_tar",
     ],
     out = "s1871_cat_patch",
-    cmd = " ".join([
+    cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
         "--name s1871_cat_patch --timeout 300 --pipe 431:0:1:0",
         "run --cwd /build/which-2.25 --env 19 --argv0 cat --fd 0=store:/nix/store/7kaj69537nv722pgrifzyic4a3wpi7nf-gcc15.patch --fd 1=pipe-w:431 --fd 2=pipe-w:431 --status 0 --argc 1 --",
         "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/cat",
         "run --cwd /build/which-2.25 --env 20 --argv0 patch --fd 0=pipe-r:431 --fd 1=err --fd 2=err --after 0 --status 0 --argc 2 --",
         "/nix/store/dsfqcffzgwhrnkq1v9g9s3p55czrxk8l-patch-2.8/bin/patch -p1",
-    ]),
-    remote = False,
+    ],
 )
 
-genrule(
+recorded(
     name = "s2011_cp",
     srcs = [
         "actions/s2011_cp.manifest",
@@ -51,16 +51,15 @@ genrule(
         ":s1374_tar",
     ],
     out = "s2011_cp",
-    cmd = " ".join([
+    cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
         "--name s2011_cp --timeout 300",
         "run --cwd /build/which-2.25 --env 22 --argv0 cp --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 4 --",
         "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/cp -f /nix/store/rghdmnzq9f3swhb6dfg887p3vsric2sd-gnu-config-2024-01-01/config.sub ./config.sub",
-    ]),
-    remote = False,
+    ],
 )
 
-genrule(
+recorded(
     name = "s2055_cp",
     srcs = [
         "actions/s2055_cp.manifest",
@@ -71,16 +70,15 @@ genrule(
         ":s1374_tar",
     ],
     out = "s2055_cp",
-    cmd = " ".join([
+    cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
         "--name s2055_cp --timeout 300",
         "run --cwd /build/which-2.25 --env 22 --argv0 cp --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 4 --",
         "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/cp -f /nix/store/rghdmnzq9f3swhb6dfg887p3vsric2sd-gnu-config-2024-01-01/config.guess ./config.guess",
-    ]),
-    remote = False,
+    ],
 )
 
-genrule(
+recorded(
     name = "s2410_find_basename_stat_mktemp__4",
     srcs = [
         "actions/s2410_find_basename_stat_mktemp__4.manifest",
@@ -98,7 +96,7 @@ genrule(
         ":s1374_tar",
     ],
     out = "s2410_find_basename_stat_mktemp__4",
-    cmd = " ".join([
+    cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
         "--name s2410_find_basename_stat_mktemp__4 --timeout 300 --pipe 457:0:1,2,3,4,5,6,7:0",
         "run --cwd /build/which-2.25 --env 29 --argv0 find --fd 0=null --fd 1=pipe-w:457 --fd 2=err --status 0 --argc 7 --",
@@ -117,14 +115,13 @@ genrule(
         "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/rm /build/patchShebangs.KN9oFigcXN",
         "run --cwd /build/which-2.25 --env 34 --argv0 touch --fd 0=pipe-r:457 --fd 1=err --fd 2=err --fd 63=pipe-r:457 --after 0,1,2,3,4,5,6 --status 0 --argc 4 --",
         "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/touch --date '2026-05-21 16:00:12.000000000 +0000' ./configure",
-    ]),
-    remote = False,
+    ],
 )
 
-genrule(
-    name = "s2624_configure",
+recorded(
+    name = "s2711_bash",
     srcs = [
-        "actions/s2624_configure.manifest",
+        "actions/s2711_bash.manifest",
         "closure.txt",
         "env/35.env",
         "platform",
@@ -135,237 +132,239 @@ genrule(
         ":s2055_cp",
         ":s2410_find_basename_stat_mktemp__4",
     ],
-    out = "s2624_configure",
-    cmd = " ".join([
+    out = "s2711_bash",
+    cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name s2624_configure --timeout 300",
+        "--name s2711_bash --timeout 300",
         "run --cwd /build/which-2.25 --env 35 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 13 --",
-        "/nix/store/10dxp0qxqxxsyiljrh2kp0xqhz6arhcx-bash-5.3p15/bin/sh ./configure --disable-dependency-tracking --prefix=/nix/store/mdwxdimw26b72k7wign651n8clh4jzii-which-2.25 --bindir=/nix/store/mdwxdimw26b72k7wign651n8clh4jzii-which-2.25/bin --sbindir=/nix/store/mdwxdimw26b72k7wign651n8clh4jzii-which-2.25/sbin --includedir=/nix/store/mdwxdimw26b72k7wign651n8clh4jzii-which-2.25/include --mandir=/nix/store/2qqgq8ajvhai10hw5mids7djjs1m19z6-which-2.25-man/share/man --infodir=/nix/store/yzrbsxy63iq4mclf51b57nlfjvdwwg5w-which-2.25-info/share/info --docdir=/nix/store/mdwxdimw26b72k7wign651n8clh4jzii-which-2.25/share/doc/which --libdir=/nix/store/mdwxdimw26b72k7wign651n8clh4jzii-which-2.25/lib --libexecdir=/nix/store/mdwxdimw26b72k7wign651n8clh4jzii-which-2.25/libexec --localedir=/nix/store/mdwxdimw26b72k7wign651n8clh4jzii-which-2.25/share/locale",
-    ]),
-    remote = False,
+        "/nix/store/10dxp0qxqxxsyiljrh2kp0xqhz6arhcx-bash-5.3p15/bin/bash ./configure --disable-dependency-tracking --prefix=/nix/store/mdwxdimw26b72k7wign651n8clh4jzii-which-2.25 --bindir=/nix/store/mdwxdimw26b72k7wign651n8clh4jzii-which-2.25/bin --sbindir=/nix/store/mdwxdimw26b72k7wign651n8clh4jzii-which-2.25/sbin --includedir=/nix/store/mdwxdimw26b72k7wign651n8clh4jzii-which-2.25/include --mandir=/nix/store/2qqgq8ajvhai10hw5mids7djjs1m19z6-which-2.25-man/share/man --infodir=/nix/store/yzrbsxy63iq4mclf51b57nlfjvdwwg5w-which-2.25-info/share/info --docdir=/nix/store/mdwxdimw26b72k7wign651n8clh4jzii-which-2.25/share/doc/which --libdir=/nix/store/mdwxdimw26b72k7wign651n8clh4jzii-which-2.25/lib --libexecdir=/nix/store/mdwxdimw26b72k7wign651n8clh4jzii-which-2.25/libexec --localedir=/nix/store/mdwxdimw26b72k7wign651n8clh4jzii-which-2.25/share/locale",
+    ],
 )
 
-genrule(
-    name = "s27848_make",
+cc_object(
+    name = "s28033_gcc",
     srcs = [
-        "actions/s27848_make.manifest",
+        "actions/s28033_gcc.manifest",
         "closure.txt",
-        "env/37.env",
-        "lit_2624_configure",
+        "env/38.env",
         "platform",
         "sandbox.sh",
-        ":s1374_tar",
         ":s1871_cat_patch",
-        ":s2011_cp",
-        ":s2055_cp",
-        ":s2410_find_basename_stat_mktemp__4",
-        ":s2624_configure",
+        ":s2711_bash",
     ],
-    out = "s27848_make",
-    cmd = " ".join([
+    out = "s28033_gcc",
+    cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name s27848_make --timeout 300",
-        "run --cwd /build/which-2.25 --env 37 --argv0 make --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 3 --",
-        "/nix/store/p5frwjlmkgj2987iy9plr7nav9l72xz4-gnumake-4.4.1/bin/make -j1 SHELL=/nix/store/10dxp0qxqxxsyiljrh2kp0xqhz6arhcx-bash-5.3p15/bin/bash",
-    ]),
-    remote = False,
+        "--name s28033_gcc --timeout 300",
+        "run --cwd /build/which-2.25 --env 38 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 35 --",
+        "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -DHAVE_CONFIG_H -I. -g -O2 -c -o getopt.o getopt.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=mdwxdimw26",
+    ],
 )
 
-genrule(
-    name = "s29076_mkdir",
+cc_object(
+    name = "s28137_gcc",
     srcs = [
-        "actions/s29076_mkdir.manifest",
+        "actions/s28137_gcc.manifest",
         "closure.txt",
         "env/38.env",
         "platform",
         "sandbox.sh",
         ":s1374_tar",
+        ":s2711_bash",
     ],
-    out = "s29076_mkdir",
-    cmd = " ".join([
+    out = "s28137_gcc",
+    cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name s29076_mkdir --timeout 300",
-        "run --cwd /build/which-2.25 --env 38 --argv0 mkdir --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 3 --",
-        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/mkdir -p /nix/store/mdwxdimw26b72k7wign651n8clh4jzii-which-2.25",
-    ]),
-    remote = False,
+        "--name s28137_gcc --timeout 300",
+        "run --cwd /build/which-2.25 --env 38 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 35 --",
+        "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -DHAVE_CONFIG_H -I. -g -O2 -c -o getopt1.o getopt1.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=mdwxdimw26",
+    ],
 )
 
-genrule(
-    name = "s29142_make",
+cc_object(
+    name = "s28248_gcc",
     srcs = [
-        "actions/s29142_make.manifest",
+        "actions/s28248_gcc.manifest",
         "closure.txt",
-        "env/37.env",
-        "lit_2624_configure",
+        "env/38.env",
+        "platform",
+        "sandbox.sh",
+        ":s1374_tar",
+        ":s2711_bash",
+    ],
+    out = "s28248_gcc",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s28248_gcc --timeout 300",
+        "run --cwd /build/which-2.25 --env 38 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 35 --",
+        "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -DHAVE_CONFIG_H -I. -g -O2 -c -o bash.o bash.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=mdwxdimw26",
+    ],
+)
+
+cc_object(
+    name = "s28379_gcc",
+    srcs = [
+        "actions/s28379_gcc.manifest",
+        "closure.txt",
+        "env/38.env",
         "platform",
         "sandbox.sh",
         ":s1374_tar",
         ":s1871_cat_patch",
-        ":s2011_cp",
-        ":s2055_cp",
-        ":s2410_find_basename_stat_mktemp__4",
-        ":s2624_configure",
-        ":s27848_make",
-        ":s29076_mkdir",
+        ":s2711_bash",
     ],
-    out = "s29142_make",
-    cmd = " ".join([
+    out = "s28379_gcc",
+    cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name s29142_make --timeout 300",
-        "run --cwd /build/which-2.25 --env 37 --argv0 make --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 7 --",
-        "/nix/store/p5frwjlmkgj2987iy9plr7nav9l72xz4-gnumake-4.4.1/bin/make -j1 SHELL=/nix/store/10dxp0qxqxxsyiljrh2kp0xqhz6arhcx-bash-5.3p15/bin/bash pkgconfigdir=/nix/store/mdwxdimw26b72k7wign651n8clh4jzii-which-2.25/lib/pkgconfig m4datadir=/nix/store/mdwxdimw26b72k7wign651n8clh4jzii-which-2.25/share/aclocal aclocaldir=/nix/store/mdwxdimw26b72k7wign651n8clh4jzii-which-2.25/share/aclocal install",
-    ]),
-    remote = False,
+        "--name s28379_gcc --timeout 300",
+        "run --cwd /build/which-2.25 --env 38 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 35 --",
+        "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -DHAVE_CONFIG_H -I. -g -O2 -c -o which.o which.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=mdwxdimw26",
+    ],
 )
 
-genrule(
-    name = "s30782_find_xargs",
+cc_object(
+    name = "s28501_gcc",
     srcs = [
-        "actions/s30782_find_xargs.manifest",
+        "actions/s28501_gcc.manifest",
         "closure.txt",
-        "env/50.env",
-        "env/52.env",
+        "env/38.env",
         "platform",
         "sandbox.sh",
         ":s1374_tar",
-        ":s29142_make",
+        ":s2711_bash",
     ],
-    out = "s30782_find_xargs",
-    cmd = " ".join([
+    out = "s28501_gcc",
+    cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name s30782_find_xargs --timeout 300 --pipe 1286:0:1:0",
-        "run --cwd /build/which-2.25 --env 50 --argv0 find --fd 0=null --fd 1=pipe-w:1286 --fd 2=err --status 0 --argc 9 --",
-        "/nix/store/ycrbcy9sg4knpnik6a01dk70l0m673x7-findutils-4.11.0/bin/find /nix/store/2qqgq8ajvhai10hw5mids7djjs1m19z6-which-2.25-man/share/man/ -type f -a '!' -regex '.*\\.\\(bz2\\|gz\\|xz\\)$' -print0",
-        "run --cwd /build/which-2.25 --env 52 --argv0 xargs --fd 0=pipe-r:1286 --fd 1=err --fd 2=err --after 0 --status 0 --argc 8 --",
-        "/nix/store/ycrbcy9sg4knpnik6a01dk70l0m673x7-findutils-4.11.0/bin/xargs -0 -n1 -P 1 gzip -n -f",
-    ]),
-    remote = False,
+        "--name s28501_gcc --timeout 300",
+        "run --cwd /build/which-2.25 --env 38 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 35 --",
+        "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -DHAVE_CONFIG_H -I. -g -O2 -c -o tilde.o tilde.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=mdwxdimw26",
+    ],
 )
 
-genrule(
+cc_binary(
+    name = "s28698_gcc",
+    srcs = [
+        "actions/s28698_gcc.manifest",
+        "closure.txt",
+        "env/40.env",
+        "platform",
+        "sandbox.sh",
+        ":s28033_gcc",
+        ":s28137_gcc",
+        ":s28248_gcc",
+        ":s28379_gcc",
+        ":s28501_gcc",
+    ],
+    out = "s28698_gcc",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s28698_gcc --timeout 300",
+        "run --cwd /build/which-2.25 --env 40 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 43 --",
+        "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -Wl,-dynamic-linker=/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ld-linux-x86-64.so.2 -g -O2 -o which getopt.o getopt1.o bash.o which.o tilde.o -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=mdwxdimw26 -Wl,-rpath -Wl,/nix/store/mdwxdimw26b72k7wign651n8clh4jzii-which-2.25/lib -L/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib -L/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0 -L/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -L/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib",
+    ],
+)
+
+recorded(
+    name = "s30812_gzip",
+    srcs = [
+        "actions/s30812_gzip.manifest",
+        "closure.txt",
+        "env/61.env",
+        "platform",
+        "sandbox.sh",
+        ":s1374_tar",
+    ],
+    out = "s30812_gzip",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s30812_gzip --timeout 300",
+        "run --cwd /build/which-2.25 --env 61 --argv0 gzip --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 4 --",
+        "/nix/store/yr6ar7lsk3yfas4d464z1ysaxwcq2gc5-gzip-1.14/bin/gzip -n -f /nix/store/2qqgq8ajvhai10hw5mids7djjs1m19z6-which-2.25-man/share/man/man1/which.1",
+    ],
+)
+
+recorded(
     name = "s30956_find_patchelf",
     srcs = [
         "actions/s30956_find_patchelf.manifest",
         "closure.txt",
-        "env/54.env",
-        "env/55.env",
+        "env/63.env",
+        "env/64.env",
         "platform",
         "sandbox.sh",
-        ":s1374_tar",
-        ":s29076_mkdir",
-        ":s29142_make",
+        ":s28698_gcc",
     ],
     out = "s30956_find_patchelf",
-    cmd = " ".join([
+    cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
         "--name s30956_find_patchelf --timeout 300 --pipe 1300:0:1:0",
-        "run --cwd /build/which-2.25 --env 54 --argv0 find --fd 0=null --fd 1=pipe-w:1300 --fd 2=err --status 0 --argc 5 --",
+        "run --cwd /build/which-2.25 --env 63 --argv0 find --fd 0=null --fd 1=pipe-w:1300 --fd 2=err --status 0 --argc 5 --",
         "/nix/store/ycrbcy9sg4knpnik6a01dk70l0m673x7-findutils-4.11.0/bin/find /nix/store/mdwxdimw26b72k7wign651n8clh4jzii-which-2.25 -type f -print0",
-        "run --cwd /build/which-2.25 --env 55 --argv0 patchelf --fd 0=pipe-r:1300 --fd 1=err --fd 2=err --fd 63=pipe-r:1300 --after 0 --status 0 --argc 3 --",
+        "run --cwd /build/which-2.25 --env 64 --argv0 patchelf --fd 0=pipe-r:1300 --fd 1=err --fd 2=err --fd 63=pipe-r:1300 --after 0 --status 0 --argc 3 --",
         "/nix/store/qcwnw71iksl68k7fipizi6wn0s1xms9v-patchelf-0.15.2/bin/patchelf --shrink-rpath /nix/store/mdwxdimw26b72k7wign651n8clh4jzii-which-2.25/bin/which",
-    ]),
-    remote = False,
-)
-
-genrule(
-    name = "s31298_mktemp",
-    srcs = [
-        "actions/s31298_mktemp.manifest",
-        "closure.txt",
-        "env/56.env",
-        "platform",
-        "sandbox.sh",
-        ":s1374_tar",
     ],
-    out = "s31298_mktemp",
-    cmd = " ".join([
-        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name s31298_mktemp --timeout 300",
-        "run --cwd /build/which-2.25 --env 56 --argv0 mktemp --fd 0=null --fd 1=null --fd 2=err --status 0 --argc 3 --",
-        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/mktemp --tmpdir=/build striperr.XXXXXX",
-    ]),
-    remote = False,
 )
 
-genrule(
-    name = "s31329_find_sort_cut_xargs",
+recorded(
+    name = "s31404_strip",
     srcs = [
-        "actions/s31329_find_sort_cut_xargs.manifest",
+        "actions/s31404_strip.manifest",
         "closure.txt",
-        "env/59.env",
-        "env/61.env",
-        "env/62.env",
-        "env/63.env",
+        "const_31298_mktemp",
+        "env/74.env",
         "platform",
         "sandbox.sh",
-        ":s1374_tar",
-        ":s29076_mkdir",
-        ":s29142_make",
         ":s30956_find_patchelf",
-        ":s31298_mktemp",
     ],
-    out = "s31329_find_sort_cut_xargs",
-    cmd = " ".join([
+    out = "s31404_strip",
+    cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name s31329_find_sort_cut_xargs --timeout 300 --pipe 1323:0:1:0 --pipe 1324:1:2:0 --pipe 1325:2:3:0",
-        "run --cwd /build/which-2.25 --env 59 --argv0 find --fd 0=null --fd 1=pipe-w:1323 --fd 2=err --status 0 --argc 10 --",
-        "/nix/store/ycrbcy9sg4knpnik6a01dk70l0m673x7-findutils-4.11.0/bin/find /nix/store/mdwxdimw26b72k7wign651n8clh4jzii-which-2.25/bin -type f -a '!' -path '/nix/store/mdwxdimw26b72k7wign651n8clh4jzii-which-2.25/lib/debug/*' -printf '%D-%i,%p\\0'",
-        "run --cwd /build/which-2.25 --env 61 --argv0 sort --fd 0=pipe-r:1323 --fd 1=pipe-w:1324 --fd 2=err --after 0 --status 0 --argc 5 --",
-        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/sort -t, -k1,1 -u -z",
-        "run --cwd /build/which-2.25 --env 62 --argv0 cut --fd 0=pipe-r:1324 --fd 1=pipe-w:1325 --fd 2=err --after 0,1 --status 0 --argc 4 --",
-        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/cut -d, -f2- -z",
-        "run --cwd /build/which-2.25 --env 63 --argv0 xargs --fd 0=pipe-r:1325 --fd 1=err --fd 2=file:w:/build/striperr.mpDM8h --after 0,1,2 --status 0 --argc 10 --",
-        "/nix/store/ycrbcy9sg4knpnik6a01dk70l0m673x7-findutils-4.11.0/bin/xargs -r -0 -n1 -P 1 -- strip -S -p",
-    ]),
-    remote = False,
+        "--name s31404_strip --timeout 300",
+        "run --cwd /build/which-2.25 --env 74 --fd 0=null --fd 1=err --fd 2=file:w:/build/striperr.mpDM8h --status 0 --argc 5 --",
+        "/nix/store/y5sgl0vvrpbcwgjwpjs60r1hg0gi7i0n-binutils-2.46/bin/strip --enable-deterministic-archives -S -p /nix/store/mdwxdimw26b72k7wign651n8clh4jzii-which-2.25/bin/which",
+    ],
 )
 
-genrule(
+nix_archive(
     name = "archive_info",
     srcs = [
         "actions/archive_info.manifest",
         "sandbox.sh",
-        ":s29142_make",
+        ":s1374_tar",
     ],
     out = "archive_info.nar",
-    cmd = " ".join([
+    cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
         "--name archive_info pack /nix/store/yzrbsxy63iq4mclf51b57nlfjvdwwg5w-which-2.25-info",
-    ]),
-    remote = False,
+    ],
 )
 
-genrule(
+nix_archive(
     name = "archive_man",
     srcs = [
         "actions/archive_man.manifest",
         "sandbox.sh",
-        ":s29142_make",
-        ":s30782_find_xargs",
+        ":s30812_gzip",
     ],
     out = "archive_man.nar",
-    cmd = " ".join([
+    cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
         "--name archive_man pack /nix/store/2qqgq8ajvhai10hw5mids7djjs1m19z6-which-2.25-man",
-    ]),
-    remote = False,
+    ],
 )
 
-genrule(
+nix_archive(
     name = "archive_out",
     srcs = [
         "actions/archive_out.manifest",
         "sandbox.sh",
-        ":s29076_mkdir",
-        ":s29142_make",
-        ":s31329_find_sort_cut_xargs",
+        ":s31404_strip",
     ],
     out = "archive_out.nar",
-    cmd = " ".join([
+    cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
         "--name archive_out pack /nix/store/mdwxdimw26b72k7wign651n8clh4jzii-which-2.25",
-    ]),
-    remote = False,
+    ],
 )
 

@@ -16,6 +16,8 @@
   --traced: #2f8f83;
   --wide: #8250df;
   --literal: #c7791a;
+  --copy: #b8527a;
+  --folded: #6f7f93;
   --dead: #d2d2d2;
 }
 @media (prefers-color-scheme: dark) {
@@ -30,6 +32,8 @@
     --traced: #5fc2b5;
     --wide: #c4a7f5;
     --literal: #e0a04a;
+    --copy: #e58fb1;
+    --folded: #9aa9bd;
     --dead: #3d4048;
   }
 }
@@ -199,6 +203,12 @@ button[aria-pressed="true"] {
 .literal {
   background: var(--literal);
 }
+.copy {
+  background: var(--copy);
+}
+.folded {
+  background: var(--folded);
+}
 .dead {
   background: var(--dead);
 }
@@ -209,11 +219,51 @@ button[aria-pressed="true"] {
   background-image: linear-gradient(135deg, transparent 55%, var(--literal) 55%);
 }
 
-/* After elimination the dead cells shrink away and the rest keep their
-   place, so the survivors can be found where they ran. */
-#timeline.eliminated .cell.dead {
-  opacity: 0.12;
+/* A group that no longer runs shrinks away and the rest keep their place,
+   so the survivors can be found where they ran. A group that became copies
+   or constants keeps its color, a dead one fades as well. */
+#timeline .cell.gone {
   transform: scale(0.45);
+}
+#timeline .cell.gone.dead {
+  opacity: 0.12;
+}
+
+/* The switches: one per pass, pressed when the pass is on, then the two
+   buttons that set them all at once. */
+#passes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+#passes button {
+  font: inherit;
+  font-size: 14px;
+  padding: 0.3rem 0.7rem;
+  color: var(--fg);
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  cursor: pointer;
+}
+#passes button.pass[aria-pressed="true"] {
+  color: var(--bg);
+  background: var(--accent);
+  border-color: var(--accent);
+}
+#passes button.every {
+  color: var(--accent);
+  border-color: transparent;
+}
+#passes button.pass + button.every {
+  margin-left: 0.6rem;
+}
+#passes button.every:disabled {
+  color: var(--muted);
+  cursor: default;
+}
+#pass-text strong {
+  color: var(--fg);
 }
 
 /* The graph scrolls sideways when a build has a long chain. */
@@ -232,8 +282,8 @@ button[aria-pressed="true"] {
   stroke-width: 1.2;
 }
 
-/* An edge into an eliminated operation is drawn fainter. */
-#graph .edge.dead {
+/* An edge into an operation the next pass removes is drawn fainter. */
+#graph .edge.doomed {
   stroke-dasharray: 2 3;
   opacity: 0.6;
 }
@@ -298,11 +348,20 @@ button[aria-pressed="true"] {
   stroke: var(--literal);
   stroke-dasharray: 4 3;
 }
-#graph .node.dead rect {
+#graph .node.doomed rect {
   stroke: var(--dead);
 }
-#graph .node.dead text {
+#graph .node.doomed text {
   fill: var(--muted);
+}
+#graph .node.copy rect {
+  stroke: var(--copy);
+  stroke-dasharray: 1 3;
+  stroke-linecap: round;
+}
+#graph .node.folded rect {
+  stroke: var(--folded);
+  stroke-dasharray: 4 3;
 }
 #graph .node.output rect {
   stroke: var(--fg);
@@ -360,7 +419,13 @@ button[aria-pressed="true"] {
 #module .op.output {
   border-left-color: var(--fg);
 }
-#module .op.dead {
+#module .op.copy {
+  border-left-color: var(--copy);
+}
+#module .op.folded {
+  border-left-color: var(--folded);
+}
+#module .op.doomed {
   border-left-color: var(--dead);
   color: var(--muted);
 }
@@ -371,14 +436,14 @@ button[aria-pressed="true"] {
   border-radius: 2px;
   cursor: pointer;
 }
-#module .op.dead .value {
+#module .op.doomed .value {
   color: inherit;
 }
 .value.same {
   background: var(--accent);
   color: var(--bg);
 }
-#module .op.dead .value.same {
+#module .op.doomed .value.same {
   color: var(--bg);
 }
 

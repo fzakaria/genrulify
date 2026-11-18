@@ -1,4 +1,6 @@
-genrule(
+load(":genrulify.bzl", "nix_archive", "recorded")
+
+recorded(
     name = "s1851_cp",
     srcs = [
         ":actions/s1851_cp.manifest",
@@ -11,141 +13,25 @@ genrule(
         ":sandbox.sh",
     ],
     outs = [
-        "s1851_cp/build/source/.github/workflows/ci.yml",
-        "s1851_cp/build/source/.github/workflows/publish.yml",
-        "s1851_cp/build/source/.gitignore",
-        "s1851_cp/build/source/CHANGES",
-        "s1851_cp/build/source/CONTRIBUTORS",
         "s1851_cp/build/source/LICENSE",
         "s1851_cp/build/source/MANIFEST.in",
         "s1851_cp/build/source/README.rst",
-        "s1851_cp/build/source/documentation/Makefile",
-        "s1851_cp/build/source/documentation/conf.py",
-        "s1851_cp/build/source/documentation/index.rst",
         "s1851_cp/build/source/setup.cfg",
         "s1851_cp/build/source/setup.py",
         "s1851_cp/build/source/six.py",
-        "s1851_cp/build/source/test_six.py",
-        "s1851_cp/build/source/tox.ini",
-        "s1851_cp.ok",
     ],
-    cmd = " ".join([
+    cmd = [
         "./sandbox.sh --in . --in $(RULEDIR) --out $(RULEDIR)",
         "--name s1851_cp --timeout 300",
         "run --cwd /build --env 13 --argv0 cp --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 7 --",
         "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/cp -r --preserve=timestamps --reflink=auto -- /nix/store/lwxq6mgyrggsc6s3x0p4izbn5w3j0vvs-source source",
-    ]),
-    tags = ["no-remote"],
+    ],
 )
 
-genrule(
-    name = "s1906_chmod",
+recorded(
+    name = "s2674_.pyproject-build-wrapped",
     srcs = [
-        ":actions/s1906_chmod.manifest",
-        ":closure.txt",
-        ":env/14.env",
-        ":platform/bin/sh",
-        ":platform/etc/group",
-        ":platform/etc/hosts",
-        ":platform/etc/passwd",
-        ":sandbox.sh",
-        ":s1851_cp/build/source/.github/workflows/ci.yml",
-        ":s1851_cp/build/source/.github/workflows/publish.yml",
-        ":s1851_cp/build/source/.gitignore",
-        ":s1851_cp/build/source/CHANGES",
-        ":s1851_cp/build/source/CONTRIBUTORS",
-        ":s1851_cp/build/source/LICENSE",
-        ":s1851_cp/build/source/MANIFEST.in",
-        ":s1851_cp/build/source/README.rst",
-        ":s1851_cp/build/source/documentation/Makefile",
-        ":s1851_cp/build/source/documentation/conf.py",
-        ":s1851_cp/build/source/documentation/index.rst",
-        ":s1851_cp/build/source/setup.cfg",
-        ":s1851_cp/build/source/setup.py",
-        ":s1851_cp/build/source/six.py",
-        ":s1851_cp/build/source/test_six.py",
-        ":s1851_cp/build/source/tox.ini",
-        ":s1851_cp.ok",
-    ],
-    outs = [
-        "s1906_chmod/build/source/.github/workflows/ci.yml",
-        "s1906_chmod/build/source/.github/workflows/publish.yml",
-        "s1906_chmod/build/source/.gitignore",
-        "s1906_chmod/build/source/CHANGES",
-        "s1906_chmod/build/source/CONTRIBUTORS",
-        "s1906_chmod/build/source/LICENSE",
-        "s1906_chmod/build/source/MANIFEST.in",
-        "s1906_chmod/build/source/README.rst",
-        "s1906_chmod/build/source/documentation/Makefile",
-        "s1906_chmod/build/source/documentation/conf.py",
-        "s1906_chmod/build/source/documentation/index.rst",
-        "s1906_chmod/build/source/setup.cfg",
-        "s1906_chmod/build/source/setup.py",
-        "s1906_chmod/build/source/six.py",
-        "s1906_chmod/build/source/test_six.py",
-        "s1906_chmod/build/source/tox.ini",
-        "s1906_chmod.ok",
-    ],
-    cmd = " ".join([
-        "./sandbox.sh --in . --in $(RULEDIR) --out $(RULEDIR)",
-        "--name s1906_chmod --timeout 300",
-        "run --cwd /build --env 14 --argv0 chmod --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 5 --",
-        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/chmod -R u+w -- source",
-    ]),
-    tags = ["no-remote"],
-)
-
-genrule(
-    name = "s1934_find",
-    srcs = [
-        ":actions/s1934_find.manifest",
-        ":closure.txt",
-        ":env/15.env",
-        ":platform/bin/sh",
-        ":platform/etc/group",
-        ":platform/etc/hosts",
-        ":platform/etc/passwd",
-        ":sandbox.sh",
-        ":s1906_chmod/build/source/.github/workflows/ci.yml",
-        ":s1906_chmod/build/source/.github/workflows/publish.yml",
-        ":s1906_chmod/build/source/.gitignore",
-        ":s1906_chmod/build/source/CHANGES",
-        ":s1906_chmod/build/source/CONTRIBUTORS",
-        ":s1906_chmod/build/source/LICENSE",
-        ":s1906_chmod/build/source/MANIFEST.in",
-        ":s1906_chmod/build/source/README.rst",
-        ":s1906_chmod/build/source/documentation/Makefile",
-        ":s1906_chmod/build/source/documentation/conf.py",
-        ":s1906_chmod/build/source/documentation/index.rst",
-        ":s1906_chmod/build/source/setup.cfg",
-        ":s1906_chmod/build/source/setup.py",
-        ":s1906_chmod/build/source/six.py",
-        ":s1906_chmod/build/source/test_six.py",
-        ":s1906_chmod/build/source/tox.ini",
-        ":s1906_chmod.ok",
-    ],
-    outs = [
-        "s1934_find/build/source/LICENSE",
-        "s1934_find/build/source/MANIFEST.in",
-        "s1934_find/build/source/README.rst",
-        "s1934_find/build/source/setup.cfg",
-        "s1934_find/build/source/setup.py",
-        "s1934_find/build/source/six.py",
-        "s1934_find.ok",
-    ],
-    cmd = " ".join([
-        "./sandbox.sh --in . --in $(RULEDIR) --out $(RULEDIR)",
-        "--name s1934_find --timeout 300",
-        "run --cwd /build --env 15 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 12 --",
-        "/nix/store/ycrbcy9sg4knpnik6a01dk70l0m673x7-findutils-4.11.0/bin/find source '!' -newermt 1980-01-01 -exec touch -h -d 1980-01-02 '{}' +",
-    ]),
-    tags = ["no-remote"],
-)
-
-genrule(
-    name = "s2660_pyproject-build",
-    srcs = [
-        ":actions/s2660_pyproject-build.manifest",
+        ":actions/s2674_.pyproject-build-wrapped.manifest",
         ":closure.txt",
         ":env/26.env",
         ":platform/bin/sh",
@@ -153,29 +39,26 @@ genrule(
         ":platform/etc/hosts",
         ":platform/etc/passwd",
         ":sandbox.sh",
-        ":s1934_find/build/source/LICENSE",
-        ":s1934_find/build/source/MANIFEST.in",
-        ":s1934_find/build/source/README.rst",
-        ":s1934_find/build/source/setup.cfg",
-        ":s1934_find/build/source/setup.py",
-        ":s1934_find/build/source/six.py",
-        ":s1906_chmod.ok",
-        ":s1934_find.ok",
+        ":s1851_cp/build/source/LICENSE",
+        ":s1851_cp/build/source/MANIFEST.in",
+        ":s1851_cp/build/source/README.rst",
+        ":s1851_cp/build/source/setup.cfg",
+        ":s1851_cp/build/source/setup.py",
+        ":s1851_cp/build/source/six.py",
+        ":s1851_cp.ok",
     ],
     outs = [
-        "s2660_pyproject-build/build/source/dist/six-1.17.0-py2.py3-none-any.whl",
-        "s2660_pyproject-build.ok",
+        "s2674_.pyproject-build-wrapped/build/source/dist/six-1.17.0-py2.py3-none-any.whl",
     ],
-    cmd = " ".join([
+    cmd = [
         "./sandbox.sh --in . --in $(RULEDIR) --out $(RULEDIR)",
-        "--name s2660_pyproject-build --timeout 300",
-        "run --cwd /build/source --env 26 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 7 --",
-        "/nix/store/10dxp0qxqxxsyiljrh2kp0xqhz6arhcx-bash-5.3p15/bin/bash -e /nix/store/i4ndg5syrmvch754vlchyhz5chaphkgn-python3.14-build-1.5.1/bin/pyproject-build --no-isolation --outdir dist/ --wheel",
-    ]),
-    tags = ["no-remote"],
+        "--name s2674_.pyproject-build-wrapped --timeout 300",
+        "run --cwd /build/source --env 26 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 6 --",
+        "/nix/store/lb41b0anx1f98y9y5s9mdv97gjgsq740-python3-3.14.7/bin/python3.14 /nix/store/i4ndg5syrmvch754vlchyhz5chaphkgn-python3.14-build-1.5.1/bin/.pyproject-build-wrapped --no-isolation --outdir dist/ --wheel",
+    ],
 )
 
-genrule(
+recorded(
     name = "s8691_python3.14",
     srcs = [
         ":actions/s8691_python3.14.manifest",
@@ -186,9 +69,8 @@ genrule(
         ":platform/etc/hosts",
         ":platform/etc/passwd",
         ":sandbox.sh",
-        ":s2660_pyproject-build/build/source/dist/six-1.17.0-py2.py3-none-any.whl",
-        ":s1906_chmod.ok",
-        ":s2660_pyproject-build.ok",
+        ":s2674_.pyproject-build-wrapped/build/source/dist/six-1.17.0-py2.py3-none-any.whl",
+        ":s2674_.pyproject-build-wrapped.ok",
     ],
     outs = [
         "s8691_python3.14/nix/store/ryg0sjdnp2vhi51m876d5blj7si80mgf-python3.14-six-1.17.0/lib/python3.14/site-packages/__pycache__/six.cpython-314.opt-1.pyc",
@@ -199,95 +81,36 @@ genrule(
         "s8691_python3.14/nix/store/ryg0sjdnp2vhi51m876d5blj7si80mgf-python3.14-six-1.17.0/lib/python3.14/site-packages/six-1.17.0.dist-info/licenses/LICENSE",
         "s8691_python3.14/nix/store/ryg0sjdnp2vhi51m876d5blj7si80mgf-python3.14-six-1.17.0/lib/python3.14/site-packages/six-1.17.0.dist-info/top_level.txt",
         "s8691_python3.14/nix/store/ryg0sjdnp2vhi51m876d5blj7si80mgf-python3.14-six-1.17.0/lib/python3.14/site-packages/six.py",
-        "s8691_python3.14.ok",
     ],
-    cmd = " ".join([
+    cmd = [
         "./sandbox.sh --in . --in $(RULEDIR) --out $(RULEDIR)",
         "--name s8691_python3.14 --timeout 300",
         "run --cwd /build/source/dist --env 30 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 8 --",
         "/nix/store/lb41b0anx1f98y9y5s9mdv97gjgsq740-python3-3.14.7/bin/python3.14 -m installer --prefix /nix/store/ryg0sjdnp2vhi51m876d5blj7si80mgf-python3.14-six-1.17.0 --executable /nix/store/lb41b0anx1f98y9y5s9mdv97gjgsq740-python3-3.14.7/bin/python3.14 six-1.17.0-py2.py3-none-any.whl",
-    ]),
-    tags = ["no-remote"],
+    ],
 )
 
-genrule(
-    name = "s9656_mv",
-    srcs = [
-        ":actions/s9656_mv.manifest",
-        ":closure.txt",
-        ":env/32.env",
-        ":platform/bin/sh",
-        ":platform/etc/group",
-        ":platform/etc/hosts",
-        ":platform/etc/passwd",
-        ":sandbox.sh",
-        ":s2660_pyproject-build/build/source/dist/six-1.17.0-py2.py3-none-any.whl",
-        ":s1906_chmod.ok",
-        ":s2660_pyproject-build.ok",
-    ],
-    outs = [
-        "s9656_mv/nix/store/xdyfansxkvyki35nzivbxd5pcvcx09vg-python3.14-six-1.17.0-dist/six-1.17.0-py2.py3-none-any.whl",
-        "s9656_mv.ok",
-    ],
-    cmd = " ".join([
-        "./sandbox.sh --in . --in $(RULEDIR) --out $(RULEDIR)",
-        "--name s9656_mv --timeout 300",
-        "run --cwd /build/source --env 32 --argv0 mv --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 3 --",
-        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/mv dist /nix/store/xdyfansxkvyki35nzivbxd5pcvcx09vg-python3.14-six-1.17.0-dist",
-    ]),
-    tags = ["no-remote"],
-)
-
-genrule(
-    name = "s10945_mkdir",
-    srcs = [
-        ":actions/s10945_mkdir.manifest",
-        ":closure.txt",
-        ":env/49.env",
-        ":platform/bin/sh",
-        ":platform/etc/group",
-        ":platform/etc/hosts",
-        ":platform/etc/passwd",
-        ":sandbox.sh",
-        ":s1906_chmod.ok",
-        ":s8691_python3.14.ok",
-    ],
-    outs = [
-        "s10945_mkdir.ok",
-    ],
-    cmd = " ".join([
-        "./sandbox.sh --in . --in $(RULEDIR) --out $(RULEDIR)",
-        "--name s10945_mkdir --timeout 300",
-        "run --cwd /build/source --env 49 --argv0 mkdir --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 3 --",
-        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/mkdir -p /nix/store/ryg0sjdnp2vhi51m876d5blj7si80mgf-python3.14-six-1.17.0/nix-support",
-    ]),
-    tags = ["no-remote"],
-)
-
-genrule(
+nix_archive(
     name = "archive_dist",
     srcs = [
         ":actions/archive_dist.manifest",
         ":sandbox.sh",
-        ":s9656_mv/nix/store/xdyfansxkvyki35nzivbxd5pcvcx09vg-python3.14-six-1.17.0-dist/six-1.17.0-py2.py3-none-any.whl",
-        ":s9656_mv.ok",
+        ":s2674_.pyproject-build-wrapped/build/source/dist/six-1.17.0-py2.py3-none-any.whl",
+        ":s2674_.pyproject-build-wrapped.ok",
     ],
-    outs = [
-        "archive_dist.nar",
-    ],
-    cmd = " ".join([
+    out = "archive_dist.nar",
+    cmd = [
         "./sandbox.sh --in . --in $(RULEDIR) --out $(RULEDIR)",
         "--name archive_dist pack /nix/store/xdyfansxkvyki35nzivbxd5pcvcx09vg-python3.14-six-1.17.0-dist",
-    ]),
-    tags = ["no-remote"],
+    ],
 )
 
-genrule(
+nix_archive(
     name = "archive_out",
     srcs = [
         ":actions/archive_out.manifest",
-        ":glue_10973/nix/store/ryg0sjdnp2vhi51m876d5blj7si80mgf-python3.14-six-1.17.0/nix-support/propagated-build-inputs",
         ":sandbox.sh",
+        ":glue_10973/nix/store/ryg0sjdnp2vhi51m876d5blj7si80mgf-python3.14-six-1.17.0/nix-support/propagated-build-inputs",
         ":s8691_python3.14/nix/store/ryg0sjdnp2vhi51m876d5blj7si80mgf-python3.14-six-1.17.0/lib/python3.14/site-packages/__pycache__/six.cpython-314.opt-1.pyc",
         ":s8691_python3.14/nix/store/ryg0sjdnp2vhi51m876d5blj7si80mgf-python3.14-six-1.17.0/lib/python3.14/site-packages/__pycache__/six.cpython-314.pyc",
         ":s8691_python3.14/nix/store/ryg0sjdnp2vhi51m876d5blj7si80mgf-python3.14-six-1.17.0/lib/python3.14/site-packages/six-1.17.0.dist-info/METADATA",
@@ -296,16 +119,12 @@ genrule(
         ":s8691_python3.14/nix/store/ryg0sjdnp2vhi51m876d5blj7si80mgf-python3.14-six-1.17.0/lib/python3.14/site-packages/six-1.17.0.dist-info/licenses/LICENSE",
         ":s8691_python3.14/nix/store/ryg0sjdnp2vhi51m876d5blj7si80mgf-python3.14-six-1.17.0/lib/python3.14/site-packages/six-1.17.0.dist-info/top_level.txt",
         ":s8691_python3.14/nix/store/ryg0sjdnp2vhi51m876d5blj7si80mgf-python3.14-six-1.17.0/lib/python3.14/site-packages/six.py",
-        ":s10945_mkdir.ok",
         ":s8691_python3.14.ok",
     ],
-    outs = [
-        "archive_out.nar",
-    ],
-    cmd = " ".join([
+    out = "archive_out.nar",
+    cmd = [
         "./sandbox.sh --in . --in $(RULEDIR) --out $(RULEDIR)",
         "--name archive_out pack /nix/store/ryg0sjdnp2vhi51m876d5blj7si80mgf-python3.14-six-1.17.0",
-    ]),
-    tags = ["no-remote"],
+    ],
 )
 

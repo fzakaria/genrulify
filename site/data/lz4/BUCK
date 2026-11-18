@@ -1,4 +1,6 @@
-genrule(
+load(":genrulify.buck.bzl", "cc_binary", "cc_object", "cc_shared_library", "nix_archive", "recorded")
+
+recorded(
     name = "s2139_cp",
     srcs = [
         "actions/s2139_cp.manifest",
@@ -8,36 +10,15 @@ genrule(
         "sandbox.sh",
     ],
     out = "s2139_cp",
-    cmd = " ".join([
+    cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
         "--name s2139_cp --timeout 300",
         "run --cwd /build --env 13 --argv0 cp --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 7 --",
         "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/cp -r --preserve=timestamps --reflink=auto -- /nix/store/xng82y87ix0dp9hzv64wjf44nff4ah4i-source source",
-    ]),
-    remote = False,
-)
-
-genrule(
-    name = "s2578_chmod",
-    srcs = [
-        "actions/s2578_chmod.manifest",
-        "closure.txt",
-        "env/14.env",
-        "platform",
-        "sandbox.sh",
-        ":s2139_cp",
     ],
-    out = "s2578_chmod",
-    cmd = " ".join([
-        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name s2578_chmod --timeout 300",
-        "run --cwd /build --env 14 --argv0 chmod --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 5 --",
-        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/chmod -R u+w -- source",
-    ]),
-    remote = False,
 )
 
-genrule(
+recorded(
     name = "s2802_cat_patch",
     srcs = [
         "actions/s2802_cat_patch.manifest",
@@ -46,41 +27,20 @@ genrule(
         "env/21.env",
         "platform",
         "sandbox.sh",
-        ":s2578_chmod",
+        ":s2139_cp",
     ],
     out = "s2802_cat_patch",
-    cmd = " ".join([
+    cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
         "--name s2802_cat_patch --timeout 300 --pipe 428:0:1:0",
         "run --cwd /build/source --env 20 --argv0 cat --fd 0=store:/nix/store/0ywypnhhnlr3pmchp50pqvqq6qi7wf78-CVE-2025-62813.patch --fd 1=pipe-w:428 --fd 2=pipe-w:428 --status 0 --argc 1 --",
         "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/cat",
         "run --cwd /build/source --env 21 --argv0 patch --fd 0=pipe-r:428 --fd 1=err --fd 2=err --after 0 --status 0 --argc 2 --",
         "/nix/store/dsfqcffzgwhrnkq1v9g9s3p55czrxk8l-patch-2.8/bin/patch -p1",
-    ]),
-    remote = False,
-)
-
-genrule(
-    name = "s3042_mkdir",
-    srcs = [
-        "actions/s3042_mkdir.manifest",
-        "closure.txt",
-        "env/23.env",
-        "platform",
-        "sandbox.sh",
-        ":s2578_chmod",
     ],
-    out = "s3042_mkdir",
-    cmd = " ".join([
-        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name s3042_mkdir --timeout 300",
-        "run --cwd /build/source --env 23 --argv0 mkdir --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 3 --",
-        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/mkdir -p build-dist",
-    ]),
-    remote = False,
 )
 
-genrule(
+recorded(
     name = "s3416_cmake",
     srcs = [
         "actions/s3416_cmake.manifest",
@@ -88,457 +48,850 @@ genrule(
         "env/26.env",
         "platform",
         "sandbox.sh",
-        ":s2578_chmod",
+        ":s2139_cp",
         ":s2802_cat_patch",
-        ":s3042_mkdir",
     ],
     out = "s3416_cmake",
-    cmd = " ".join([
+    cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
         "--name s3416_cmake --timeout 300",
         "run --cwd /build/source/build-dist --env 26 --argv0 cmake --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 23 --",
         "/nix/store/jcvvpih1046akxcwh9hdiak5q24jqcf0-cmake-4.4.3/bin/cmake ../build/cmake -DCMAKE_FIND_USE_SYSTEM_PACKAGE_REGISTRY=OFF -DCMAKE_FIND_USE_PACKAGE_REGISTRY=OFF -DCMAKE_EXPORT_NO_PACKAGE_REGISTRY=ON -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF -DCMAKE_INSTALL_LOCALEDIR=/nix/store/8327b5r0l5k48fpcqiaias8p2m7h52n5-lz4-1.10.0-lib/share/locale -DCMAKE_INSTALL_LIBEXECDIR=/nix/store/8327b5r0l5k48fpcqiaias8p2m7h52n5-lz4-1.10.0-lib/libexec -DCMAKE_INSTALL_LIBDIR=/nix/store/8327b5r0l5k48fpcqiaias8p2m7h52n5-lz4-1.10.0-lib/lib -DCMAKE_INSTALL_DOCDIR=/nix/store/dk9wf8nnmmwmy5wvp4n7kgr7r8y0ad3k-lz4-1.10.0/share/doc/LZ4 -DCMAKE_INSTALL_INFODIR=/nix/store/dk9wf8nnmmwmy5wvp4n7kgr7r8y0ad3k-lz4-1.10.0/share/info -DCMAKE_INSTALL_MANDIR=/nix/store/cvjg1abig6l4jc0av5v8kn31075p0msg-lz4-1.10.0-man/share/man -DCMAKE_INSTALL_INCLUDEDIR=/nix/store/5mzhn4ckld94vqq8pkadqq8rf0fbi3r7-lz4-1.10.0-dev/include -DCMAKE_INSTALL_SBINDIR=/nix/store/dk9wf8nnmmwmy5wvp4n7kgr7r8y0ad3k-lz4-1.10.0/sbin -DCMAKE_INSTALL_BINDIR=/nix/store/dk9wf8nnmmwmy5wvp4n7kgr7r8y0ad3k-lz4-1.10.0/bin -DCMAKE_INSTALL_NAME_DIR=/nix/store/8327b5r0l5k48fpcqiaias8p2m7h52n5-lz4-1.10.0-lib/lib -DCMAKE_STRIP=/nix/store/j1938gsbvbhkyz4kbmvjk56r479mkw3s-gcc-wrapper-16.2.0/bin/strip -DCMAKE_RANLIB=/nix/store/j1938gsbvbhkyz4kbmvjk56r479mkw3s-gcc-wrapper-16.2.0/bin/ranlib -DCMAKE_AR=/nix/store/j1938gsbvbhkyz4kbmvjk56r479mkw3s-gcc-wrapper-16.2.0/bin/ar -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ -DCMAKE_INSTALL_PREFIX=/nix/store/dk9wf8nnmmwmy5wvp4n7kgr7r8y0ad3k-lz4-1.10.0",
-    ]),
-    remote = False,
+    ],
 )
 
-genrule(
-    name = "s15122_make",
+recorded(
+    name = "s15379_cmake",
     srcs = [
-        "actions/s15122_make.manifest",
+        "actions/s15379_cmake.manifest",
         "closure.txt",
-        "env/28.env",
-        "lit_3416_cmake",
+        "env/30.env",
         "platform",
         "sandbox.sh",
-        ":s2578_chmod",
-        ":s2802_cat_patch",
-        ":s3042_mkdir",
         ":s3416_cmake",
     ],
-    out = "s15122_make",
-    cmd = " ".join([
+    out = "s15379_cmake",
+    cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name s15122_make --timeout 300",
-        "run --cwd /build/source/build-dist --env 28 --argv0 make --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 3 --",
-        "/nix/store/p5frwjlmkgj2987iy9plr7nav9l72xz4-gnumake-4.4.1/bin/make -j1 SHELL=/nix/store/10dxp0qxqxxsyiljrh2kp0xqhz6arhcx-bash-5.3p15/bin/bash",
-    ]),
-    remote = False,
-)
-
-genrule(
-    name = "s19984_mkdir",
-    srcs = [
-        "actions/s19984_mkdir.manifest",
-        "closure.txt",
-        "env/29.env",
-        "platform",
-        "sandbox.sh",
-        ":s2578_chmod",
-        ":s3042_mkdir",
+        "--name s15379_cmake --timeout 300",
+        "run --cwd /build/source/build-dist --env 30 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 8 --",
+        "/nix/store/jcvvpih1046akxcwh9hdiak5q24jqcf0-cmake-4.4.3/bin/cmake -E cmake_echo_color --switch= --green --progress-dir=/build/source/build-dist/CMakeFiles --progress-num=3 'Building C object CMakeFiles/lz4_shared.dir/build/source/lib/lz4.c.o'",
     ],
-    out = "s19984_mkdir",
-    cmd = " ".join([
-        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name s19984_mkdir --timeout 300",
-        "run --cwd /build/source/build-dist --env 29 --argv0 mkdir --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 3 --",
-        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/mkdir -p /nix/store/dk9wf8nnmmwmy5wvp4n7kgr7r8y0ad3k-lz4-1.10.0",
-    ]),
-    remote = False,
 )
 
-genrule(
-    name = "s20049_make",
+cc_object(
+    name = "s15442_gcc",
     srcs = [
-        "actions/s20049_make.manifest",
+        "actions/s15442_gcc.manifest",
         "closure.txt",
-        "env/28.env",
-        "lit_3416_cmake",
+        "env/31.env",
         "platform",
         "sandbox.sh",
-        ":s15122_make",
-        ":s19984_mkdir",
-        ":s2578_chmod",
-        ":s2802_cat_patch",
-        ":s3042_mkdir",
+        ":s2139_cp",
+    ],
+    out = "s15442_gcc",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s15442_gcc --timeout 300",
+        "run --cwd /build/source/build-dist --env 31 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 42 --",
+        "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -DXXH_NAMESPACE=LZ4_ -Dlz4_shared_EXPORTS -I/build/source/build/cmake/../../lib -O3 -DNDEBUG -fPIC -MD -MT CMakeFiles/lz4_shared.dir/build/source/lib/lz4.c.o -MF CMakeFiles/lz4_shared.dir/build/source/lib/lz4.c.o.d -o CMakeFiles/lz4_shared.dir/build/source/lib/lz4.c.o -c /build/source/lib/lz4.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=dk9wf8nnmm",
+    ],
+)
+
+recorded(
+    name = "s15555_cmake",
+    srcs = [
+        "actions/s15555_cmake.manifest",
+        "closure.txt",
+        "env/30.env",
+        "platform",
+        "sandbox.sh",
         ":s3416_cmake",
     ],
-    out = "s20049_make",
-    cmd = " ".join([
+    out = "s15555_cmake",
+    cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name s20049_make --timeout 300",
-        "run --cwd /build/source/build-dist --env 28 --argv0 make --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 4 --",
-        "/nix/store/p5frwjlmkgj2987iy9plr7nav9l72xz4-gnumake-4.4.1/bin/make -j1 SHELL=/nix/store/10dxp0qxqxxsyiljrh2kp0xqhz6arhcx-bash-5.3p15/bin/bash install",
-    ]),
-    remote = False,
+        "--name s15555_cmake --timeout 300",
+        "run --cwd /build/source/build-dist --env 30 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 8 --",
+        "/nix/store/jcvvpih1046akxcwh9hdiak5q24jqcf0-cmake-4.4.3/bin/cmake -E cmake_echo_color --switch= --green --progress-dir=/build/source/build-dist/CMakeFiles --progress-num=4 'Building C object CMakeFiles/lz4_shared.dir/build/source/lib/lz4file.c.o'",
+    ],
 )
 
-genrule(
-    name = "s21679_mkdir",
+cc_object(
+    name = "s15606_gcc",
     srcs = [
-        "actions/s21679_mkdir.manifest",
+        "actions/s15606_gcc.manifest",
         "closure.txt",
-        "env/29.env",
+        "env/31.env",
         "platform",
         "sandbox.sh",
-        ":s20049_make",
-        ":s2578_chmod",
-        ":s3042_mkdir",
+        ":s2139_cp",
     ],
-    out = "s21679_mkdir",
-    cmd = " ".join([
+    out = "s15606_gcc",
+    cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name s21679_mkdir --timeout 300",
-        "run --cwd /build/source/build-dist --env 29 --argv0 mkdir --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 3 --",
-        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/mkdir -p /nix/store/5mzhn4ckld94vqq8pkadqq8rf0fbi3r7-lz4-1.10.0-dev/lib",
-    ]),
-    remote = False,
+        "--name s15606_gcc --timeout 300",
+        "run --cwd /build/source/build-dist --env 31 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 42 --",
+        "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -DXXH_NAMESPACE=LZ4_ -Dlz4_shared_EXPORTS -I/build/source/build/cmake/../../lib -O3 -DNDEBUG -fPIC -MD -MT CMakeFiles/lz4_shared.dir/build/source/lib/lz4file.c.o -MF CMakeFiles/lz4_shared.dir/build/source/lib/lz4file.c.o.d -o CMakeFiles/lz4_shared.dir/build/source/lib/lz4file.c.o -c /build/source/lib/lz4file.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=dk9wf8nnmm",
+    ],
 )
 
-genrule(
-    name = "s21700_mv",
+recorded(
+    name = "s15714_cmake",
     srcs = [
-        "actions/s21700_mv.manifest",
+        "actions/s15714_cmake.manifest",
+        "closure.txt",
+        "env/30.env",
+        "platform",
+        "sandbox.sh",
+        ":s3416_cmake",
+    ],
+    out = "s15714_cmake",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s15714_cmake --timeout 300",
+        "run --cwd /build/source/build-dist --env 30 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 8 --",
+        "/nix/store/jcvvpih1046akxcwh9hdiak5q24jqcf0-cmake-4.4.3/bin/cmake -E cmake_echo_color --switch= --green --progress-dir=/build/source/build-dist/CMakeFiles --progress-num=5 'Building C object CMakeFiles/lz4_shared.dir/build/source/lib/lz4frame.c.o'",
+    ],
+)
+
+cc_object(
+    name = "s15776_gcc",
+    srcs = [
+        "actions/s15776_gcc.manifest",
+        "closure.txt",
+        "env/31.env",
+        "platform",
+        "sandbox.sh",
+        ":s2139_cp",
+        ":s2802_cat_patch",
+    ],
+    out = "s15776_gcc",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s15776_gcc --timeout 300",
+        "run --cwd /build/source/build-dist --env 31 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 42 --",
+        "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -DXXH_NAMESPACE=LZ4_ -Dlz4_shared_EXPORTS -I/build/source/build/cmake/../../lib -O3 -DNDEBUG -fPIC -MD -MT CMakeFiles/lz4_shared.dir/build/source/lib/lz4frame.c.o -MF CMakeFiles/lz4_shared.dir/build/source/lib/lz4frame.c.o.d -o CMakeFiles/lz4_shared.dir/build/source/lib/lz4frame.c.o -c /build/source/lib/lz4frame.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=dk9wf8nnmm",
+    ],
+)
+
+recorded(
+    name = "s15897_cmake",
+    srcs = [
+        "actions/s15897_cmake.manifest",
+        "closure.txt",
+        "env/30.env",
+        "platform",
+        "sandbox.sh",
+        ":s3416_cmake",
+    ],
+    out = "s15897_cmake",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s15897_cmake --timeout 300",
+        "run --cwd /build/source/build-dist --env 30 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 8 --",
+        "/nix/store/jcvvpih1046akxcwh9hdiak5q24jqcf0-cmake-4.4.3/bin/cmake -E cmake_echo_color --switch= --green --progress-dir=/build/source/build-dist/CMakeFiles --progress-num=6 'Building C object CMakeFiles/lz4_shared.dir/build/source/lib/lz4hc.c.o'",
+    ],
+)
+
+cc_object(
+    name = "s15959_gcc",
+    srcs = [
+        "actions/s15959_gcc.manifest",
+        "closure.txt",
+        "env/31.env",
+        "platform",
+        "sandbox.sh",
+        ":s2139_cp",
+    ],
+    out = "s15959_gcc",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s15959_gcc --timeout 300",
+        "run --cwd /build/source/build-dist --env 31 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 42 --",
+        "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -DXXH_NAMESPACE=LZ4_ -Dlz4_shared_EXPORTS -I/build/source/build/cmake/../../lib -O3 -DNDEBUG -fPIC -MD -MT CMakeFiles/lz4_shared.dir/build/source/lib/lz4hc.c.o -MF CMakeFiles/lz4_shared.dir/build/source/lib/lz4hc.c.o.d -o CMakeFiles/lz4_shared.dir/build/source/lib/lz4hc.c.o -c /build/source/lib/lz4hc.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=dk9wf8nnmm",
+    ],
+)
+
+recorded(
+    name = "s16070_cmake",
+    srcs = [
+        "actions/s16070_cmake.manifest",
+        "closure.txt",
+        "env/30.env",
+        "platform",
+        "sandbox.sh",
+        ":s3416_cmake",
+    ],
+    out = "s16070_cmake",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s16070_cmake --timeout 300",
+        "run --cwd /build/source/build-dist --env 30 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 8 --",
+        "/nix/store/jcvvpih1046akxcwh9hdiak5q24jqcf0-cmake-4.4.3/bin/cmake -E cmake_echo_color --switch= --green --progress-dir=/build/source/build-dist/CMakeFiles --progress-num=7 'Building C object CMakeFiles/lz4_shared.dir/build/source/lib/xxhash.c.o'",
+    ],
+)
+
+cc_object(
+    name = "s16121_gcc",
+    srcs = [
+        "actions/s16121_gcc.manifest",
+        "closure.txt",
+        "env/31.env",
+        "platform",
+        "sandbox.sh",
+        ":s2139_cp",
+    ],
+    out = "s16121_gcc",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s16121_gcc --timeout 300",
+        "run --cwd /build/source/build-dist --env 31 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 42 --",
+        "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -DXXH_NAMESPACE=LZ4_ -Dlz4_shared_EXPORTS -I/build/source/build/cmake/../../lib -O3 -DNDEBUG -fPIC -MD -MT CMakeFiles/lz4_shared.dir/build/source/lib/xxhash.c.o -MF CMakeFiles/lz4_shared.dir/build/source/lib/xxhash.c.o.d -o CMakeFiles/lz4_shared.dir/build/source/lib/xxhash.c.o -c /build/source/lib/xxhash.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=dk9wf8nnmm",
+    ],
+)
+
+recorded(
+    name = "s16239_cmake",
+    srcs = [
+        "actions/s16239_cmake.manifest",
+        "closure.txt",
+        "env/30.env",
+        "platform",
+        "sandbox.sh",
+        ":s3416_cmake",
+    ],
+    out = "s16239_cmake",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s16239_cmake --timeout 300",
+        "run --cwd /build/source/build-dist --env 30 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 9 --",
+        "/nix/store/jcvvpih1046akxcwh9hdiak5q24jqcf0-cmake-4.4.3/bin/cmake -E cmake_echo_color --switch= --green --bold --progress-dir=/build/source/build-dist/CMakeFiles --progress-num=8 'Linking C shared library liblz4.so'",
+    ],
+)
+
+cc_shared_library(
+    name = "s16359_gcc",
+    srcs = [
+        "actions/s16359_gcc.manifest",
         "closure.txt",
         "env/32.env",
         "platform",
         "sandbox.sh",
-        ":s20049_make",
-        ":s21679_mkdir",
-        ":s2578_chmod",
-        ":s3042_mkdir",
+        ":s15442_gcc",
+        ":s15606_gcc",
+        ":s15776_gcc",
+        ":s15959_gcc",
+        ":s16121_gcc",
+        ":s3416_cmake",
     ],
-    out = "s21700_mv",
-    cmd = " ".join([
+    out = "s16359_gcc",
+    cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name s21700_mv --timeout 300",
-        "run --cwd /build/source/build-dist --env 32 --argv0 mv --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 3 --",
-        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/mv /nix/store/8327b5r0l5k48fpcqiaias8p2m7h52n5-lz4-1.10.0-lib/lib/pkgconfig /nix/store/5mzhn4ckld94vqq8pkadqq8rf0fbi3r7-lz4-1.10.0-dev/lib/pkgconfig",
-    ]),
-    remote = False,
+        "--name s16359_gcc --timeout 300",
+        "run --cwd /build/source/build-dist --env 32 --fd 0=null --fd 1=err --fd 2=err --fd 3=file:r@466:/build/source/build-dist/CMakeFiles/lz4_shared.dir/link.txt --status 0 --argc 47 --",
+        "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -Wl,-dynamic-linker=/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ld-linux-x86-64.so.2 -fPIC -O3 -DNDEBUG -shared -Wl,--dependency-file=CMakeFiles/lz4_shared.dir/link.d -Wl,-soname,liblz4.so.1 -o liblz4.so.1.10.0 CMakeFiles/lz4_shared.dir/build/source/lib/lz4.c.o CMakeFiles/lz4_shared.dir/build/source/lib/lz4file.c.o CMakeFiles/lz4_shared.dir/build/source/lib/lz4frame.c.o CMakeFiles/lz4_shared.dir/build/source/lib/lz4hc.c.o CMakeFiles/lz4_shared.dir/build/source/lib/xxhash.c.o -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=dk9wf8nnmm -Wl,-rpath -Wl,/nix/store/8327b5r0l5k48fpcqiaias8p2m7h52n5-lz4-1.10.0-lib/lib -L/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib -L/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0 -L/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -L/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib",
+    ],
 )
 
-genrule(
-    name = "s21844_mv",
+recorded(
+    name = "s16907_cmake",
     srcs = [
-        "actions/s21844_mv.manifest",
+        "actions/s16907_cmake.manifest",
+        "closure.txt",
+        "env/30.env",
+        "platform",
+        "sandbox.sh",
+        ":s3416_cmake",
+    ],
+    out = "s16907_cmake",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s16907_cmake --timeout 300",
+        "run --cwd /build/source/build-dist --env 30 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 8 --",
+        "/nix/store/jcvvpih1046akxcwh9hdiak5q24jqcf0-cmake-4.4.3/bin/cmake -E cmake_echo_color --switch= --green --progress-dir=/build/source/build-dist/CMakeFiles --progress-num=9 'Building C object CMakeFiles/lz4cli.dir/build/source/programs/bench.c.o'",
+    ],
+)
+
+cc_object(
+    name = "s16960_gcc",
+    srcs = [
+        "actions/s16960_gcc.manifest",
+        "closure.txt",
+        "const_2578_chmod",
+        "env/31.env",
+        "glue_15051",
+        "lit_3416_cmake",
+        "platform",
+        "sandbox.sh",
+        ":s15379_cmake",
+        ":s15442_gcc",
+        ":s15555_cmake",
+        ":s15606_gcc",
+        ":s15714_cmake",
+        ":s15776_gcc",
+        ":s15897_cmake",
+        ":s15959_gcc",
+        ":s16070_cmake",
+        ":s16121_gcc",
+        ":s16239_cmake",
+        ":s16359_gcc",
+        ":s16907_cmake",
+        ":s2139_cp",
+        ":s2802_cat_patch",
+        ":s3416_cmake",
+    ],
+    out = "s16960_gcc",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s16960_gcc --timeout 300",
+        "run --cwd /build/source/build-dist --env 31 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 39 --",
+        "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -I/build/source/build/cmake/../../lib -O3 -DNDEBUG -MD -MT CMakeFiles/lz4cli.dir/build/source/programs/bench.c.o -MF CMakeFiles/lz4cli.dir/build/source/programs/bench.c.o.d -o CMakeFiles/lz4cli.dir/build/source/programs/bench.c.o -c /build/source/programs/bench.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=dk9wf8nnmm",
+    ],
+)
+
+recorded(
+    name = "s17080_cmake",
+    srcs = [
+        "actions/s17080_cmake.manifest",
+        "closure.txt",
+        "env/30.env",
+        "platform",
+        "sandbox.sh",
+        ":s3416_cmake",
+    ],
+    out = "s17080_cmake",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s17080_cmake --timeout 300",
+        "run --cwd /build/source/build-dist --env 30 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 8 --",
+        "/nix/store/jcvvpih1046akxcwh9hdiak5q24jqcf0-cmake-4.4.3/bin/cmake -E cmake_echo_color --switch= --green --progress-dir=/build/source/build-dist/CMakeFiles --progress-num=10 'Building C object CMakeFiles/lz4cli.dir/build/source/programs/lorem.c.o'",
+    ],
+)
+
+cc_object(
+    name = "s17131_gcc",
+    srcs = [
+        "actions/s17131_gcc.manifest",
+        "closure.txt",
+        "env/31.env",
+        "platform",
+        "sandbox.sh",
+        ":s2139_cp",
+    ],
+    out = "s17131_gcc",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s17131_gcc --timeout 300",
+        "run --cwd /build/source/build-dist --env 31 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 39 --",
+        "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -I/build/source/build/cmake/../../lib -O3 -DNDEBUG -MD -MT CMakeFiles/lz4cli.dir/build/source/programs/lorem.c.o -MF CMakeFiles/lz4cli.dir/build/source/programs/lorem.c.o.d -o CMakeFiles/lz4cli.dir/build/source/programs/lorem.c.o -c /build/source/programs/lorem.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=dk9wf8nnmm",
+    ],
+)
+
+recorded(
+    name = "s17239_cmake",
+    srcs = [
+        "actions/s17239_cmake.manifest",
+        "closure.txt",
+        "env/30.env",
+        "platform",
+        "sandbox.sh",
+        ":s3416_cmake",
+    ],
+    out = "s17239_cmake",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s17239_cmake --timeout 300",
+        "run --cwd /build/source/build-dist --env 30 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 8 --",
+        "/nix/store/jcvvpih1046akxcwh9hdiak5q24jqcf0-cmake-4.4.3/bin/cmake -E cmake_echo_color --switch= --green --progress-dir=/build/source/build-dist/CMakeFiles --progress-num=11 'Building C object CMakeFiles/lz4cli.dir/build/source/programs/lz4cli.c.o'",
+    ],
+)
+
+cc_object(
+    name = "s17298_gcc",
+    srcs = [
+        "actions/s17298_gcc.manifest",
+        "closure.txt",
+        "const_2578_chmod",
+        "env/31.env",
+        "glue_15051",
+        "lit_3416_cmake",
+        "platform",
+        "sandbox.sh",
+        ":s15379_cmake",
+        ":s15442_gcc",
+        ":s15555_cmake",
+        ":s15606_gcc",
+        ":s15714_cmake",
+        ":s15776_gcc",
+        ":s15897_cmake",
+        ":s15959_gcc",
+        ":s16070_cmake",
+        ":s16121_gcc",
+        ":s16239_cmake",
+        ":s16359_gcc",
+        ":s16907_cmake",
+        ":s16960_gcc",
+        ":s17080_cmake",
+        ":s17131_gcc",
+        ":s17239_cmake",
+        ":s2139_cp",
+        ":s2802_cat_patch",
+        ":s3416_cmake",
+    ],
+    out = "s17298_gcc",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s17298_gcc --timeout 300",
+        "run --cwd /build/source/build-dist --env 31 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 39 --",
+        "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -I/build/source/build/cmake/../../lib -O3 -DNDEBUG -MD -MT CMakeFiles/lz4cli.dir/build/source/programs/lz4cli.c.o -MF CMakeFiles/lz4cli.dir/build/source/programs/lz4cli.c.o.d -o CMakeFiles/lz4cli.dir/build/source/programs/lz4cli.c.o -c /build/source/programs/lz4cli.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=dk9wf8nnmm",
+    ],
+)
+
+recorded(
+    name = "s17408_cmake",
+    srcs = [
+        "actions/s17408_cmake.manifest",
+        "closure.txt",
+        "env/30.env",
+        "platform",
+        "sandbox.sh",
+        ":s3416_cmake",
+    ],
+    out = "s17408_cmake",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s17408_cmake --timeout 300",
+        "run --cwd /build/source/build-dist --env 30 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 8 --",
+        "/nix/store/jcvvpih1046akxcwh9hdiak5q24jqcf0-cmake-4.4.3/bin/cmake -E cmake_echo_color --switch= --green --progress-dir=/build/source/build-dist/CMakeFiles --progress-num=12 'Building C object CMakeFiles/lz4cli.dir/build/source/programs/lz4io.c.o'",
+    ],
+)
+
+cc_object(
+    name = "s17465_gcc",
+    srcs = [
+        "actions/s17465_gcc.manifest",
+        "closure.txt",
+        "const_2578_chmod",
+        "env/31.env",
+        "glue_15051",
+        "lit_3416_cmake",
+        "platform",
+        "sandbox.sh",
+        ":s15379_cmake",
+        ":s15442_gcc",
+        ":s15555_cmake",
+        ":s15606_gcc",
+        ":s15714_cmake",
+        ":s15776_gcc",
+        ":s15897_cmake",
+        ":s15959_gcc",
+        ":s16070_cmake",
+        ":s16121_gcc",
+        ":s16239_cmake",
+        ":s16359_gcc",
+        ":s16907_cmake",
+        ":s16960_gcc",
+        ":s17080_cmake",
+        ":s17131_gcc",
+        ":s17239_cmake",
+        ":s17298_gcc",
+        ":s17408_cmake",
+        ":s2139_cp",
+        ":s2802_cat_patch",
+        ":s3416_cmake",
+    ],
+    out = "s17465_gcc",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s17465_gcc --timeout 300",
+        "run --cwd /build/source/build-dist --env 31 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 39 --",
+        "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -I/build/source/build/cmake/../../lib -O3 -DNDEBUG -MD -MT CMakeFiles/lz4cli.dir/build/source/programs/lz4io.c.o -MF CMakeFiles/lz4cli.dir/build/source/programs/lz4io.c.o.d -o CMakeFiles/lz4cli.dir/build/source/programs/lz4io.c.o -c /build/source/programs/lz4io.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=dk9wf8nnmm",
+    ],
+)
+
+cc_object(
+    name = "s17634_gcc",
+    srcs = [
+        "actions/s17634_gcc.manifest",
+        "closure.txt",
+        "env/31.env",
+        "platform",
+        "sandbox.sh",
+        ":s2139_cp",
+    ],
+    out = "s17634_gcc",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s17634_gcc --timeout 300",
+        "run --cwd /build/source/build-dist --env 31 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 39 --",
+        "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -I/build/source/build/cmake/../../lib -O3 -DNDEBUG -MD -MT CMakeFiles/lz4cli.dir/build/source/programs/threadpool.c.o -MF CMakeFiles/lz4cli.dir/build/source/programs/threadpool.c.o.d -o CMakeFiles/lz4cli.dir/build/source/programs/threadpool.c.o -c /build/source/programs/threadpool.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=dk9wf8nnmm",
+    ],
+)
+
+cc_object(
+    name = "s17795_gcc",
+    srcs = [
+        "actions/s17795_gcc.manifest",
+        "closure.txt",
+        "env/31.env",
+        "platform",
+        "sandbox.sh",
+        ":s2139_cp",
+    ],
+    out = "s17795_gcc",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s17795_gcc --timeout 300",
+        "run --cwd /build/source/build-dist --env 31 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 39 --",
+        "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -I/build/source/build/cmake/../../lib -O3 -DNDEBUG -MD -MT CMakeFiles/lz4cli.dir/build/source/programs/timefn.c.o -MF CMakeFiles/lz4cli.dir/build/source/programs/timefn.c.o.d -o CMakeFiles/lz4cli.dir/build/source/programs/timefn.c.o -c /build/source/programs/timefn.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=dk9wf8nnmm",
+    ],
+)
+
+cc_object(
+    name = "s17952_gcc",
+    srcs = [
+        "actions/s17952_gcc.manifest",
+        "closure.txt",
+        "env/31.env",
+        "platform",
+        "sandbox.sh",
+        ":s2139_cp",
+    ],
+    out = "s17952_gcc",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s17952_gcc --timeout 300",
+        "run --cwd /build/source/build-dist --env 31 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 39 --",
+        "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -I/build/source/build/cmake/../../lib -O3 -DNDEBUG -MD -MT CMakeFiles/lz4cli.dir/build/source/programs/util.c.o -MF CMakeFiles/lz4cli.dir/build/source/programs/util.c.o.d -o CMakeFiles/lz4cli.dir/build/source/programs/util.c.o -c /build/source/programs/util.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=dk9wf8nnmm",
+    ],
+)
+
+cc_object(
+    name = "s18110_gcc",
+    srcs = [
+        "actions/s18110_gcc.manifest",
+        "closure.txt",
+        "env/31.env",
+        "platform",
+        "sandbox.sh",
+        ":s2139_cp",
+    ],
+    out = "s18110_gcc",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s18110_gcc --timeout 300",
+        "run --cwd /build/source/build-dist --env 31 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 39 --",
+        "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -I/build/source/build/cmake/../../lib -O3 -DNDEBUG -MD -MT CMakeFiles/lz4cli.dir/build/source/lib/lz4.c.o -MF CMakeFiles/lz4cli.dir/build/source/lib/lz4.c.o.d -o CMakeFiles/lz4cli.dir/build/source/lib/lz4.c.o -c /build/source/lib/lz4.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=dk9wf8nnmm",
+    ],
+)
+
+cc_object(
+    name = "s18291_gcc",
+    srcs = [
+        "actions/s18291_gcc.manifest",
+        "closure.txt",
+        "env/31.env",
+        "platform",
+        "sandbox.sh",
+        ":s2139_cp",
+    ],
+    out = "s18291_gcc",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s18291_gcc --timeout 300",
+        "run --cwd /build/source/build-dist --env 31 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 39 --",
+        "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -I/build/source/build/cmake/../../lib -O3 -DNDEBUG -MD -MT CMakeFiles/lz4cli.dir/build/source/lib/lz4file.c.o -MF CMakeFiles/lz4cli.dir/build/source/lib/lz4file.c.o.d -o CMakeFiles/lz4cli.dir/build/source/lib/lz4file.c.o -c /build/source/lib/lz4file.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=dk9wf8nnmm",
+    ],
+)
+
+cc_object(
+    name = "s18442_gcc",
+    srcs = [
+        "actions/s18442_gcc.manifest",
+        "closure.txt",
+        "env/31.env",
+        "platform",
+        "sandbox.sh",
+        ":s2139_cp",
+        ":s2802_cat_patch",
+    ],
+    out = "s18442_gcc",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s18442_gcc --timeout 300",
+        "run --cwd /build/source/build-dist --env 31 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 39 --",
+        "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -I/build/source/build/cmake/../../lib -O3 -DNDEBUG -MD -MT CMakeFiles/lz4cli.dir/build/source/lib/lz4frame.c.o -MF CMakeFiles/lz4cli.dir/build/source/lib/lz4frame.c.o.d -o CMakeFiles/lz4cli.dir/build/source/lib/lz4frame.c.o -c /build/source/lib/lz4frame.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=dk9wf8nnmm",
+    ],
+)
+
+cc_object(
+    name = "s18612_gcc",
+    srcs = [
+        "actions/s18612_gcc.manifest",
+        "closure.txt",
+        "env/31.env",
+        "platform",
+        "sandbox.sh",
+        ":s2139_cp",
+    ],
+    out = "s18612_gcc",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s18612_gcc --timeout 300",
+        "run --cwd /build/source/build-dist --env 31 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 39 --",
+        "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -I/build/source/build/cmake/../../lib -O3 -DNDEBUG -MD -MT CMakeFiles/lz4cli.dir/build/source/lib/lz4hc.c.o -MF CMakeFiles/lz4cli.dir/build/source/lib/lz4hc.c.o.d -o CMakeFiles/lz4cli.dir/build/source/lib/lz4hc.c.o -c /build/source/lib/lz4hc.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=dk9wf8nnmm",
+    ],
+)
+
+cc_object(
+    name = "s18792_gcc",
+    srcs = [
+        "actions/s18792_gcc.manifest",
+        "closure.txt",
+        "env/31.env",
+        "platform",
+        "sandbox.sh",
+        ":s2139_cp",
+    ],
+    out = "s18792_gcc",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s18792_gcc --timeout 300",
+        "run --cwd /build/source/build-dist --env 31 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 39 --",
+        "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -I/build/source/build/cmake/../../lib -O3 -DNDEBUG -MD -MT CMakeFiles/lz4cli.dir/build/source/lib/xxhash.c.o -MF CMakeFiles/lz4cli.dir/build/source/lib/xxhash.c.o.d -o CMakeFiles/lz4cli.dir/build/source/lib/xxhash.c.o -c /build/source/lib/xxhash.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=dk9wf8nnmm",
+    ],
+)
+
+cc_binary(
+    name = "s19023_gcc",
+    srcs = [
+        "actions/s19023_gcc.manifest",
         "closure.txt",
         "env/32.env",
         "platform",
         "sandbox.sh",
-        ":s20049_make",
-        ":s21679_mkdir",
-        ":s2578_chmod",
-        ":s3042_mkdir",
+        ":s16960_gcc",
+        ":s17131_gcc",
+        ":s17298_gcc",
+        ":s17465_gcc",
+        ":s17634_gcc",
+        ":s17795_gcc",
+        ":s17952_gcc",
+        ":s18110_gcc",
+        ":s18291_gcc",
+        ":s18442_gcc",
+        ":s18612_gcc",
+        ":s18792_gcc",
+        ":s3416_cmake",
     ],
-    out = "s21844_mv",
-    cmd = " ".join([
+    out = "s19023_gcc",
+    cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name s21844_mv --timeout 300",
-        "run --cwd /build/source/build-dist --env 32 --argv0 mv --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 3 --",
-        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/mv /nix/store/8327b5r0l5k48fpcqiaias8p2m7h52n5-lz4-1.10.0-lib/lib/cmake /nix/store/5mzhn4ckld94vqq8pkadqq8rf0fbi3r7-lz4-1.10.0-dev/lib/cmake",
-    ]),
-    remote = False,
+        "--name s19023_gcc --timeout 300",
+        "run --cwd /build/source/build-dist --env 32 --fd 0=null --fd 1=err --fd 2=err --fd 3=file:r@775:/build/source/build-dist/CMakeFiles/lz4cli.dir/link.txt --status 0 --argc 51 --",
+        "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -Wl,-dynamic-linker=/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ld-linux-x86-64.so.2 -O3 -DNDEBUG -Wl,--dependency-file=CMakeFiles/lz4cli.dir/link.d CMakeFiles/lz4cli.dir/build/source/programs/bench.c.o CMakeFiles/lz4cli.dir/build/source/programs/lorem.c.o CMakeFiles/lz4cli.dir/build/source/programs/lz4cli.c.o CMakeFiles/lz4cli.dir/build/source/programs/lz4io.c.o CMakeFiles/lz4cli.dir/build/source/programs/threadpool.c.o CMakeFiles/lz4cli.dir/build/source/programs/timefn.c.o CMakeFiles/lz4cli.dir/build/source/programs/util.c.o CMakeFiles/lz4cli.dir/build/source/lib/lz4.c.o CMakeFiles/lz4cli.dir/build/source/lib/lz4file.c.o CMakeFiles/lz4cli.dir/build/source/lib/lz4frame.c.o CMakeFiles/lz4cli.dir/build/source/lib/lz4hc.c.o CMakeFiles/lz4cli.dir/build/source/lib/xxhash.c.o -o lz4 -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=dk9wf8nnmm -Wl,-rpath -Wl,/nix/store/8327b5r0l5k48fpcqiaias8p2m7h52n5-lz4-1.10.0-lib/lib -L/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib -L/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0 -L/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -L/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib",
+    ],
 )
 
-genrule(
-    name = "s21928_sed",
-    srcs = [
-        "actions/s21928_sed.manifest",
-        "closure.txt",
-        "env/34.env",
-        "platform",
-        "sandbox.sh",
-        ":s20049_make",
-        ":s21679_mkdir",
-        ":s21700_mv",
-        ":s2578_chmod",
-        ":s3042_mkdir",
-    ],
-    out = "s21928_sed",
-    cmd = " ".join([
-        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name s21928_sed --timeout 300",
-        "run --cwd /build/source/build-dist --env 34 --argv0 sed --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 4 --",
-        "/nix/store/1ggxndc1gd5061j5hqprhnhx9p30yilv-gnused-4.10/bin/sed -i '/^includedir=/s,=${prefix},=/nix/store/5mzhn4ckld94vqq8pkadqq8rf0fbi3r7-lz4-1.10.0-dev,' /nix/store/5mzhn4ckld94vqq8pkadqq8rf0fbi3r7-lz4-1.10.0-dev/lib/pkgconfig/liblz4.pc",
-    ]),
-    remote = False,
-)
-
-genrule(
+recorded(
     name = "s22556_find_patchelf",
     srcs = [
         "actions/s22556_find_patchelf.manifest",
         "closure.txt",
-        "env/44.env",
-        "env/45.env",
-        "platform",
-        "sandbox.sh",
-        ":s20049_make",
-        ":s2578_chmod",
-        ":s3042_mkdir",
-    ],
-    out = "s22556_find_patchelf",
-    cmd = " ".join([
-        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name s22556_find_patchelf --timeout 300 --pipe 1065:0:1:0",
-        "run --cwd /build/source/build-dist --env 44 --argv0 find --fd 0=null --fd 1=pipe-w:1065 --fd 2=err --status 0 --argc 5 --",
-        "/nix/store/ycrbcy9sg4knpnik6a01dk70l0m673x7-findutils-4.11.0/bin/find /nix/store/8327b5r0l5k48fpcqiaias8p2m7h52n5-lz4-1.10.0-lib -type f -print0",
-        "run --cwd /build/source/build-dist --env 45 --argv0 patchelf --fd 0=pipe-r:1065 --fd 1=err --fd 2=err --fd 63=pipe-r:1065 --after 0 --status 0 --argc 3 --",
-        "/nix/store/qcwnw71iksl68k7fipizi6wn0s1xms9v-patchelf-0.15.2/bin/patchelf --shrink-rpath /nix/store/8327b5r0l5k48fpcqiaias8p2m7h52n5-lz4-1.10.0-lib/lib/liblz4.so.1.10.0",
-    ]),
-    remote = False,
-)
-
-genrule(
-    name = "s22898_mktemp",
-    srcs = [
-        "actions/s22898_mktemp.manifest",
-        "closure.txt",
-        "env/46.env",
-        "platform",
-        "sandbox.sh",
-        ":s2578_chmod",
-        ":s3042_mkdir",
-    ],
-    out = "s22898_mktemp",
-    cmd = " ".join([
-        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name s22898_mktemp --timeout 300",
-        "run --cwd /build/source/build-dist --env 46 --argv0 mktemp --fd 0=null --fd 1=null --fd 2=err --status 0 --argc 3 --",
-        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/mktemp --tmpdir=/build striperr.XXXXXX",
-    ]),
-    remote = False,
-)
-
-genrule(
-    name = "s22929_find_sort_cut_xargs",
-    srcs = [
-        "actions/s22929_find_sort_cut_xargs.manifest",
-        "closure.txt",
-        "env/49.env",
         "env/51.env",
         "env/52.env",
-        "env/53.env",
         "platform",
         "sandbox.sh",
-        ":s20049_make",
-        ":s22556_find_patchelf",
-        ":s22898_mktemp",
-        ":s2578_chmod",
-        ":s3042_mkdir",
+        ":s16359_gcc",
     ],
-    out = "s22929_find_sort_cut_xargs",
-    cmd = " ".join([
+    out = "s22556_find_patchelf",
+    cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name s22929_find_sort_cut_xargs --timeout 300 --pipe 1088:0:1:0 --pipe 1089:1:2:0 --pipe 1090:2:3:0",
-        "run --cwd /build/source/build-dist --env 49 --argv0 find --fd 0=null --fd 1=pipe-w:1088 --fd 2=err --status 0 --argc 10 --",
-        "/nix/store/ycrbcy9sg4knpnik6a01dk70l0m673x7-findutils-4.11.0/bin/find /nix/store/8327b5r0l5k48fpcqiaias8p2m7h52n5-lz4-1.10.0-lib/lib -type f -a '!' -path '/nix/store/8327b5r0l5k48fpcqiaias8p2m7h52n5-lz4-1.10.0-lib/lib/debug/*' -printf '%D-%i,%p\\0'",
-        "run --cwd /build/source/build-dist --env 51 --argv0 sort --fd 0=pipe-r:1088 --fd 1=pipe-w:1089 --fd 2=err --after 0 --status 0 --argc 5 --",
-        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/sort -t, -k1,1 -u -z",
-        "run --cwd /build/source/build-dist --env 52 --argv0 cut --fd 0=pipe-r:1089 --fd 1=pipe-w:1090 --fd 2=err --after 0,1 --status 0 --argc 4 --",
-        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/cut -d, -f2- -z",
-        "run --cwd /build/source/build-dist --env 53 --argv0 xargs --fd 0=pipe-r:1090 --fd 1=err --fd 2=file:w:/build/striperr.qK50SL --after 0,1,2 --status 0 --argc 10 --",
-        "/nix/store/ycrbcy9sg4knpnik6a01dk70l0m673x7-findutils-4.11.0/bin/xargs -r -0 -n1 -P 1 -- strip -S -p",
-    ]),
-    remote = False,
+        "--name s22556_find_patchelf --timeout 300 --pipe 1065:0:1:0",
+        "run --cwd /build/source/build-dist --env 51 --argv0 find --fd 0=null --fd 1=pipe-w:1065 --fd 2=err --status 0 --argc 5 --",
+        "/nix/store/ycrbcy9sg4knpnik6a01dk70l0m673x7-findutils-4.11.0/bin/find /nix/store/8327b5r0l5k48fpcqiaias8p2m7h52n5-lz4-1.10.0-lib -type f -print0",
+        "run --cwd /build/source/build-dist --env 52 --argv0 patchelf --fd 0=pipe-r:1065 --fd 1=err --fd 2=err --fd 63=pipe-r:1065 --after 0 --status 0 --argc 3 --",
+        "/nix/store/qcwnw71iksl68k7fipizi6wn0s1xms9v-patchelf-0.15.2/bin/patchelf --shrink-rpath /nix/store/8327b5r0l5k48fpcqiaias8p2m7h52n5-lz4-1.10.0-lib/lib/liblz4.so.1.10.0",
+    ],
 )
 
-genrule(
-    name = "s23284_find_xargs",
+recorded(
+    name = "s23004_strip",
     srcs = [
-        "actions/s23284_find_xargs.manifest",
+        "actions/s23004_strip.manifest",
         "closure.txt",
-        "env/58.env",
-        "env/60.env",
+        "const_22898_mktemp",
+        "env/62.env",
         "platform",
         "sandbox.sh",
-        ":s20049_make",
-        ":s2578_chmod",
-        ":s3042_mkdir",
+        ":s22556_find_patchelf",
     ],
-    out = "s23284_find_xargs",
-    cmd = " ".join([
+    out = "s23004_strip",
+    cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name s23284_find_xargs --timeout 300 --pipe 1118:0:1:0",
-        "run --cwd /build/source/build-dist --env 58 --argv0 find --fd 0=null --fd 1=pipe-w:1118 --fd 2=err --status 0 --argc 9 --",
-        "/nix/store/ycrbcy9sg4knpnik6a01dk70l0m673x7-findutils-4.11.0/bin/find /nix/store/cvjg1abig6l4jc0av5v8kn31075p0msg-lz4-1.10.0-man/share/man/ -type f -a '!' -regex '.*\\.\\(bz2\\|gz\\|xz\\)$' -print0",
-        "run --cwd /build/source/build-dist --env 60 --argv0 xargs --fd 0=pipe-r:1118 --fd 1=err --fd 2=err --after 0 --status 0 --argc 8 --",
-        "/nix/store/ycrbcy9sg4knpnik6a01dk70l0m673x7-findutils-4.11.0/bin/xargs -0 -n1 -P 1 gzip -n -f",
-    ]),
-    remote = False,
+        "--name s23004_strip --timeout 300",
+        "run --cwd /build/source/build-dist --env 62 --fd 0=null --fd 1=err --fd 2=file:w:/build/striperr.qK50SL --status 0 --argc 5 --",
+        "/nix/store/y5sgl0vvrpbcwgjwpjs60r1hg0gi7i0n-binutils-2.46/bin/strip --enable-deterministic-archives -S -p /nix/store/8327b5r0l5k48fpcqiaias8p2m7h52n5-lz4-1.10.0-lib/lib/liblz4.so.1.10.0",
+    ],
 )
 
-genrule(
+recorded(
+    name = "s23314_gzip",
+    srcs = [
+        "actions/s23314_gzip.manifest",
+        "closure.txt",
+        "env/69.env",
+        "platform",
+        "sandbox.sh",
+        ":s3416_cmake",
+    ],
+    out = "s23314_gzip",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s23314_gzip --timeout 300",
+        "run --cwd /build/source/build-dist --env 69 --argv0 gzip --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 4 --",
+        "/nix/store/yr6ar7lsk3yfas4d464z1ysaxwcq2gc5-gzip-1.14/bin/gzip -n -f /nix/store/cvjg1abig6l4jc0av5v8kn31075p0msg-lz4-1.10.0-man/share/man/man1/unlz4.1",
+    ],
+)
+
+recorded(
+    name = "s23339_gzip",
+    srcs = [
+        "actions/s23339_gzip.manifest",
+        "closure.txt",
+        "env/69.env",
+        "platform",
+        "sandbox.sh",
+        ":s3416_cmake",
+    ],
+    out = "s23339_gzip",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s23339_gzip --timeout 300",
+        "run --cwd /build/source/build-dist --env 69 --argv0 gzip --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 4 --",
+        "/nix/store/yr6ar7lsk3yfas4d464z1ysaxwcq2gc5-gzip-1.14/bin/gzip -n -f /nix/store/cvjg1abig6l4jc0av5v8kn31075p0msg-lz4-1.10.0-man/share/man/man1/lz4cat.1",
+    ],
+)
+
+recorded(
+    name = "s23362_gzip",
+    srcs = [
+        "actions/s23362_gzip.manifest",
+        "closure.txt",
+        "env/69.env",
+        "platform",
+        "sandbox.sh",
+        ":s2139_cp",
+    ],
+    out = "s23362_gzip",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s23362_gzip --timeout 300",
+        "run --cwd /build/source/build-dist --env 69 --argv0 gzip --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 4 --",
+        "/nix/store/yr6ar7lsk3yfas4d464z1ysaxwcq2gc5-gzip-1.14/bin/gzip -n -f /nix/store/cvjg1abig6l4jc0av5v8kn31075p0msg-lz4-1.10.0-man/share/man/man1/lz4.1",
+    ],
+)
+
+recorded(
     name = "s23503_find_patchelf",
     srcs = [
         "actions/s23503_find_patchelf.manifest",
         "closure.txt",
-        "env/62.env",
-        "env/63.env",
+        "env/71.env",
+        "env/72.env",
         "platform",
         "sandbox.sh",
-        ":s19984_mkdir",
-        ":s20049_make",
-        ":s2578_chmod",
-        ":s3042_mkdir",
+        ":s19023_gcc",
     ],
     out = "s23503_find_patchelf",
-    cmd = " ".join([
+    cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
         "--name s23503_find_patchelf --timeout 300 --pipe 1134:0:1:0",
-        "run --cwd /build/source/build-dist --env 62 --argv0 find --fd 0=null --fd 1=pipe-w:1134 --fd 2=err --status 0 --argc 5 --",
+        "run --cwd /build/source/build-dist --env 71 --argv0 find --fd 0=null --fd 1=pipe-w:1134 --fd 2=err --status 0 --argc 5 --",
         "/nix/store/ycrbcy9sg4knpnik6a01dk70l0m673x7-findutils-4.11.0/bin/find /nix/store/dk9wf8nnmmwmy5wvp4n7kgr7r8y0ad3k-lz4-1.10.0 -type f -print0",
-        "run --cwd /build/source/build-dist --env 63 --argv0 patchelf --fd 0=pipe-r:1134 --fd 1=err --fd 2=err --fd 63=pipe-r:1134 --after 0 --status 0 --argc 3 --",
+        "run --cwd /build/source/build-dist --env 72 --argv0 patchelf --fd 0=pipe-r:1134 --fd 1=err --fd 2=err --fd 63=pipe-r:1134 --after 0 --status 0 --argc 3 --",
         "/nix/store/qcwnw71iksl68k7fipizi6wn0s1xms9v-patchelf-0.15.2/bin/patchelf --shrink-rpath /nix/store/dk9wf8nnmmwmy5wvp4n7kgr7r8y0ad3k-lz4-1.10.0/bin/lz4",
-    ]),
-    remote = False,
-)
-
-genrule(
-    name = "s23848_mktemp",
-    srcs = [
-        "actions/s23848_mktemp.manifest",
-        "closure.txt",
-        "env/64.env",
-        "platform",
-        "sandbox.sh",
-        ":s2578_chmod",
-        ":s3042_mkdir",
     ],
-    out = "s23848_mktemp",
-    cmd = " ".join([
-        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name s23848_mktemp --timeout 300",
-        "run --cwd /build/source/build-dist --env 64 --argv0 mktemp --fd 0=null --fd 1=null --fd 2=err --status 0 --argc 3 --",
-        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/mktemp --tmpdir=/build striperr.XXXXXX",
-    ]),
-    remote = False,
 )
 
-genrule(
-    name = "s23879_find_sort_cut_xargs",
+recorded(
+    name = "s23954_strip",
     srcs = [
-        "actions/s23879_find_sort_cut_xargs.manifest",
+        "actions/s23954_strip.manifest",
         "closure.txt",
-        "env/67.env",
-        "env/69.env",
-        "env/70.env",
-        "env/71.env",
+        "const_23848_mktemp",
+        "env/82.env",
         "platform",
         "sandbox.sh",
-        ":s19984_mkdir",
-        ":s20049_make",
         ":s23503_find_patchelf",
-        ":s23848_mktemp",
-        ":s2578_chmod",
-        ":s3042_mkdir",
     ],
-    out = "s23879_find_sort_cut_xargs",
-    cmd = " ".join([
+    out = "s23954_strip",
+    cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name s23879_find_sort_cut_xargs --timeout 300 --pipe 1157:0:1:0 --pipe 1158:1:2:0 --pipe 1159:2:3:0",
-        "run --cwd /build/source/build-dist --env 67 --argv0 find --fd 0=null --fd 1=pipe-w:1157 --fd 2=err --status 0 --argc 10 --",
-        "/nix/store/ycrbcy9sg4knpnik6a01dk70l0m673x7-findutils-4.11.0/bin/find /nix/store/dk9wf8nnmmwmy5wvp4n7kgr7r8y0ad3k-lz4-1.10.0/bin -type f -a '!' -path '/nix/store/dk9wf8nnmmwmy5wvp4n7kgr7r8y0ad3k-lz4-1.10.0/lib/debug/*' -printf '%D-%i,%p\\0'",
-        "run --cwd /build/source/build-dist --env 69 --argv0 sort --fd 0=pipe-r:1157 --fd 1=pipe-w:1158 --fd 2=err --after 0 --status 0 --argc 5 --",
-        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/sort -t, -k1,1 -u -z",
-        "run --cwd /build/source/build-dist --env 70 --argv0 cut --fd 0=pipe-r:1158 --fd 1=pipe-w:1159 --fd 2=err --after 0,1 --status 0 --argc 4 --",
-        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/cut -d, -f2- -z",
-        "run --cwd /build/source/build-dist --env 71 --argv0 xargs --fd 0=pipe-r:1159 --fd 1=err --fd 2=file:w:/build/striperr.veUUJU --after 0,1,2 --status 0 --argc 10 --",
-        "/nix/store/ycrbcy9sg4knpnik6a01dk70l0m673x7-findutils-4.11.0/bin/xargs -r -0 -n1 -P 1 -- strip -S -p",
-    ]),
-    remote = False,
+        "--name s23954_strip --timeout 300",
+        "run --cwd /build/source/build-dist --env 82 --fd 0=null --fd 1=err --fd 2=file:w:/build/striperr.veUUJU --status 0 --argc 5 --",
+        "/nix/store/y5sgl0vvrpbcwgjwpjs60r1hg0gi7i0n-binutils-2.46/bin/strip --enable-deterministic-archives -S -p /nix/store/dk9wf8nnmmwmy5wvp4n7kgr7r8y0ad3k-lz4-1.10.0/bin/lz4",
+    ],
 )
 
-genrule(
-    name = "s24761_mkdir",
-    srcs = [
-        "actions/s24761_mkdir.manifest",
-        "closure.txt",
-        "env/29.env",
-        "platform",
-        "sandbox.sh",
-        ":s20049_make",
-        ":s2578_chmod",
-        ":s3042_mkdir",
-    ],
-    out = "s24761_mkdir",
-    cmd = " ".join([
-        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name s24761_mkdir --timeout 300",
-        "run --cwd /build/source/build-dist --env 29 --argv0 mkdir --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 3 --",
-        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/mkdir -p /nix/store/5mzhn4ckld94vqq8pkadqq8rf0fbi3r7-lz4-1.10.0-dev/nix-support",
-    ]),
-    remote = False,
-)
-
-genrule(
+nix_archive(
     name = "archive_dev",
     srcs = [
         "actions/archive_dev.manifest",
         "glue_24786",
         "sandbox.sh",
-        ":s20049_make",
-        ":s21679_mkdir",
-        ":s21700_mv",
-        ":s21844_mv",
-        ":s21928_sed",
-        ":s24761_mkdir",
+        ":s2139_cp",
+        ":s3416_cmake",
     ],
     out = "archive_dev.nar",
-    cmd = " ".join([
+    cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
         "--name archive_dev pack /nix/store/5mzhn4ckld94vqq8pkadqq8rf0fbi3r7-lz4-1.10.0-dev",
-    ]),
-    remote = False,
+    ],
 )
 
-genrule(
+nix_archive(
     name = "archive_lib",
     srcs = [
         "actions/archive_lib.manifest",
         "sandbox.sh",
-        ":s20049_make",
-        ":s22929_find_sort_cut_xargs",
+        ":s23004_strip",
     ],
     out = "archive_lib.nar",
-    cmd = " ".join([
+    cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
         "--name archive_lib pack /nix/store/8327b5r0l5k48fpcqiaias8p2m7h52n5-lz4-1.10.0-lib",
-    ]),
-    remote = False,
+    ],
 )
 
-genrule(
+nix_archive(
     name = "archive_man",
     srcs = [
         "actions/archive_man.manifest",
         "sandbox.sh",
-        ":s20049_make",
-        ":s23284_find_xargs",
+        ":s23314_gzip",
+        ":s23339_gzip",
+        ":s23362_gzip",
     ],
     out = "archive_man.nar",
-    cmd = " ".join([
+    cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
         "--name archive_man pack /nix/store/cvjg1abig6l4jc0av5v8kn31075p0msg-lz4-1.10.0-man",
-    ]),
-    remote = False,
+    ],
 )
 
-genrule(
+nix_archive(
     name = "archive_out",
     srcs = [
         "actions/archive_out.manifest",
         "sandbox.sh",
-        ":s19984_mkdir",
-        ":s20049_make",
-        ":s23879_find_sort_cut_xargs",
+        ":s23954_strip",
     ],
     out = "archive_out.nar",
-    cmd = " ".join([
+    cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
         "--name archive_out pack /nix/store/dk9wf8nnmmwmy5wvp4n7kgr7r8y0ad3k-lz4-1.10.0",
-    ]),
-    remote = False,
+    ],
 )
 

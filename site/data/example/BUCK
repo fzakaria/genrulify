@@ -1,4 +1,6 @@
-genrule(
+load(":genrulify.buck.bzl", "nix_archive", "recorded")
+
+recorded(
     name = "s735_dd",
     srcs = [
         "actions/s735_dd.manifest",
@@ -8,16 +10,15 @@ genrule(
         "sandbox.sh",
     ],
     out = "s735_dd",
-    cmd = " ".join([
+    cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
         "--name s735_dd --timeout 300",
         "run --cwd /build --env 0 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 4 --",
         "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/dd if=/nix/store/xzgjbcyd85zn18pfyrjvl2ravhi5snlh-header.txt of=bundle status=none",
-    ]),
-    remote = False,
+    ],
 )
 
-genrule(
+recorded(
     name = "s764_dd",
     srcs = [
         "actions/s764_dd.manifest",
@@ -28,47 +29,25 @@ genrule(
         ":s735_dd",
     ],
     out = "s764_dd",
-    cmd = " ".join([
+    cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
         "--name s764_dd --timeout 300",
         "run --cwd /build --env 0 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 6 --",
         "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/dd if=/nix/store/vr613az0762zqyzplvw8cdm1vk2f6bvc-body.txt of=bundle oflag=append conv=notrunc status=none",
-    ]),
-    remote = False,
-)
-
-genrule(
-    name = "s782_dd",
-    srcs = [
-        "actions/s782_dd.manifest",
-        "closure.txt",
-        "env/1.env",
-        "platform",
-        "sandbox.sh",
-        ":s764_dd",
     ],
-    out = "s782_dd",
-    cmd = " ".join([
-        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name s782_dd --timeout 300",
-        "run --cwd /build --env 1 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 4 --",
-        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/dd if=bundle of=/nix/store/l1dx8g9mr73bdp8y6i2yp92xprmz8xzg-genrulify-example status=none",
-    ]),
-    remote = False,
 )
 
-genrule(
+nix_archive(
     name = "archive",
     srcs = [
         "actions/archive.manifest",
         "sandbox.sh",
-        ":s782_dd",
+        ":s764_dd",
     ],
     out = "archive.nar",
-    cmd = " ".join([
+    cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
         "--name archive pack /nix/store/l1dx8g9mr73bdp8y6i2yp92xprmz8xzg-genrulify-example",
-    ]),
-    remote = False,
+    ],
 )
 

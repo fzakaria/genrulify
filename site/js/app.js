@@ -1,7 +1,7 @@
 // The explorer: one recorded build at a time, as a timeline of process
-// groups, the graph before and after dead-code elimination, the same graph
-// as an MLIR module, and the details of whichever group or node is
-// selected. All data is static JSON and text that the compiler wrote.
+// groups, the graph under whichever optimizer passes are switched on, the
+// same graph as an MLIR module, and the details of whichever group or node
+// is selected. All data is static JSON and text that the compiler wrote.
 
 import { draw, highlight } from "./graph.js";
 
@@ -18,8 +18,13 @@ const Outcome = Object.freeze({
   TRACED: "traced",
   WIDE: "wide",
   LITERAL: "literal",
+  COPY: "copy",
+  FOLDED: "folded",
   DEAD: "dead",
 });
+
+// The outcomes of a group that runs as a build rule.
+const REPLAYED = new Set([Outcome.NARROW, Outcome.NEAR, Outcome.TRACED, Outcome.WIDE]);
 
 // The views of the selected group, by the data-lane value of their tab.
 const Lane = Object.freeze({
@@ -31,7 +36,63 @@ const Lane = Object.freeze({
 });
 
 // The kinds of node in graph.json.
-const Op = Object.freeze({ EXEC: "exec", LITERAL: "literal", OUTPUT: "output" });
+const Op = Object.freeze({ EXEC: "exec", LITERAL: "literal", COPY: "copy", OUTPUT: "output" });
+
+// The class of a node that elimination would remove, which is drawn in grey.
+const DOOMED = "doomed";
+
+// The pass that removes operations, by the name the compiler gives it.
+const ELIMINATE = "dce";
+
+// What the page says when no pass has been touched yet.
+const NO_PASS_TEXT =
+  "With every pass off, the graph is the build as recorded: one operation per command or pipeline, " +
+  "and one for each thing the builder wrote itself. Switch a pass on to see what it does.";
+
+// What the page says when every pass is on and none was switched by hand.
+const EVERY_PASS_TEXT =
+  "Every pass is on. What is left is what a build system has to run: a rule for each solid box, and no rule for a copy or a constant.";
+
+// What the page says about each pass, by the name the compiler gives it.
+const Passes = Object.freeze({
+  link: {
+    label: "Link driver writes",
+    text:
+      "A file the builder or an opened program wrote itself, with the bytes of a file that already exists, " +
+      "becomes a copy of that file. cargo and ninja put finished files in place this way. Most builds have none.",
+  },
+  dce: {
+    label: "Eliminate dead code",
+    text:
+      "Every operation is Pure, so MLIR's stock canonicalizer deletes the ones whose results nothing uses: " +
+      "commands that only looked, temporary files, the builder's bookkeeping.",
+  },
+  fold: {
+    label: "Fold constants",
+    text:
+      "A directory, a symlink and an empty file need no bytes computed, so they move out of the group that made them " +
+      "into a constant. A group with nothing else to offer, like mkdir or touch, is no longer run.",
+  },
+  merge: {
+    label: "Merge same outputs",
+    text:
+      "A result with the bytes of the operand at the same path becomes a second name for that operand. " +
+      "That is what a chmod leaves, or a rewrite that changed nothing.",
+  },
+  raise: {
+    label: "Raise copies",
+    text:
+      "A result with the bytes of an operand at another path becomes splice.copy, which is what cp, install and mv leave. " +
+      "A copy needs no rule: whoever reads it lists the original file and stages it at the new path.",
+  },
+  rules: {
+    label: "Raise to rules",
+    text:
+      "A command the compiler recognises from its recorded arguments is given a rule of its kind: gcc -c becomes cc_object, " +
+      "ar becomes cc_library, a link becomes cc_binary. The rule is defined in a file that ships with the workspace and still " +
+      "runs the recorded command, so a wrong guess can only mislabel it.",
+  },
+});
 
 // Programs that only run other commands. A node for one is labelled by
 // what it wrote, since a row of nodes all named "bash" says nothing.
@@ -50,30 +111,9 @@ const SHOWN_OPERANDS = 8;
 // How many entries the listing prints for the selected operation.
 const SHOWN_ENTRIES = 6;
 
-// An SSA value as MLIR prints it: `%4`, one result of several as `%4#2`,
-// and the definition of several results as `%4:3`.
-const VALUE_PATTERN = /(%\d+(?:[#:]\d+)?)/;
-
-// The headings over the graph, before and after elimination.
-const GraphText = Object.freeze({
-  RECORDED: {
-    title: "The graph as recorded",
-    caption:
-      "One node per operation, and an edge wherever one operation consumes a file version another wrote. " +
-      "The grey nodes are groups whose writes never reach an output. Run the elimination above to delete them.",
-
-    // For a build in which every operation reaches an output.
-    captionWithoutDead:
-      "One node per operation, and an edge wherever one operation consumes a file version another wrote. " +
-      "Every operation of this build reaches an output, so elimination has nothing to delete.",
-  },
-  OPTIMIZED: {
-    title: "What is left",
-    caption:
-      "The optimized graph. Every node that is not a dashed box of recorded bytes is one build rule. " +
-      "Select a node, or a cell above.",
-  },
-});
+// An SSA value as MLIR prints it: `%cc_5`, one result of several as
+// `%tar_2#7`, and the definition of several results as `%tar_2:40`.
+const VALUE_PATTERN = /(%[A-Za-z0-9_.$-]+(?:[#:]\d+)?)/;
 
 // What the page is showing. `selection` is a group's step or a node's id.
 const state = {
@@ -81,14 +121,22 @@ const state = {
   id: null,
   graph: null,
   files: new Map(),
-  nodeOfStep: new Map(),
   groupOfStep: new Map(),
-  nodeOfValue: new Map(),
   selection: null,
   lane: Lane.PROCESS,
 
-  // Whether dead-code elimination has been run on the page.
-  eliminated: false,
+  // The passes switched on, as bits: bit N is the Nth pass of the
+  // pipeline. The number is also the position of the choice's graph in
+  // the description.
+  mask: 0,
+
+  // The pass whose switch was used last, which the page describes.
+  touched: null,
+
+  // What the current choice needs looked up often, rebuilt by `enterChoice`.
+  nodeOfStep: new Map(),
+  nodeOfValue: new Map(),
+  doomed: new Set(),
 };
 
 async function fetchText(path) {
@@ -97,6 +145,15 @@ async function fetchText(path) {
     throw new Error(`${path}: ${response.status}`);
   }
   return response.text();
+}
+
+/** Fetches a gzip file and parses what it holds as JSON. */
+async function fetchCompressedJson(path) {
+  const response = await fetch(path);
+  if (!response.ok) {
+    throw new Error(`${path}: ${response.status}`);
+  }
+  return new Response(response.body.pipeThrough(new DecompressionStream("gzip"))).json();
 }
 
 /** A build file of the current package, fetched once. */
@@ -127,21 +184,69 @@ function outcomeOf(group) {
   return group.outcome ?? Outcome.NARROW;
 }
 
-/** The nodes the page is showing: every operation, or the survivors. */
-function shownNodes() {
-  return state.eliminated ? state.graph.nodes.filter((node) => !node.dead) : state.graph.nodes;
+/** The nodes of the graph under a choice of passes. */
+function nodesUnder(mask) {
+  return state.graph.variants[mask].map((position) => state.graph.records[position]);
 }
 
-/** The class that colors a graph node. */
+/** The nodes the page is showing. */
+function shownNodes() {
+  return state.shown;
+}
+
+/** The bit of a pass in a choice. */
+function bitOf(pass) {
+  return 1 << state.graph.passes.indexOf(pass);
+}
+
+/** How much one kind of node matters when several stand for one group. */
+function rank(node) {
+  return [Op.EXEC, Op.COPY, Op.LITERAL].indexOf(node.op);
+}
+
+/** Rebuilds the lookups for the current choice of passes. */
+function enterChoice() {
+  state.shown = nodesUnder(state.mask);
+  const nodes = shownNodes();
+
+  // A group can have a process, copies and constants in the graph at once.
+  // A cell of the timeline stands for the first of those the group has.
+  state.nodeOfStep = new Map();
+  for (const node of nodes) {
+    const stands = node.op === Op.EXEC || node.op === Op.COPY || node.demoted || node.folded;
+    const known = state.nodeOfStep.get(node.step);
+    if (stands && (!known || rank(node) < rank(known))) {
+      state.nodeOfStep.set(node.step, node);
+    }
+  }
+
+  // The values each node defines, by the name MLIR printed.
+  state.nodeOfValue = new Map();
+  for (const node of nodes) {
+    for (const name of node.defines) {
+      state.nodeOfValue.set(name, node);
+    }
+  }
+
+  // The nodes elimination would remove: the ones the same choice with
+  // elimination switched on does not have.
+  const kept = new Set(nodesUnder(state.mask | bitOf(ELIMINATE)).map((node) => node.id));
+  state.doomed = new Set(nodes.filter((node) => !kept.has(node.id)).map((node) => node.id));
+}
+
+/** The class that colors a graph node or a line of the module. */
 function nodeClass(node) {
-  if (node.dead) {
-    return Outcome.DEAD;
+  if (state.doomed.has(node.id)) {
+    return DOOMED;
   }
   if (node.op === Op.OUTPUT) {
     return "output";
   }
+  if (node.op === Op.COPY) {
+    return Outcome.COPY;
+  }
   if (node.op === Op.LITERAL) {
-    return Outcome.LITERAL;
+    return node.folded ? Outcome.FOLDED : Outcome.LITERAL;
   }
   return outcomeOf(state.groupOfStep.get(node.step));
 }
@@ -154,6 +259,15 @@ function nodeLabel(node) {
   const used = node.writes.find((write) => write.used);
   if (node.op === Op.EXEC && SHELLS.has(node.name) && used) {
     return `${node.name} → ${used.path.split("/").pop()}`;
+  }
+  if (node.op === Op.COPY) {
+    return `copy · ${node.name}`;
+  }
+  if (node.rule) {
+    return `${node.rule} · ${node.name}`;
+  }
+  if (node.folded) {
+    return `const · ${node.name}`;
   }
   return node.name;
 }
@@ -177,20 +291,90 @@ function renderStats(hash) {
   const groups = state.graph.groups;
   const count = (outcome) => groups.filter((group) => outcomeOf(group) === outcome).length;
   const pinned = groups.reduce((total, group) => total + (group.pinned?.length ?? 0), 0);
-  const rules = state.graph.nodes.filter((node) => node.op !== Op.LITERAL && !node.dead).length;
   const parts = [
     `${groups.length.toLocaleString()} process groups`,
-    `${count(Outcome.NARROW) + count(Outcome.NEAR) + count(Outcome.TRACED) + count(Outcome.WIDE)} replayed`,
+    `${groups.filter((group) => REPLAYED.has(outcomeOf(group))).length} replayed`,
+    `${count(Outcome.COPY)} raised to copies`,
+    `${count(Outcome.FOLDED)} folded to constants`,
     `${pinned} ${pinned === 1 ? "file" : "files"} pinned`,
     `${count(Outcome.LITERAL)} kept as recorded bytes`,
     `${count(Outcome.DEAD)} dead`,
-    `${rules} genrules`,
+    `${ruleCount(nodesUnder(state.graph.variants.length - 1))} rules`,
   ];
   const digest = hash.trim().slice(0, "sha256:".length + SHOWN_HASH_DIGITS);
   $("stats").replaceChildren(
     `${state.graph.name}: ${parts.join(" · ")} · NAR `,
     create("code", { textContent: `${digest}…`, title: hash.trim() }),
   );
+}
+
+/** How many build rules a graph lowers to: its process groups and its outputs. */
+function ruleCount(nodes) {
+  return nodes.filter((node) => node.op === Op.EXEC || node.op === Op.OUTPUT).length;
+}
+
+/** The switches of the passes, and what the pass switched last does. */
+function renderSwitches() {
+  const passes = state.graph.passes;
+  const everything = state.graph.variants.length - 1;
+  const switches = passes.map((pass) => {
+    const on = (state.mask & bitOf(pass)) !== 0;
+    const button = create("button", { type: "button", className: "pass", textContent: Passes[pass].label });
+    button.setAttribute("aria-pressed", String(on));
+    button.addEventListener("click", () => {
+      state.touched = pass;
+      choose(state.mask ^ bitOf(pass));
+    });
+    return button;
+  });
+  const all = create("button", { type: "button", className: "every", textContent: "Select all" });
+  all.disabled = state.mask === everything;
+  all.addEventListener("click", () => {
+    state.touched = null;
+    choose(everything);
+  });
+  const none = create("button", { type: "button", className: "every", textContent: "Select none" });
+  none.disabled = state.mask === 0;
+  none.addEventListener("click", () => {
+    state.touched = null;
+    choose(0);
+  });
+  $("passes").replaceChildren(...switches, all, none);
+
+  const rules = ruleCount(shownNodes());
+  $("pass-text").replaceChildren(
+    create("strong", { textContent: `${rules.toLocaleString()} build ${rules === 1 ? "rule" : "rules"}. ` }),
+    state.touched ? Passes[state.touched].text : state.mask === 0 ? NO_PASS_TEXT : EVERY_PASS_TEXT,
+  );
+}
+
+/** Marks the cells of groups that no longer run under the current choice. */
+function markTimeline() {
+  const running = new Set(shownNodes().filter((node) => node.op === Op.EXEC).map((node) => node.step));
+  for (const cell of $("timeline").children) {
+    const group = state.groupOfStep.get(Number(cell.dataset.step));
+    const gone = !running.has(group.step) && outcomeOf(group) !== Outcome.LITERAL;
+    cell.classList.toggle("gone", gone);
+  }
+}
+
+/** Shows the graph under a choice of passes. */
+function choose(mask) {
+  state.mask = mask;
+  enterChoice();
+
+  // A selected operation that the graph no longer has has nothing to show.
+  if (state.selection !== null && !selected().node) {
+    state.selection = null;
+    $("detail").hidden = true;
+  }
+  renderSwitches();
+  markTimeline();
+  renderGraph();
+  renderModule();
+  if (state.selection !== null) {
+    select(state.selection);
+  }
 }
 
 function renderTimeline() {
@@ -234,6 +418,13 @@ function describeOutcome(group) {
       );
     case Outcome.LITERAL:
       return `Kept as recorded bytes. ${group.reason.split("\n").slice(0, 2).join(" ")}`;
+    case Outcome.COPY:
+      return (
+        "Not run. Every file of it that a later step reads has the bytes of a file it was given, " +
+        "so later steps read those files under another path."
+      );
+    case Outcome.FOLDED:
+      return "Not run. All that a later step reads of it is directories, symlinks or empty files, which are constants.";
     default:
       return "Dead. No output depends on anything this group wrote.";
   }
@@ -255,14 +446,14 @@ function table(headings, rows) {
 }
 
 function renderFiles(node) {
-  // An eliminated operation is described by counts alone.
-  if (node.dead) {
+  // An operation that elimination would remove is described by counts alone.
+  if (node.counted) {
     const given = node.inputs.reduce((total, input) => total + input.count, 0);
     return [
       create("p", {
         textContent:
-          `Given ${given.toLocaleString()} ${given === 1 ? "entry" : "entries"} and wrote ` +
-          `${node.writeCount.toLocaleString()}, none of which anything reads.`,
+          `Given ${given.toLocaleString()} ${given === 1 ? "entry" : "entries"}, wrote ` +
+          `${node.writeCount.toLocaleString()}. Nothing reads what it wrote, so elimination removes it.`,
       }),
     ];
   }
@@ -300,11 +491,14 @@ function renderFiles(node) {
   return parts;
 }
 
-/** The genrule named `id` in a build file's text. */
-function ruleText(buildFile, id) {
-  const start = buildFile.indexOf(`genrule(\n    name = "${id}"`);
+/** The rule for a node in a build file's text: `cc_object(` and so on, up to its closing parenthesis. */
+function ruleText(buildFile, node) {
+  const name = node.id.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const start = buildFile.search(new RegExp(`^[a-z_]+\\(\\n    name = "${name}",`, "m"));
   if (start < 0) {
-    return "This node is a file checked into the workspace, not a rule.";
+    return node.op === Op.EXEC
+      ? "With every pass on, no rule is generated for this group. The build files are of the graph with every pass on."
+      : "This node is not a rule. Its files are checked into the workspace, or read under the name of the file they copy.";
   }
   return buildFile.slice(start, buildFile.indexOf("\n)\n", start) + 2);
 }
@@ -314,7 +508,7 @@ async function renderLane() {
     tab.classList.toggle("active", tab.dataset.lane === state.lane);
   }
   const { node, group } = selected();
-  const absent = [create("p", { className: "muted", textContent: "This group was eliminated, so no rule is generated for it." })];
+  const absent = [create("p", { className: "muted", textContent: "This group has no operation under the passes that are on, so there is nothing to show." })];
   let content;
   if (state.lane === Lane.PROCESS) {
     content = renderProcesses(group);
@@ -324,28 +518,31 @@ async function renderLane() {
     content = renderFiles(node);
   } else if (state.lane === Lane.MLIR) {
     content = [create("pre", {}, valueTokens(node.mlir))];
-  } else if (node.dead) {
-    content = absent;
   } else {
     const file = state.lane === Lane.BAZEL ? "BUILD.bazel" : "BUCK";
-    content = [create("pre", { textContent: ruleText(await packageFile(file), node.id) })];
+    content = [create("pre", { textContent: ruleText(await packageFile(file), node) })];
   }
   $("lane").replaceChildren(...content);
 }
 
-/** Draws the graph the page is showing and says which one it is. */
+/** Draws the graph under the current choice and says what the grey nodes are. */
 function renderGraph() {
-  const text = state.eliminated ? GraphText.OPTIMIZED : GraphText.RECORDED;
-  $("graph-title").textContent = text.title;
-  const anyDead = state.graph.nodes.some((node) => node.dead);
-  $("graph-caption").textContent = anyDead || state.eliminated ? text.caption : text.captionWithoutDead;
+  const doomed = state.doomed.size;
+  let caption = "One node per operation, and an edge wherever one operation consumes a file version another wrote. ";
+  if (doomed > 0) {
+    caption +=
+      `Nothing reads what the ${doomed.toLocaleString()} grey ${doomed === 1 ? "node" : "nodes"} wrote. ` +
+      "Elimination removes them.";
+  } else {
+    caption += "A solid box is one build rule. Select a node, or a cell above.";
+  }
+  $("graph-caption").textContent = caption;
   draw($("graph"), shownNodes(), { labelOf: nodeLabel, classOf: nodeClass, onSelect: select });
 }
 
-/** The number of the value, or the first of the values, an operation defines. */
-function definedValue(node) {
-  const match = /^%(\d+)/.exec(node.mlir);
-  return match ? Number(match[1]) : null;
+/** The name of a printed value without its sigil and its result number: `cc_5` for `%cc_5#2`. */
+function valueName(printed) {
+  return printed.slice(1).replace(/[#:]\d+$/, "");
 }
 
 /** Printed MLIR as text and one element per SSA value, so a value can be pointed at. */
@@ -356,7 +553,7 @@ function valueTokens(text) {
       return part;
     }
     const token = create("span", { className: "value", textContent: part });
-    token.dataset.value = /\d+/.exec(part)[0];
+    token.dataset.value = valueName(part);
     return token;
   });
 }
@@ -389,6 +586,12 @@ function summaryLine(node) {
   if (node.op === Op.OUTPUT) {
     return headLine(node);
   }
+
+  // The copies raised from one group share a line: the first, and a count.
+  if (node.op === Op.COPY) {
+    const more = node.writeCount - 1;
+    return node.mlir.split("\n", 1)[0] + (more > 0 ? `  … and ${more.toLocaleString()} more` : "");
+  }
   return `${headLine(node)}[${node.writeCount.toLocaleString()} ${node.writeCount === 1 ? "entry" : "entries"}]`;
 }
 
@@ -396,6 +599,9 @@ function summaryLine(node) {
 function excerpt(node) {
   if (node.op === Op.OUTPUT) {
     return headLine(node);
+  }
+  if (node.op === Op.COPY) {
+    return node.mlir;
   }
   const entries = node.mlir.split("\n").filter((line) => line.trimStart().startsWith("#splice.entry"));
   const more = node.writeCount - SHOWN_ENTRIES;
@@ -428,10 +634,7 @@ function renderModule() {
   if (row && (row.offsetTop < listing.scrollTop || row.offsetTop > listing.scrollTop + listing.clientHeight - row.clientHeight)) {
     listing.scrollTop = row.offsetTop - listing.clientHeight / 3;
   }
-  const dead = state.graph.nodes.filter((node) => node.dead).length;
-  $("module-caption").textContent = state.eliminated
-    ? `${rows.length} operations are left. Elimination removed ${dead}. The values keep the numbers they had before.`
-    : `${rows.length} operations, ${dead} of them with no use for anything they define.`;
+  $("module-caption").textContent = `${rows.length.toLocaleString()} operations with the passes that are on.`;
 }
 
 /** Makes the module listing respond to the pointer. Called once. */
@@ -442,7 +645,7 @@ function wireModule() {
     if (value === undefined) {
       return;
     }
-    for (const token of listing.querySelectorAll(`.value[data-value="${value}"]`)) {
+    for (const token of listing.querySelectorAll(`.value[data-value="${CSS.escape(value)}"]`)) {
       token.classList.toggle("same", on);
     }
   };
@@ -454,8 +657,8 @@ function wireModule() {
   listing.addEventListener("click", (event) => {
     const token = event.target.closest(".value");
     const row = event.target.closest(".op");
-    const defining = token && state.nodeOfValue.get(Number(token.dataset.value));
-    if (defining && shownNodes().includes(defining)) {
+    const defining = token && state.nodeOfValue.get(token.dataset.value);
+    if (defining) {
       select(defining.id);
     } else if (row) {
       select(row.dataset.id);
@@ -468,8 +671,8 @@ function selected() {
   if (typeof state.selection === "number") {
     return { node: state.nodeOfStep.get(state.selection), group: state.groupOfStep.get(state.selection) };
   }
-  const node = state.graph.nodes.find((candidate) => candidate.id === state.selection);
-  const isGroup = node && (node.op === Op.EXEC || node.demoted);
+  const node = shownNodes().find((candidate) => candidate.id === state.selection);
+  const isGroup = node && (node.op === Op.EXEC || node.op === Op.COPY || node.demoted || node.folded);
   return { node, group: isGroup ? state.groupOfStep.get(node.step) : undefined };
 }
 
@@ -486,6 +689,8 @@ function select(selection) {
   $("detail-title").textContent = node ? nodeLabel(node) : group.name;
   if (group) {
     $("detail-summary").textContent = `Steps ${group.step} to ${group.end}. ${describeOutcome(group)}`;
+  } else if (!node) {
+    $("detail-summary").textContent = "";
   } else if (node.op === Op.OUTPUT) {
     $("detail-summary").textContent = `The derivation output ${node.path}, serialized as a NAR.`;
   } else {
@@ -503,26 +708,20 @@ async function load(id) {
   $("detail").hidden = true;
   renderPackages();
 
-  const [graph, hash] = await Promise.all([packageFile("graph.json"), packageFile("nar-hash")]);
+  const [graph, hash] = await Promise.all([fetchCompressedJson(`data/${id}/graph.json.gz`), packageFile("nar-hash")]);
   if (state.id !== id) {
     return;
   }
-  state.graph = JSON.parse(graph);
+  state.graph = graph;
   state.groupOfStep = new Map(state.graph.groups.map((group) => [group.step, group]));
-  state.nodeOfStep = new Map(
-    state.graph.nodes.filter((node) => node.op === Op.EXEC || node.demoted).map((node) => [node.step, node]),
-  );
-
-  state.nodeOfValue = new Map(state.graph.nodes.map((node) => [definedValue(node), node]));
 
   // A graph drawn for another package shares no nodes with this one.
   $("graph").replaceChildren();
   renderStats(hash);
   renderTimeline();
-  renderGraph();
-  renderModule();
+  choose(state.mask);
   const sourceRoot = $("package-files").dataset.sourceRoot;
-  for (const [link, file] of [["mlir", "graph.mlir.gz"], ["bazel", "BUILD.bazel"], ["buck", "BUCK"], ["json", "graph.json"]]) {
+  for (const [link, file] of [["mlir", "graph.mlir.gz"], ["bazel", "BUILD.bazel"], ["buck", "BUCK"], ["json", "graph.json.gz"]]) {
     $(`download-${link}`).href = `${sourceRoot}/${id}/${file}`;
   }
 }
@@ -533,20 +732,6 @@ function packageFromLocation() {
 }
 
 async function main() {
-  $("eliminate").addEventListener("click", () => {
-    state.eliminated = !state.eliminated;
-    $("timeline").classList.toggle("eliminated", state.eliminated);
-    $("eliminate").setAttribute("aria-pressed", String(state.eliminated));
-    $("eliminate").textContent = state.eliminated ? "Bring the dead groups back" : "Run dead-code elimination";
-
-    // A selected operation that was just eliminated has nothing to show.
-    if (state.eliminated && selected().node?.dead) {
-      state.selection = null;
-      $("detail").hidden = true;
-    }
-    renderGraph();
-    renderModule();
-  });
   wireModule();
   for (const tab of $("lanes").querySelectorAll("a")) {
     tab.addEventListener("click", (event) => {

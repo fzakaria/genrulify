@@ -1,4 +1,6 @@
-genrule(
+load(":genrulify.buck.bzl", "nix_archive", "recorded")
+
+recorded(
     name = "s2016_cp",
     srcs = [
         "actions/s2016_cp.manifest",
@@ -8,77 +10,34 @@ genrule(
         "sandbox.sh",
     ],
     out = "s2016_cp",
-    cmd = " ".join([
+    cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
         "--name s2016_cp --timeout 300",
         "run --cwd /build --env 13 --argv0 cp --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 7 --",
         "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/cp -r --preserve=timestamps --reflink=auto -- /nix/store/y4j27ncqyj9gqnq8x4wrzrk9365b5j9f-source source",
-    ]),
-    remote = False,
-)
-
-genrule(
-    name = "s2049_chmod",
-    srcs = [
-        "actions/s2049_chmod.manifest",
-        "closure.txt",
-        "env/14.env",
-        "platform",
-        "sandbox.sh",
-        ":s2016_cp",
     ],
-    out = "s2049_chmod",
-    cmd = " ".join([
-        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name s2049_chmod --timeout 300",
-        "run --cwd /build --env 14 --argv0 chmod --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 5 --",
-        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/chmod -R u+w -- source",
-    ]),
-    remote = False,
 )
 
-genrule(
-    name = "s2622_c__",
+recorded(
+    name = "s2685_g__",
     srcs = [
-        "actions/s2622_c__.manifest",
+        "actions/s2685_g__.manifest",
         "closure.txt",
         "env/25.env",
         "platform",
         "sandbox.sh",
-        ":s2049_chmod",
+        ":s2016_cp",
     ],
-    out = "s2622_c__",
-    cmd = " ".join([
+    out = "s2685_g__",
+    cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name s2622_c__ --timeout 300",
-        "run --cwd /build/source --env 25 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 3 --",
-        "/nix/store/10dxp0qxqxxsyiljrh2kp0xqhz6arhcx-bash-5.3p15/bin/bash /nix/store/j1938gsbvbhkyz4kbmvjk56r479mkw3s-gcc-wrapper-16.2.0/bin/c++ main.cpp",
-    ]),
-    remote = False,
+        "--name s2685_g__ --timeout 300",
+        "run --cwd /build/source --env 25 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 35 --",
+        "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/g++ -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -Wl,-dynamic-linker=/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ld-linux-x86-64.so.2 main.cpp -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=s7lfxf6nlj -Wl,-rpath -Wl,/nix/store/s7lfxf6nljg66na31h9ay8qj8adiwdxs-colstr-1.0.0/lib -L/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib -L/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0 -L/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -L/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib",
+    ],
 )
 
-genrule(
-    name = "s3122_install",
-    srcs = [
-        "actions/s3122_install.manifest",
-        "closure.txt",
-        "env/26.env",
-        "platform",
-        "sandbox.sh",
-        ":s2049_chmod",
-        ":s2622_c__",
-    ],
-    out = "s3122_install",
-    cmd = " ".join([
-        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name s3122_install --timeout 300",
-        "run --cwd /build/source --env 26 --argv0 install --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 4 --",
-        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/install -Dm755 a.out /nix/store/s7lfxf6nljg66na31h9ay8qj8adiwdxs-colstr-1.0.0/bin/colstr",
-    ]),
-    remote = False,
-)
-
-genrule(
+recorded(
     name = "s3345_find_patchelf",
     srcs = [
         "actions/s3345_find_patchelf.manifest",
@@ -87,86 +46,50 @@ genrule(
         "env/29.env",
         "platform",
         "sandbox.sh",
-        ":s2049_chmod",
-        ":s3122_install",
+        ":s2685_g__",
     ],
     out = "s3345_find_patchelf",
-    cmd = " ".join([
+    cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
         "--name s3345_find_patchelf --timeout 300 --pipe 474:0:1:0",
         "run --cwd /build/source --env 28 --argv0 find --fd 0=null --fd 1=pipe-w:474 --fd 2=err --status 0 --argc 5 --",
         "/nix/store/ycrbcy9sg4knpnik6a01dk70l0m673x7-findutils-4.11.0/bin/find /nix/store/s7lfxf6nljg66na31h9ay8qj8adiwdxs-colstr-1.0.0 -type f -print0",
         "run --cwd /build/source --env 29 --argv0 patchelf --fd 0=pipe-r:474 --fd 1=err --fd 2=err --fd 63=pipe-r:474 --after 0 --status 0 --argc 3 --",
         "/nix/store/qcwnw71iksl68k7fipizi6wn0s1xms9v-patchelf-0.15.2/bin/patchelf --shrink-rpath /nix/store/s7lfxf6nljg66na31h9ay8qj8adiwdxs-colstr-1.0.0/bin/colstr",
-    ]),
-    remote = False,
-)
-
-genrule(
-    name = "s3690_mktemp",
-    srcs = [
-        "actions/s3690_mktemp.manifest",
-        "closure.txt",
-        "env/30.env",
-        "platform",
-        "sandbox.sh",
-        ":s2049_chmod",
     ],
-    out = "s3690_mktemp",
-    cmd = " ".join([
-        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name s3690_mktemp --timeout 300",
-        "run --cwd /build/source --env 30 --argv0 mktemp --fd 0=null --fd 1=null --fd 2=err --status 0 --argc 3 --",
-        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/mktemp --tmpdir=/build striperr.XXXXXX",
-    ]),
-    remote = False,
 )
 
-genrule(
-    name = "s3721_find_sort_cut_xargs",
+recorded(
+    name = "s3796_strip",
     srcs = [
-        "actions/s3721_find_sort_cut_xargs.manifest",
+        "actions/s3796_strip.manifest",
         "closure.txt",
-        "env/33.env",
-        "env/35.env",
-        "env/36.env",
-        "env/37.env",
+        "const_3690_mktemp",
+        "env/39.env",
         "platform",
         "sandbox.sh",
-        ":s2049_chmod",
-        ":s3122_install",
         ":s3345_find_patchelf",
-        ":s3690_mktemp",
     ],
-    out = "s3721_find_sort_cut_xargs",
-    cmd = " ".join([
+    out = "s3796_strip",
+    cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name s3721_find_sort_cut_xargs --timeout 300 --pipe 500:0:1:0 --pipe 501:1:2:0 --pipe 502:2:3:0",
-        "run --cwd /build/source --env 33 --argv0 find --fd 0=null --fd 1=pipe-w:500 --fd 2=err --status 0 --argc 10 --",
-        "/nix/store/ycrbcy9sg4knpnik6a01dk70l0m673x7-findutils-4.11.0/bin/find /nix/store/s7lfxf6nljg66na31h9ay8qj8adiwdxs-colstr-1.0.0/bin -type f -a '!' -path '/nix/store/s7lfxf6nljg66na31h9ay8qj8adiwdxs-colstr-1.0.0/lib/debug/*' -printf '%D-%i,%p\\0'",
-        "run --cwd /build/source --env 35 --argv0 sort --fd 0=pipe-r:500 --fd 1=pipe-w:501 --fd 2=err --after 0 --status 0 --argc 5 --",
-        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/sort -t, -k1,1 -u -z",
-        "run --cwd /build/source --env 36 --argv0 cut --fd 0=pipe-r:501 --fd 1=pipe-w:502 --fd 2=err --after 0,1 --status 0 --argc 4 --",
-        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/cut -d, -f2- -z",
-        "run --cwd /build/source --env 37 --argv0 xargs --fd 0=pipe-r:502 --fd 1=err --fd 2=file:w:/build/striperr.WNwmmf --after 0,1,2 --status 0 --argc 10 --",
-        "/nix/store/ycrbcy9sg4knpnik6a01dk70l0m673x7-findutils-4.11.0/bin/xargs -r -0 -n1 -P 1 -- strip -S -p",
-    ]),
-    remote = False,
+        "--name s3796_strip --timeout 300",
+        "run --cwd /build/source --env 39 --fd 0=null --fd 1=err --fd 2=file:w:/build/striperr.WNwmmf --status 0 --argc 5 --",
+        "/nix/store/y5sgl0vvrpbcwgjwpjs60r1hg0gi7i0n-binutils-2.46/bin/strip --enable-deterministic-archives -S -p /nix/store/s7lfxf6nljg66na31h9ay8qj8adiwdxs-colstr-1.0.0/bin/colstr",
+    ],
 )
 
-genrule(
+nix_archive(
     name = "archive",
     srcs = [
         "actions/archive.manifest",
         "sandbox.sh",
-        ":s3122_install",
-        ":s3721_find_sort_cut_xargs",
+        ":s3796_strip",
     ],
     out = "archive.nar",
-    cmd = " ".join([
+    cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
         "--name archive pack /nix/store/s7lfxf6nljg66na31h9ay8qj8adiwdxs-colstr-1.0.0",
-    ]),
-    remote = False,
+    ],
 )
 

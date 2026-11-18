@@ -1,4 +1,6 @@
-genrule(
+load(":genrulify.buck.bzl", "nix_archive", "recorded")
+
+recorded(
     name = "s1851_cp",
     srcs = [
         "actions/s1851_cp.manifest",
@@ -8,77 +10,34 @@ genrule(
         "sandbox.sh",
     ],
     out = "s1851_cp",
-    cmd = " ".join([
+    cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
         "--name s1851_cp --timeout 300",
         "run --cwd /build --env 13 --argv0 cp --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 7 --",
         "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/cp -r --preserve=timestamps --reflink=auto -- /nix/store/lwxq6mgyrggsc6s3x0p4izbn5w3j0vvs-source source",
-    ]),
-    remote = False,
-)
-
-genrule(
-    name = "s1906_chmod",
-    srcs = [
-        "actions/s1906_chmod.manifest",
-        "closure.txt",
-        "env/14.env",
-        "platform",
-        "sandbox.sh",
-        ":s1851_cp",
     ],
-    out = "s1906_chmod",
-    cmd = " ".join([
-        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name s1906_chmod --timeout 300",
-        "run --cwd /build --env 14 --argv0 chmod --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 5 --",
-        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/chmod -R u+w -- source",
-    ]),
-    remote = False,
 )
 
-genrule(
-    name = "s1934_find",
+recorded(
+    name = "s2674_.pyproject-build-wrapped",
     srcs = [
-        "actions/s1934_find.manifest",
-        "closure.txt",
-        "env/15.env",
-        "platform",
-        "sandbox.sh",
-        ":s1906_chmod",
-    ],
-    out = "s1934_find",
-    cmd = " ".join([
-        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name s1934_find --timeout 300",
-        "run --cwd /build --env 15 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 12 --",
-        "/nix/store/ycrbcy9sg4knpnik6a01dk70l0m673x7-findutils-4.11.0/bin/find source '!' -newermt 1980-01-01 -exec touch -h -d 1980-01-02 '{}' +",
-    ]),
-    remote = False,
-)
-
-genrule(
-    name = "s2660_pyproject-build",
-    srcs = [
-        "actions/s2660_pyproject-build.manifest",
+        "actions/s2674_.pyproject-build-wrapped.manifest",
         "closure.txt",
         "env/26.env",
         "platform",
         "sandbox.sh",
-        ":s1906_chmod",
-        ":s1934_find",
+        ":s1851_cp",
     ],
-    out = "s2660_pyproject-build",
-    cmd = " ".join([
+    out = "s2674_.pyproject-build-wrapped",
+    cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name s2660_pyproject-build --timeout 300",
-        "run --cwd /build/source --env 26 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 7 --",
-        "/nix/store/10dxp0qxqxxsyiljrh2kp0xqhz6arhcx-bash-5.3p15/bin/bash -e /nix/store/i4ndg5syrmvch754vlchyhz5chaphkgn-python3.14-build-1.5.1/bin/pyproject-build --no-isolation --outdir dist/ --wheel",
-    ]),
-    remote = False,
+        "--name s2674_.pyproject-build-wrapped --timeout 300",
+        "run --cwd /build/source --env 26 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 6 --",
+        "/nix/store/lb41b0anx1f98y9y5s9mdv97gjgsq740-python3-3.14.7/bin/python3.14 /nix/store/i4ndg5syrmvch754vlchyhz5chaphkgn-python3.14-build-1.5.1/bin/.pyproject-build-wrapped --no-isolation --outdir dist/ --wheel",
+    ],
 )
 
-genrule(
+recorded(
     name = "s8691_python3.14",
     srcs = [
         "actions/s8691_python3.14.manifest",
@@ -86,90 +45,43 @@ genrule(
         "env/30.env",
         "platform",
         "sandbox.sh",
-        ":s1906_chmod",
-        ":s2660_pyproject-build",
+        ":s2674_.pyproject-build-wrapped",
     ],
     out = "s8691_python3.14",
-    cmd = " ".join([
+    cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
         "--name s8691_python3.14 --timeout 300",
         "run --cwd /build/source/dist --env 30 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 8 --",
         "/nix/store/lb41b0anx1f98y9y5s9mdv97gjgsq740-python3-3.14.7/bin/python3.14 -m installer --prefix /nix/store/ryg0sjdnp2vhi51m876d5blj7si80mgf-python3.14-six-1.17.0 --executable /nix/store/lb41b0anx1f98y9y5s9mdv97gjgsq740-python3-3.14.7/bin/python3.14 six-1.17.0-py2.py3-none-any.whl",
-    ]),
-    remote = False,
-)
-
-genrule(
-    name = "s9656_mv",
-    srcs = [
-        "actions/s9656_mv.manifest",
-        "closure.txt",
-        "env/32.env",
-        "platform",
-        "sandbox.sh",
-        ":s1906_chmod",
-        ":s2660_pyproject-build",
     ],
-    out = "s9656_mv",
-    cmd = " ".join([
-        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name s9656_mv --timeout 300",
-        "run --cwd /build/source --env 32 --argv0 mv --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 3 --",
-        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/mv dist /nix/store/xdyfansxkvyki35nzivbxd5pcvcx09vg-python3.14-six-1.17.0-dist",
-    ]),
-    remote = False,
 )
 
-genrule(
-    name = "s10945_mkdir",
-    srcs = [
-        "actions/s10945_mkdir.manifest",
-        "closure.txt",
-        "env/49.env",
-        "platform",
-        "sandbox.sh",
-        ":s1906_chmod",
-        ":s8691_python3.14",
-    ],
-    out = "s10945_mkdir",
-    cmd = " ".join([
-        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name s10945_mkdir --timeout 300",
-        "run --cwd /build/source --env 49 --argv0 mkdir --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 3 --",
-        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/mkdir -p /nix/store/ryg0sjdnp2vhi51m876d5blj7si80mgf-python3.14-six-1.17.0/nix-support",
-    ]),
-    remote = False,
-)
-
-genrule(
+nix_archive(
     name = "archive_dist",
     srcs = [
         "actions/archive_dist.manifest",
         "sandbox.sh",
-        ":s9656_mv",
+        ":s2674_.pyproject-build-wrapped",
     ],
     out = "archive_dist.nar",
-    cmd = " ".join([
+    cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
         "--name archive_dist pack /nix/store/xdyfansxkvyki35nzivbxd5pcvcx09vg-python3.14-six-1.17.0-dist",
-    ]),
-    remote = False,
+    ],
 )
 
-genrule(
+nix_archive(
     name = "archive_out",
     srcs = [
         "actions/archive_out.manifest",
         "glue_10973",
         "sandbox.sh",
-        ":s10945_mkdir",
         ":s8691_python3.14",
     ],
     out = "archive_out.nar",
-    cmd = " ".join([
+    cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
         "--name archive_out pack /nix/store/ryg0sjdnp2vhi51m876d5blj7si80mgf-python3.14-six-1.17.0",
-    ]),
-    remote = False,
+    ],
 )
 
