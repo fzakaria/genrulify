@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Theory and MLIR dialect · genrulify</title>
+    <meta name="description" content="How a recorded Nix build becomes a graph of file versions, what the splice dialect represents, and why replayed groups compose." />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <header class="site">
+      <a class="wordmark" href="./">genrulify</a>
+      <nav class="site" aria-label="Site">
+        <a href="./">Explorer</a>
+        <a href="theory.html" aria-current="page">Theory</a>
+        <a href="https://github.com/fzakaria/genrulify">GitHub</a>
+      </nav>
+    </header>
+    <main class="theory">
+      <h1>The theory behind the genrules</h1>
+      <p>
+        Nix runs a builder that can discover its next input halfway through a command.
+        Bazel and Buck2 want the dependencies of each action up front. A recording gives
+        genrulify one execution in which the builder has already made those choices.
+        The conversion target is concrete: build the same output Nix archive (NAR) for
+        that recording.
+      </p>
+      <nav class="site" aria-label="On this page">
+        <a href="#groups">Process groups</a>
+        <a href="#dialect">The MLIR dialect</a>
+        <a href="#composition">Why replay composes</a>
+      </nav>
+      <h2 id="groups">Where does an action start?</h2>
+      <p>
+        Take a compiler driver. It may launch a compiler, an assembler and a linker.
+        Running the driver once already launches its children. Genrulify can keep that
+        subtree together. It groups overlapping cuts and processes that share a pipe,
+        then compares the writable filesystem at the start and end of the group.
+        Changes made by the driver shell between groups enter the graph as recorded values.
+      </p>
+      <p>
+        Each observed change to a path defines a value. A later group that reads
+        that version gets an edge to its producer. Even if both commands open
+        <code>/build/bundle</code>, the bytes before and after an append have distinct
+        names. This is single static assignment (SSA) applied to filesystem entries.
+      </p>
+
+      <h2 id="dialect">The <code>splice</code> MLIR dialect</h2>
+      <p>
+        A value of type <code>!splice.entry</code> represents one version of one path.
+        Its <code>#splice.entry</code> attribute records the path, kind, mode and
+        modification time. A regular file carries a content hash, a symlink carries its
+        target, and a directory's children have their own values.
+      </p>
+      <table>
+        <caption>Operations in a recorded build</caption>
+        <thead><tr><th scope="col">Operation</th><th scope="col">Meaning</th></tr></thead>
+        <tbody>
+          <tr><th scope="row"><code>splice.literal</code></th><td>Introduces entries from the recording. These include initial sandbox contents, writes between groups and results supplied from the recording when replay falls short.</td></tr>
+          <tr><th scope="row"><code>splice.exec</code></th><td>Consumes the versions visible to a group and produces the versions it wrote. Its step identifies the recorded processes and their arguments, environment and working directories.</td></tr>
+          <tr><th scope="row"><code>splice.output</code></th><td>Selects the final version of each entry under a derivation output and gives the archive rule its inputs.</td></tr>
+        </tbody>
+      </table>
+      <h3>Read an actual edge</h3>
+      <p>
+        In the three-command example, <code>%0</code> is the build directory.
+        The first <code>dd</code> produces <code>%1</code>. The second consumes
+        <code>%1</code> and produces <code>%2</code> at the same path. The hashes
+        below are abbreviated.
+      </p>
+      <pre aria-label="Two operations from the example recording">%1 = splice.exec "dd" at 735(%0) -&gt; [
+    #splice.entry&lt;"/build/bundle" file 644 mtime 1 "cb94740a…"&gt;
+]
+%2 = splice.exec "dd" at 764(%0, %1) -&gt; [
+    #splice.entry&lt;"/build/bundle" file 644 mtime 1 "50f55425…"&gt;
+]</pre>
+      <p>
+        In the explorer, select the <code>dd</code> at step 764 and switch between
+        Files, MLIR and BUILD.bazel to follow that edge into a rule.
+        <a href="./?pkg=example">Open the example recording</a>.
+      </p>
+
+      <h2 id="composition">Why replay composes</h2>
+      <p>
+        Start with a literal. Its bytes come from the recording. Now pick a group
+        whose input versions have all been produced. If those inputs match the
+        recording, the group sees the same staged filesystem it saw during its
+        isolated check. Assuming the group is deterministic on that filesystem and
+        execution platform, it produces the same used results. Apply the argument
+        down the graph and the archive rule receives the recorded output entries.
+        Every topological ordering respects the same edges.
+      </p>
+      <p>
+        The checker runs surviving groups in isolation and checks their exit statuses
+        and used results. It can widen the inputs, pin individual results to recorded
+        bytes, or replace a group with a literal. MLIR's canonicalizer can remove
+        groups whose results have no users. In the limiting case every output entry
+        can be supplied as a literal. The explorer reports replay coverage so you
+        can tell how much work each graph actually recomputes.
+      </p>
+      <p>
+        Two successful replay passes provide evidence about determinism. The proof
+        assumes it. A matching NAR establishes output-tree equality for the fixed
+        inputs. An edit that adds a header can change the compiler's choices and
+        calls for a new recording.
+      </p>
+      <p>
+        The formal note gives the assumptions and induction proof using the task,
+        store and scheduler vocabulary of <cite>Build Systems à la Carte</cite>.
+        <a href="https://github.com/fzakaria/genrulify/blob/main/docs/theory.md">Read the proof</a>
+        or <a href="https://github.com/fzakaria/genrulify/blob/main/src/Splice.td">inspect the dialect definition</a>.
+      </p>
+    </main>
+  </body>
+</html>

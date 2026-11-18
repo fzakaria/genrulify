@@ -33,5 +33,7 @@ pkgs.runCommand "genrulify-site" { } ''
   # The stylesheet is fetched by a fixed name, so its content hash rides
   # as a query string instead.
   css=$(sha256sum $out/style.css | cut -c1-12)
-  substituteInPlace $out/index.html --replace-fail '"style.css"' "\"style.css?v=$css\""
+  for page in $out/*.html; do
+    substituteInPlace "$page" --replace-fail '"style.css"' "\"style.css?v=$css\""
+  done
 ''

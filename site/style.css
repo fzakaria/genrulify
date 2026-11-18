@@ -350,3 +350,28 @@ footer {
   background: none;
   padding: 0;
 }
+
+/* Keep the proof readable and let long MLIR instructions scroll within the page. */
+.wordmark {
+  color: inherit;
+  font-size: 1.3rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+.theory {
+  max-width: 74ch;
+  margin: 2rem auto;
+}
+.theory h1 {
+  font-size: 1.7rem;
+  line-height: 1.2;
+}
+.theory h3 {
+  font-size: 1rem;
+  margin-bottom: 0;
+}
+.theory caption {
+  text-align: left;
+  font-weight: 600;
+  padding-bottom: 0.4rem;
+}
