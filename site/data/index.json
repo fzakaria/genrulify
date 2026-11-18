@@ -10,6 +10,11 @@
     "note": "GNU hello 2.12.3: autotools, make, make check, make install"
   },
   {
+    "id": "hello-cores4",
+    "label": "hello, four jobs",
+    "note": "GNU hello recorded with --cores 4 and make opened: recipes that overlapped are merged into two large groups"
+  },
+  {
     "id": "bash",
     "label": "bash",
     "note": "GNU bash 5.3: autotools, 11,847 execve calls, six outputs"

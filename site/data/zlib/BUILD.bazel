@@ -2,7 +2,7 @@ genrule(
     name = "s1268_tar",
     srcs = [":literals/sandbox_720.layer",":plans/s1268_tar.json",":platform.layer"],
     outs = ["s1268_tar.layer"],
-    cmd = "'/nix/store/a3z311rmr5hhy8zyyv64fd96v6rqjfpw-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s1268_tar.json)\" \"$@\" \"$(location :literals/sandbox_720.layer)\" \"$(location :platform.layer)\"",
+    cmd = "'/nix/store/4vc73zik52gqn5vv06wch91x5hafahjv-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s1268_tar.json)\" \"$@\" \"$(location :literals/sandbox_720.layer)\" \"$(location :platform.layer)\"",
     tags = ["no-remote"],
 )
 
@@ -10,7 +10,7 @@ genrule(
     name = "s2343_cat_patch",
     srcs = [":literals/sandbox_720.layer",":plans/s2343_cat_patch.json",":platform.layer",":s1268_tar"],
     outs = ["s2343_cat_patch.layer"],
-    cmd = "'/nix/store/a3z311rmr5hhy8zyyv64fd96v6rqjfpw-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s2343_cat_patch.json)\" \"$@\" \"$(location :literals/sandbox_720.layer)\" \"$(location :s1268_tar)\" \"$(location :platform.layer)\"",
+    cmd = "'/nix/store/4vc73zik52gqn5vv06wch91x5hafahjv-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s2343_cat_patch.json)\" \"$@\" \"$(location :literals/sandbox_720.layer)\" \"$(location :s1268_tar)\" \"$(location :platform.layer)\"",
     tags = ["no-remote"],
 )
 
@@ -18,7 +18,7 @@ genrule(
     name = "s2371_cat_patch",
     srcs = [":literals/sandbox_720.layer",":plans/s2371_cat_patch.json",":platform.layer",":s1268_tar",":s2343_cat_patch"],
     outs = ["s2371_cat_patch.layer"],
-    cmd = "'/nix/store/a3z311rmr5hhy8zyyv64fd96v6rqjfpw-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s2371_cat_patch.json)\" \"$@\" \"$(location :literals/sandbox_720.layer)\" \"$(location :s1268_tar)\" \"$(location :s2343_cat_patch)\" \"$(location :platform.layer)\"",
+    cmd = "'/nix/store/4vc73zik52gqn5vv06wch91x5hafahjv-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s2371_cat_patch.json)\" \"$@\" \"$(location :literals/sandbox_720.layer)\" \"$(location :s1268_tar)\" \"$(location :s2343_cat_patch)\" \"$(location :platform.layer)\"",
     tags = ["no-remote"],
 )
 
@@ -26,7 +26,7 @@ genrule(
     name = "s2637_find_basename_stat_mktemp__4",
     srcs = [":literals/glue_2424.layer",":literals/sandbox_720.layer",":plans/s2637_find_basename_stat_mktemp__4.json",":platform.layer",":s1268_tar"],
     outs = ["s2637_find_basename_stat_mktemp__4.layer"],
-    cmd = "'/nix/store/a3z311rmr5hhy8zyyv64fd96v6rqjfpw-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s2637_find_basename_stat_mktemp__4.json)\" \"$@\" \"$(location :literals/glue_2424.layer)\" \"$(location :literals/sandbox_720.layer)\" \"$(location :s1268_tar)\" \"$(location :platform.layer)\"",
+    cmd = "'/nix/store/4vc73zik52gqn5vv06wch91x5hafahjv-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s2637_find_basename_stat_mktemp__4.json)\" \"$@\" \"$(location :literals/glue_2424.layer)\" \"$(location :literals/sandbox_720.layer)\" \"$(location :s1268_tar)\" \"$(location :platform.layer)\"",
     tags = ["no-remote"],
 )
 
@@ -34,7 +34,7 @@ genrule(
     name = "s2780_configure",
     srcs = [":literals/glue_2308.layer",":literals/glue_2437.layer",":literals/sandbox_720.layer",":plans/s2780_configure.json",":platform.layer",":s1268_tar",":s2371_cat_patch",":s2637_find_basename_stat_mktemp__4"],
     outs = ["s2780_configure.layer"],
-    cmd = "'/nix/store/a3z311rmr5hhy8zyyv64fd96v6rqjfpw-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s2780_configure.json)\" \"$@\" \"$(location :literals/glue_2308.layer)\" \"$(location :literals/glue_2437.layer)\" \"$(location :literals/sandbox_720.layer)\" \"$(location :s1268_tar)\" \"$(location :s2371_cat_patch)\" \"$(location :s2637_find_basename_stat_mktemp__4)\" \"$(location :platform.layer)\"",
+    cmd = "'/nix/store/4vc73zik52gqn5vv06wch91x5hafahjv-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s2780_configure.json)\" \"$@\" \"$(location :literals/glue_2308.layer)\" \"$(location :literals/glue_2437.layer)\" \"$(location :literals/sandbox_720.layer)\" \"$(location :s1268_tar)\" \"$(location :s2371_cat_patch)\" \"$(location :s2637_find_basename_stat_mktemp__4)\" \"$(location :platform.layer)\"",
     tags = ["no-remote"],
 )
 
@@ -42,7 +42,7 @@ genrule(
     name = "s6336_make",
     srcs = [":literals/sandbox_720.layer",":plans/s6336_make.json",":platform.layer",":s1268_tar",":s2780_configure"],
     outs = ["s6336_make.layer"],
-    cmd = "'/nix/store/a3z311rmr5hhy8zyyv64fd96v6rqjfpw-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s6336_make.json)\" \"$@\" \"$(location :literals/sandbox_720.layer)\" \"$(location :s1268_tar)\" \"$(location :s2780_configure)\" \"$(location :platform.layer)\"",
+    cmd = "'/nix/store/4vc73zik52gqn5vv06wch91x5hafahjv-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s6336_make.json)\" \"$@\" \"$(location :literals/sandbox_720.layer)\" \"$(location :s1268_tar)\" \"$(location :s2780_configure)\" \"$(location :platform.layer)\"",
     tags = ["no-remote"],
 )
 
@@ -50,15 +50,15 @@ genrule(
     name = "s12869_mkdir",
     srcs = [":literals/sandbox_720.layer",":plans/s12869_mkdir.json",":platform.layer",":s1268_tar"],
     outs = ["s12869_mkdir.layer"],
-    cmd = "'/nix/store/a3z311rmr5hhy8zyyv64fd96v6rqjfpw-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s12869_mkdir.json)\" \"$@\" \"$(location :literals/sandbox_720.layer)\" \"$(location :s1268_tar)\" \"$(location :platform.layer)\"",
+    cmd = "'/nix/store/4vc73zik52gqn5vv06wch91x5hafahjv-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s12869_mkdir.json)\" \"$@\" \"$(location :literals/sandbox_720.layer)\" \"$(location :s1268_tar)\" \"$(location :platform.layer)\"",
     tags = ["no-remote"],
 )
 
 genrule(
     name = "s12922_make",
-    srcs = [":literals/glue_12381.layer",":literals/glue_2437.layer",":literals/lit_2780_configure.layer",":literals/sandbox_720.layer",":plans/s12922_make.json",":platform.layer",":s1268_tar",":s12869_mkdir",":s2371_cat_patch",":s2637_find_basename_stat_mktemp__4",":s2780_configure",":s6336_make"],
+    srcs = [":literals/glue_12381.layer",":literals/lit_2780_configure.layer",":literals/sandbox_720.layer",":plans/s12922_make.json",":platform.layer",":s1268_tar",":s12869_mkdir",":s2371_cat_patch",":s2637_find_basename_stat_mktemp__4",":s2780_configure",":s6336_make"],
     outs = ["s12922_make.layer"],
-    cmd = "'/nix/store/a3z311rmr5hhy8zyyv64fd96v6rqjfpw-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s12922_make.json)\" \"$@\" \"$(location :literals/glue_12381.layer)\" \"$(location :literals/glue_2437.layer)\" \"$(location :literals/lit_2780_configure.layer)\" \"$(location :literals/sandbox_720.layer)\" \"$(location :s1268_tar)\" \"$(location :s12869_mkdir)\" \"$(location :s2371_cat_patch)\" \"$(location :s2637_find_basename_stat_mktemp__4)\" \"$(location :s2780_configure)\" \"$(location :s6336_make)\" \"$(location :platform.layer)\"",
+    cmd = "'/nix/store/4vc73zik52gqn5vv06wch91x5hafahjv-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s12922_make.json)\" \"$@\" \"$(location :literals/glue_12381.layer)\" \"$(location :literals/lit_2780_configure.layer)\" \"$(location :literals/sandbox_720.layer)\" \"$(location :s1268_tar)\" \"$(location :s12869_mkdir)\" \"$(location :s2371_cat_patch)\" \"$(location :s2637_find_basename_stat_mktemp__4)\" \"$(location :s2780_configure)\" \"$(location :s6336_make)\" \"$(location :platform.layer)\"",
     tags = ["no-remote"],
 )
 
@@ -66,7 +66,7 @@ genrule(
     name = "s13860_find_patchelf",
     srcs = [":literals/sandbox_720.layer",":plans/s13860_find_patchelf.json",":platform.layer",":s1268_tar",":s12869_mkdir",":s12922_make"],
     outs = ["s13860_find_patchelf.layer"],
-    cmd = "'/nix/store/a3z311rmr5hhy8zyyv64fd96v6rqjfpw-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s13860_find_patchelf.json)\" \"$@\" \"$(location :literals/sandbox_720.layer)\" \"$(location :s1268_tar)\" \"$(location :s12869_mkdir)\" \"$(location :s12922_make)\" \"$(location :platform.layer)\"",
+    cmd = "'/nix/store/4vc73zik52gqn5vv06wch91x5hafahjv-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s13860_find_patchelf.json)\" \"$@\" \"$(location :literals/sandbox_720.layer)\" \"$(location :s1268_tar)\" \"$(location :s12869_mkdir)\" \"$(location :s12922_make)\" \"$(location :platform.layer)\"",
     tags = ["no-remote"],
 )
 
@@ -74,7 +74,7 @@ genrule(
     name = "s14068_find_xargs",
     srcs = [":literals/sandbox_720.layer",":plans/s14068_find_xargs.json",":platform.layer",":s1268_tar",":s12869_mkdir",":s12922_make"],
     outs = ["s14068_find_xargs.layer"],
-    cmd = "'/nix/store/a3z311rmr5hhy8zyyv64fd96v6rqjfpw-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s14068_find_xargs.json)\" \"$@\" \"$(location :literals/sandbox_720.layer)\" \"$(location :s1268_tar)\" \"$(location :s12869_mkdir)\" \"$(location :s12922_make)\" \"$(location :platform.layer)\"",
+    cmd = "'/nix/store/4vc73zik52gqn5vv06wch91x5hafahjv-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s14068_find_xargs.json)\" \"$@\" \"$(location :literals/sandbox_720.layer)\" \"$(location :s1268_tar)\" \"$(location :s12869_mkdir)\" \"$(location :s12922_make)\" \"$(location :platform.layer)\"",
     tags = ["no-remote"],
 )
 
@@ -82,7 +82,7 @@ genrule(
     name = "s14174_find_sort_cut_xargs",
     srcs = [":literals/lit_14153_mktemp.layer",":literals/sandbox_720.layer",":plans/s14174_find_sort_cut_xargs.json",":platform.layer",":s1268_tar",":s12869_mkdir",":s12922_make",":s13860_find_patchelf"],
     outs = ["s14174_find_sort_cut_xargs.layer"],
-    cmd = "'/nix/store/a3z311rmr5hhy8zyyv64fd96v6rqjfpw-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s14174_find_sort_cut_xargs.json)\" \"$@\" \"$(location :literals/lit_14153_mktemp.layer)\" \"$(location :literals/sandbox_720.layer)\" \"$(location :s1268_tar)\" \"$(location :s12869_mkdir)\" \"$(location :s12922_make)\" \"$(location :s13860_find_patchelf)\" \"$(location :platform.layer)\"",
+    cmd = "'/nix/store/4vc73zik52gqn5vv06wch91x5hafahjv-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s14174_find_sort_cut_xargs.json)\" \"$@\" \"$(location :literals/lit_14153_mktemp.layer)\" \"$(location :literals/sandbox_720.layer)\" \"$(location :s1268_tar)\" \"$(location :s12869_mkdir)\" \"$(location :s12922_make)\" \"$(location :s13860_find_patchelf)\" \"$(location :platform.layer)\"",
     tags = ["no-remote"],
 )
 
@@ -90,7 +90,7 @@ genrule(
     name = "s14419_find_sort_cut_xargs",
     srcs = [":literals/lit_14398_mktemp.layer",":literals/sandbox_720.layer",":plans/s14419_find_sort_cut_xargs.json",":platform.layer",":s1268_tar",":s12922_make"],
     outs = ["s14419_find_sort_cut_xargs.layer"],
-    cmd = "'/nix/store/a3z311rmr5hhy8zyyv64fd96v6rqjfpw-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s14419_find_sort_cut_xargs.json)\" \"$@\" \"$(location :literals/lit_14398_mktemp.layer)\" \"$(location :literals/sandbox_720.layer)\" \"$(location :s1268_tar)\" \"$(location :s12922_make)\" \"$(location :platform.layer)\"",
+    cmd = "'/nix/store/4vc73zik52gqn5vv06wch91x5hafahjv-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s14419_find_sort_cut_xargs.json)\" \"$@\" \"$(location :literals/lit_14398_mktemp.layer)\" \"$(location :literals/sandbox_720.layer)\" \"$(location :s1268_tar)\" \"$(location :s12922_make)\" \"$(location :platform.layer)\"",
     tags = ["no-remote"],
 )
 
@@ -98,7 +98,7 @@ genrule(
     name = "s14861_mkdir",
     srcs = [":literals/sandbox_720.layer",":plans/s14861_mkdir.json",":platform.layer",":s1268_tar",":s12922_make"],
     outs = ["s14861_mkdir.layer"],
-    cmd = "'/nix/store/a3z311rmr5hhy8zyyv64fd96v6rqjfpw-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s14861_mkdir.json)\" \"$@\" \"$(location :literals/sandbox_720.layer)\" \"$(location :s1268_tar)\" \"$(location :s12922_make)\" \"$(location :platform.layer)\"",
+    cmd = "'/nix/store/4vc73zik52gqn5vv06wch91x5hafahjv-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s14861_mkdir.json)\" \"$@\" \"$(location :literals/sandbox_720.layer)\" \"$(location :s1268_tar)\" \"$(location :s12922_make)\" \"$(location :platform.layer)\"",
     tags = ["no-remote"],
 )
 
@@ -106,7 +106,7 @@ genrule(
     name = "archive_dev",
     srcs = [":literals/glue_14873.layer",":plans/archive_dev.json",":s12922_make",":s14861_mkdir"],
     outs = ["dev.nar"],
-    cmd = "'/nix/store/a3z311rmr5hhy8zyyv64fd96v6rqjfpw-nixsplice-0.1.0/bin/nixsplice' pack \"$(location :plans/archive_dev.json)\" \"$@\" \"$(location :literals/glue_14873.layer)\" \"$(location :s12922_make)\" \"$(location :s14861_mkdir)\"",
+    cmd = "'/nix/store/4vc73zik52gqn5vv06wch91x5hafahjv-nixsplice-0.1.0/bin/nixsplice' pack \"$(location :plans/archive_dev.json)\" \"$@\" \"$(location :literals/glue_14873.layer)\" \"$(location :s12922_make)\" \"$(location :s14861_mkdir)\"",
     tags = ["no-remote"],
 )
 
@@ -114,7 +114,7 @@ genrule(
     name = "archive_out",
     srcs = [":plans/archive_out.json",":s12869_mkdir",":s12922_make",":s14068_find_xargs",":s14174_find_sort_cut_xargs"],
     outs = ["out.nar"],
-    cmd = "'/nix/store/a3z311rmr5hhy8zyyv64fd96v6rqjfpw-nixsplice-0.1.0/bin/nixsplice' pack \"$(location :plans/archive_out.json)\" \"$@\" \"$(location :s12869_mkdir)\" \"$(location :s12922_make)\" \"$(location :s14068_find_xargs)\" \"$(location :s14174_find_sort_cut_xargs)\"",
+    cmd = "'/nix/store/4vc73zik52gqn5vv06wch91x5hafahjv-nixsplice-0.1.0/bin/nixsplice' pack \"$(location :plans/archive_out.json)\" \"$@\" \"$(location :s12869_mkdir)\" \"$(location :s12922_make)\" \"$(location :s14068_find_xargs)\" \"$(location :s14174_find_sort_cut_xargs)\"",
     tags = ["no-remote"],
 )
 
@@ -122,7 +122,7 @@ genrule(
     name = "archive_static",
     srcs = [":plans/archive_static.json",":s12922_make",":s14419_find_sort_cut_xargs"],
     outs = ["static.nar"],
-    cmd = "'/nix/store/a3z311rmr5hhy8zyyv64fd96v6rqjfpw-nixsplice-0.1.0/bin/nixsplice' pack \"$(location :plans/archive_static.json)\" \"$@\" \"$(location :s12922_make)\" \"$(location :s14419_find_sort_cut_xargs)\"",
+    cmd = "'/nix/store/4vc73zik52gqn5vv06wch91x5hafahjv-nixsplice-0.1.0/bin/nixsplice' pack \"$(location :plans/archive_static.json)\" \"$@\" \"$(location :s12922_make)\" \"$(location :s14419_find_sort_cut_xargs)\"",
     tags = ["no-remote"],
 )
 

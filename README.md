@@ -216,33 +216,36 @@ why dead-code elimination, opening and demotion each preserve the claim.
 outputs between them. For every output, the NAR Bazel built and the NAR
 Buck2 built are the NAR Rewind recorded.
 
-| Package | Build | `execve` | Groups | Replayed | Wide | Pinned files | Literal | Genrules |
-| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| `colstr-1.0.0` | stdenv, one `c++` | 83 | 52 | 6 | 0 | 0 | 1 | 7 |
-| `sl-5.05` | Makefile | 94 | 55 | 8 | 0 | 0 | 1 | 9 |
-| `tree-2.3.2` | Makefile | 183 | 73 | 12 | 1 | 0 | 1 | 14 |
-| `cowsay-3.8.4` | Makefile, Perl | 147 | 79 | 14 | 1 | 0 | 0 | 16 |
-| `hello-go` | `go build` | 192 | 53 | 6 | 0 | 0 | 1 | 7 |
-| `python3.14-six-1.17.0` | `pyproject-build` | 137 | 99 | 7 | 0 | 0 | 0 | 9 |
-| `hexyl-0.17.0` | Rust, `cargo` | 612 | 79 | 19 | 5 | 7 | 1 | 20 |
-| `ninja-1.13.2` | Python bootstrap, Ninja | 493 | 79 | 16 | 2 | 2 | 1 | 17 |
-| `tinyxml2-11.0.0` | CMake | 275 | 54 | 9 | 3 | 2 | 1 | 10 |
-| `jsoncpp-1.9.8` | CMake | 602 | 81 | 14 | 3 | 3 | 1 | 16 |
-| `lz4-1.10.0` | patch, CMake | 806 | 105 | 18 | 3 | 2 | 2 | 22 |
-| `zlib-1.3.2` | patches, `configure` | 700 | 87 | 13 | 2 | 1 | 2 | 16 |
-| `patchelf-0.15.2` | autotools | 503 | 59 | 11 | 3 | 1 | 1 | 12 |
-| `which-2.25` | patch, autotools | 1,137 | 82 | 12 | 3 | 1 | 1 | 15 |
-| `hello-2.12.3` | autotools | 4,605 | 70 | 12 | 4 | 2 | 1 | 13 |
-| `gawk-5.4.1` | autotools | 6,857 | 85 | 15 | 5 | 4 | 1 | 18 |
-| `gnused-4.10` | autotools | 8,848 | 77 | 13 | 3 | 1 | 1 | 15 |
-| `bash-interactive-5.3p15` | autotools, 6 outputs | 11,847 | 160 | 34 | 4 | 1 | 2 | 40 |
-| `lua-5.2.4`, `make` opened | Makefile | 386 | 130 | 68 | 2 | 0 | 1 | 70 |
-| `hello-2.12.3`, `make` opened | autotools | 4,605 | 445 | 164 | 1 | 1 | 1 | 165 |
+| Package | Build | `execve` | Groups | Replayed | Near | Wide | Pinned files | Literal | Genrules |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| `colstr-1.0.0` | stdenv, one `c++` | 83 | 52 | 6 | 0 | 0 | 0 | 1 | 7 |
+| `sl-5.05` | Makefile | 94 | 55 | 8 | 0 | 0 | 0 | 1 | 9 |
+| `tree-2.3.2` | Makefile | 183 | 73 | 12 | 1 | 0 | 0 | 1 | 14 |
+| `cowsay-3.8.4` | Makefile, Perl | 147 | 79 | 14 | 1 | 0 | 0 | 0 | 16 |
+| `hello-go` | `go build` | 192 | 53 | 6 | 0 | 0 | 0 | 1 | 7 |
+| `python3.14-six-1.17.0` | `pyproject-build` | 137 | 99 | 7 | 0 | 0 | 0 | 0 | 9 |
+| `hexyl-0.17.0` | Rust, `cargo` | 612 | 79 | 17 | 2 | 1 | 2 | 1 | 18 |
+| `ninja-1.13.2` | Python bootstrap, Ninja | 493 | 79 | 16 | 1 | 1 | 2 | 1 | 17 |
+| `tinyxml2-11.0.0` | CMake | 275 | 54 | 9 | 1 | 2 | 2 | 1 | 10 |
+| `jsoncpp-1.9.8` | CMake | 602 | 81 | 14 | 0 | 3 | 3 | 1 | 16 |
+| `lz4-1.10.0` | patch, CMake | 806 | 105 | 18 | 0 | 3 | 2 | 2 | 22 |
+| `zlib-1.3.2` | patches, `configure` | 700 | 87 | 13 | 1 | 1 | 1 | 2 | 16 |
+| `patchelf-0.15.2` | autotools | 503 | 59 | 11 | 0 | 3 | 1 | 1 | 12 |
+| `which-2.25` | patch, autotools | 1,137 | 82 | 12 | 2 | 1 | 1 | 1 | 15 |
+| `hello-2.12.3` | autotools | 4,605 | 70 | 12 | 0 | 4 | 2 | 1 | 13 |
+| `gawk-5.4.1` | autotools | 6,857 | 85 | 15 | 2 | 3 | 4 | 1 | 18 |
+| `gnused-4.10` | autotools | 8,848 | 77 | 13 | 0 | 3 | 1 | 1 | 15 |
+| `bash-interactive-5.3p15` | autotools, 6 outputs | 11,847 | 160 | 34 | 1 | 3 | 1 | 2 | 40 |
+| `lua-5.2.4`, `make` opened | Makefile | 386 | 130 | 68 | 2 | 0 | 0 | 1 | 70 |
+| `hello-2.12.3`, `make` opened | autotools | 4,605 | 445 | 164 | 0 | 1 | 1 | 1 | 165 |
+| `hello-2.12.3`, `make` opened, 4 jobs | autotools | 4,605 | 233 | 17 | 1 | 1 | 1 | 1 | 18 |
 
 *Replayed* groups reproduced their recorded writes in two consecutive
-passes. *Wide* counts the replayed groups that needed the whole tree,
-mostly `configure`, `cmake`, `cargo` and unopened `make`. Everything not
-replayed or literal is dead.
+passes. *Near* and *Wide* count the replayed groups that needed more
+than the files they opened: their directories, or the whole tree. The
+whole tree is still needed by `configure`, `cmake`, `cargo` and a
+top-level `make` that recurses. Everything not replayed or literal is
+dead.
 
 *Pinned files* are what a replayed group wrote differently from the
 recording. Most are logs (`config.log`, `CMakeConfigureLog.yaml`,
@@ -254,6 +257,19 @@ the build was recorded.
 The literals are `mktemp`, whose random name later commands carry in
 their `argv`, and in `bash` one `find` that writes a checksum file
 differently each time.
+
+A literal does not mean the output came from the recording. Across the
+39 outputs, 1,281 files, directories and symlinks were written by
+replayed rules and 9 were not. All 9 are small files the builder's
+shell wrote with a redirection, such as
+`nix-support/propagated-build-inputs`. No output entry comes from a
+process group that failed to replay.
+
+The last row is the same build recorded with `--cores 4`. Recipes that
+ran at the same time cannot be separated by a snapshot, so 205 of them
+merge into two groups, which replay and reproduce. The conversion stays
+correct and gets coarser: 18 rules where the one-job recording gives
+165.
 
 Rewind also compares what it built with
 [cache.nixos.org](https://cache.nixos.org). 37 of the 39 outputs are
@@ -281,8 +297,9 @@ Capturing the pipe's contents made `xargs` replayable, which made the
 that verifies is only as real as its replayed share, which is why the
 table reports it.
 
-`sqlite` is not in the table: Rewind had not finished recording its
-single-file compile after 36 minutes and I stopped it.
+`sqlite` is not in the table. Rewind takes hours to record its
+single-file compile on one virtual CPU and the run had not finished when
+this was written.
 
 ## Finer cuts
 
@@ -323,14 +340,15 @@ either checked or reported.
   that is nondeterministic and still matched both times will be caught by
   its own genrule on a later build, which fails. It is not caught
   earlier.
-- **Record with one job.** Rewind's default tells the build it has one
-  core, so `make` and `ninja` run one command at a time and each command
-  can be its own group. A recording made with `--cores N` interleaves
-  commands, and commands that overlap are merged into one group, which is
-  still correct and coarser. The emitted graph is parallel either way.
+- **Record with one job for fine rules.** Rewind's default tells the
+  build it has one core, so `make` and `ninja` run one command at a time
+  and each command can be its own group. A recording made with
+  `--cores N` interleaves commands, and commands that overlap are merged
+  into one group. The last row of the results table is such a recording.
 - **`stat` and directory listings are not in the trace.** Groups that
-  depend on them fall to the wide rung, where they are correct and
-  coarse. Recording lookups in Rewind would let them stay narrow.
+  depend on them move to the near rung or, for `configure` and `cmake`,
+  the wide one, where they are correct and coarse. Recording lookups in
+  Rewind would let them stay narrow.
 - **Pipe input is captured at the `execve` only.** A here-string or a
   short here-document is already in the pipe when the command starts, and
   is recorded and fed back. Input the shell writes while the command is
