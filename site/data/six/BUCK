@@ -1,0 +1,85 @@
+export_file(name = "literals/glue_10973.layer", src = "literals/glue_10973.layer")
+export_file(name = "literals/sandbox_716.layer", src = "literals/sandbox_716.layer")
+export_file(name = "plans/archive_dist.json", src = "plans/archive_dist.json")
+export_file(name = "plans/archive_out.json", src = "plans/archive_out.json")
+export_file(name = "plans/s10945_mkdir.json", src = "plans/s10945_mkdir.json")
+export_file(name = "plans/s1851_cp.json", src = "plans/s1851_cp.json")
+export_file(name = "plans/s1906_chmod.json", src = "plans/s1906_chmod.json")
+export_file(name = "plans/s1934_find.json", src = "plans/s1934_find.json")
+export_file(name = "plans/s2660_pyproject-build.json", src = "plans/s2660_pyproject-build.json")
+export_file(name = "plans/s8691_python3.14.json", src = "plans/s8691_python3.14.json")
+export_file(name = "plans/s9656_mv.json", src = "plans/s9656_mv.json")
+export_file(name = "platform.layer", src = "platform.layer")
+
+genrule(
+    name = "s1851_cp",
+    srcs = [":literals/sandbox_716.layer",":plans/s1851_cp.json",":platform.layer"],
+    out = "s1851_cp.layer",
+    cmd = "'/nix/store/0yqaj2zk6639s8hn61mma00z7p6s8rq7-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s1851_cp.json)\" \"$OUT\" \"$(location :literals/sandbox_716.layer)\" \"$(location :platform.layer)\"",
+    remote = False,
+)
+
+genrule(
+    name = "s1906_chmod",
+    srcs = [":literals/sandbox_716.layer",":plans/s1906_chmod.json",":platform.layer",":s1851_cp"],
+    out = "s1906_chmod.layer",
+    cmd = "'/nix/store/0yqaj2zk6639s8hn61mma00z7p6s8rq7-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s1906_chmod.json)\" \"$OUT\" \"$(location :literals/sandbox_716.layer)\" \"$(location :s1851_cp)\" \"$(location :platform.layer)\"",
+    remote = False,
+)
+
+genrule(
+    name = "s1934_find",
+    srcs = [":literals/sandbox_716.layer",":plans/s1934_find.json",":platform.layer",":s1906_chmod"],
+    out = "s1934_find.layer",
+    cmd = "'/nix/store/0yqaj2zk6639s8hn61mma00z7p6s8rq7-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s1934_find.json)\" \"$OUT\" \"$(location :literals/sandbox_716.layer)\" \"$(location :s1906_chmod)\" \"$(location :platform.layer)\"",
+    remote = False,
+)
+
+genrule(
+    name = "s2660_pyproject-build",
+    srcs = [":literals/sandbox_716.layer",":plans/s2660_pyproject-build.json",":platform.layer",":s1906_chmod",":s1934_find"],
+    out = "s2660_pyproject-build.layer",
+    cmd = "'/nix/store/0yqaj2zk6639s8hn61mma00z7p6s8rq7-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s2660_pyproject-build.json)\" \"$OUT\" \"$(location :literals/sandbox_716.layer)\" \"$(location :s1906_chmod)\" \"$(location :s1934_find)\" \"$(location :platform.layer)\"",
+    remote = False,
+)
+
+genrule(
+    name = "s8691_python3.14",
+    srcs = [":literals/sandbox_716.layer",":plans/s8691_python3.14.json",":platform.layer",":s1906_chmod",":s2660_pyproject-build"],
+    out = "s8691_python3.14.layer",
+    cmd = "'/nix/store/0yqaj2zk6639s8hn61mma00z7p6s8rq7-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s8691_python3.14.json)\" \"$OUT\" \"$(location :literals/sandbox_716.layer)\" \"$(location :s1906_chmod)\" \"$(location :s2660_pyproject-build)\" \"$(location :platform.layer)\"",
+    remote = False,
+)
+
+genrule(
+    name = "s9656_mv",
+    srcs = [":literals/sandbox_716.layer",":plans/s9656_mv.json",":platform.layer",":s1906_chmod",":s2660_pyproject-build"],
+    out = "s9656_mv.layer",
+    cmd = "'/nix/store/0yqaj2zk6639s8hn61mma00z7p6s8rq7-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s9656_mv.json)\" \"$OUT\" \"$(location :literals/sandbox_716.layer)\" \"$(location :s1906_chmod)\" \"$(location :s2660_pyproject-build)\" \"$(location :platform.layer)\"",
+    remote = False,
+)
+
+genrule(
+    name = "s10945_mkdir",
+    srcs = [":literals/sandbox_716.layer",":plans/s10945_mkdir.json",":platform.layer",":s1906_chmod",":s8691_python3.14"],
+    out = "s10945_mkdir.layer",
+    cmd = "'/nix/store/0yqaj2zk6639s8hn61mma00z7p6s8rq7-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s10945_mkdir.json)\" \"$OUT\" \"$(location :literals/sandbox_716.layer)\" \"$(location :s1906_chmod)\" \"$(location :s8691_python3.14)\" \"$(location :platform.layer)\"",
+    remote = False,
+)
+
+genrule(
+    name = "archive_dist",
+    srcs = [":plans/archive_dist.json",":s9656_mv"],
+    out = "dist.nar",
+    cmd = "'/nix/store/0yqaj2zk6639s8hn61mma00z7p6s8rq7-nixsplice-0.1.0/bin/nixsplice' pack \"$(location :plans/archive_dist.json)\" \"$OUT\" \"$(location :s9656_mv)\"",
+    remote = False,
+)
+
+genrule(
+    name = "archive_out",
+    srcs = [":literals/glue_10973.layer",":plans/archive_out.json",":s10945_mkdir",":s8691_python3.14"],
+    out = "out.nar",
+    cmd = "'/nix/store/0yqaj2zk6639s8hn61mma00z7p6s8rq7-nixsplice-0.1.0/bin/nixsplice' pack \"$(location :plans/archive_out.json)\" \"$OUT\" \"$(location :literals/glue_10973.layer)\" \"$(location :s10945_mkdir)\" \"$(location :s8691_python3.14)\"",
+    remote = False,
+)
+

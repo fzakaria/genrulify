@@ -2,17 +2,77 @@
   {
     "id": "hello-make",
     "label": "hello, make opened",
-    "note": "GNU hello 2.12.3 from nixpkgs with make treated as driver code: one genrule per make recipe"
+    "note": "GNU hello 2.12.3, autotools, with make treated as driver code: one genrule per make recipe"
   },
   {
     "id": "hello",
     "label": "hello",
-    "note": "GNU hello 2.12.3 from nixpkgs: autotools, make, make check, make install"
+    "note": "GNU hello 2.12.3: autotools, make, make check, make install"
+  },
+  {
+    "id": "gnused",
+    "label": "sed",
+    "note": "GNU sed 4.10: autotools and gnulib, 8,848 execve calls, two outputs"
+  },
+  {
+    "id": "jsoncpp",
+    "label": "jsoncpp",
+    "note": "jsoncpp 1.9.8: CMake generating Makefiles, two outputs"
+  },
+  {
+    "id": "tinyxml-2",
+    "label": "tinyxml2",
+    "note": "tinyxml2 11.0.0: CMake generating Makefiles"
+  },
+  {
+    "id": "lz4",
+    "label": "lz4",
+    "note": "lz4 1.10.0: a patch, CMake, four outputs"
+  },
+  {
+    "id": "zlib",
+    "label": "zlib",
+    "note": "zlib 1.3.2: two patches, a hand-written configure, three outputs"
+  },
+  {
+    "id": "hello-go",
+    "label": "hello-go",
+    "note": "A Go program built by the go tool"
+  },
+  {
+    "id": "six",
+    "label": "six",
+    "note": "The Python package six 1.17.0, built by pyproject-build, two outputs"
+  },
+  {
+    "id": "patchelf",
+    "label": "patchelf",
+    "note": "patchelf 0.15.2: autotools, C++"
+  },
+  {
+    "id": "which",
+    "label": "which",
+    "note": "GNU which 2.25: a patch, autotools, three outputs"
+  },
+  {
+    "id": "tree",
+    "label": "tree",
+    "note": "tree 2.3.2: a plain Makefile, two outputs"
+  },
+  {
+    "id": "sl",
+    "label": "sl",
+    "note": "sl 5.05: a plain Makefile and two install commands"
+  },
+  {
+    "id": "cowsay",
+    "label": "cowsay",
+    "note": "cowsay 3.8.4: Perl scripts installed by make, two outputs"
   },
   {
     "id": "colstr",
     "label": "colstr",
-    "note": "colstr 1.0.0 from nixpkgs: one C++ file, built by stdenv with no build system"
+    "note": "colstr 1.0.0: one C++ file, built by stdenv with no build system"
   },
   {
     "id": "example",

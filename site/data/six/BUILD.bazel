@@ -1,0 +1,72 @@
+genrule(
+    name = "s1851_cp",
+    srcs = [":literals/sandbox_716.layer",":plans/s1851_cp.json",":platform.layer"],
+    outs = ["s1851_cp.layer"],
+    cmd = "'/nix/store/0yqaj2zk6639s8hn61mma00z7p6s8rq7-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s1851_cp.json)\" \"$@\" \"$(location :literals/sandbox_716.layer)\" \"$(location :platform.layer)\"",
+    tags = ["no-remote"],
+)
+
+genrule(
+    name = "s1906_chmod",
+    srcs = [":literals/sandbox_716.layer",":plans/s1906_chmod.json",":platform.layer",":s1851_cp"],
+    outs = ["s1906_chmod.layer"],
+    cmd = "'/nix/store/0yqaj2zk6639s8hn61mma00z7p6s8rq7-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s1906_chmod.json)\" \"$@\" \"$(location :literals/sandbox_716.layer)\" \"$(location :s1851_cp)\" \"$(location :platform.layer)\"",
+    tags = ["no-remote"],
+)
+
+genrule(
+    name = "s1934_find",
+    srcs = [":literals/sandbox_716.layer",":plans/s1934_find.json",":platform.layer",":s1906_chmod"],
+    outs = ["s1934_find.layer"],
+    cmd = "'/nix/store/0yqaj2zk6639s8hn61mma00z7p6s8rq7-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s1934_find.json)\" \"$@\" \"$(location :literals/sandbox_716.layer)\" \"$(location :s1906_chmod)\" \"$(location :platform.layer)\"",
+    tags = ["no-remote"],
+)
+
+genrule(
+    name = "s2660_pyproject-build",
+    srcs = [":literals/sandbox_716.layer",":plans/s2660_pyproject-build.json",":platform.layer",":s1906_chmod",":s1934_find"],
+    outs = ["s2660_pyproject-build.layer"],
+    cmd = "'/nix/store/0yqaj2zk6639s8hn61mma00z7p6s8rq7-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s2660_pyproject-build.json)\" \"$@\" \"$(location :literals/sandbox_716.layer)\" \"$(location :s1906_chmod)\" \"$(location :s1934_find)\" \"$(location :platform.layer)\"",
+    tags = ["no-remote"],
+)
+
+genrule(
+    name = "s8691_python3.14",
+    srcs = [":literals/sandbox_716.layer",":plans/s8691_python3.14.json",":platform.layer",":s1906_chmod",":s2660_pyproject-build"],
+    outs = ["s8691_python3.14.layer"],
+    cmd = "'/nix/store/0yqaj2zk6639s8hn61mma00z7p6s8rq7-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s8691_python3.14.json)\" \"$@\" \"$(location :literals/sandbox_716.layer)\" \"$(location :s1906_chmod)\" \"$(location :s2660_pyproject-build)\" \"$(location :platform.layer)\"",
+    tags = ["no-remote"],
+)
+
+genrule(
+    name = "s9656_mv",
+    srcs = [":literals/sandbox_716.layer",":plans/s9656_mv.json",":platform.layer",":s1906_chmod",":s2660_pyproject-build"],
+    outs = ["s9656_mv.layer"],
+    cmd = "'/nix/store/0yqaj2zk6639s8hn61mma00z7p6s8rq7-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s9656_mv.json)\" \"$@\" \"$(location :literals/sandbox_716.layer)\" \"$(location :s1906_chmod)\" \"$(location :s2660_pyproject-build)\" \"$(location :platform.layer)\"",
+    tags = ["no-remote"],
+)
+
+genrule(
+    name = "s10945_mkdir",
+    srcs = [":literals/sandbox_716.layer",":plans/s10945_mkdir.json",":platform.layer",":s1906_chmod",":s8691_python3.14"],
+    outs = ["s10945_mkdir.layer"],
+    cmd = "'/nix/store/0yqaj2zk6639s8hn61mma00z7p6s8rq7-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s10945_mkdir.json)\" \"$@\" \"$(location :literals/sandbox_716.layer)\" \"$(location :s1906_chmod)\" \"$(location :s8691_python3.14)\" \"$(location :platform.layer)\"",
+    tags = ["no-remote"],
+)
+
+genrule(
+    name = "archive_dist",
+    srcs = [":plans/archive_dist.json",":s9656_mv"],
+    outs = ["dist.nar"],
+    cmd = "'/nix/store/0yqaj2zk6639s8hn61mma00z7p6s8rq7-nixsplice-0.1.0/bin/nixsplice' pack \"$(location :plans/archive_dist.json)\" \"$@\" \"$(location :s9656_mv)\"",
+    tags = ["no-remote"],
+)
+
+genrule(
+    name = "archive_out",
+    srcs = [":literals/glue_10973.layer",":plans/archive_out.json",":s10945_mkdir",":s8691_python3.14"],
+    outs = ["out.nar"],
+    cmd = "'/nix/store/0yqaj2zk6639s8hn61mma00z7p6s8rq7-nixsplice-0.1.0/bin/nixsplice' pack \"$(location :plans/archive_out.json)\" \"$@\" \"$(location :literals/glue_10973.layer)\" \"$(location :s10945_mkdir)\" \"$(location :s8691_python3.14)\"",
+    tags = ["no-remote"],
+)
+

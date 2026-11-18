@@ -12,7 +12,7 @@ and what each one left behind.
 ```console
 $ tools/convert.sh nixpkgs#hello
 70 process groups: 12 replayed and reproduced, 1 kept as recorded bytes, 57 dead
-...
+…
 out: Nix, Bazel and Buck2 agree on sha256:cca3804d340495150db44b1e762655d8a0b4fe6d37b8350f1a0d8fa33c27c8cc
 ```
 
@@ -209,20 +209,54 @@ why dead-code elimination, opening and demotion each preserve the claim.
 
 ## Results
 
-Recorded with Rewind 0.16.0 on x86_64-linux, nixpkgs from `flake.lock`.
+`tools/convert.sh` was run on 14 packages from the nixpkgs revision in
+`flake.lock`, recorded with Rewind 0.16.0 on x86_64-linux. For every
+output of every package, the NAR Bazel built and the NAR Buck2 built are
+the NAR Rewind recorded.
 
-| Package | Groups | Replayed | Pinned files | Literal | Dead | NAR, as built by Nix, Bazel and Buck2 |
-| --- | ---: | ---: | ---: | ---: | ---: | --- |
-| `nixsplice-example` | 3 | 3 | 0 | 0 | 0 | `sha256:1c763cb5…` |
-| `colstr-1.0.0` | 52 | 6 | 0 | 1 | 45 | `sha256:bf76491a…` |
-| `hello-2.12.3` | 70 | 12 | 2 | 1 | 57 | `sha256:cca3804d…` |
-| `hello-2.12.3`, `make` opened | 445 | 164 | 1 | 1 | 280 | `sha256:cca3804d…` |
+| Package | Build | `execve` | Groups | Replayed | Wide | Pinned files | Literal | Genrules |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| `colstr-1.0.0` | stdenv, one `c++` | 83 | 52 | 6 | 0 | 0 | 1 | 7 |
+| `sl-5.05` | Makefile | 94 | 55 | 8 | 0 | 0 | 1 | 9 |
+| `tree-2.3.2` | Makefile | 183 | 73 | 12 | 1 | 0 | 1 | 14 |
+| `cowsay-3.8.4` | Makefile, Perl | 147 | 79 | 13 | 1 | 0 | 1 | 15 |
+| `hello-go` | `go build` | 192 | 53 | 6 | 0 | 0 | 1 | 7 |
+| `python3.14-six-1.17.0` | `pyproject-build` | 137 | 99 | 7 | 0 | 0 | 0 | 9 |
+| `tinyxml2-11.0.0` | CMake | 275 | 54 | 9 | 3 | 2 | 1 | 10 |
+| `jsoncpp-1.9.8` | CMake | 602 | 81 | 14 | 3 | 3 | 1 | 16 |
+| `lz4-1.10.0` | patch, CMake | 806 | 105 | 18 | 3 | 2 | 2 | 22 |
+| `zlib-1.3.2` | patches, `configure` | 700 | 87 | 13 | 2 | 1 | 2 | 16 |
+| `patchelf-0.15.2` | autotools | 503 | 59 | 11 | 3 | 1 | 1 | 12 |
+| `which-2.25` | patch, autotools | 1,137 | 82 | 12 | 3 | 1 | 1 | 15 |
+| `hello-2.12.3` | autotools | 4,605 | 70 | 12 | 4 | 2 | 1 | 13 |
+| `gnused-4.10` | autotools | 8,848 | 77 | 13 | 3 | 5 | 1 | 15 |
+| `hello-2.12.3`, `make` opened | autotools | 4,605 | 445 | 164 | 1 | 1 | 1 | 165 |
 
-The pinned files in `hello` are `config.log` and `test-suite.log`. The
-literal in both real packages is the `mktemp` that names `strip`'s error
-file. Every row was built by the Bazel and Buck2 that `flake.lock` pins
-and compared against the hash Rewind recorded; for `hello` that hash is
-also the one cache.nixos.org serves.
+*Replayed* groups reproduced their recorded writes in two consecutive
+passes. *Wide* counts the replayed groups that needed the whole tree: 17
+unopened `make` invocations, 6 `configure`, 3 `cmake` and one
+`find | xargs`. Everything not replayed or literal is dead.
+
+*Pinned files* are what a replayed group wrote differently from the
+recording. Most are logs (`config.log`, `CMakeConfigureLog.yaml`,
+`test-suite.log`). The rest record the machine: `CMakeSystem.cmake` holds
+the kernel version, and in three packages `configure` or `cmake` wrote a
+`Makefile`, `config.status` or `config.h` on the host that differs from
+the one written in the VM. A pinned file comes from the recording, so the
+steps after it see what they saw when the build was recorded.
+
+The literals have two causes. `mktemp` picks a random name that later
+commands carry in their `argv`. In `cowsay`, a `cat` reads a
+here-document the shell wrote into a pipe, and the trace does not hold
+those bytes.
+
+These packages have 27 outputs between them. Rewind also compares what
+it built with [cache.nixos.org](https://cache.nixos.org): 25 of the 27
+are bit-identical to what Hydra built, so for those the Bazel and Buck2
+archives equal the public binary cache. The other two, one output each of
+`six` and `gnused`, are not reproducible between Hydra and this machine
+under Nix either. nixsplice reproduces the recorded build, and that is
+the build it was compared with.
 
 ## Finer cuts
 
@@ -246,7 +280,9 @@ The 13 genrules become 165. 155 of them are individual `make` recipes,
 84 of which run `gcc`, and every group except `configure` passes on the
 narrow rung: a compile is given its source, the headers it opened, and
 nothing else. Nix ran this build with `make -j1`. Bazel and Buck2 run the
-compiles in parallel, because the graph says they are independent.
+compiles in parallel, because the graph says they are independent. Three
+clean Bazel builds of each workspace averaged 17.3 s with 13 rules and
+14.9 s with 165, with critical paths of 15.9 s and 12.7 s.
 
 ## Limits
 

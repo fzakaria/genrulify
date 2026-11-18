@@ -1,67 +1,67 @@
-export_file(name = "literals/lit_3614_mktemp.layer", src = "literals/lit_3614_mktemp.layer")
-export_file(name = "literals/sandbox_717.layer", src = "literals/sandbox_717.layer")
+export_file(name = "literals/lit_3690_mktemp.layer", src = "literals/lit_3690_mktemp.layer")
+export_file(name = "literals/sandbox_716.layer", src = "literals/sandbox_716.layer")
 export_file(name = "plans/archive.json", src = "plans/archive.json")
-export_file(name = "plans/s2004_cp.json", src = "plans/s2004_cp.json")
-export_file(name = "plans/s2030_chmod.json", src = "plans/s2030_chmod.json")
-export_file(name = "plans/s2607_c__.json", src = "plans/s2607_c__.json")
-export_file(name = "plans/s3057_install.json", src = "plans/s3057_install.json")
-export_file(name = "plans/s3276_find_patchelf.json", src = "plans/s3276_find_patchelf.json")
-export_file(name = "plans/s3650_find_sort_cut_xargs.json", src = "plans/s3650_find_sort_cut_xargs.json")
+export_file(name = "plans/s2016_cp.json", src = "plans/s2016_cp.json")
+export_file(name = "plans/s2049_chmod.json", src = "plans/s2049_chmod.json")
+export_file(name = "plans/s2622_c__.json", src = "plans/s2622_c__.json")
+export_file(name = "plans/s3122_install.json", src = "plans/s3122_install.json")
+export_file(name = "plans/s3345_find_patchelf.json", src = "plans/s3345_find_patchelf.json")
+export_file(name = "plans/s3721_find_sort_cut_xargs.json", src = "plans/s3721_find_sort_cut_xargs.json")
 export_file(name = "platform.layer", src = "platform.layer")
 
 genrule(
-    name = "s2004_cp",
-    srcs = [":literals/sandbox_717.layer",":plans/s2004_cp.json",":platform.layer"],
-    out = "s2004_cp.layer",
-    cmd = "'/nix/store/25iwf6pkkx4yyw25xqg5bps4kgx4ajg3-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s2004_cp.json)\" \"$OUT\" \"$(location :literals/sandbox_717.layer)\" \"$(location :platform.layer)\"",
+    name = "s2016_cp",
+    srcs = [":literals/sandbox_716.layer",":plans/s2016_cp.json",":platform.layer"],
+    out = "s2016_cp.layer",
+    cmd = "'/nix/store/0yqaj2zk6639s8hn61mma00z7p6s8rq7-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s2016_cp.json)\" \"$OUT\" \"$(location :literals/sandbox_716.layer)\" \"$(location :platform.layer)\"",
     remote = False,
 )
 
 genrule(
-    name = "s2030_chmod",
-    srcs = [":literals/sandbox_717.layer",":plans/s2030_chmod.json",":platform.layer",":s2004_cp"],
-    out = "s2030_chmod.layer",
-    cmd = "'/nix/store/25iwf6pkkx4yyw25xqg5bps4kgx4ajg3-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s2030_chmod.json)\" \"$OUT\" \"$(location :literals/sandbox_717.layer)\" \"$(location :s2004_cp)\" \"$(location :platform.layer)\"",
+    name = "s2049_chmod",
+    srcs = [":literals/sandbox_716.layer",":plans/s2049_chmod.json",":platform.layer",":s2016_cp"],
+    out = "s2049_chmod.layer",
+    cmd = "'/nix/store/0yqaj2zk6639s8hn61mma00z7p6s8rq7-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s2049_chmod.json)\" \"$OUT\" \"$(location :literals/sandbox_716.layer)\" \"$(location :s2016_cp)\" \"$(location :platform.layer)\"",
     remote = False,
 )
 
 genrule(
-    name = "s2607_c__",
-    srcs = [":literals/sandbox_717.layer",":plans/s2607_c__.json",":platform.layer",":s2030_chmod"],
-    out = "s2607_c__.layer",
-    cmd = "'/nix/store/25iwf6pkkx4yyw25xqg5bps4kgx4ajg3-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s2607_c__.json)\" \"$OUT\" \"$(location :literals/sandbox_717.layer)\" \"$(location :s2030_chmod)\" \"$(location :platform.layer)\"",
+    name = "s2622_c__",
+    srcs = [":literals/sandbox_716.layer",":plans/s2622_c__.json",":platform.layer",":s2049_chmod"],
+    out = "s2622_c__.layer",
+    cmd = "'/nix/store/0yqaj2zk6639s8hn61mma00z7p6s8rq7-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s2622_c__.json)\" \"$OUT\" \"$(location :literals/sandbox_716.layer)\" \"$(location :s2049_chmod)\" \"$(location :platform.layer)\"",
     remote = False,
 )
 
 genrule(
-    name = "s3057_install",
-    srcs = [":literals/sandbox_717.layer",":plans/s3057_install.json",":platform.layer",":s2030_chmod",":s2607_c__"],
-    out = "s3057_install.layer",
-    cmd = "'/nix/store/25iwf6pkkx4yyw25xqg5bps4kgx4ajg3-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s3057_install.json)\" \"$OUT\" \"$(location :literals/sandbox_717.layer)\" \"$(location :s2030_chmod)\" \"$(location :s2607_c__)\" \"$(location :platform.layer)\"",
+    name = "s3122_install",
+    srcs = [":literals/sandbox_716.layer",":plans/s3122_install.json",":platform.layer",":s2049_chmod",":s2622_c__"],
+    out = "s3122_install.layer",
+    cmd = "'/nix/store/0yqaj2zk6639s8hn61mma00z7p6s8rq7-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s3122_install.json)\" \"$OUT\" \"$(location :literals/sandbox_716.layer)\" \"$(location :s2049_chmod)\" \"$(location :s2622_c__)\" \"$(location :platform.layer)\"",
     remote = False,
 )
 
 genrule(
-    name = "s3276_find_patchelf",
-    srcs = [":literals/sandbox_717.layer",":plans/s3276_find_patchelf.json",":platform.layer",":s2030_chmod",":s3057_install"],
-    out = "s3276_find_patchelf.layer",
-    cmd = "'/nix/store/25iwf6pkkx4yyw25xqg5bps4kgx4ajg3-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s3276_find_patchelf.json)\" \"$OUT\" \"$(location :literals/sandbox_717.layer)\" \"$(location :s2030_chmod)\" \"$(location :s3057_install)\" \"$(location :platform.layer)\"",
+    name = "s3345_find_patchelf",
+    srcs = [":literals/sandbox_716.layer",":plans/s3345_find_patchelf.json",":platform.layer",":s2049_chmod",":s3122_install"],
+    out = "s3345_find_patchelf.layer",
+    cmd = "'/nix/store/0yqaj2zk6639s8hn61mma00z7p6s8rq7-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s3345_find_patchelf.json)\" \"$OUT\" \"$(location :literals/sandbox_716.layer)\" \"$(location :s2049_chmod)\" \"$(location :s3122_install)\" \"$(location :platform.layer)\"",
     remote = False,
 )
 
 genrule(
-    name = "s3650_find_sort_cut_xargs",
-    srcs = [":literals/lit_3614_mktemp.layer",":literals/sandbox_717.layer",":plans/s3650_find_sort_cut_xargs.json",":platform.layer",":s2030_chmod",":s3057_install",":s3276_find_patchelf"],
-    out = "s3650_find_sort_cut_xargs.layer",
-    cmd = "'/nix/store/25iwf6pkkx4yyw25xqg5bps4kgx4ajg3-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s3650_find_sort_cut_xargs.json)\" \"$OUT\" \"$(location :literals/lit_3614_mktemp.layer)\" \"$(location :literals/sandbox_717.layer)\" \"$(location :s2030_chmod)\" \"$(location :s3057_install)\" \"$(location :s3276_find_patchelf)\" \"$(location :platform.layer)\"",
+    name = "s3721_find_sort_cut_xargs",
+    srcs = [":literals/lit_3690_mktemp.layer",":literals/sandbox_716.layer",":plans/s3721_find_sort_cut_xargs.json",":platform.layer",":s2049_chmod",":s3122_install",":s3345_find_patchelf"],
+    out = "s3721_find_sort_cut_xargs.layer",
+    cmd = "'/nix/store/0yqaj2zk6639s8hn61mma00z7p6s8rq7-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s3721_find_sort_cut_xargs.json)\" \"$OUT\" \"$(location :literals/lit_3690_mktemp.layer)\" \"$(location :literals/sandbox_716.layer)\" \"$(location :s2049_chmod)\" \"$(location :s3122_install)\" \"$(location :s3345_find_patchelf)\" \"$(location :platform.layer)\"",
     remote = False,
 )
 
 genrule(
     name = "archive",
-    srcs = [":plans/archive.json",":s3057_install",":s3650_find_sort_cut_xargs"],
+    srcs = [":plans/archive.json",":s3122_install",":s3721_find_sort_cut_xargs"],
     out = "out.nar",
-    cmd = "'/nix/store/25iwf6pkkx4yyw25xqg5bps4kgx4ajg3-nixsplice-0.1.0/bin/nixsplice' pack \"$(location :plans/archive.json)\" \"$OUT\" \"$(location :s3057_install)\" \"$(location :s3650_find_sort_cut_xargs)\"",
+    cmd = "'/nix/store/0yqaj2zk6639s8hn61mma00z7p6s8rq7-nixsplice-0.1.0/bin/nixsplice' pack \"$(location :plans/archive.json)\" \"$OUT\" \"$(location :s3122_install)\" \"$(location :s3721_find_sort_cut_xargs)\"",
     remote = False,
 )
 
