@@ -207,11 +207,16 @@ std::string descriptorSpec(const Action &action, const Recording &recording,
   }
 
   // A store path the build could only read is not staged. The sandbox
-  // mounts the host's copy at the same path.
-  const bool inClosure = std::ranges::any_of(
-      recording.closure, [&](const std::string &path) {
-        return isBelow(descriptor.target, path);
-      });
+  // mounts the host's copy at the same path. A project's source tree is
+  // the exception: it is staged, even where it lies inside a store path
+  // that is mounted.
+  const bool staged = !recording.source.empty() &&
+                      isBelow(descriptor.target, recording.source);
+  const bool inClosure = !staged &&
+                         std::ranges::any_of(
+                             recording.closure, [&](const std::string &path) {
+                               return isBelow(descriptor.target, path);
+                             });
   if (inClosure) {
     return absl::StrCat(kStoreSpec, descriptor.target);
   }
@@ -564,6 +569,13 @@ void writeSharedFiles(const Recording &recording, const fs::path &directory) {
   writeBytes(directory / kClosureFile,
              absl::StrJoin(recording.closure, "\n") + "\n");
 
+  // A project's source tree is staged from the rule's inputs and mounted
+  // over whatever the store has at that path, so the script has to know
+  // the path.
+  if (!recording.source.empty()) {
+    writeBytes(directory / kSourceFile, recording.source + "\n");
+  }
+
   // An environment is NAME=VALUE entries, each ended by a NUL, because a
   // value can hold any other byte.
   fs::create_directories(directory / kEnvironmentsDirectory);
@@ -577,10 +589,13 @@ void writeSharedFiles(const Recording &recording, const fs::path &directory) {
   }
 }
 
-Arguments sharedFiles(const Action &action) {
+Arguments sharedFiles(const Action &action, const Recording &recording) {
   std::set<std::string> files{std::string(kSandboxFile)};
   if (!action.processes.empty()) {
     files.insert(std::string(kClosureFile));
+    if (!recording.source.empty()) {
+      files.insert(std::string(kSourceFile));
+    }
   }
   for (const auto &process : action.processes) {
     files.insert(environmentFile(process.environment));

@@ -65,6 +65,31 @@ grep -q '^  missing /build/absent$' "$scratch/error"
 grep -q '^  differs /build: got dir 700 , recorded dir 755 $' "$scratch/error"
 test ! -e "$scratch/out/other.ok"
 
+# A project's rules run with --trust: a result is whatever the command
+# left, as long as it is there and is the kind of thing that was recorded.
+# Other bytes and another mode pass, and the file is handed on. A missing
+# result still fails, and the report says what to do about it.
+{
+    line in dir 700 1 /build '' ''
+    line in file 644 1 /build/bundle "$bundle" "blobs/$bundle"
+    line out file 600 1 /build/bundle 0000 trusted/build/bundle
+} > "$scratch/actions/trusted.manifest"
+"$script" --name trusted --trust --in "$scratch" --in "$data/example" --out "$scratch/out"
+test "$(sha256sum < "$scratch/out/trusted/build/bundle" | cut -d' ' -f1)" = "$bundle"
+{
+    line in dir 700 1 /build '' ''
+    line out file 644 1 /build/absent 0000 gone/build/absent
+    line out dir 755 1 /build '' ''
+} > "$scratch/actions/gone.manifest"
+if "$script" --name gone --trust --in "$scratch" --in "$data/example" --out "$scratch/out" 2> "$scratch/error"; then
+    exit 1
+fi
+grep -q '^  missing /build/absent$' "$scratch/error"
+grep -q 'convert the project again' "$scratch/error"
+if grep -q 'differs /build:' "$scratch/error"; then
+    exit 1
+fi
+
 # A symlink is staged from its entry alone and packed as a symlink.
 {
     line in dir 755 1 /out '' ''

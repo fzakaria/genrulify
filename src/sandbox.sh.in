@@ -11,7 +11,7 @@
 # paths with bubblewrap, starts each process, and compares every declared
 # result with the recorded kind, mode and SHA-256 before handing it on.
 #
-# usage: sandbox.sh --name NAME --in DIR... --out DIR [--timeout SECONDS]
+# usage: sandbox.sh --name NAME --in DIR... --out DIR [--timeout SECONDS] [--trust]
 #                   [--pipe ID:LAST_WRITER:READERS:BROKE]...
 #                   (run OPTIONS --argc N -- PROGRAM ARG...)...
 #        sandbox.sh --name NAME --in DIR... --out DIR pack GUEST_PATH
@@ -20,6 +20,12 @@
 #   actions/NAME.manifest   the entries to stage and the results to expect
 #   closure.txt             store paths to mount read-only
 #   env/N.env               an environment, NUL-separated NAME=VALUE
+#   source.txt              for a project, the store path of its source
+#                           tree, which is staged and not read from the host
+#
+# With --trust a result is whatever the processes left, provided it is
+# there and is a file, a directory or a symlink as recorded. The rules of a
+# project converted in place run that way, so that an edited source builds.
 #
 # run options:
 #   --cwd DIR        working directory inside the sandbox
@@ -76,6 +82,7 @@ done
 name=
 out=
 timeout=
+trust=
 in_dirs=()
 declare -A pipe_last_writer pipe_readers pipe_broke
 while [ $# -gt 0 ]; do
@@ -84,6 +91,7 @@ while [ $# -gt 0 ]; do
         --in) in_dirs+=("$2"); shift 2 ;;
         --out) out=$2; shift 2 ;;
         --timeout) timeout=$2; shift 2 ;;
+        --trust) trust=1; shift ;;
         --pipe)
             IFS=: read -r id last readers broke <<< "$2"
             pipe_last_writer[$id]=$last
@@ -100,7 +108,7 @@ done
 # A process that waits for input the recording had and this run does not
 # would wait forever. Run the whole step under a deadline.
 if [ -n "$timeout" ] && [ -z "${GENRULIFY_DEADLINE:-}" ]; then
-    saved=(--name "$name" --out "$out")
+    saved=(--name "$name" --out "$out" ${trust:+--trust})
     for dir in "${in_dirs[@]}"; do saved+=(--in "$dir"); done
     for id in "${!pipe_last_writer[@]}"; do
         saved+=(--pipe "$id:${pipe_last_writer[$id]}:${pipe_readers[$id]}:${pipe_broke[$id]}")
@@ -118,6 +126,18 @@ find_input() {
         fi
     done
     fail "no input named $1"
+}
+
+# The same for a file a workspace need not have. Fails quietly.
+find_optional_input() {
+    local dir
+    for dir in "${in_dirs[@]}"; do
+        if [ -e "$dir/$1" ]; then
+            printf '%s' "$dir/$1"
+            return 0
+        fi
+    done
+    return 1
 }
 
 scratch=$("$C/mktemp" -d) || fail "cannot create a scratch directory"
@@ -198,6 +218,16 @@ while IFS= read -r store_path; do
     sandbox+=(--ro-bind "$store_path" "$store_path")
 done < "$(find_input closure.txt)"
 sandbox+=(--bind "$root/build" /build)
+
+# A project's source tree comes from the inputs this step was given, never
+# from the host's store, which holds the tree as it was when the build was
+# recorded. The staged tree is mounted last, over whatever a store path
+# above has at that place.
+if source_file=$(find_optional_input source.txt); then
+    source_root=$(< "$source_file")
+    "$C/mkdir" -p "$root$source_root"
+    sandbox+=(--ro-bind "$root$source_root" "$source_root")
+fi
 
 # Pipes between the processes. The script holds both ends of each one, the
 # way the builder did, and gives each process the end it had.
@@ -423,7 +453,7 @@ if [ ${#results[@]} -gt 0 ]; then
         # directory that this step neither was given nor is expected to
         # write, and that matches all three, is the recorded entry. Later
         # steps were recorded using the old name and get it under that one.
-        if [ ! -e "$host" ] && [ ! -L "$host" ]; then
+        if [ -z "$trust" ] && [ ! -e "$host" ] && [ ! -L "$host" ]; then
             for candidate in "${host%/*}"/* "${host%/*}"/.[!.]*; do
                 [ -e "$candidate" ] || [ -L "$candidate" ] || continue
                 [ -z "${known[${candidate#"$root"}]:-}" ] || continue
@@ -439,7 +469,15 @@ if [ ${#results[@]} -gt 0 ]; then
             continue
         fi
         got=$(describe "$host")
-        if [ "$got" != "$want" ]; then
+
+        # A trusted result has to be the kind of thing that was recorded.
+        # Its bytes are whatever the sources now give.
+        if [ -n "$trust" ]; then
+            if [ "${got%% *}" != "$kind" ]; then
+                problems+=("differs $path: got a ${got%% *}, recorded a $kind")
+                continue
+            fi
+        elif [ "$got" != "$want" ]; then
             problems+=("differs $path: got $got, recorded $want")
             continue
         fi
@@ -453,6 +491,13 @@ fi
 if [ ${#problems[@]} -gt 0 ]; then
     echo "$name$NOT_REPRODUCED" >&2
     printf '  %s\n' "${problems[@]}" >&2
+
+    # In a project the usual cause is an edit that changed what a command
+    # reads or writes: a new header, a new source file, a renamed output.
+    # The rules were written from one build and know nothing of it.
+    if [ -n "$trust" ]; then
+        echo "  If a command now reads or writes a file it did not when the build was recorded, convert the project again." >&2
+    fi
     exit 1
 fi
 

@@ -95,6 +95,12 @@ struct Recording {
   // Directories whose contents the build may change.
   Arguments roots;
 
+  // For a project converted in place, the store path of the source tree
+  // the derivation was given: the tree someone is working in, as Nix
+  // copied it. Empty for any other recording. The tree is then part of
+  // the graph and is not read from the host's store.
+  std::string source;
+
   // The pattern of program names that were treated as driver code.
   std::string open;
 
@@ -116,8 +122,12 @@ struct Recording {
   std::vector<Arguments> environments;
   std::vector<Group> groups;
 
-  // The entries below the writable roots at a snapshot step.
+  // The entries below the writable roots at a snapshot step, and those of
+  // the source tree, which are the same at every step.
   State state(uint64_t step) const;
+
+  // The entries of the source tree, or none when there is no source tree.
+  State sourceState() const;
 
   // /bin and /etc as the guest had them when the builder started.
   State platform() const;
@@ -137,6 +147,7 @@ inline constexpr std::string_view kRecordingFile = "recording.json";
 inline constexpr std::string_view kStatesDirectory = "states";
 inline constexpr std::string_view kBlobsDirectory = "blobs";
 inline constexpr std::string_view kPlatformState = "platform";
+inline constexpr std::string_view kSourceState = "source";
 
 // The directories of the guest that are part of the execution platform.
 inline constexpr std::string_view kPlatformRoots[] = {"/bin", "/etc"};

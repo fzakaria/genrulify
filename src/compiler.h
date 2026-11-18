@@ -70,9 +70,22 @@ std::string_view rungName(Rung rung);
 // Pulls everything the compiler needs about a Rewind run into a directory.
 // `open` names the programs to treat as driver code and `granularity`
 // says whether to find more of them, as trace.h describes.
+//
+// `project` is the directory of a project to convert in place, or nothing.
+// With one, the derivation's `src` has to be a source tree that the
+// directory still holds, and the recording keeps that tree as part of the
+// build: its entries, and which of them each command read.
 void recordRun(const std::string &run, const std::filesystem::path &drv,
                const std::filesystem::path &directory, const std::string &open,
-               Granularity granularity = Granularity::Fine);
+               Granularity granularity = Granularity::Fine,
+               const std::optional<std::filesystem::path> &project = {});
+
+// Checks that a directory holds a source tree: every file of the tree is
+// in the directory with the same bytes, every symlink with the same
+// target, and every directory as a directory. The directory may hold
+// more. Throws with the first path that is missing or differs.
+void checkSameSource(const std::filesystem::path &tree,
+                     const std::filesystem::path &directory);
 
 // Builds the splice module for a recording: one splice.exec per process
 // group, splice.literal for what the builder wrote itself and for whatever
@@ -117,6 +130,9 @@ inline constexpr std::array kAllPasses{Pass::Link,  Pass::Eliminate,
                                        Pass::Fold,  Pass::Merge,
                                        Pass::Raise, Pass::Rules};
 
+// The name of the literal that holds a project's source tree.
+inline constexpr std::string_view kSourceName = "source";
+
 // The file in a recording directory where `check` reports what became of
 // every process group, and with which passes.
 inline constexpr std::string_view kReportFile = "check.json";
@@ -155,9 +171,14 @@ void checkRecording(const Recording &recording,
 // `directory` the recording, the optimized graph and the workspace. Prints
 // the NAR hash Rewind recorded for each output, which is what a build of
 // the workspace has to reproduce.
+//
+// With `project`, the directory of a project whose derivation takes that
+// directory as its source, the build files are written into the project
+// and read its files where they are.
 void convert(const std::string &installable,
              const std::filesystem::path &directory, const std::string &open,
-             Granularity granularity);
+             Granularity granularity,
+             const std::optional<std::filesystem::path> &project = {});
 
 // Reads the output of a failed build of an emitted workspace and adjusts
 // the verdicts of the rules that did not reproduce the recording: results
@@ -165,6 +186,11 @@ void convert(const std::string &installable,
 // demoted. A build is a further sample of every rule, taken under the
 // build system's own conditions. Returns whether any verdict changed.
 bool learnFromBuild(const Recording &recording, std::istream &log);
+
+// Checks that build files can be written into a project: the directory
+// exists and has no BUILD.bazel or BUCK that somebody else wrote. Throws
+// naming the file that is in the way.
+void checkProjectDirectory(const std::filesystem::path &project);
 
 // Writes a Bazel and Buck2 workspace with one genrule per operation.
 void emitWorkspace(mlir::ModuleOp module, const Recording &recording,

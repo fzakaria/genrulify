@@ -1,3 +1,4 @@
+#include "absl/strings/str_cat.h"
 #include "absl/strings/str_split.h"
 #include "compiler.h"
 #include "action.h"
@@ -21,6 +22,9 @@ const fs::path kStore = "/nix/store";
 
 // The Nix sandbox builds in this directory and points TMPDIR at it.
 constexpr std::string_view kBuildRoot = "/build";
+
+// The variable of a derivation that names its source.
+constexpr std::string_view kSourceVariable = "src";
 
 // `rewind cat` exits with this status when the path did not exist at the
 // step, which is how a snapshot learns that an output is not there yet.
@@ -254,6 +258,42 @@ void walk(const fs::path &host, const std::string &guest, State &state,
   }
 }
 
+// Records a tree of the host's store, which is read-only and belongs to
+// someone else, so nothing about it is changed on the way.
+void observeTree(const fs::path &host, State &state, BlobStore &blobs) {
+  const auto entry = observe(host, host.string());
+  if (entry.kind == EntryKind::File) {
+    blobs.add(host, entry.content);
+  }
+  state.emplace(entry.path, entry);
+  if (entry.kind != EntryKind::Directory) {
+    return;
+  }
+  for (const auto &child : fs::directory_iterator(host)) {
+    observeTree(child.path(), state, blobs);
+  }
+}
+
+// The source tree a derivation is given: its `src`, when that is one of
+// the derivation's input sources or lies inside one. A derivation whose
+// source is the output of another derivation, such as a fetched tarball,
+// has no tree anyone is working in.
+std::string sourceTreeOf(const Json &drv) {
+  const auto &environment = drv.at("env");
+  check(environment.contains(kSourceVariable),
+        "the derivation has no src to convert in place");
+  const std::string source = environment.at(kSourceVariable);
+  for (const std::string input : drv.at("inputs").at("srcs")) {
+    if (isBelow(source, (kStore / input).string())) {
+      return source;
+    }
+  }
+  throw std::runtime_error(
+      "the derivation's src, " + source +
+      ", is built by another derivation: only a derivation that is given a "
+      "directory can be converted in place");
+}
+
 // The entries below the given guest paths at one step.
 State snapshot(const Rewind &rewind, uint64_t step, const Arguments &roots,
                BlobStore &blobs) {
@@ -452,9 +492,44 @@ void captureBuilderPipes(const Rewind &rewind, std::vector<Group> &groups) {
 }
 } // namespace
 
+void checkSameSource(const fs::path &tree, const fs::path &directory) {
+  const auto differs = [&](const fs::path &path, std::string_view how) {
+    return std::runtime_error(absl::StrCat(
+        path.lexically_relative(tree).string(), " ", how, ": ",
+        directory.string(), " no longer holds the source the derivation was "
+        "evaluated with, ", tree.string()));
+  };
+  for (const auto &entry : fs::recursive_directory_iterator(tree)) {
+    const auto ours = directory / entry.path().lexically_relative(tree);
+    const auto status = fs::symlink_status(ours);
+    if (!fs::exists(status)) {
+      throw differs(entry.path(), "is missing");
+    }
+    if (entry.is_symlink()) {
+      if (!fs::is_symlink(status) ||
+          fs::read_symlink(ours) != fs::read_symlink(entry.path())) {
+        throw differs(entry.path(), "differs");
+      }
+      continue;
+    }
+    if (entry.is_directory()) {
+      if (!fs::is_directory(status)) {
+        throw differs(entry.path(), "differs");
+      }
+      continue;
+    }
+    if (!fs::is_regular_file(status) ||
+        fs::file_size(ours) != entry.file_size() ||
+        digest(ours) != digest(entry.path())) {
+      throw differs(entry.path(), "differs");
+    }
+  }
+}
+
 void recordRun(const std::string &run, const fs::path &drvPath,
                const fs::path &directory, const std::string &open,
-               Granularity granularity) {
+               Granularity granularity,
+               const std::optional<fs::path> &project) {
   const Rewind rewind(run);
   check(fs::create_directory(directory), "destination already exists");
   try {
@@ -477,6 +552,14 @@ void recordRun(const std::string &run, const fs::path &drvPath,
       recording.roots.push_back(path);
     }
     recording.closure = closure(drv);
+
+    // A project converted in place: its source tree becomes part of the
+    // build, and is no longer something the build reads from the store.
+    if (project) {
+      recording.source = sourceTreeOf(drv);
+      checkSameSource(recording.source, *project);
+      std::erase(recording.closure, recording.source);
+    }
 
     // Find the builder and the cuts in the event stream.
     Scratch scratch;
@@ -536,8 +619,14 @@ void recordRun(const std::string &run, const fs::path &drvPath,
         processes.push_back(process);
         processes.back().environment = slot->second;
       }
-      recording.groups =
-          group(std::move(processes), analysis.cuts, recording.roots);
+
+      // A command's reads are kept where the build can write, and in a
+      // project's source tree, whose files are inputs like any other.
+      auto readable = recording.roots;
+      if (!recording.source.empty()) {
+        readable.push_back(recording.source);
+      }
+      recording.groups = group(std::move(processes), analysis.cuts, readable);
       captureBuilderPipes(rewind, recording.groups);
 
       // A command that reads a pipe a driver wrote into while the command
@@ -585,6 +674,15 @@ void recordRun(const std::string &run, const fs::path &drvPath,
                      (std::to_string(steps[index]) + ".json"),
                  state);
     });
+
+    // The source tree is the same at every step, and the host has it.
+    if (!recording.source.empty()) {
+      State tree;
+      observeTree(recording.source, tree, blobs);
+      writeState(directory / kStatesDirectory /
+                     (std::string(kSourceState) + ".json"),
+                 tree);
+    }
 
     // The guest's /bin and /etc are part of what a process can observe.
     const Arguments platformRoots(std::begin(kPlatformRoots),

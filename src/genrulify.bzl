@@ -26,13 +26,23 @@ _STAMP = ".ok"
 # have.
 _TAGS = ["no-remote"]
 
+# Whether a rule takes what its command leaves without comparing it with
+# the recording. False for a recorded build, whose rules must reproduce
+# it. True for a project converted in place, where the sources are the
+# project's own files and an edit is supposed to change the outputs.
+_TRUST = False
+
+def _command(cmd):
+    """The command of a rule: where sandbox.sh works, how, and the recorded lines."""
+    return " ".join(cmd[:1] + (["--trust"] if _TRUST else []) + cmd[1:])
+
 def _run(name, srcs, outs, cmd):
     """Runs the recorded command lines of one step."""
     native.genrule(
         name = name,
         srcs = srcs,
         outs = outs + [name + _STAMP],
-        cmd = " ".join(cmd),
+        cmd = _command(cmd),
         tags = _TAGS,
     )
 

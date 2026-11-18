@@ -21,6 +21,9 @@ constexpr std::string_view kGraphFile = "graph.mlir";
 constexpr std::string_view kDerivationSuffix = ".drv";
 constexpr std::string_view kDerivationAttribute = ".drvPath";
 
+// What Rewind puts in front of the SHA-256 of an output's NAR.
+constexpr std::string_view kDigestPrefix = "sha256:";
+
 // How Rewind says a build ran to the end and succeeded.
 constexpr std::string_view kSuccessfulEnding = "exited:0";
 
@@ -36,7 +39,13 @@ std::string derivationOf(const std::string &installable) {
 } // namespace
 
 void convert(const std::string &installable, const fs::path &directory,
-             const std::string &open, Granularity granularity) {
+             const std::string &open, Granularity granularity,
+             const std::optional<fs::path> &project) {
+  // Find out now, and not after the build has been recorded, that the
+  // project cannot take the build files.
+  if (project) {
+    checkProjectDirectory(*project);
+  }
   check(fs::create_directory(directory),
         directory.string() + " already exists");
   try {
@@ -51,7 +60,7 @@ void convert(const std::string &installable, const fs::path &directory,
     // Cut the run, snapshot around every command, and replay each command
     // that the passes leave.
     const auto recorded = directory / kRecordingDirectory;
-    recordRun(run.at("id"), drv, recorded, open, granularity);
+    recordRun(run.at("id"), drv, recorded, open, granularity, project);
     const auto recording = Recording::load(recorded);
     checkRecording(recording);
 
@@ -65,11 +74,20 @@ void convert(const std::string &installable, const fs::path &directory,
     llvm::raw_string_ostream stream(text);
     module->print(stream);
     writeBytes(directory / kGraphFile, text + "\n");
-    emitWorkspace(*module, recording, directory / kWorkspaceDirectory);
 
-    // Say what the build has to reproduce, in the form sha256sum prints.
+    // The build files of a project go into the project, next to the
+    // sources they name. A recorded build gets a workspace of its own.
+    emitWorkspace(*module, recording,
+                  project ? *project : directory / kWorkspaceDirectory);
+
+    // Say what the build has to reproduce, as sha256sum would print it:
+    // the digest in hex with nothing in front, then the path.
     for (const auto &output : run.at("outputs")) {
-      llvm::outs() << output.at("hash").get<std::string>() << "  "
+      std::string_view digest = output.at("hash").get_ref<const std::string &>();
+      if (digest.starts_with(kDigestPrefix)) {
+        digest.remove_prefix(kDigestPrefix.size());
+      }
+      llvm::outs() << digest << "  "
                    << output.at("path").get<std::string>() << "\n";
     }
   } catch (...) {

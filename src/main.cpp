@@ -13,8 +13,9 @@
 
 namespace {
 constexpr std::string_view kUsage =
-    "usage: genrulify convert [--coarse] [--open PROGRAMS] INSTALLABLE DIRECTORY\n"
-    "       genrulify record [--coarse] RUN DERIVATION.drv RECORDING [OPEN]\n"
+    "usage: genrulify convert [--coarse] [--open PROGRAMS] [--source PROJECT] INSTALLABLE DIRECTORY\n"
+    "       genrulify record [--coarse] [--source PROJECT] RUN DERIVATION.drv RECORDING [OPEN]\n"
+    "       genrulify same-source TREE DIRECTORY\n"
     "       genrulify cuts [--coarse] [--close PID@STEP]... EVENTS.jsonl TRACE.bin [OPEN]\n"
     "       genrulify accessed STRACE-DIRECTORY\n"
     "       genrulify check RECORDING [PASS...]\n"
@@ -41,6 +42,10 @@ constexpr std::string_view kCloseOption = "--close";
 
 // The option of `convert` that names programs to treat as driver code.
 constexpr std::string_view kOpenOption = "--open";
+
+// The option of `convert` and `record` that names the directory of a
+// project to convert in place.
+constexpr std::string_view kSourceOption = "--source";
 
 // The option of `opt` that names the recording a graph was imported from.
 constexpr std::string_view kRecordingOption = "--recording";
@@ -108,6 +113,18 @@ void run(std::span<char *> args) {
     args = rest;
   }
 
+  // Takes the project directory out of the arguments of the commands that
+  // can convert in place.
+  const auto takeProject = [&]() -> std::optional<std::filesystem::path> {
+    if (rest.size() <= 2 || rest[1] != kSourceOption) {
+      return std::nullopt;
+    }
+    const std::filesystem::path project = rest[2];
+    rest.erase(rest.begin() + 1, rest.begin() + 3);
+    args = rest;
+    return project;
+  };
+
   // The whole pipeline, from a derivation to a workspace.
   if (command == "convert") {
     std::string open;
@@ -116,17 +133,29 @@ void run(std::span<char *> args) {
       rest.erase(rest.begin() + 1, rest.begin() + 3);
       args = rest;
     }
+    const auto project = takeProject();
     if (args.size() != 3) {
       throw std::runtime_error(std::string(kUsage));
     }
-    splice_ir::convert(args[1], args[2], open, granularity);
+    splice_ir::convert(args[1], args[2], open, granularity, project);
+    return;
+  }
+
+  // Whether a directory still holds the source tree a derivation was
+  // evaluated with.
+  if (args.size() == 3 && command == "same-source") {
+    splice_ir::checkSameSource(args[1], args[2]);
     return;
   }
 
   // Commands that only need a recording.
-  if ((args.size() == 4 || args.size() == 5) && command == "record") {
+  if (command == "record") {
+    const auto project = takeProject();
+    if (args.size() != 4 && args.size() != 5) {
+      throw std::runtime_error(std::string(kUsage));
+    }
     splice_ir::recordRun(args[1], args[2], args[3],
-                         args.size() == 5 ? args[4] : "", granularity);
+                         args.size() == 5 ? args[4] : "", granularity, project);
     return;
   }
   if (args.size() == 2 && command == "accessed") {

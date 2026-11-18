@@ -92,13 +92,15 @@ Arguments writeActionFiles(const Action &action,
                            const std::filesystem::path &directory);
 
 // Writes the files every step shares: the sandbox script, the store
-// closure and the environments.
+// closure, the environments, and for a project the path of its source
+// tree.
 void writeSharedFiles(const Recording &recording,
                       const std::filesystem::path &directory);
 
-// The shared files one step reads: the script, the closure and the
-// environments of its processes.
-Arguments sharedFiles(const Action &action);
+// The shared files one step reads: the script, the closure, the
+// environments of its processes, and for a project the file that names
+// its source tree.
+Arguments sharedFiles(const Action &action, const Recording &recording);
 
 // The command that carries out a step outside a build system: the
 // sandbox.sh in `shared`, reading the step's own files from `scratch` and
@@ -147,6 +149,7 @@ std::optional<ReplayFailure> runAction(const Action &action,
 // File names inside an emitted workspace and a checker's scratch directory.
 inline constexpr std::string_view kSandboxFile = "sandbox.sh";
 inline constexpr std::string_view kClosureFile = "closure.txt";
+inline constexpr std::string_view kSourceFile = "source.txt";
 inline constexpr std::string_view kEnvironmentsDirectory = "env";
 inline constexpr std::string_view kActionsDirectory = "actions";
 inline constexpr std::string_view kPlatformTarget = "platform";

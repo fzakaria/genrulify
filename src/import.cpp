@@ -253,6 +253,14 @@ mlir::OwningOpRef<mlir::ModuleOp> importRecording(mlir::MLIRContext &context,
   builder.setInsertionPointToStart(module->getBody());
   Versions versions(builder);
 
+  // The source tree of a project is there before anything runs and never
+  // changes. Its files are the project's own, so it gets a literal of its
+  // own, which the lowering reads from the workspace.
+  if (!recording.source.empty()) {
+    versions.literal(kSourceName, recording.initialStep,
+                     recording.sourceState());
+  }
+
   // Nix creates the build directory, and for some derivations files inside
   // it, before the builder runs.
   versions.literal(kSandboxName, recording.initialStep,

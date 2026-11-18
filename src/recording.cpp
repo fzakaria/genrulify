@@ -76,8 +76,21 @@ Process processFromJson(const nlohmann::json &json) {
   return process;
 }
 State Recording::state(uint64_t step) const {
+  auto state = readState(directory / kStatesDirectory /
+                         (std::to_string(step) + ".json"));
+
+  // The build cannot write its source tree, so one state serves every
+  // step.
+  state.merge(sourceState());
+  return state;
+}
+
+State Recording::sourceState() const {
+  if (source.empty()) {
+    return {};
+  }
   return readState(directory / kStatesDirectory /
-                   (std::to_string(step) + ".json"));
+                   (std::string(kSourceState) + ".json"));
 }
 
 State Recording::platform() const {
@@ -117,6 +130,7 @@ void Recording::save() const {
                          {"outputs", outputs},
                          {"closure", closure},
                          {"roots", roots},
+                         {"source", source},
                          {"open", open},
                          {"fine", fine},
                          {"initialStep", initialStep},
@@ -138,6 +152,9 @@ Recording Recording::load(const fs::path &directory) {
   recording.outputs = document.at("outputs");
   recording.closure = document.at("closure").get<Arguments>();
   recording.roots = document.at("roots").get<Arguments>();
+
+  // Only the recording of a project converted in place has a source tree.
+  recording.source = document.value("source", std::string());
 
   // Recordings made before programs could be opened have no pattern.
   recording.open = document.value("open", std::string());
