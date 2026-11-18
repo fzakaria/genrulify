@@ -9,7 +9,13 @@
       pkgs = nixpkgs.legacyPackages.${system};
     in
     {
-      packages.${system}.example = import ./nix/example.nix { inherit pkgs system; };
+      packages.${system} = {
+        example = import ./nix/example.nix { inherit pkgs system; };
+        default = import ./nix/package.nix { inherit pkgs; };
+      };
+      devShells.${system}.default = pkgs.mkShell {
+        inputsFrom = [ self.packages.${system}.default ];
+      };
       formatter.${system} = pkgs.nixfmt-tree;
     };
 }
