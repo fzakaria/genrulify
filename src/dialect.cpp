@@ -186,6 +186,34 @@ std::optional<Entry> entryOf(mlir::Value value) {
   return fromAttribute(llvm::cast<EntryAttr>(writes[index]));
 }
 
+// The name MLIR prints for the values of an operation: the operation's
+// label with every character an identifier cannot hold replaced, then the
+// step. MLIR adds a suffix when two operations ask for the same name, as
+// the copies raised from one group do.
+template <typename Op>
+void nameResults(Op op, mlir::OpAsmSetValueNameFn setName) {
+  if (op->getNumResults() == 0) {
+    return;
+  }
+  std::string name;
+  for (const char c : op.getName()) {
+    name.push_back(std::isalnum(static_cast<unsigned char>(c)) != 0 ? c : '_');
+  }
+  setName(op->getResult(0), name + "_" + std::to_string(op.getStep()));
+}
+
+void ExecOp::getAsmResultNames(mlir::OpAsmSetValueNameFn setName) {
+  nameResults(*this, setName);
+}
+
+void LiteralOp::getAsmResultNames(mlir::OpAsmSetValueNameFn setName) {
+  nameResults(*this, setName);
+}
+
+void CopyOp::getAsmResultNames(mlir::OpAsmSetValueNameFn setName) {
+  nameResults(*this, setName);
+}
+
 mlir::Value contentSource(mlir::Value value) {
   while (auto copy = llvm::dyn_cast_or_null<CopyOp>(value.getDefiningOp())) {
     value = copy.getSource();

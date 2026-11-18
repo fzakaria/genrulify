@@ -24,7 +24,18 @@ module {
   splice.output "out" "/build"(%0, %1)
 }
 MLIR
-"$compiler" opt "$scratch/ok.mlir" | grep -q 'splice.exec "cc" at 2'
+"$compiler" opt "$scratch/ok.mlir" dce > "$scratch/ok.out"
+grep -q 'splice.exec "cc" at 2' "$scratch/ok.out"
+
+# A value is named after the operation that defines it and the step the
+# operation ran at, so the name survives a pass that removes other
+# operations, and a reader can tell what `%cc_2` is.
+grep -q '%cc_2 = splice.exec "cc" at 2(%sandbox_1)' "$scratch/ok.out"
+grep -q 'splice.output "out" "/build"(%sandbox_1, %cc_2)' "$scratch/ok.out"
+
+# A name is made of the characters MLIR allows in one.
+sed 's/"cc"/"find|sort"/' "$scratch/ok.mlir" > "$scratch/pipeline.mlir"
+"$compiler" opt "$scratch/pipeline.mlir" dce | grep -q '%find_sort_2 = splice.exec "find|sort" at 2'
 
 # A constant folded out of a process group and a copy of a file both parse
 # and print.
@@ -38,10 +49,10 @@ module {
 MLIR
 "$compiler" opt "$scratch/raised.mlir" dce > "$scratch/raised.out"
 grep -q 'splice.literal "mkdir" at 2 folded' "$scratch/raised.out"
-grep -q 'splice.copy "cp" at 3(%0) -> <"/out/f" file 755 mtime 3 "aa">' "$scratch/raised.out"
+grep -q '%cp_3 = splice.copy "cp" at 3(%sandbox_1) -> <"/out/f" file 755 mtime 3 "aa">' "$scratch/raised.out"
 
 # What is printed parses again.
-"$compiler" opt "$scratch/raised.out" dce | grep -q 'splice.copy "cp" at 3(%0)'
+"$compiler" opt "$scratch/raised.out" dce | grep -q 'splice.copy "cp" at 3(%sandbox_1)'
 
 
 # A copy has the bytes of its source, and only a regular file has bytes.

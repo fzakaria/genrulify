@@ -68,6 +68,12 @@ grep -q 'splice.literal "mkdir" at 2 folded' "$scratch/opt.mlir"
 grep -q 'splice.literal "touch" at 3 folded' "$scratch/opt.mlir"
 test "$(grep -c 'splice.exec' "$scratch/opt.mlir")" = 4
 
+# A pass removes nothing by itself. Without elimination the constants are
+# there and so are the commands that no longer have a reader.
+"$compiler" opt "$scratch/build.mlir" fold > "$scratch/opt.mlir"
+grep -q 'splice.literal "mkdir" at 2 folded' "$scratch/opt.mlir"
+grep -q 'splice.exec "mkdir" at 2' "$scratch/opt.mlir"
+
 # Merging: chmod wrote the bytes it was given at the same path, so its
 # result is a copy of its operand. install wrote them elsewhere and stays.
 "$compiler" opt "$scratch/build.mlir" dce fold merge > "$scratch/opt.mlir"
@@ -79,9 +85,8 @@ grep -q 'splice.exec "install"' "$scratch/opt.mlir"
 # all of them run, and the compile is the one command left.
 "$compiler" opt "$scratch/build.mlir" > "$scratch/opt.mlir"
 test "$(grep -c 'splice.exec' "$scratch/opt.mlir")" = 1
-compiled=$(sed -n 's/^ *\(%[0-9]*\) = splice.exec "cc".*/\1/p' "$scratch/opt.mlir")
-grep -q "splice.copy \"install\" at 6($compiled)" "$scratch/opt.mlir"
-grep -q "splice.copy \"cp\" at 7($compiled)" "$scratch/opt.mlir"
+grep -q 'splice.copy "install" at 6(%cc_5)' "$scratch/opt.mlir"
+grep -q 'splice.copy "cp" at 7(%cc_5)' "$scratch/opt.mlir"
 
 # Linking covers a file the driver wrote itself, which is a literal. cargo
 # links a compiled binary to its final name in-process, so with cargo
@@ -100,8 +105,7 @@ module {
 }
 MLIR
 "$compiler" opt "$scratch/linked.mlir" > "$scratch/opt.mlir"
-compiled=$(sed -n 's/^ *\(%[0-9]*\) = splice.exec "rustc".*/\1/p' "$scratch/opt.mlir")
-grep -q "splice.copy \"glue\" at 3($compiled) -> <\"/out/prog\"" "$scratch/opt.mlir"
+grep -q 'splice.copy "glue" at 3(%rustc_2) -> <"/out/prog"' "$scratch/opt.mlir"
 grep -q 'splice.literal "glue" at 3' "$scratch/opt.mlir"
 "$compiler" opt "$scratch/linked.mlir" dce > "$scratch/opt.mlir"
 gone rustc

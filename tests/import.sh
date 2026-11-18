@@ -19,7 +19,7 @@ test "$(grep -c '"/build/bundle" file' "$scratch/graph.mlir")" = 2
 test "$(grep '"/build/bundle" file' "$scratch/graph.mlir" | sort -u | wc -l)" = 2
 
 # The append at step 764 reads the build directory and the first version.
-grep -q 'splice.exec "dd" at 764(%0, %1)' "$scratch/graph.mlir"
+grep -q 'splice.exec "dd" at 764(%sandbox_717, %dd_735)' "$scratch/graph.mlir"
 
 # Every group feeds the output, so elimination removes nothing.
 "$compiler" opt "$scratch/graph.mlir" dce > "$scratch/opt.mlir"
@@ -91,11 +91,11 @@ neighbour() {
 }
 neighbour "$scratch/narrow"
 "$compiler" import "$scratch/narrow" > "$scratch/narrow.mlir"
-grep -q 'splice.exec "dd" at 764(%0, %1#1)' "$scratch/narrow.mlir"
+grep -q 'splice.exec "dd" at 764(%sandbox_717, %dd_735#1)' "$scratch/narrow.mlir"
 neighbour "$scratch/near"
 echo '{"764": {"rung": "near"}}' > "$scratch/near/verdicts.json"
 "$compiler" import "$scratch/near" > "$scratch/near.mlir"
-grep -q 'splice.exec "dd" at 764(%0, %1#0, %1#1)' "$scratch/near.mlir"
+grep -q 'splice.exec "dd" at 764(%sandbox_717, %dd_735#0, %dd_735#1)' "$scratch/near.mlir"
 echo '{"764": {"rung": "nearby"}}' > "$scratch/near/verdicts.json"
 if "$compiler" import "$scratch/near" > /dev/null 2>&1; then
     exit 1

@@ -125,8 +125,10 @@ inline constexpr std::string_view kDeadOutcome = "dead";
 std::string_view passName(Pass pass);
 std::optional<Pass> passNamed(std::string_view name);
 
-// Runs the given passes in pipeline order. Whatever a pass other than
-// Link leaves without a use is removed after the pass.
+// Runs the given passes in pipeline order. With Eliminate among them,
+// whatever a later pass leaves without a use is removed after that pass.
+// Without it nothing is removed, and the operations a pass has taken the
+// readers from stay in the module.
 void optimize(mlir::ModuleOp module,
               std::span<const Pass> passes = kAllPasses);
 

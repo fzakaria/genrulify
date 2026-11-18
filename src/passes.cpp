@@ -264,16 +264,18 @@ std::optional<Pass> passNamed(std::string_view name) {
 }
 
 void optimize(mlir::ModuleOp module, std::span<const Pass> passes) {
+  const auto chosen = [&](Pass pass) {
+    return std::ranges::find(passes, pass) != passes.end();
+  };
   mlir::PassManager manager(module.getContext());
   for (const auto pass : kAllPasses) {
-    if (std::ranges::find(passes, pass) == passes.end()) {
+    if (!chosen(pass)) {
       continue;
     }
     switch (pass) {
     case Pass::Link:
-      // Nothing is removed after linking: the next pass does that.
       manager.addPass(std::make_unique<LinkDriverWrites>());
-      continue;
+      break;
     case Pass::Eliminate:
       break;
     case Pass::Fold:
@@ -287,12 +289,17 @@ void optimize(mlir::ModuleOp module, std::span<const Pass> passes) {
       break;
     }
 
-    // Every splice operation but the output is Pure, so the canonicalizer
-    // deletes the ones whose results nothing uses: processes that only
-    // looked at the filesystem, temporary files, the builder's own
-    // bookkeeping, and whatever the pass above took the last reader from.
-    // The canonicalizer also makes a copy of a copy name the original.
-    manager.addPass(mlir::createCanonicalizerPass());
+    // Elimination is MLIR's canonicalizer. Every splice operation but the
+    // output is Pure, so the canonicalizer deletes the ones whose results
+    // nothing uses: processes that only looked at the filesystem,
+    // temporary files, the builder's own bookkeeping. It runs where
+    // elimination comes in the pipeline and again after each later pass,
+    // which takes the last reader from more operations. It also makes a
+    // copy of a copy name the original. Linking comes before elimination
+    // and is not followed by it.
+    if (chosen(Pass::Eliminate) && pass != Pass::Link) {
+      manager.addPass(mlir::createCanonicalizerPass());
+    }
   }
   check(mlir::succeeded(manager.run(module)), "cannot optimize module");
 }

@@ -111,7 +111,7 @@ fi
 # that elimination removes, so a page can draw the graph both ways. The
 # example has nothing to eliminate, so an operation nothing reads is added.
 cd "$scratch"
-sed 's|^  splice.output|  %9 = splice.exec "ls" at 749(%1) -> [\n      #splice.entry<"/build/listing" file 644 mtime 1 "00">\n  ]\n&|' \
+sed 's|^  splice.output|  %9 = splice.exec "ls" at 749(%dd_735) -> [\n      #splice.entry<"/build/listing" file 644 mtime 1 "00">\n  ]\n&|' \
     "$scratch/graph.mlir" > "$scratch/recorded.mlir"
 "$compiler" describe "$data/example" "$scratch/recorded.mlir" > "$scratch/description.json"
 grep -q '"id":"s764_dd"' "$scratch/description.json"
@@ -119,14 +119,18 @@ grep -q '"node":"s735_dd"' "$scratch/description.json"
 grep -q '"op":"output"' "$scratch/description.json"
 grep -q 'oflag=append' "$scratch/description.json"
 
-# The description has the graph after each pass. The added ls is there as
-# recorded and after linking, which removes nothing, and is gone after
-# elimination. The last dd ends as a copy.
-for pass in recorded link dce fold merge raise; do
-    grep -q "\"pass\":\"$pass\"" "$scratch/description.json"
-done
-test "$(grep -o '"id":"s749_ls"' "$scratch/description.json" | wc -l)" = 2
+# The description has the graph under every choice of passes, so that a
+# page can switch any of them on and off. It names the five passes, lists
+# each distinct node once, and gives one list of nodes per choice: two to
+# the power of five.
+grep -q '"passes":\["link","dce","fold","merge","raise"\]' "$scratch/description.json"
+test "$(grep -o '"variants":\[.*\]\]' "$scratch/description.json" | grep -o '\],\[' | wc -l)" = 31
+
+# The added ls is one node however many choices keep it, and the last dd
+# ends as a copy. A node says which values it defines, by name.
+test "$(grep -o '"id":"s749_ls"' "$scratch/description.json" | wc -l)" = 1
 grep -q '"id":"copy_782_dd"' "$scratch/description.json"
+grep -q '"defines":\["dd_764"\]' "$scratch/description.json"
 
 # A description carries what the checker reported for each group, so a page
 # can say how many entries a replayed group was given.

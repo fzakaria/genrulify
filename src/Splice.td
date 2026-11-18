@@ -1,4 +1,5 @@
 include "mlir/IR/AttrTypeBase.td"
+include "mlir/IR/OpAsmInterface.td"
 include "mlir/IR/OpBase.td"
 include "mlir/Interfaces/SideEffectInterfaces.td"
 
@@ -45,10 +46,15 @@ def EntryArrayAttr : TypedArrayAttrBase<EntryAttr, "recorded entries">;
 
 class SpliceOp<string mnemonic, list<Trait> traits = []> : Op<SpliceDialect, mnemonic, traits>;
 
+// Names the values of an operation after its `name` and `step`, so that
+// printed IR reads `%cc_2607` where it would read `%7`. The name stays the
+// same when a pass removes other operations, which a number does not.
+def NamedResults : DeclareOpInterfaceMethods<OpAsmOpInterface, ["getAsmResultNames"]>;
+
 // Pure is the claim that replay checks: the entries a process group writes
 // are a function of the entries the group was given and of the store closure.
 // An exec whose results are unused is dead, and MLIR removes it.
-def ExecOp : SpliceOp<"exec", [Pure]> {
+def ExecOp : SpliceOp<"exec", [Pure, NamedResults]> {
   let summary = "Run a recorded process group against entry versions";
   let description = [{
     `step` is the Rewind step of the group's first execve and identifies the
@@ -68,7 +74,7 @@ def ExecOp : SpliceOp<"exec", [Pure]> {
 // group that replay could not reproduce, which is marked `demoted`, and
 // results of a process group that need no bytes computed, which are marked
 // `folded`. The last two keep the group's name.
-def LiteralOp : SpliceOp<"literal", [Pure]> {
+def LiteralOp : SpliceOp<"literal", [Pure, NamedResults]> {
   let summary = "Entry versions copied from the recording";
   let arguments = (ins StrAttr:$name, I64Attr:$step, EntryArrayAttr:$writes, UnitAttr:$demoted, UnitAttr:$folded);
   let results = (outs Variadic<Entry>:$outputs);
@@ -81,7 +87,7 @@ def LiteralOp : SpliceOp<"literal", [Pure]> {
 // result differs from the source in path, mode or mtime only, so no
 // process has to run to produce the bytes. `name` and `step` are those of
 // the process group the copy was raised from.
-def CopyOp : SpliceOp<"copy", [Pure]> {
+def CopyOp : SpliceOp<"copy", [Pure, NamedResults]> {
   let summary = "A file version with the content of another";
   let arguments = (ins Entry:$source, StrAttr:$name, I64Attr:$step, EntryAttr:$entry);
   let results = (outs Entry:$output);

@@ -1,6 +1,8 @@
-#include "compiler.h"
+#include "absl/strings/str_cat.h"
 #include "action.h"
+#include "compiler.h"
 #include "llvm/Support/raw_ostream.h"
+#include "mlir/IR/AsmState.h"
 #include <array>
 #include <fstream>
 #include <set>
@@ -24,9 +26,6 @@ constexpr size_t kPrintedBytes = 1500;
 // How many of the copies raised from one process group are printed.
 constexpr size_t kPrintedCopies = 6;
 
-// The name of the stage before any pass has run.
-constexpr std::string_view kRecordedStage = "recorded";
-
 // The kinds of node, as a page reads them.
 constexpr std::string_view kExecKind = "exec";
 constexpr std::string_view kLiteralKind = "literal";
@@ -39,14 +38,11 @@ struct Node {
   std::string id;
   std::vector<mlir::Operation *> operations;
 
-  // The number MLIR prints for the first value each operation defines,
-  // which is how the printed text of other operations refers to them.
-  std::vector<size_t> values;
 };
 
 // How much of a node a description carries.
 enum class Detail {
-  // Counts only, for a node the next pass removes.
+  // Counts only, for a node that elimination would remove.
   Counts,
 
   // The paths of its operands and the entries it wrote as well.
@@ -66,38 +62,43 @@ std::vector<Node> nodesOf(mlir::ModuleOp module) {
   const auto outputCount = outputsOf(module);
   std::vector<Node> nodes;
   std::map<std::string, size_t> copies;
-  size_t nextValue = 0;
   for (auto &op : module.getBody()->getOperations()) {
-    // MLIR numbers the operations that define something, in order.
-    const auto value = nextValue;
-    nextValue += op.getNumResults() == 0 ? 0 : 1;
     const auto id = targetName(&op, outputCount);
     if (llvm::isa<CopyOp>(op)) {
       const auto [known, added] = copies.try_emplace(id, nodes.size());
       if (!added) {
         nodes[known->second].operations.push_back(&op);
-        nodes[known->second].values.push_back(value);
         continue;
       }
     }
-    nodes.push_back({id, {&op}, {value}});
+    nodes.push_back({id, {&op}});
   }
   return nodes;
 }
 
-// A node as the module prints it, cut to a readable length.
-std::string printed(const Node &node) {
+// One operation as the module prints it. `state` holds the names the
+// module gives its values, so that every operation is printed with the
+// names the others use for it.
+std::string printedOperation(mlir::Operation &op, mlir::AsmState &state) {
   std::string text;
   llvm::raw_string_ostream stream(text);
+  op.print(stream, state);
+  return text;
+}
+
+// A node as the module prints it, cut to a readable length.
+std::string printed(const Node &node, mlir::AsmState &state) {
+  std::string text;
   for (size_t index = 0; index < node.operations.size(); ++index) {
     if (index == kPrintedCopies) {
-      stream << "\n… " << node.operations.size() - kPrintedCopies << " more";
+      absl::StrAppend(&text, "\n… ", node.operations.size() - kPrintedCopies,
+                      " more");
       break;
     }
     if (index != 0) {
-      stream << "\n";
+      text += "\n";
     }
-    node.operations[index]->print(stream);
+    text += printedOperation(*node.operations[index], state);
   }
   if (text.size() > kPrintedBytes) {
     // Cut at a line so that an entry is shown whole or not at all.
@@ -106,6 +107,21 @@ std::string printed(const Node &node) {
     text += "\n…";
   }
   return text;
+}
+
+// The names of the values a node defines, as printed IR refers to them
+// without the `%`: `cc_2607` for `%cc_2607 = ...` and for `%cc_2607:3`.
+Json describeDefinitions(const Node &node, mlir::AsmState &state) {
+  Json names = Json::array();
+  for (auto *op : node.operations) {
+    if (op->getNumResults() == 0) {
+      continue;
+    }
+    const auto text = printedOperation(*op, state);
+    const auto end = text.find_first_of(":= ");
+    names.push_back(text.substr(1, end - 1));
+  }
+  return names;
 }
 
 Json describeEntry(const Entry &entry) {
@@ -156,33 +172,16 @@ Json describeInputs(const Node &node, size_t outputCount, Detail detail) {
   return inputs;
 }
 
-// The values a node defines, as runs of consecutive numbers.
-Json describeValues(const Node &node) {
-  Json runs = Json::array();
-  for (size_t index = 0; index < node.values.size(); ++index) {
-    if (node.operations[index]->getNumResults() == 0) {
-      continue;
-    }
-    const auto value = node.values[index];
-    if (!runs.empty() &&
-        runs.back()[0].get<size_t>() + runs.back()[1].get<size_t>() == value) {
-      runs.back()[1] = runs.back()[1].get<size_t>() + 1;
-      continue;
-    }
-    runs.push_back({value, 1});
-  }
-  return runs;
-}
-
-Json describeNode(const Node &node, size_t outputCount, Detail detail) {
+Json describeNode(const Node &node, size_t outputCount, Detail detail,
+                  mlir::AsmState &state) {
   auto *first = node.operations.front();
   size_t writeCount = 0;
   for (auto *op : node.operations) {
     writeCount += op->getNumResults();
   }
   Json json = {{"id", node.id},
-               {"mlir", printed(node)},
-               {"values", describeValues(node)},
+               {"mlir", printed(node, state)},
+               {"defines", describeDefinitions(node, state)},
                {"counted", detail == Detail::Counts},
                {"inputs", describeInputs(node, outputCount, detail)},
                {"writeCount", writeCount},
@@ -214,34 +213,58 @@ Json describeNode(const Node &node, size_t outputCount, Detail detail) {
 void describeGraph(mlir::ModuleOp module, const Recording &recording) {
   const auto outputCount = outputsOf(module);
 
-  // The module after each pass of the pipeline, starting with none.
-  std::vector<std::pair<std::string, mlir::OwningOpRef<mlir::ModuleOp>>> modules;
-  modules.emplace_back(kRecordedStage, module.clone());
-  for (const auto pass : kAllPasses) {
-    mlir::OwningOpRef<mlir::ModuleOp> next(modules.back().second->clone());
-    optimize(*next, std::array{pass});
-    modules.emplace_back(passName(pass), std::move(next));
-  }
-
-  // One stage per module. A node the next pass removes is described by
-  // counts alone, to keep the description small: a build has many of them
-  // and a page shows them only on the way to removing them.
-  Json stages = Json::array();
-  for (size_t index = 0; index < modules.size(); ++index) {
-    std::set<std::string> kept;
-    const bool last = index + 1 == modules.size();
-    if (!last) {
-      for (const auto &node : nodesOf(*modules[index + 1].second)) {
-        kept.insert(node.id);
+  // The module under every choice of passes. Choice number `mask` runs
+  // the passes whose bit is set, bit 0 being the first of the pipeline.
+  const size_t choices = size_t{1} << kAllPasses.size();
+  const auto chosen = [](size_t mask) {
+    std::vector<Pass> passes;
+    for (size_t bit = 0; bit < kAllPasses.size(); ++bit) {
+      if ((mask >> bit & 1) != 0) {
+        passes.push_back(kAllPasses[bit]);
       }
     }
-    Json nodes = Json::array();
-    for (const auto &node : nodesOf(*modules[index].second)) {
-      const auto detail =
-          last || kept.contains(node.id) ? Detail::Paths : Detail::Counts;
-      nodes.push_back(describeNode(node, outputCount, detail));
+    return passes;
+  };
+  std::vector<mlir::OwningOpRef<mlir::ModuleOp>> modules;
+  for (size_t mask = 0; mask < choices; ++mask) {
+    modules.emplace_back(module.clone());
+    optimize(*modules.back(), chosen(mask));
+  }
+
+  // Which bit elimination has, to find the same choice with it added.
+  const auto eliminateBit =
+      std::ranges::find(kAllPasses, Pass::Eliminate) - kAllPasses.begin();
+
+  // A node is the same under many choices, so each distinct node is listed
+  // once and a choice is a list of positions in that list. A node that
+  // elimination would remove is described by counts alone: a build has
+  // many of them and a page shows them only on the way to removing them.
+  Json records = Json::array();
+  std::map<std::string, size_t> known;
+  Json variants = Json::array();
+  for (size_t mask = 0; mask < choices; ++mask) {
+    std::set<std::string> live;
+    for (const auto &node :
+         nodesOf(*modules[mask | size_t{1} << eliminateBit])) {
+      live.insert(node.id);
     }
-    stages.push_back({{"pass", modules[index].first}, {"nodes", nodes}});
+    mlir::AsmState state(*modules[mask]);
+    Json variant = Json::array();
+    for (const auto &node : nodesOf(*modules[mask])) {
+      const auto detail = live.contains(node.id) ? Detail::Paths : Detail::Counts;
+      auto record = describeNode(node, outputCount, detail, state);
+      const auto [position, added] =
+          known.try_emplace(record.dump(), records.size());
+      if (added) {
+        records.push_back(std::move(record));
+      }
+      variant.push_back(position->second);
+    }
+    variants.push_back(std::move(variant));
+  }
+  Json names = Json::array();
+  for (const auto pass : kAllPasses) {
+    names.push_back(passName(pass));
   }
 
   // Every process group, including the ones the graph no longer contains,
@@ -282,7 +305,9 @@ void describeGraph(mlir::ModuleOp module, const Recording &recording) {
                          {"steps", {recording.initialStep, recording.finalStep}},
                          {"closure", recording.closure.size()},
                          {"groups", groups},
-                         {"stages", stages}};
+                         {"passes", names},
+                         {"records", records},
+                         {"variants", variants}};
   llvm::outs() << document.dump() << "\n";
 }
 } // namespace splice_ir
