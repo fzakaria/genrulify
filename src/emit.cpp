@@ -39,7 +39,7 @@ constexpr std::string_view kBuckToolchains =
     "system_demo_toolchains()\n";
 
 // One genrule: the labels it consumes, the file it writes and the
-// nixsplice subcommand that turns one into the other.
+// genrulify subcommand that turns one into the other.
 struct Action {
   std::string name;
   std::string output;

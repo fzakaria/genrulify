@@ -1,6 +1,6 @@
 { pkgs }:
 pkgs.stdenv.mkDerivation {
-  pname = "nixsplice";
+  pname = "genrulify";
   version = "0.1.0";
   src = pkgs.lib.fileset.toSource {
     root = ../.;

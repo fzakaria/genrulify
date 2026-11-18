@@ -8,7 +8,7 @@ let
 in
 builtins.derivation {
   inherit system;
-  name = "nixsplice-flaky";
+  name = "genrulify-flaky";
   builder = "${pkgs.bash}/bin/bash";
   args = [
     "-eu"

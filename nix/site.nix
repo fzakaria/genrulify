@@ -5,7 +5,7 @@
 #   data/                               one directory per recorded package,
 #                                       written by tools/site-data.sh
 { pkgs }:
-pkgs.runCommand "nixsplice-site" { } ''
+pkgs.runCommand "genrulify-site" { } ''
   mkdir -p $out
   # The site directory alone, so a change to the compiler or a test does
   # not rebuild the site.

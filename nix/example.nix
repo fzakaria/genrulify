@@ -5,7 +5,7 @@ let
 in
 builtins.derivation {
   inherit system;
-  name = "nixsplice-example";
+  name = "genrulify-example";
   builder = "${pkgs.bash}/bin/bash";
   args = [
     "-eu"

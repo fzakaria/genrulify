@@ -80,7 +80,7 @@ neighbour() {
     cp -r "$data/example" "$1"
     chmod -R u+w "$1"
     for state in 749 764 778 782 796; do
-        sed -i '0,/{/s|{|{"content": "b08e44f9eb798c1413c3e066dc5ccfd2633b760feb1215a2e6b6c4e2001618a4", "kind": "file", "mode": 420, "mtime": 1, "path": "/build/aside"},\n {|' "$1/states/$state.json"
+        sed -i '0,/{/s|{|{"content": "cb94740ad765d0c3cb3742959e2f7556d4c7adb712660bfbacb1ba2c6f50e671", "kind": "file", "mode": 420, "mtime": 1, "path": "/build/aside"},\n {|' "$1/states/$state.json"
     done
 }
 neighbour "$scratch/narrow"

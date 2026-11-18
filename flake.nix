@@ -21,7 +21,7 @@
       # Serve the built site, exactly the tree pages deploys.
       # `nix run .#serve -- <port>` overrides the default 8139. no-store
       # because store paths carry a 1970 mtime, and a 304 would keep a
-      # previous build's JS forever. $NIXSPLICE_SITE serves a checkout's
+      # previous build's JS forever. $GENRULIFY_SITE serves a checkout's
       # site/ directory instead, for iterating without a rebuild.
       apps.${system}.serve = {
         type = "app";
@@ -29,7 +29,7 @@
           exec ${pkgs.python3}/bin/python3 - "''${1:-8139}" <<'EOF'
           import http.server, os, sys, urllib.parse
 
-          SITE = os.environ.get("NIXSPLICE_SITE") or "${self.packages.${system}.site}"
+          SITE = os.environ.get("GENRULIFY_SITE") or "${self.packages.${system}.site}"
 
           class Handler(http.server.SimpleHTTPRequestHandler):
               def translate_path(self, path):

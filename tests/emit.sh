@@ -29,7 +29,7 @@ grep -q 'export_file(name = "plans/s764_dd.json"' BUCK
 
 # A plan carries the recorded argv and the entry the group must reproduce.
 grep -q 'oflag=append' plans/s764_dd.json
-grep -q 'c82437d39e10d7a564830c757b91784a1d110f5665978f672a1b4119c2ef2b5e' plans/s764_dd.json
+grep -q '50f55425c6b2fa76153714d7097567804eabbe75984a18b4534537973c24d9fa' plans/s764_dd.json
 test -s literals/sandbox_717.layer
 test -s platform.layer
 

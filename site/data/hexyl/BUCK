@@ -25,7 +25,7 @@ genrule(
     name = "s1465_cp",
     srcs = [":literals/sandbox_720.layer",":plans/s1465_cp.json",":platform.layer"],
     out = "s1465_cp.layer",
-    cmd = "'/nix/store/a7v28k46xpwsi2mrn1znr6qq1db51rgv-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s1465_cp.json)\" \"$OUT\" \"$(location :literals/sandbox_720.layer)\" \"$(location :platform.layer)\"",
+    cmd = "'/nix/store/hds6836shab1y8p65c7biiqs89x5rz5z-genrulify-0.1.0/bin/genrulify' replay \"$(location :plans/s1465_cp.json)\" \"$OUT\" \"$(location :literals/sandbox_720.layer)\" \"$(location :platform.layer)\"",
     remote = False,
 )
 
@@ -33,7 +33,7 @@ genrule(
     name = "s1537_chmod",
     srcs = [":literals/sandbox_720.layer",":plans/s1537_chmod.json",":platform.layer",":s1465_cp"],
     out = "s1537_chmod.layer",
-    cmd = "'/nix/store/a7v28k46xpwsi2mrn1znr6qq1db51rgv-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s1537_chmod.json)\" \"$OUT\" \"$(location :literals/sandbox_720.layer)\" \"$(location :s1465_cp)\" \"$(location :platform.layer)\"",
+    cmd = "'/nix/store/hds6836shab1y8p65c7biiqs89x5rz5z-genrulify-0.1.0/bin/genrulify' replay \"$(location :plans/s1537_chmod.json)\" \"$OUT\" \"$(location :literals/sandbox_720.layer)\" \"$(location :s1465_cp)\" \"$(location :platform.layer)\"",
     remote = False,
 )
 
@@ -41,7 +41,7 @@ genrule(
     name = "s1603_cp",
     srcs = [":literals/sandbox_720.layer",":plans/s1603_cp.json",":platform.layer"],
     out = "s1603_cp.layer",
-    cmd = "'/nix/store/a7v28k46xpwsi2mrn1znr6qq1db51rgv-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s1603_cp.json)\" \"$OUT\" \"$(location :literals/sandbox_720.layer)\" \"$(location :platform.layer)\"",
+    cmd = "'/nix/store/hds6836shab1y8p65c7biiqs89x5rz5z-genrulify-0.1.0/bin/genrulify' replay \"$(location :plans/s1603_cp.json)\" \"$OUT\" \"$(location :literals/sandbox_720.layer)\" \"$(location :platform.layer)\"",
     remote = False,
 )
 
@@ -49,7 +49,7 @@ genrule(
     name = "s8134_chmod",
     srcs = [":literals/sandbox_720.layer",":plans/s8134_chmod.json",":platform.layer",":s1603_cp"],
     out = "s8134_chmod.layer",
-    cmd = "'/nix/store/a7v28k46xpwsi2mrn1znr6qq1db51rgv-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s8134_chmod.json)\" \"$OUT\" \"$(location :literals/sandbox_720.layer)\" \"$(location :s1603_cp)\" \"$(location :platform.layer)\"",
+    cmd = "'/nix/store/hds6836shab1y8p65c7biiqs89x5rz5z-genrulify-0.1.0/bin/genrulify' replay \"$(location :plans/s8134_chmod.json)\" \"$OUT\" \"$(location :literals/sandbox_720.layer)\" \"$(location :s1603_cp)\" \"$(location :platform.layer)\"",
     remote = False,
 )
 
@@ -57,7 +57,7 @@ genrule(
     name = "s8210_mkdir",
     srcs = [":literals/sandbox_720.layer",":plans/s8210_mkdir.json",":platform.layer"],
     out = "s8210_mkdir.layer",
-    cmd = "'/nix/store/a7v28k46xpwsi2mrn1znr6qq1db51rgv-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s8210_mkdir.json)\" \"$OUT\" \"$(location :literals/sandbox_720.layer)\" \"$(location :platform.layer)\"",
+    cmd = "'/nix/store/hds6836shab1y8p65c7biiqs89x5rz5z-genrulify-0.1.0/bin/genrulify' replay \"$(location :plans/s8210_mkdir.json)\" \"$OUT\" \"$(location :literals/sandbox_720.layer)\" \"$(location :platform.layer)\"",
     remote = False,
 )
 
@@ -65,7 +65,7 @@ genrule(
     name = "s8278_cat",
     srcs = [":literals/glue_8278.layer",":literals/sandbox_720.layer",":plans/s8278_cat.json",":platform.layer",":s8210_mkdir"],
     out = "s8278_cat.layer",
-    cmd = "'/nix/store/a7v28k46xpwsi2mrn1znr6qq1db51rgv-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s8278_cat.json)\" \"$OUT\" \"$(location :literals/glue_8278.layer)\" \"$(location :literals/sandbox_720.layer)\" \"$(location :s8210_mkdir)\" \"$(location :platform.layer)\"",
+    cmd = "'/nix/store/hds6836shab1y8p65c7biiqs89x5rz5z-genrulify-0.1.0/bin/genrulify' replay \"$(location :plans/s8278_cat.json)\" \"$OUT\" \"$(location :literals/glue_8278.layer)\" \"$(location :literals/sandbox_720.layer)\" \"$(location :s8210_mkdir)\" \"$(location :platform.layer)\"",
     remote = False,
 )
 
@@ -73,7 +73,7 @@ genrule(
     name = "s8301_cat",
     srcs = [":literals/sandbox_720.layer",":plans/s8301_cat.json",":platform.layer",":s8210_mkdir",":s8278_cat"],
     out = "s8301_cat.layer",
-    cmd = "'/nix/store/a7v28k46xpwsi2mrn1znr6qq1db51rgv-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s8301_cat.json)\" \"$OUT\" \"$(location :literals/sandbox_720.layer)\" \"$(location :s8210_mkdir)\" \"$(location :s8278_cat)\" \"$(location :platform.layer)\"",
+    cmd = "'/nix/store/hds6836shab1y8p65c7biiqs89x5rz5z-genrulify-0.1.0/bin/genrulify' replay \"$(location :plans/s8301_cat.json)\" \"$OUT\" \"$(location :literals/sandbox_720.layer)\" \"$(location :s8210_mkdir)\" \"$(location :s8278_cat)\" \"$(location :platform.layer)\"",
     remote = False,
 )
 
@@ -81,7 +81,7 @@ genrule(
     name = "s8818_env",
     srcs = [":literals/sandbox_720.layer",":plans/s8818_env.json",":platform.layer",":s1537_chmod",":s8134_chmod",":s8210_mkdir",":s8301_cat"],
     out = "s8818_env.layer",
-    cmd = "'/nix/store/a7v28k46xpwsi2mrn1znr6qq1db51rgv-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s8818_env.json)\" \"$OUT\" \"$(location :literals/sandbox_720.layer)\" \"$(location :s1537_chmod)\" \"$(location :s8134_chmod)\" \"$(location :s8210_mkdir)\" \"$(location :s8301_cat)\" \"$(location :platform.layer)\"",
+    cmd = "'/nix/store/hds6836shab1y8p65c7biiqs89x5rz5z-genrulify-0.1.0/bin/genrulify' replay \"$(location :plans/s8818_env.json)\" \"$OUT\" \"$(location :literals/sandbox_720.layer)\" \"$(location :s1537_chmod)\" \"$(location :s8134_chmod)\" \"$(location :s8210_mkdir)\" \"$(location :s8301_cat)\" \"$(location :platform.layer)\"",
     remote = False,
 )
 
@@ -89,7 +89,7 @@ genrule(
     name = "s26089_mkdir",
     srcs = [":literals/sandbox_720.layer",":plans/s26089_mkdir.json",":platform.layer",":s1537_chmod",":s8818_env"],
     out = "s26089_mkdir.layer",
-    cmd = "'/nix/store/a7v28k46xpwsi2mrn1znr6qq1db51rgv-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s26089_mkdir.json)\" \"$OUT\" \"$(location :literals/sandbox_720.layer)\" \"$(location :s1537_chmod)\" \"$(location :s8818_env)\" \"$(location :platform.layer)\"",
+    cmd = "'/nix/store/hds6836shab1y8p65c7biiqs89x5rz5z-genrulify-0.1.0/bin/genrulify' replay \"$(location :plans/s26089_mkdir.json)\" \"$OUT\" \"$(location :literals/sandbox_720.layer)\" \"$(location :s1537_chmod)\" \"$(location :s8818_env)\" \"$(location :platform.layer)\"",
     remote = False,
 )
 
@@ -97,7 +97,7 @@ genrule(
     name = "s26107_cp",
     srcs = [":literals/sandbox_720.layer",":plans/s26107_cp.json",":platform.layer",":s1537_chmod",":s26089_mkdir",":s8818_env"],
     out = "s26107_cp.layer",
-    cmd = "'/nix/store/a7v28k46xpwsi2mrn1znr6qq1db51rgv-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s26107_cp.json)\" \"$OUT\" \"$(location :literals/sandbox_720.layer)\" \"$(location :s1537_chmod)\" \"$(location :s26089_mkdir)\" \"$(location :s8818_env)\" \"$(location :platform.layer)\"",
+    cmd = "'/nix/store/hds6836shab1y8p65c7biiqs89x5rz5z-genrulify-0.1.0/bin/genrulify' replay \"$(location :plans/s26107_cp.json)\" \"$OUT\" \"$(location :literals/sandbox_720.layer)\" \"$(location :s1537_chmod)\" \"$(location :s26089_mkdir)\" \"$(location :s8818_env)\" \"$(location :platform.layer)\"",
     remote = False,
 )
 
@@ -105,7 +105,7 @@ genrule(
     name = "s40545_mkdir",
     srcs = [":literals/sandbox_720.layer",":plans/s40545_mkdir.json",":platform.layer",":s1537_chmod"],
     out = "s40545_mkdir.layer",
-    cmd = "'/nix/store/a7v28k46xpwsi2mrn1znr6qq1db51rgv-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s40545_mkdir.json)\" \"$OUT\" \"$(location :literals/sandbox_720.layer)\" \"$(location :s1537_chmod)\" \"$(location :platform.layer)\"",
+    cmd = "'/nix/store/hds6836shab1y8p65c7biiqs89x5rz5z-genrulify-0.1.0/bin/genrulify' replay \"$(location :plans/s40545_mkdir.json)\" \"$OUT\" \"$(location :literals/sandbox_720.layer)\" \"$(location :s1537_chmod)\" \"$(location :platform.layer)\"",
     remote = False,
 )
 
@@ -113,7 +113,7 @@ genrule(
     name = "s40563_xargs",
     srcs = [":literals/sandbox_720.layer",":plans/s40563_xargs.json",":platform.layer",":s1537_chmod",":s26089_mkdir",":s26107_cp",":s40545_mkdir",":s8818_env"],
     out = "s40563_xargs.layer",
-    cmd = "'/nix/store/a7v28k46xpwsi2mrn1znr6qq1db51rgv-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s40563_xargs.json)\" \"$OUT\" \"$(location :literals/sandbox_720.layer)\" \"$(location :s1537_chmod)\" \"$(location :s26089_mkdir)\" \"$(location :s26107_cp)\" \"$(location :s40545_mkdir)\" \"$(location :s8818_env)\" \"$(location :platform.layer)\"",
+    cmd = "'/nix/store/hds6836shab1y8p65c7biiqs89x5rz5z-genrulify-0.1.0/bin/genrulify' replay \"$(location :plans/s40563_xargs.json)\" \"$OUT\" \"$(location :literals/sandbox_720.layer)\" \"$(location :s1537_chmod)\" \"$(location :s26089_mkdir)\" \"$(location :s26107_cp)\" \"$(location :s40545_mkdir)\" \"$(location :s8818_env)\" \"$(location :platform.layer)\"",
     remote = False,
 )
 
@@ -121,7 +121,7 @@ genrule(
     name = "s40689_pandoc_mkdir_cat",
     srcs = [":literals/sandbox_720.layer",":plans/s40689_pandoc_mkdir_cat.json",":platform.layer",":s1537_chmod",":s40545_mkdir"],
     out = "s40689_pandoc_mkdir_cat.layer",
-    cmd = "'/nix/store/a7v28k46xpwsi2mrn1znr6qq1db51rgv-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s40689_pandoc_mkdir_cat.json)\" \"$OUT\" \"$(location :literals/sandbox_720.layer)\" \"$(location :s1537_chmod)\" \"$(location :s40545_mkdir)\" \"$(location :platform.layer)\"",
+    cmd = "'/nix/store/hds6836shab1y8p65c7biiqs89x5rz5z-genrulify-0.1.0/bin/genrulify' replay \"$(location :plans/s40689_pandoc_mkdir_cat.json)\" \"$OUT\" \"$(location :literals/sandbox_720.layer)\" \"$(location :s1537_chmod)\" \"$(location :s40545_mkdir)\" \"$(location :platform.layer)\"",
     remote = False,
 )
 
@@ -129,7 +129,7 @@ genrule(
     name = "s40888_hexyl_hexyl_hexyl_mkdir__5",
     srcs = [":literals/sandbox_720.layer",":plans/s40888_hexyl_hexyl_hexyl_mkdir__5.json",":platform.layer",":s1537_chmod",":s40545_mkdir",":s40563_xargs",":s40689_pandoc_mkdir_cat"],
     out = "s40888_hexyl_hexyl_hexyl_mkdir__5.layer",
-    cmd = "'/nix/store/a7v28k46xpwsi2mrn1znr6qq1db51rgv-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s40888_hexyl_hexyl_hexyl_mkdir__5.json)\" \"$OUT\" \"$(location :literals/sandbox_720.layer)\" \"$(location :s1537_chmod)\" \"$(location :s40545_mkdir)\" \"$(location :s40563_xargs)\" \"$(location :s40689_pandoc_mkdir_cat)\" \"$(location :platform.layer)\"",
+    cmd = "'/nix/store/hds6836shab1y8p65c7biiqs89x5rz5z-genrulify-0.1.0/bin/genrulify' replay \"$(location :plans/s40888_hexyl_hexyl_hexyl_mkdir__5.json)\" \"$OUT\" \"$(location :literals/sandbox_720.layer)\" \"$(location :s1537_chmod)\" \"$(location :s40545_mkdir)\" \"$(location :s40563_xargs)\" \"$(location :s40689_pandoc_mkdir_cat)\" \"$(location :platform.layer)\"",
     remote = False,
 )
 
@@ -137,7 +137,7 @@ genrule(
     name = "s41272_find_patchelf",
     srcs = [":literals/sandbox_720.layer",":plans/s41272_find_patchelf.json",":platform.layer",":s1537_chmod",":s40545_mkdir",":s40563_xargs"],
     out = "s41272_find_patchelf.layer",
-    cmd = "'/nix/store/a7v28k46xpwsi2mrn1znr6qq1db51rgv-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s41272_find_patchelf.json)\" \"$OUT\" \"$(location :literals/sandbox_720.layer)\" \"$(location :s1537_chmod)\" \"$(location :s40545_mkdir)\" \"$(location :s40563_xargs)\" \"$(location :platform.layer)\"",
+    cmd = "'/nix/store/hds6836shab1y8p65c7biiqs89x5rz5z-genrulify-0.1.0/bin/genrulify' replay \"$(location :plans/s41272_find_patchelf.json)\" \"$OUT\" \"$(location :literals/sandbox_720.layer)\" \"$(location :s1537_chmod)\" \"$(location :s40545_mkdir)\" \"$(location :s40563_xargs)\" \"$(location :platform.layer)\"",
     remote = False,
 )
 
@@ -145,7 +145,7 @@ genrule(
     name = "s41570_find_xargs",
     srcs = [":literals/sandbox_720.layer",":plans/s41570_find_xargs.json",":platform.layer",":s1537_chmod",":s40545_mkdir",":s40689_pandoc_mkdir_cat"],
     out = "s41570_find_xargs.layer",
-    cmd = "'/nix/store/a7v28k46xpwsi2mrn1znr6qq1db51rgv-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s41570_find_xargs.json)\" \"$OUT\" \"$(location :literals/sandbox_720.layer)\" \"$(location :s1537_chmod)\" \"$(location :s40545_mkdir)\" \"$(location :s40689_pandoc_mkdir_cat)\" \"$(location :platform.layer)\"",
+    cmd = "'/nix/store/hds6836shab1y8p65c7biiqs89x5rz5z-genrulify-0.1.0/bin/genrulify' replay \"$(location :plans/s41570_find_xargs.json)\" \"$OUT\" \"$(location :literals/sandbox_720.layer)\" \"$(location :s1537_chmod)\" \"$(location :s40545_mkdir)\" \"$(location :s40689_pandoc_mkdir_cat)\" \"$(location :platform.layer)\"",
     remote = False,
 )
 
@@ -153,7 +153,7 @@ genrule(
     name = "s41768_find_sort_cut_xargs",
     srcs = [":literals/lit_41737_mktemp.layer",":literals/sandbox_720.layer",":plans/s41768_find_sort_cut_xargs.json",":platform.layer",":s1537_chmod",":s40545_mkdir",":s41272_find_patchelf"],
     out = "s41768_find_sort_cut_xargs.layer",
-    cmd = "'/nix/store/a7v28k46xpwsi2mrn1znr6qq1db51rgv-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s41768_find_sort_cut_xargs.json)\" \"$OUT\" \"$(location :literals/lit_41737_mktemp.layer)\" \"$(location :literals/sandbox_720.layer)\" \"$(location :s1537_chmod)\" \"$(location :s40545_mkdir)\" \"$(location :s41272_find_patchelf)\" \"$(location :platform.layer)\"",
+    cmd = "'/nix/store/hds6836shab1y8p65c7biiqs89x5rz5z-genrulify-0.1.0/bin/genrulify' replay \"$(location :plans/s41768_find_sort_cut_xargs.json)\" \"$OUT\" \"$(location :literals/lit_41737_mktemp.layer)\" \"$(location :literals/sandbox_720.layer)\" \"$(location :s1537_chmod)\" \"$(location :s40545_mkdir)\" \"$(location :s41272_find_patchelf)\" \"$(location :platform.layer)\"",
     remote = False,
 )
 
@@ -161,7 +161,7 @@ genrule(
     name = "archive",
     srcs = [":plans/archive.json",":s40545_mkdir",":s40689_pandoc_mkdir_cat",":s40888_hexyl_hexyl_hexyl_mkdir__5",":s41570_find_xargs",":s41768_find_sort_cut_xargs"],
     out = "out.nar",
-    cmd = "'/nix/store/a7v28k46xpwsi2mrn1znr6qq1db51rgv-nixsplice-0.1.0/bin/nixsplice' pack \"$(location :plans/archive.json)\" \"$OUT\" \"$(location :s40545_mkdir)\" \"$(location :s40689_pandoc_mkdir_cat)\" \"$(location :s40888_hexyl_hexyl_hexyl_mkdir__5)\" \"$(location :s41570_find_xargs)\" \"$(location :s41768_find_sort_cut_xargs)\"",
+    cmd = "'/nix/store/hds6836shab1y8p65c7biiqs89x5rz5z-genrulify-0.1.0/bin/genrulify' pack \"$(location :plans/archive.json)\" \"$OUT\" \"$(location :s40545_mkdir)\" \"$(location :s40689_pandoc_mkdir_cat)\" \"$(location :s40888_hexyl_hexyl_hexyl_mkdir__5)\" \"$(location :s41570_find_xargs)\" \"$(location :s41768_find_sort_cut_xargs)\"",
     remote = False,
 )
 

@@ -13,8 +13,8 @@
   "/nix/store/chwiiz63ngbsgr2qi82c4g40vn756ky2-gmp-with-cxx-6.3.0",
   "/nix/store/p6cir20v12fjj5390b8xr9kdynm8bd9h-attr-2.6.0",
   "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11",
-  "/nix/store/7pij9wliy782d14cp535xhj7y8h286ji-header.txt",
-  "/nix/store/vr613az0762zqyzplvw8cdm1vk2f6bvc-body.txt"
+  "/nix/store/vr613az0762zqyzplvw8cdm1vk2f6bvc-body.txt",
+  "/nix/store/xzgjbcyd85zn18pfyrjvl2ravhi5snlh-header.txt"
  ],
  "environments": [
   [
@@ -31,10 +31,10 @@
    "TEMP=/build",
    "SHLVL=1",
    "NIX_BUILD_TOP=/build",
-   "out=/nix/store/r8mgc2hqpzggmvmscm94dynii1wk1ygm-nixsplice-example",
+   "out=/nix/store/l1dx8g9mr73bdp8y6i2yp92xprmz8xzg-genrulify-example",
    "TMP=/build",
    "PATH=/path-not-set",
-   "name=nixsplice-example",
+   "name=genrulify-example",
    "_=/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/dd"
   ],
   [
@@ -51,10 +51,10 @@
    "TEMP=/build",
    "SHLVL=0",
    "NIX_BUILD_TOP=/build",
-   "out=/nix/store/r8mgc2hqpzggmvmscm94dynii1wk1ygm-nixsplice-example",
+   "out=/nix/store/l1dx8g9mr73bdp8y6i2yp92xprmz8xzg-genrulify-example",
    "TMP=/build",
    "PATH=/path-not-set",
-   "name=nixsplice-example",
+   "name=genrulify-example",
    "_=/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/dd"
   ]
  ],
@@ -67,7 +67,7 @@
     {
      "argv": [
       "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/dd",
-      "if=/nix/store/7pij9wliy782d14cp535xhj7y8h286ji-header.txt",
+      "if=/nix/store/xzgjbcyd85zn18pfyrjvl2ravhi5snlh-header.txt",
       "of=bundle",
       "status=none"
      ],
@@ -79,6 +79,7 @@
       {
        "fd": 0,
        "flags": 0,
+       "input": null,
        "mode": 320,
        "position": 0,
        "target": "/dev/null"
@@ -86,6 +87,7 @@
       {
        "fd": 1,
        "flags": 0,
+       "input": null,
        "mode": 448,
        "position": 0,
        "target": "/dev/rewind-tty0"
@@ -93,6 +95,7 @@
       {
        "fd": 2,
        "flags": 0,
+       "input": null,
        "mode": 448,
        "position": 0,
        "target": "/dev/rewind-tty1"
@@ -127,6 +130,7 @@
       {
        "fd": 0,
        "flags": 0,
+       "input": null,
        "mode": 320,
        "position": 0,
        "target": "/dev/null"
@@ -134,6 +138,7 @@
       {
        "fd": 1,
        "flags": 0,
+       "input": null,
        "mode": 448,
        "position": 0,
        "target": "/dev/rewind-tty0"
@@ -141,6 +146,7 @@
       {
        "fd": 2,
        "flags": 0,
+       "input": null,
        "mode": 448,
        "position": 0,
        "target": "/dev/rewind-tty1"
@@ -162,7 +168,7 @@
      "argv": [
       "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/dd",
       "if=bundle",
-      "of=/nix/store/r8mgc2hqpzggmvmscm94dynii1wk1ygm-nixsplice-example",
+      "of=/nix/store/l1dx8g9mr73bdp8y6i2yp92xprmz8xzg-genrulify-example",
       "status=none"
      ],
      "cwd": "/build",
@@ -173,6 +179,7 @@
       {
        "fd": 0,
        "flags": 0,
+       "input": null,
        "mode": 320,
        "position": 0,
        "target": "/dev/null"
@@ -180,6 +187,7 @@
       {
        "fd": 1,
        "flags": 0,
+       "input": null,
        "mode": 448,
        "position": 0,
        "target": "/dev/rewind-tty0"
@@ -187,6 +195,7 @@
       {
        "fd": 2,
        "flags": 0,
+       "input": null,
        "mode": 448,
        "position": 0,
        "target": "/dev/rewind-tty1"
@@ -206,15 +215,15 @@
  ],
  "initialStep": 717,
  "lost": 0,
- "name": "nixsplice-example",
+ "name": "genrulify-example",
+ "open": "",
  "outputs": {
-  "out": "/nix/store/r8mgc2hqpzggmvmscm94dynii1wk1ygm-nixsplice-example"
+  "out": "/nix/store/l1dx8g9mr73bdp8y6i2yp92xprmz8xzg-genrulify-example"
  },
  "roots": [
   "/build",
-  "/nix/store/r8mgc2hqpzggmvmscm94dynii1wk1ygm-nixsplice-example"
+  "/nix/store/l1dx8g9mr73bdp8y6i2yp92xprmz8xzg-genrulify-example"
  ],
- "run": "16b4e3d79a715325",
- "open": "",
- "wallMilliseconds": 1349
+ "run": "5c57ed23e4691b00",
+ "wallMilliseconds": 372
 }

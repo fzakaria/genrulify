@@ -1,8 +1,12 @@
-# nixsplice
+# genrulify
 
 Any Nix build, as Bazel and Buck2 genrules.
 
-nixsplice takes a build that [Rewind](https://rewindvm.dev) recorded and
+**<https://fzakaria.github.io/genrulify/>**
+
+**Documentation:** [the theory](docs/theory.md)
+
+genrulify takes a build that [Rewind](https://rewindvm.dev) recorded and
 compiles it into a `BUILD.bazel` and a `BUCK` file with one `genrule` per
 process group. It has no rules for C, Rust, autotools or any other
 toolchain, and it never reads the derivation's build script. The graph
@@ -33,7 +37,7 @@ directory looked like a moment ago. Rewind runs the build in a
 deterministic VM and can return to any step of it, so the question "what
 was in `/build` when this compiler started" has an exact answer.
 
-nixsplice asks that question at the start and end of every process group
+genrulify asks that question at the start and end of every process group
 and turns the answers into single static assignment over files.
 
 ## How a build becomes a graph
@@ -55,7 +59,7 @@ calls in 62 cuts and 52 groups.
 
 ### 2. Snapshot around each group
 
-nixsplice asks Rewind for the contents of `/build` and of each output
+genrulify asks Rewind for the contents of `/build` and of each output
 path at the step a group starts and the step it ends. The difference
 between the two is the group's effect: every file, directory and symlink
 it created or changed, with mode and content hash.
@@ -79,22 +83,22 @@ ${dd} if=${body} of=bundle oflag=append conv=notrunc status=none
 ${dd} if=bundle of="$out" status=none
 ```
 
-and its graph, in nixsplice's MLIR dialect, is:
+and its graph, in genrulify's MLIR dialect, is:
 
 ```mlir
 %0 = splice.literal "sandbox" at 717 -> [
     #splice.entry<"/build" dir 700 mtime 1>
 ]
 %1 = splice.exec "dd" at 735(%0) -> [
-    #splice.entry<"/build/bundle" file 644 mtime 1 "b08e44f9…">
+    #splice.entry<"/build/bundle" file 644 mtime 1 "cb94740a…">
 ]
 %2 = splice.exec "dd" at 764(%0, %1) -> [
-    #splice.entry<"/build/bundle" file 644 mtime 1 "c82437d3…">
+    #splice.entry<"/build/bundle" file 644 mtime 1 "50f55425…">
 ]
 %3 = splice.exec "dd" at 782(%0, %2) -> [
-    #splice.entry<"/nix/store/r8mgc2hq…-nixsplice-example" file 644 mtime 1 "c82437d3…">
+    #splice.entry<"/nix/store/l1dx8g9m…-genrulify-example" file 644 mtime 1 "50f55425…">
 ]
-splice.output "out" "/nix/store/r8mgc2hq…-nixsplice-example"(%3)
+splice.output "out" "/nix/store/l1dx8g9m…-genrulify-example"(%3)
 ```
 
 `/build/bundle` has two values. The append takes the first as an operand
@@ -116,7 +120,7 @@ The dialect has three operations.
 claim about the build: a group's writes are a function of the entries it
 was given and of the store closure. Under that claim an operation whose
 results are never used is dead, and MLIR's stock canonicalizer removes
-it. No nixsplice-specific pass is involved.
+it. No genrulify-specific pass is involved.
 
 For `colstr` this deletes 45 of 52 groups: every `date +%s`, every
 `find` that only looked, `mktemp` and `rm` pairs, the compiler's
@@ -124,7 +128,7 @@ temporary files, and stdenv's `env-vars` dump.
 
 ### 5. Replay every survivor, alone
 
-The `Pure` claim is checked, not assumed. `nixsplice check` runs each
+The `Pure` claim is checked, not assumed. `genrulify check` runs each
 remaining group by itself in [bubblewrap](https://github.com/containers/bubblewrap):
 
 - the store closure is mounted read-only at its original paths;
@@ -166,7 +170,7 @@ A group that fails moves down a ladder:
 ### 6. Lower to genrules
 
 Each `splice.exec` becomes a `genrule` whose command is
-`nixsplice replay plan.json`. Its output is a *layer*: the entries it
+`genrulify replay plan.json`. Its output is a *layer*: the entries it
 wrote, with full modes, as one file. Its `srcs` are the layers of the
 operations that define its operands. Each `splice.literal` is a layer
 checked into the workspace. `splice.output` assembles the final entries
@@ -295,7 +299,7 @@ with. Of the 39 outputs of the other 19 packages, 37 are bit-identical
 to what Hydra built, so for those the Bazel and Buck2
 archives equal the public binary cache. The other two, one output each of
 `six` and `gnused`, differ between Hydra and this machine under plain Nix
-as well. nixsplice reproduces the recorded build, and that is the build
+as well. genrulify reproduces the recorded build, and that is the build
 it was compared with.
 
 Two things are worth knowing about how those numbers came about.
@@ -303,7 +307,7 @@ Two things are worth knowing about how those numbers came about.
 `gnused` failed once. Its `configure` passed both replay checks and then
 wrote a different `config.h` inside Bazel's sandbox while four other
 conversions were loading the machine. The failing rule named the files,
-which is what `nixsplice learn` and the retry loop in `tools/convert.sh`
+which is what `genrulify learn` and the retry loop in `tools/convert.sh`
 are for: a rule that fails to reproduce during a build is pinned from
 the build log and the graph is built again. On a quiet machine the same
 package converts in one build with only `config.log` pinned.
@@ -371,7 +375,7 @@ either checked or reported.
   and each command can be its own group. A recording made with
   `--cores N` interleaves commands, and commands that overlap are merged
   into one group. The last row of the results table is such a recording.
-- **`stat` and directory listings are not in Rewind's trace.** nixsplice
+- **`stat` and directory listings are not in Rewind's trace.** genrulify
   recovers them by tracing the replay, which costs one extra replay of
   each group that needed them. A path reached only through a symlinked
   directory, or named relative to the working directory by one of the
@@ -410,15 +414,15 @@ $ nix develop               # MLIR, TableGen, CMake
 $ nix flake check
 ```
 
-Recording needs Rewind and KVM. Everything after `nixsplice record` works
+Recording needs Rewind and KVM. Everything after `genrulify record` works
 from the recording directory alone:
 
 ```console
-$ nixsplice record RUN /nix/store/…-hello-2.12.3.drv recording
-$ nixsplice check recording
-$ nixsplice import recording > recorded.mlir
-$ nixsplice opt recorded.mlir > graph.mlir
-$ nixsplice emit recording graph.mlir workspace
+$ genrulify record RUN /nix/store/…-hello-2.12.3.drv recording
+$ genrulify check recording
+$ genrulify import recording > recorded.mlir
+$ genrulify opt recorded.mlir > graph.mlir
+$ genrulify emit recording graph.mlir workspace
 $ cd workspace && bazel build //:archive
 ```
 

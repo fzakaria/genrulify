@@ -11,11 +11,11 @@ set -euo pipefail
 installable=${1:?usage: tools/convert.sh INSTALLABLE [OPEN]}
 open=${2:-}
 root=$(cd "$(dirname "$0")/.." && pwd)
-work=$(mktemp -d "${TMPDIR:-/tmp}/nixsplice.XXXXXXXX")
+work=$(mktemp -d "${TMPDIR:-/tmp}/genrulify.XXXXXXXX")
 echo "Artifacts: $work"
 
 # Pin every tool to the flake's nixpkgs so a rerun uses the same versions.
-compiler=$(nix build --no-link --print-out-paths "$root")/bin/nixsplice
+compiler=$(nix build --no-link --print-out-paths "$root")/bin/genrulify
 bazel=$(nix build --inputs-from "$root" --no-link --print-out-paths nixpkgs#bazel_7)/bin/bazel
 buck=$(nix build --inputs-from "$root" --no-link --print-out-paths nixpkgs#buck2)/bin/buck2
 

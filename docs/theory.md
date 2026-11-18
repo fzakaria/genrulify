@@ -1,6 +1,6 @@
 # Why a recorded build converts
 
-This note states what nixsplice assumes about a trace, what it checks, and
+This note states what genrulify assumes about a trace, what it checks, and
 what follows. The claim is narrow and exact: the emitted graph recomputes
 the recorded build, under any scheduler, and the conversion exists for
 every recording.
@@ -80,7 +80,7 @@ every process that had exited before its `execve` has exited.
 > at its recorded wait status and leaves *σ_b(p)* at every path *p* whose
 > value has a use.
 
-`nixsplice check` performs this for each `splice.exec`, twice.
+`genrulify check` performs this for each `splice.exec`, twice.
 
 ## Composition
 
@@ -106,7 +106,7 @@ them and to skip them.
 ## Totality
 
 > **Theorem 2.** For every recording there is a graph in which every
-> `splice.exec` satisfies its check, and `nixsplice check` finds one.
+> `splice.exec` satisfies its check, and `genrulify check` finds one.
 
 *Proof.* The graph with no `splice.exec` at all, every effect a literal,
 satisfies the hypothesis vacuously, so one exists. `check` only ever
@@ -168,7 +168,7 @@ command, and its dependencies are the recorded dependencies.
   speaks about a build with an edited input: that is a different run with
   a different trace.
 - **T1 is partial in practice.** Rewind's archives omit FIFOs, sockets
-  and devices, and nixsplice ignores sub-second and directory mtimes and
+  and devices, and genrulify ignores sub-second and directory mtimes and
   does not snapshot `/tmp`. A group that depends on any of these fails its
   check and is demoted, so the gap costs replay coverage and cannot make
   a checked graph wrong.

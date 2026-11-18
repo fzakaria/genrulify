@@ -4,7 +4,7 @@
 # build files.
 #
 # usage: tools/site-data.sh RECORDING ID
-#   RECORDING  a directory `nixsplice record` and `nixsplice check` wrote
+#   RECORDING  a directory `genrulify record` and `genrulify check` wrote
 #   ID         the directory name under site/data, e.g. hello
 set -euo pipefail
 recording=${1:?usage: tools/site-data.sh RECORDING ID}
@@ -16,7 +16,7 @@ trap 'chmod -R u+w "$work" && rm -rf "$work"' EXIT
 
 # The build files name the compiler by path, so use the flake's build and
 # not whatever is in a development tree.
-compiler=$(nix build --no-link --print-out-paths "$root")/bin/nixsplice
+compiler=$(nix build --no-link --print-out-paths "$root")/bin/genrulify
 
 "$compiler" import "$recording" > "$work/recorded.mlir"
 "$compiler" opt "$work/recorded.mlir" > "$work/graph.mlir"

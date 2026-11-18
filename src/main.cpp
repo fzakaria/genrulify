@@ -11,19 +11,19 @@
 
 namespace {
 constexpr std::string_view kUsage =
-    "usage: nixsplice record RUN DERIVATION.drv RECORDING [OPEN]\n"
-    "       nixsplice cuts EVENTS.jsonl TRACE.bin [OPEN]\n"
-    "       nixsplice accessed STRACE-DIRECTORY\n"
-    "       nixsplice check RECORDING\n"
-    "       nixsplice learn RECORDING < BUILD.log\n"
-    "       nixsplice import RECORDING\n"
-    "       nixsplice opt GRAPH.mlir\n"
-    "       nixsplice emit RECORDING GRAPH.mlir WORKSPACE\n"
-    "       nixsplice describe RECORDING GRAPH.mlir\n"
-    "       nixsplice reference RECORDING OUTPUT ARCHIVE.nar\n"
-    "       nixsplice verify REFERENCE.nar ARCHIVE.nar\n"
-    "       nixsplice replay PLAN.json RESULT.layer LAYER...\n"
-    "       nixsplice pack PLAN.json ARCHIVE.nar LAYER...\n";
+    "usage: genrulify record RUN DERIVATION.drv RECORDING [OPEN]\n"
+    "       genrulify cuts EVENTS.jsonl TRACE.bin [OPEN]\n"
+    "       genrulify accessed STRACE-DIRECTORY\n"
+    "       genrulify check RECORDING\n"
+    "       genrulify learn RECORDING < BUILD.log\n"
+    "       genrulify import RECORDING\n"
+    "       genrulify opt GRAPH.mlir\n"
+    "       genrulify emit RECORDING GRAPH.mlir WORKSPACE\n"
+    "       genrulify describe RECORDING GRAPH.mlir\n"
+    "       genrulify reference RECORDING OUTPUT ARCHIVE.nar\n"
+    "       genrulify verify REFERENCE.nar ARCHIVE.nar\n"
+    "       genrulify replay PLAN.json RESULT.layer LAYER...\n"
+    "       genrulify pack PLAN.json ARCHIVE.nar LAYER...\n";
 
 // The number of arguments before the layer list of `replay` and `pack`:
 // the command, the plan and the output.
@@ -151,7 +151,7 @@ int main(int argc, char **argv) {
     run(std::span(argv + 1, argc - 1));
     return EXIT_SUCCESS;
   } catch (const std::exception &error) {
-    llvm::errs() << "nixsplice: " << error.what() << "\n";
+    llvm::errs() << "genrulify: " << error.what() << "\n";
     return EXIT_FAILURE;
   }
 }

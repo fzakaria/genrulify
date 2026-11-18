@@ -83,7 +83,7 @@ public:
   std::optional<std::string> pipeContents(uint64_t step,
                                           const std::string &path) const {
     llvm::SmallString<128> file;
-    if (llvm::sys::fs::createTemporaryFile("nixsplice", "pipe", file)) {
+    if (llvm::sys::fs::createTemporaryFile("genrulify", "pipe", file)) {
       return std::nullopt;
     }
     const fs::path output = file.str().str();

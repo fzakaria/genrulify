@@ -22,7 +22,7 @@ test ! -e "$scratch/recording/verdicts.json"
 # and surrounded by other output, as it is in a Bazel log.
 cat > "$scratch/differs.log" <<'LOG'
 ERROR: BUILD.bazel:9:8: Executing genrule //:s764_dd failed: (Exit 1)
-nixsplice: s764_dd did not reproduce the recording:
+genrulify: s764_dd did not reproduce the recording:
   differs /build/bundle: got file 644 aa, recorded file 644 bb
 Target //:archive failed to build
 LOG
@@ -40,9 +40,9 @@ fi
 
 # A process that ended differently cannot be trusted with any result.
 cat > "$scratch/status.log" <<'LOG'
-nixsplice: s782_dd did not reproduce the recording:
+genrulify: s782_dd did not reproduce the recording:
   dd exited with 1, recorded 0
-  missing /nix/store/r8mgc2hqpzggmvmscm94dynii1wk1ygm-nixsplice-example
+  missing /nix/store/l1dx8g9mr73bdp8y6i2yp92xprmz8xzg-genrulify-example
 LOG
 "$compiler" learn "$scratch/recording" < "$scratch/status.log"
 "$compiler" import "$scratch/recording" > "$scratch/demoted.mlir"

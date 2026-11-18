@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>nixsplice</title>
+    <title>genrulify</title>
     <meta
       name="description"
       content="Compile a recorded Nix build into Bazel and Buck2 genrules, one per process group, and get the same NAR out of all three."
@@ -16,8 +16,8 @@
     <meta name="theme-color" content="#16181d" media="(prefers-color-scheme: dark)" />
 
     <meta property="og:type" content="website" />
-    <meta property="og:site_name" content="nixsplice" />
-    <meta property="og:title" content="nixsplice — any Nix build, as genrules" />
+    <meta property="og:site_name" content="genrulify" />
+    <meta property="og:title" content="genrulify — any Nix build, as genrules" />
     <meta
       property="og:description"
       content="A recorded Nix build, cut at every execve, versioned as SSA over files, and lowered to one Bazel or Buck2 genrule per process group."
@@ -27,7 +27,7 @@
   </head>
   <body>
     <header class="site">
-      <h1><a href=".">nixsplice</a></h1>
+      <h1><a href=".">genrulify</a></h1>
       <nav class="site">
         <a href="https://nixmultiverse.com/" title="every version of every package nixpkgs ever shipped">
           Multiverse
@@ -41,7 +41,7 @@
         <a href="https://omniflake.com/" title="omniflake: thousands of Nix flakes from one flake input">
           Omniflake
         </a>
-        <a href="https://github.com/fzakaria/nixsplice">GitHub</a>
+        <a href="https://github.com/fzakaria/genrulify">GitHub</a>
       </nav>
     </header>
 
@@ -126,7 +126,7 @@
       <p>
         Why a graph in which every node passed its replay check has to produce the recorded
         output, under any scheduler, is written up in
-        <a href="https://github.com/fzakaria/nixsplice/blob/main/docs/theory.md">the theory note</a>.
+        <a href="https://github.com/fzakaria/genrulify/blob/main/docs/theory.md">the theory note</a>.
       </p>
     </details>
 
@@ -134,9 +134,9 @@
       Made with ❤️ by
       <a href="https://fzakaria.com">Farid Zakaria</a>
       ·
-      <a href="https://github.com/fzakaria/nixsplice/blob/main/LICENSE">MIT</a>
+      <a href="https://github.com/fzakaria/genrulify/blob/main/LICENSE">MIT</a>
       ·
-      <a href="https://github.com/fzakaria/nixsplice">GitHub</a>
+      <a href="https://github.com/fzakaria/genrulify">GitHub</a>
       <div id="store" hidden><code id="store-path-footer"></code></div>
     </footer>
 

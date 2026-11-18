@@ -19,7 +19,7 @@ constexpr unsigned kFallbackThreads = 4;
 // The bytes read per call while hashing a file.
 constexpr size_t kHashChunk = 64 * 1024;
 
-constexpr std::string_view kScratchPrefix = "nixsplice";
+constexpr std::string_view kScratchPrefix = "genrulify";
 } // namespace
 
 void check(bool condition, std::string_view message) {

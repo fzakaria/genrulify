@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
-project(nixsplice LANGUAGES C CXX)
+project(genrulify LANGUAGES C CXX)
 set(CMAKE_CXX_STANDARD 23)
 find_program(MLIR_TABLEGEN_EXE mlir-tblgen REQUIRED)
 find_package(MLIR REQUIRED CONFIG)
@@ -30,7 +30,7 @@ foreach(tool BASH COREUTILS NIX BWRAP TAR STRACE)
   endif()
 endforeach()
 configure_file(src/tools.h.in tools.h @ONLY)
-add_executable(nixsplice
+add_executable(genrulify
   src/main.cpp
   src/dialect.cpp
   src/entry.cpp
@@ -48,11 +48,11 @@ add_executable(nixsplice
   src/emit.cpp
   src/describe.cpp
   src/verify.cpp)
-add_dependencies(nixsplice SpliceIncGen)
-target_link_libraries(nixsplice PRIVATE MLIR LLVM absl::strings nlohmann_json::nlohmann_json)
-target_compile_options(nixsplice PRIVATE -Wall -Wextra -Wno-unused-parameter)
-install(TARGETS nixsplice)
+add_dependencies(genrulify SpliceIncGen)
+target_link_libraries(genrulify PRIVATE MLIR LLVM absl::strings nlohmann_json::nlohmann_json)
+target_compile_options(genrulify PRIVATE -Wall -Wextra -Wno-unused-parameter)
+install(TARGETS genrulify)
 enable_testing()
 foreach(test check-ir cuts import opt emit reference replay learn access)
-  add_test(NAME ${test} COMMAND bash ${CMAKE_SOURCE_DIR}/tests/${test}.sh $<TARGET_FILE:nixsplice> ${CMAKE_SOURCE_DIR}/tests/data)
+  add_test(NAME ${test} COMMAND bash ${CMAKE_SOURCE_DIR}/tests/${test}.sh $<TARGET_FILE:genrulify> ${CMAKE_SOURCE_DIR}/tests/data)
 endforeach()

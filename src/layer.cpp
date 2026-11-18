@@ -9,7 +9,7 @@ namespace fs = std::filesystem;
 namespace {
 using Json = nlohmann::json;
 
-constexpr std::string_view kMagic = "nixsplice layer 1\n";
+constexpr std::string_view kMagic = "genrulify layer 1\n";
 
 // The permission, setuid, setgid and sticky bits of a mode.
 constexpr mode_t kModeBits = 07777;

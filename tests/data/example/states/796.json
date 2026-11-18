@@ -7,17 +7,17 @@
   "path": "/build"
  },
  {
-  "content": "c82437d39e10d7a564830c757b91784a1d110f5665978f672a1b4119c2ef2b5e",
+  "content": "50f55425c6b2fa76153714d7097567804eabbe75984a18b4534537973c24d9fa",
   "kind": "file",
   "mode": 420,
   "mtime": 1,
   "path": "/build/bundle"
  },
  {
-  "content": "c82437d39e10d7a564830c757b91784a1d110f5665978f672a1b4119c2ef2b5e",
+  "content": "50f55425c6b2fa76153714d7097567804eabbe75984a18b4534537973c24d9fa",
   "kind": "file",
   "mode": 420,
   "mtime": 1,
-  "path": "/nix/store/r8mgc2hqpzggmvmscm94dynii1wk1ygm-nixsplice-example"
+  "path": "/nix/store/l1dx8g9mr73bdp8y6i2yp92xprmz8xzg-genrulify-example"
  }
 ]
