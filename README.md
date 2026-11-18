@@ -15,14 +15,24 @@ and what each one left behind.
 
 ```console
 $ tools/convert.sh nixpkgs#hello
-70 process groups: 11 replayed and reproduced, 2 kept as recorded bytes, 57 dead
+70 process groups: 12 replayed and reproduced, 1 kept as recorded bytes, 57 dead
 …
 out: Nix, Bazel and Buck2 agree on sha256:cca3804d340495150db44b1e762655d8a0b4fe6d37b8350f1a0d8fa33c27c8cc
 ```
 
 That hash is the NAR hash [cache.nixos.org](https://cache.nixos.org) serves
 for `hello-2.12.3`. Bazel and Buck2 arrived at it by running `tar`,
-`configure`, `make` and `strip` as genrules.
+`configure`, `make` and `strip` as genrules, and the `cmd` of each
+genrule is the command line that was recorded:
+
+```python
+cmd = " ".join([
+    "./sandbox.sh --in . --in $(RULEDIR) --out $(RULEDIR)",
+    "--name s1375_tar --timeout 306",
+    "run --cwd /build --env 12 --argv0 tar --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 5 --",
+    "/nix/store/d1x9…-gnutar-1.35/bin/tar xf /nix/store/wj7p…-hello-2.12.3.tar.gz --mode=+w --warning=no-timestamp",
+]),
+```
 
 ## The idea
 
@@ -164,21 +174,91 @@ A group that fails moves down a ladder:
    are taken from the recording. `configure` writes the same `Makefile`
    every time and a different `config.log`.
 6. **Literal.** The group is not replayed and all of its writes come from
-   the recording. `mktemp` lands here: the file name is random and later
-   commands carry the recorded name in their `argv`.
+   the recording.
+
+One case needs no rung. `mktemp` picks a random name, and later commands
+carry the recorded name in their `argv`. What a later step can observe
+of a path is its kind, mode and content, so when a result is missing and
+an entry the group was not given sits beside it with the recorded kind,
+mode and content, the script takes that entry as the result and hands it
+on under the recorded name.
 
 ### 6. Lower to genrules
 
-Each `splice.exec` becomes a `genrule` whose command is
-`genrulify replay plan.json`. Its output is a *layer*: the entries it
-wrote, with full modes, as one file. Its `srcs` are the layers of the
-operations that define its operands. Each `splice.literal` is a layer
-checked into the workspace. `splice.output` assembles the final entries
-and writes a NAR.
+Every file version becomes a real file in the build system's tree, named
+after the rule that wrote it and its path in the build. A `splice.exec`
+becomes a `genrule` whose `srcs` are the versions it reads, whose `outs`
+are the versions it writes, and whose `cmd` is the recorded command
+line. This is the append from step 3:
 
-A replay rule verifies its results on every build, so a process that
-stops reproducing its recorded output fails that rule. It cannot pass a
-different file downstream.
+```python
+genrule(
+    name = "s764_dd",
+    srcs = [
+        ":actions/s764_dd.manifest",
+        ":closure.txt",
+        ":env/0.env",
+        ":platform/bin/sh",
+        ":platform/etc/group",
+        ":platform/etc/hosts",
+        ":platform/etc/passwd",
+        ":sandbox.sh",
+        ":s735_dd/build/bundle",
+        ":s735_dd.ok",
+    ],
+    outs = [
+        "s764_dd/build/bundle",
+        "s764_dd.ok",
+    ],
+    cmd = " ".join([
+        "./sandbox.sh --in . --in $(RULEDIR) --out $(RULEDIR)",
+        "--name s764_dd --timeout 300",
+        "run --cwd /build --env 0 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 6 --",
+        "/nix/store/2gfx…-coreutils-9.11/bin/dd if=/nix/store/vr61…-body.txt of=bundle oflag=append conv=notrunc status=none",
+    ]),
+    tags = ["no-remote"],
+)
+```
+
+It reads `%1` as `:s735_dd/build/bundle` and writes `%2` as
+`s764_dd/build/bundle`. The SSA values of the module are the labels of
+the build file.
+
+A recorded command only makes sense where it ran. It names `/build`
+absolutely and expects its environment and its descriptors.
+[`sandbox.sh`](src/sandbox.sh.in) is a shell script that every workspace
+carries, and it puts those back:
+
+- it copies the declared inputs to their recorded paths under a private
+  root, with the modes and mtimes in the rule's manifest;
+- it mounts that root and the store paths in `closure.txt` with
+  bubblewrap;
+- it starts each process with its recorded environment (`env/0.env`),
+  working directory, `argv[0]` and descriptors, which is what the `run`
+  line above each command says;
+- it compares the kind, mode and SHA-256 of every declared result with
+  the manifest, and only then copies the result to `outs`.
+
+A pipeline is one rule with a `run` line per process and a `--pipe` for
+each pipe between them. Directories and symlinks are not files a genrule
+can declare, so they travel in the manifests, and a rule that uses one
+depends on the stamp (`s735_dd.ok`) of the rule that made it.
+
+A `splice.literal` is files checked into the workspace. `splice.output`
+stages the final entries and writes a NAR with `nix-store --dump`.
+
+Three properties come out of this:
+
+- The workspace builds without genrulify. Bazel or Buck2, bash,
+  bubblewrap and the Nix store paths of the closure are enough.
+- The checker in step 5 runs this script with these arguments, so the
+  thing that was checked is the thing that was emitted.
+- A rule verifies its results on every build. A process that stops
+  reproducing its recorded output fails that rule and cannot pass a
+  different file downstream.
+
+Store paths are read from the host's Nix store, which a remote worker
+may not have, so rules are tagged `no-remote`.
 
 ## Why the result is the same build
 
@@ -229,28 +309,28 @@ recorded.
 
 | Package | Build | `execve` | Groups | Replayed | Narrow | Traced | Wider | Pinned files | Recorded | Genrules |
 | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| `colstr-1.0.0` | stdenv, one `c++` | 83 | 52 | 6 | 6 | 0 | 0 | 0 | 1 | 7 |
-| `sl-5.05` | Makefile | 94 | 55 | 8 | 8 | 0 | 0 | 0 | 1 | 9 |
-| `tree-2.3.2` | Makefile | 183 | 73 | 12 | 11 | 1 | 0 | 0 | 1 | 14 |
+| `colstr-1.0.0` | stdenv, one `c++` | 83 | 52 | 7 | 7 | 0 | 0 | 0 | 0 | 8 |
+| `sl-5.05` | Makefile | 94 | 55 | 9 | 9 | 0 | 0 | 0 | 0 | 10 |
+| `tree-2.3.2` | Makefile | 183 | 73 | 13 | 12 | 1 | 0 | 0 | 0 | 15 |
 | `cowsay-3.8.4` | Makefile, Perl | 147 | 79 | 14 | 13 | 1 | 0 | 0 | 0 | 16 |
-| `hello-go` | `go build` | 192 | 53 | 6 | 6 | 0 | 0 | 0 | 1 | 7 |
+| `hello-go` | `go build` | 192 | 53 | 7 | 7 | 0 | 0 | 0 | 0 | 8 |
 | `python3.14-six-1.17.0` | `pyproject-build` | 137 | 99 | 7 | 7 | 0 | 0 | 0 | 0 | 9 |
-| `hexyl-0.17.0` | Rust, `cargo` | 612 | 79 | 17 | 14 | 3 | 0 | 1 | 1 | 18 |
-| `ninja-1.13.2` | Python bootstrap, Ninja | 493 | 79 | 16 | 14 | 2 | 0 | 2 | 1 | 17 |
-| `tinyxml2-11.0.0` | CMake | 275 | 54 | 9 | 6 | 3 | 0 | 2 | 1 | 10 |
-| `jsoncpp-1.9.8` | CMake | 602 | 81 | 14 | 11 | 3 | 0 | 3 | 1 | 16 |
-| `lz4-1.10.0` | patch, CMake | 806 | 105 | 18 | 15 | 3 | 0 | 2 | 2 | 22 |
-| `zlib-1.3.2` | patches, `configure` | 700 | 87 | 13 | 11 | 1 | 1 | 1 | 2 | 16 |
-| `patchelf-0.15.2` | autotools | 503 | 59 | 11 | 8 | 3 | 0 | 1 | 1 | 12 |
-| `which-2.25` | patch, autotools | 1,137 | 82 | 12 | 9 | 3 | 0 | 1 | 1 | 15 |
-| `hello-2.12.3` | autotools | 4,605 | 70 | 11 | 8 | 3 | 0 | 1 | 2 | 12 |
-| `gawk-5.4.1` | autotools | 6,857 | 85 | 15 | 10 | 4 | 1 | 4 | 1 | 18 |
-| `gnused-4.10` | autotools | 8,848 | 77 | 13 | 10 | 3 | 0 | 1 | 1 | 15 |
-| `bash-interactive-5.3p15` | autotools, 6 outputs | 11,847 | 160 | 34 | 30 | 4 | 0 | 1 | 2 | 40 |
-| `sqlite-3.53.3`, tests off | `configure`, 6 outputs | 1,121 | 149 | 25 | 22 | 3 | 0 | 1 | 3 | 31 |
-| `lua-5.2.4`, `make` opened | Makefile | 386 | 130 | 66 | 64 | 2 | 0 | 0 | 1 | 68 |
-| `hello-2.12.3`, `make` opened | autotools | 4,605 | 445 | 164 | 163 | 1 | 0 | 1 | 1 | 165 |
-| `hello-2.12.3`, `make` opened, 4 jobs | autotools | 4,605 | 233 | 17 | 15 | 2 | 0 | 1 | 1 | 18 |
+| `hexyl-0.17.0` | Rust, `cargo` | 612 | 79 | 18 | 16 | 2 | 0 | 1 | 0 | 19 |
+| `ninja-1.13.2` | Python bootstrap, Ninja | 493 | 79 | 17 | 15 | 2 | 0 | 0 | 0 | 18 |
+| `tinyxml2-11.0.0` | CMake | 275 | 54 | 10 | 7 | 3 | 0 | 2 | 0 | 11 |
+| `jsoncpp-1.9.8` | CMake | 602 | 81 | 15 | 12 | 3 | 0 | 3 | 0 | 17 |
+| `lz4-1.10.0` | patch, CMake | 806 | 105 | 20 | 17 | 3 | 0 | 2 | 0 | 24 |
+| `zlib-1.3.2` | patches, `configure` | 700 | 87 | 15 | 13 | 1 | 1 | 1 | 0 | 18 |
+| `patchelf-0.15.2` | autotools | 503 | 59 | 12 | 9 | 3 | 0 | 1 | 0 | 13 |
+| `which-2.25` | patch, autotools | 1,137 | 82 | 13 | 10 | 3 | 0 | 1 | 0 | 16 |
+| `hello-2.12.3` | autotools | 4,605 | 70 | 12 | 9 | 3 | 0 | 1 | 1 | 13 |
+| `gawk-5.4.1` | autotools | 6,857 | 85 | 16 | 11 | 4 | 1 | 4 | 0 | 19 |
+| `gnused-4.10` | autotools | 8,848 | 77 | 14 | 11 | 3 | 0 | 1 | 0 | 16 |
+| `bash-interactive-5.3p15` | autotools, 6 outputs | 11,847 | 160 | 35 | 31 | 4 | 0 | 1 | 1 | 41 |
+| `sqlite-3.53.3`, tests off | `configure`, 6 outputs | 1,121 | 149 | 27 | 24 | 3 | 0 | 1 | 1 | 33 |
+| `lua-5.2.4`, `make` opened | Makefile | 386 | 130 | 67 | 65 | 2 | 0 | 0 | 0 | 69 |
+| `hello-2.12.3`, `make` opened | autotools | 4,605 | 445 | 165 | 164 | 1 | 0 | 0 | 0 | 166 |
+| `hello-2.12.3`, `make` opened, 4 jobs | autotools | 4,605 | 233 | 18 | 16 | 2 | 0 | 1 | 0 | 19 |
 
 *Replayed* groups reproduced their recorded writes in two consecutive
 passes. *Narrow* groups did so with the files Rewind saw them open.
@@ -259,7 +339,7 @@ replay shows them touching: `configure` in `hello` takes 143 of the 555
 entries in its tree, in `patchelf` 23 of 108, in `gnused` 143 of 1,364.
 *Wider* groups kept their directories or the whole tree because the
 traced set did not reproduce the recording. There are two, `make
-install` in `gawk` and one group in `zlib`. Everything not replayed or
+install` in `gawk` and a `make` in `zlib`. Everything not replayed or
 recorded is dead.
 
 *Pinned files* are what a replayed group wrote differently from the
@@ -270,14 +350,11 @@ comes from the recording, so the steps after it see what they saw when
 the build was recorded.
 
 *Recorded* counts the groups that are not replayed but still have a file
-in the graph. They are `mktemp`, whose random name later commands carry
-in their `argv`, one `find` in `bash` and `sqlite` that writes a
-checksum file differently each time, and in `hello` the `make check`
-whose `test-suite.log` the install step looks at.
-
-With precise inputs, `make check` itself is dead in `hello`: nothing in
-the output depends on the tests having run, so Bazel and Buck2 do not
-run them.
+in the graph. There are three. One `find` in `bash` and one in `sqlite`
+write a checksum file differently each time. In `hello` it is `make
+check`: the only thing of it that the install step looks at is
+`test-suite.log`, which never matches and is pinned, so the tests have
+nothing left to contribute and Bazel and Buck2 do not run them.
 
 A literal does not mean the output came from the recording. Across the
 45 outputs, 2,375 files, directories and symlinks were written by
@@ -289,8 +366,8 @@ process group that failed to replay.
 The last row is the same build recorded with `--cores 4`. Recipes that
 ran at the same time cannot be separated by a snapshot, so 205 of them
 merge into two groups, which replay and reproduce. The conversion stays
-correct and gets coarser: 18 rules where the one-job recording gives
-165.
+correct and gets coarser: 19 rules where the one-job recording gives
+166.
 
 Rewind also compares what it built with
 [cache.nixos.org](https://cache.nixos.org). `sqlite` was built with its
@@ -304,9 +381,9 @@ it was compared with.
 
 Two things are worth knowing about how those numbers came about.
 
-`gnused` failed once. Its `configure` passed both replay checks and then
-wrote a different `config.h` inside Bazel's sandbox while four other
-conversions were loading the machine. The failing rule named the files,
+`gnused` failed once, in an earlier round. Its `configure` passed both
+replay checks and then wrote a different `config.h` inside Bazel's
+sandbox while four other conversions were loading the machine. The failing rule named the files,
 which is what `genrulify learn` and the retry loop in `tools/convert.sh`
 are for: a rule that fails to reproduce during a build is pinned from
 the build log and the graph is built again. On a quiet machine the same
@@ -345,14 +422,43 @@ its pipelines and builtins. Programs that are not shells are never opened
 on account of what they run: `configure` runs `make` to test it and is
 still one group.
 
-The 12 genrules become 165. 155 of them are individual `make` recipes,
-84 of which run `gcc`, and every group except `configure` passes on the
-narrow rung: a compile is given its source, the headers it opened, and
-nothing else. Nix ran this build with `make -j1`. Bazel and Buck2 run the
-compiles in parallel, because the graph says they are independent. Three
-clean Bazel builds of each workspace, measured before inputs were
-narrowed by tracing, averaged 17.3 s with 13 rules and 14.9 s with 165,
-with critical paths of 15.9 s and 12.7 s.
+The rule that compiles `src/hello.c` then reads like the line `make`
+printed:
+
+```python
+genrule(
+    name = "s95217_bash",
+    srcs = [
+        ":s1375_tar/build/hello-2.12.3/src/hello.c",
+        ":s1375_tar/build/hello-2.12.3/src/system.h",
+        ":s4163_configure/build/hello-2.12.3/config.h",
+        ":s92510_bash/build/hello-2.12.3/lib/sys/types.h",
+        …
+    ],
+    outs = [
+        "s95217_bash/build/hello-2.12.3/src/hello.o",
+        "s95217_bash.ok",
+    ],
+    cmd = " ".join([
+        "./sandbox.sh --in . --in $(RULEDIR) --out $(RULEDIR)",
+        "--name s95217_bash --timeout 300",
+        "run --cwd /build/hello-2.12.3 --env 40 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 3 --",
+        "/nix/store/10dx…-bash-5.3p15/bin/bash -c 'gcc -DLOCALEDIR=\\\"/nix/store/5z2y…-hello-2.12.3/share/locale\\\" -DHAVE_CONFIG_H -I.  -Ilib -I./lib -Isrc -I./src   -g -O2 -c -o src/hello.o src/hello.c'",
+    ]),
+    tags = ["no-remote"],
+)
+```
+
+Its sources are `hello.c` and `system.h` as `tar` unpacked them,
+`config.h` as `configure` wrote it, and the gnulib headers that earlier
+recipes generated. Nobody declared those. The compiler opened them
+while Rewind was watching.
+
+The 13 genrules become 166. Every group except `configure` passes on
+the narrow rung: a compile is given its source, the headers it opened,
+and nothing else. Nix ran this build with `make -j1`. Bazel and Buck2
+run the compiles in parallel, because the graph says they are
+independent.
 
 ## Limits
 
@@ -400,7 +506,8 @@ src/trace.cpp      events and I/O log to cuts
 src/record.cpp     Rewind run to a recording: process details and snapshots
 src/import.cpp     recording to file SSA
 src/check.cpp      the replay ladder
-src/replay.cpp     the sandbox a genrule runs
+src/action.cpp     one operation as a step: inputs, command lines, results
+src/sandbox.sh.in  the script a genrule runs, shipped in every workspace
 src/emit.cpp       graph to BUILD.bazel and BUCK
 tests/             CLI tests over a checked-in recording
 tools/convert.sh   record, check, emit, build with both systems, verify
@@ -425,6 +532,9 @@ $ genrulify opt recorded.mlir > graph.mlir
 $ genrulify emit recording graph.mlir workspace
 $ cd workspace && bazel build //:archive
 ```
+
+The workspace is self-contained apart from the store paths its commands
+name. Building it needs Bazel or Buck2 and no genrulify.
 
 ## Credits
 

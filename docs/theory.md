@@ -119,6 +119,13 @@ every process that had exited before its `execve` has exited.
 
 `genrulify check` performs this for each `splice.exec`, twice.
 
+The check is on the value a group yields for *p*, which need not be the
+path the process wrote. `mktemp` leaves its file under a name that
+differs on every run. When nothing is at *p* and an entry the group was
+not given sits in the same directory with the kind, mode and content of
+*σ_b(p)*, that entry is the value for *p*. Later groups are staged from
+values, at the recorded paths, so they see *σ_b(p)* at *p* either way.
+
 ## Composition
 
 > **Theorem 1.** Suppose every `splice.exec` in a graph satisfies its
@@ -181,13 +188,26 @@ in use:
 
 | Graph | Bazel and Buck2 |
 | --- | --- |
-| value | a file inside a layer |
-| `splice.exec` | `genrule` whose output is a layer and whose `srcs` are its operands' layers |
-| `splice.literal` | a layer file checked into the workspace |
+| file value | a file in the build tree, named `<rule>/<path in the build>` |
+| directory or symlink value | a line in the manifest of each rule that uses it, plus a dependency on the stamp of the rule that made it |
+| `splice.exec` | `genrule` whose `srcs` are its operand files, whose `outs` are its used result files and whose `cmd` is the recorded command line |
+| `splice.literal` | files checked into the workspace |
 | `splice.output` | `genrule` that writes a NAR |
 
 No rule knows what it is building. A rule's command is the recorded
 command, and its dependencies are the recorded dependencies.
+
+The command runs through `sandbox.sh`, a shell script in the workspace
+that implements *run*: it stages *σₐ* restricted to *R(G)* from the
+rule's `srcs` and manifest, starts the recorded processes, and compares
+*W(G)* with the manifest before writing any `outs`. `genrulify check`
+calls the same script with the same arguments, so the check of Theorem 1
+and the rule are one procedure applied to equal inputs.
+
+A directory or a symlink is fully described by its entry, so a rule
+stages one from its manifest and needs no file for it. The stamp
+dependency keeps the induction honest: the stamp exists only if the
+producing rule ran and its check of that entry passed.
 
 ## What the theorems do not say
 
