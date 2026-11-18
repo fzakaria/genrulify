@@ -43,3 +43,23 @@ test "$status" != 0
 test "$status" != 124
 grep -q 'cannot open /build/never/staged' "$scratch/error"
 test ! -e "$scratch/result.layer"
+
+# A redirection from a file in the store closure opens the file where the
+# closure is, which is the host's store, not the staged tree. The plan
+# reads its standard input from a closure path. The process itself cannot
+# run in the test, so the replay still fails, but the failure must be the
+# process's exit status and not the redirection.
+cp "$data/trace/events.jsonl" "$scratch/closure-file"
+sed -e "s|/build/never/staged|$scratch/closure-file|" \
+    -e "s|\"closure\": \[\]|\"closure\": [\"$scratch\"]|" \
+    "$scratch/plan.json" > "$scratch/closure-plan.json"
+status=0
+timeout 60 "$compiler" replay "$scratch/closure-plan.json" "$scratch/result.layer" \
+    "$scratch/workspace/platform.layer" 2> "$scratch/error" || status=$?
+test "$status" != 0
+test "$status" != 124
+if grep -q 'cannot open' "$scratch/error"; then
+    cat "$scratch/error" >&2
+    exit 1
+fi
+grep -q 'exited with' "$scratch/error"

@@ -427,7 +427,15 @@ private:
         flags |= O_TRUNC;
       }
     }
-    const auto host = hostPath(root, descriptor.target);
+
+    // A store path the build could only read is not staged. The sandbox
+    // mounts the host's copy at the same path, so open that one.
+    const bool inClosure = std::ranges::any_of(
+        plan.closure, [&](const std::string &path) {
+          return isBelow(descriptor.target, path);
+        });
+    const auto host = inClosure ? fs::path(descriptor.target)
+                                : hostPath(root, descriptor.target);
     const int fd = open(host.c_str(), flags, kCreatedFileMode);
     check(fd >= 0, "cannot open " + descriptor.target);
     opened.push_back(fd);
