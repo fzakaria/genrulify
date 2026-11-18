@@ -12,7 +12,8 @@
   /* One color per outcome of a process group. Replayed groups take the
      accent, so the eye lands on what the build systems run. */
   --narrow: var(--accent);
-  --wide: #2f8f83;
+  --near: #2f8f83;
+  --wide: #8250df;
   --literal: #c7791a;
   --dead: #d2d2d2;
 }
@@ -24,7 +25,8 @@
     --line: #33363d;
     --accent: #8fa3ff;
     --code-bg: #22252c;
-    --wide: #5fc2b5;
+    --near: #5fc2b5;
+    --wide: #c4a7f5;
     --literal: #e0a04a;
     --dead: #3d4048;
   }
@@ -185,6 +187,9 @@ button[aria-pressed="true"] {
 .narrow {
   background: var(--narrow);
 }
+.near {
+  background: var(--near);
+}
 .wide {
   background: var(--wide);
 }
@@ -242,6 +247,9 @@ button[aria-pressed="true"] {
 }
 #graph .node.narrow rect {
   stroke: var(--narrow);
+}
+#graph .node.near rect {
+  stroke: var(--near);
 }
 #graph .node.wide rect {
   stroke: var(--wide);

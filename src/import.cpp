@@ -21,6 +21,7 @@ enum class Origin { Builder, DemotedGroup };
 
 constexpr std::string_view kVerdictsFile = "verdicts.json";
 constexpr std::string_view kNarrowName = "narrow";
+constexpr std::string_view kNearName = "near";
 constexpr std::string_view kWideName = "wide";
 constexpr std::string_view kLiteralName = "literal";
 constexpr int kJsonIndent = 1;
@@ -56,6 +57,29 @@ std::set<std::string> narrowInputs(const Group &group, const State &before,
     addWithParents(process.cwd, before, paths);
     for (const auto &descriptor : process.fds) {
       addWithParents(descriptor.target, before, paths);
+    }
+  }
+  return paths;
+}
+
+// The paths a group is given at Near: its narrow inputs and every entry
+// that shares a directory with one of them.
+std::set<std::string> nearInputs(const Group &group, const State &before,
+                                 const Difference &effect) {
+  auto paths = narrowInputs(group, before, effect);
+
+  // The directories the group worked in: each directory it was given and
+  // the directory of each file it was given.
+  std::set<std::string> directories;
+  for (const auto &path : paths) {
+    if (before.at(path).kind == EntryKind::Directory) {
+      directories.insert(path);
+    }
+    directories.insert(fs::path(path).parent_path().string());
+  }
+  for (const auto &[path, entry] : before) {
+    if (directories.contains(fs::path(path).parent_path().string())) {
+      paths.insert(path);
     }
   }
   return paths;
@@ -162,6 +186,8 @@ std::string_view rungName(Rung rung) {
   switch (rung) {
   case Rung::Narrow:
     return kNarrowName;
+  case Rung::Near:
+    return kNearName;
   case Rung::Wide:
     return kWideName;
   case Rung::Literal:
@@ -179,9 +205,11 @@ Verdicts loadVerdicts(const Recording &recording) {
   for (const auto &[step, json] : Json::parse(readBytes(file)).items()) {
     Verdict verdict;
     const std::string rung = json.at("rung");
-    check(rung == kNarrowName || rung == kWideName || rung == kLiteralName,
+    check(rung == kNarrowName || rung == kNearName || rung == kWideName ||
+              rung == kLiteralName,
           "unknown rung " + rung);
     verdict.rung = rung == kNarrowName ? Rung::Narrow
+                   : rung == kNearName ? Rung::Near
                    : rung == kWideName ? Rung::Wide
                                        : Rung::Literal;
     verdict.pinned = json.value("pinned", std::set<std::string>{});
@@ -247,6 +275,11 @@ mlir::OwningOpRef<mlir::ModuleOp> importRecording(mlir::MLIRContext &context,
       versions.exec(group, everything, verdict.pinned, after);
       break;
     }
+    case Rung::Near:
+      versions.exec(group,
+                    nearInputs(group, before, difference(before, after)),
+                    verdict.pinned, after);
+      break;
     case Rung::Narrow:
       versions.exec(group,
                     narrowInputs(group, before, difference(before, after)),

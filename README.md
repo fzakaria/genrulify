@@ -145,13 +145,15 @@ A group that fails moves down a ladder:
 1. **Narrow.** Operands are the files the group opened or executed, the
    prior version of anything it modified, and the directories leading to
    them.
-2. **Wide.** Operands are every entry that existed. `make` needs this: it
-   calls `stat` on `Makefile.am` without opening it, and Rewind's I/O log
-   records opens.
-3. **Pinned.** The group replays, and the specific results that differ
+2. **Near.** Add every other entry of the directories the group worked
+   in. `make` calls `stat` on `Makefile.am` without opening it, and
+   Rewind's I/O log records opens, so `make` fails at narrow and passes
+   here.
+3. **Wide.** Operands are every entry that existed.
+4. **Pinned.** The group replays, and the specific results that differ
    are taken from the recording. `configure` writes the same `Makefile`
    every time and a different `config.log`.
-4. **Literal.** The group is not replayed and all of its writes come from
+5. **Literal.** The group is not replayed and all of its writes come from
    the recording. `mktemp` lands here: the file name is random and later
    commands carry the recorded name in their `argv`.
 

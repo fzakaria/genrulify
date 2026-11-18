@@ -28,7 +28,9 @@ esac
 
 # Record the build. Rewind compares each output with the binary caches and
 # reports the NAR hash it built.
-rewind nix "$drv" --quiet --json > "$work/run.json"
+# REWIND_ARGS adds to the recording command, for example `--cores 4`.
+# shellcheck disable=SC2086
+rewind nix "$drv" --quiet --json ${REWIND_ARGS:-} > "$work/run.json"
 run=$(jq -er .id "$work/run.json")
 test "$(jq -er .ending "$work/run.json")" = exited:0
 

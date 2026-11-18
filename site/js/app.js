@@ -13,6 +13,7 @@ const STORE_PATH = "__STORE_PATH__";
 // strings in graph.json and the CSS classes that color a cell or a node.
 const Outcome = Object.freeze({
   NARROW: "narrow",
+  NEAR: "near",
   WIDE: "wide",
   LITERAL: "literal",
   DEAD: "dead",
@@ -133,7 +134,7 @@ function renderStats(hash) {
   const rules = state.graph.nodes.filter((node) => node.op !== Op.LITERAL).length;
   const parts = [
     `${groups.length.toLocaleString()} process groups`,
-    `${count(Outcome.NARROW) + count(Outcome.WIDE)} replayed`,
+    `${count(Outcome.NARROW) + count(Outcome.NEAR) + count(Outcome.WIDE)} replayed`,
     `${pinned} files pinned`,
     `${count(Outcome.LITERAL)} kept as recorded bytes`,
     `${count(Outcome.DEAD)} dead`,
@@ -169,10 +170,15 @@ function describeOutcome(group) {
   switch (outcomeOf(group)) {
     case Outcome.NARROW:
       return `Replayed and reproduced, given only the files it opened.${pins}`;
+    case Outcome.NEAR:
+      return (
+        "Replayed and reproduced, given the files it opened and everything else in their " +
+        `directories. It looks at files it never opens, with stat or a directory listing.${pins}`
+      );
     case Outcome.WIDE:
       return (
         "Replayed and reproduced, given every entry in the tree. " +
-        `With only the files it opened it failed, so it reads paths it never opens.${pins}`
+        `It failed with only the directories it worked in, so it looks further afield.${pins}`
       );
     case Outcome.LITERAL:
       return `Kept as recorded bytes. ${group.reason.split("\n").slice(0, 2).join(" ")}`;

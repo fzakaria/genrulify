@@ -110,8 +110,8 @@ them and to skip them.
 
 *Proof.* The graph with no `splice.exec` at all, every effect a literal,
 satisfies the hypothesis vacuously, so one exists. `check` only ever
-moves a group down the ladder narrow → wide → pinned → literal. Widening
-happens at most once per group. Pinning strictly shrinks the set of
+moves a group down the ladder narrow → near → wide → pinned → literal.
+Widening happens at most twice per group. Pinning strictly shrinks the set of
 results the group must reproduce. A group whose used results are all
 pinned has no use left and is deleted. Each move is therefore bounded, the
 number of groups is finite, and the procedure stops at a graph where

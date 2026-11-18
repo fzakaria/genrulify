@@ -59,3 +59,28 @@ grep -q 'splice.literal "dd" at 764 demoted' "$scratch/unfed.mlir"
 with_pipe ', "input": "68690a"' "$scratch/fed"
 "$compiler" import "$scratch/fed" > "$scratch/fed.mlir"
 grep -q 'splice.exec "dd" at 764' "$scratch/fed.mlir"
+
+# The rung between the files a group opened and the whole tree gives the
+# group the other entries of the directories it worked in, which is what a
+# stat or a directory listing can see. The example has a file the append
+# never opens, sitting next to the one it appends to: a second regular
+# file added to every state from the first dd's exit on. Narrow leaves it
+# out, near takes it, and an unknown rung is refused.
+neighbour() {
+    cp -r "$data/example" "$1"
+    chmod -R u+w "$1"
+    for state in 749 764 778 782 796; do
+        sed -i '0,/{/s|{|{"content": "b08e44f9eb798c1413c3e066dc5ccfd2633b760feb1215a2e6b6c4e2001618a4", "kind": "file", "mode": 420, "mtime": 1, "path": "/build/aside"},\n {|' "$1/states/$state.json"
+    done
+}
+neighbour "$scratch/narrow"
+"$compiler" import "$scratch/narrow" > "$scratch/narrow.mlir"
+grep -q 'splice.exec "dd" at 764(%0, %1#1)' "$scratch/narrow.mlir"
+neighbour "$scratch/near"
+echo '{"764": {"rung": "near"}}' > "$scratch/near/verdicts.json"
+"$compiler" import "$scratch/near" > "$scratch/near.mlir"
+grep -q 'splice.exec "dd" at 764(%0, %1#0, %1#1)' "$scratch/near.mlir"
+echo '{"764": {"rung": "nearby"}}' > "$scratch/near/verdicts.json"
+if "$compiler" import "$scratch/near" > /dev/null 2>&1; then
+    exit 1
+fi

@@ -38,13 +38,17 @@ struct Task {
 // The next verdict to try after a failed replay.
 //
 // A group that fails with narrow inputs may have depended on a path it
-// never opened, so the first response is always to give it everything.
-// With every input present, a process that still ends differently cannot
-// be replayed at all. One that ends correctly but writes some files
+// never opened, so the first responses are to give it more: the neighbours
+// of what it opened, then everything. With every input present, a process
+// that still ends differently cannot be replayed at all. One that ends correctly but writes some files
 // differently is nondeterministic in exactly those files, and they are
 // pinned to the recording.
 Verdict adjust(Verdict verdict, const ReplayFailure &failure) {
   if (verdict.rung == Rung::Narrow) {
+    verdict.rung = Rung::Near;
+    return verdict;
+  }
+  if (verdict.rung == Rung::Near) {
     verdict.rung = Rung::Wide;
     return verdict;
   }

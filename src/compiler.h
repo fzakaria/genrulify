@@ -14,6 +14,12 @@ enum class Rung {
   // Give the group the entries the recording saw the group use.
   Narrow,
 
+  // Also give the group every other entry of the directories it worked
+  // in. A stat, an existence test or a directory listing looks at the
+  // neighbours of the files a process opens, and none of those calls is in
+  // the trace.
+  Near,
+
   // Give the group every entry that existed when the group started. A
   // group that depends on a path it never opened, through a stat or a
   // directory listing, passes here.
