@@ -3,7 +3,8 @@
 # processes touched. The fabricated trace has a path relative to a working
 # directory, a path relative to an open directory, an absolute path given
 # to a system call without a directory argument, a failed lookup, a path
-# that needs normalizing, and a directory opened for listing.
+# that needs normalizing, a directory opened for listing, and paths that
+# are relative to a working directory the trace only implies.
 set -eu
 compiler=$1
 scratch=$(mktemp -d)
@@ -21,14 +22,36 @@ cat > "$scratch/trace/1.202" <<'TRACE'
 execve("/build/src/tool", ["tool"], 0x7ffd /* 3 vars */) = 0
 readlink("/proc/self/exe", "/build/src/tool", 4095) = 15
 TRACE
+
+# An older call names a path with no directory argument. It is relative to
+# the process's working directory, which the trace shows wherever a newer
+# call prints AT_FDCWD and whenever the process changes directory.
+cat > "$scratch/trace/2.303" <<'TRACE'
+access("early", X_OK) = 0
+openat(AT_FDCWD</build/pkg>, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 3</etc/ld.so.cache>
+access("build-aux/install-sh", X_OK) = 0
+chdir("po") = 0
+stat("LINGUAS", {st_mode=S_IFREG|0644, st_size=4, ...}) = 0
+chdir("/build/pkg/doc") = 0
+execve("./gen", ["./gen"], 0x7ffd /* 3 vars */) = 0
+fchdir(7</build/pkg/tests>) = 0
+lstat("data", {st_mode=S_IFDIR|0755, st_size=4, ...}) = 0
+TRACE
 "$compiler" accessed "$scratch/trace" | sort > "$scratch/paths"
 cat > "$scratch/expected" <<'PATHS'
 /build/config.site
 /build/include/api.h
 /build/lib/util.c
+/build/pkg/build-aux/install-sh
+/build/pkg/doc
+/build/pkg/doc/gen
+/build/pkg/po
+/build/pkg/po/LINGUAS
+/build/pkg/tests/data
 /build/po/
 /build/src/Makefile.am
 /build/src/tool
+/etc/ld.so.cache
 /proc/self/exe
 PATHS
 diff "$scratch/expected" "$scratch/paths"

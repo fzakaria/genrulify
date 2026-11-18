@@ -44,46 +44,80 @@ std::string unescape(std::string_view text) {
   return plain;
 }
 
-// The absolute, normalized path a call named, or empty when the line holds
-// none this reader can resolve.
-std::string namedPath(const std::string &line) {
-  // A call with a directory argument: strace -y prints the directory's
-  // path after the descriptor, and the working directory after AT_FDCWD.
-  static const std::regex relative(
-      R"re((?:AT_FDCWD|\d+)<([^>]*)>, "((?:[^"\\]|\\.)*)")re");
-
-  // A call whose first argument is the path. Without a directory argument
-  // only an absolute path can be resolved.
-  static const std::regex leading(R"re(^\w+\("((?:[^"\\]|\\.)*)")re");
-
-  std::smatch match;
-  fs::path path;
-  if (std::regex_search(line, match, relative)) {
-    const fs::path named = unescape(match[2].str());
-    path = named.is_absolute() ? named : fs::path(match[1].str()) / named;
-  } else if (std::regex_search(line, match, leading)) {
-    path = unescape(match[1].str());
-  }
-  if (!path.is_absolute()) {
-    return {};
-  }
+// Lexically normalizes a path and drops a trailing separator.
+std::string normalized(const fs::path &path) {
   auto normal = path.lexically_normal().string();
   if (normal.size() > 1 && normal.ends_with('/')) {
     normal.pop_back();
   }
   return normal;
 }
+
+// Reads one process's trace. The process's working directory is not
+// traced as such. It is learned from the calls that reveal it and used to
+// resolve the older calls that name a path with no directory argument.
+class ProcessTrace {
+public:
+  // The absolute path a line's call named, or empty when the line names
+  // none or names one that cannot be resolved yet.
+  std::string namedPath(const std::string &line) {
+    // A call with a directory argument: strace -y prints the directory's
+    // path after the descriptor, and the working directory after AT_FDCWD.
+    static const std::regex withDirectory(
+        R"re((AT_FDCWD|\d+)<([^>]*)>, "((?:[^"\\]|\\.)*)")re");
+
+    // A call whose first argument is the path.
+    static const std::regex leading(R"re(^\w+\("((?:[^"\\]|\\.)*)")re");
+
+    // fchdir names the new working directory by descriptor.
+    static const std::regex changeByDescriptor(R"re(^fchdir\(\d+<([^>]*)>)re");
+
+    std::smatch match;
+    if (std::regex_search(line, match, changeByDescriptor)) {
+      cwd = match[1].str();
+      return {};
+    }
+    if (std::regex_search(line, match, withDirectory)) {
+      if (match[1] == "AT_FDCWD") {
+        cwd = match[2].str();
+      }
+      const fs::path named = unescape(match[3].str());
+      return normalized(named.is_absolute() ? named
+                                            : fs::path(match[2].str()) / named);
+    }
+    if (!std::regex_search(line, match, leading)) {
+      return {};
+    }
+    fs::path path = unescape(match[1].str());
+    if (!path.is_absolute()) {
+      if (cwd.empty()) {
+        return {};
+      }
+      path = fs::path(cwd) / path;
+    }
+    const auto resolved = normalized(path);
+    if (line.starts_with("chdir(")) {
+      cwd = resolved;
+    }
+    return resolved;
+  }
+
+private:
+  // The working directory as far as the trace has shown it.
+  std::string cwd;
+};
 } // namespace
 
 Accessed readAccesses(const fs::path &directory) {
   Accessed accessed;
   for (const auto &file : fs::directory_iterator(directory)) {
     std::ifstream stream(file.path());
+    ProcessTrace process;
     for (std::string line; std::getline(stream, line);) {
       if (line.find(kFailed) != std::string::npos) {
         continue;
       }
-      const auto path = namedPath(line);
+      const auto path = process.namedPath(line);
       if (path.empty()) {
         continue;
       }

@@ -111,7 +111,8 @@ them and to skip them.
 *Proof.* The graph with no `splice.exec` at all, every effect a literal,
 satisfies the hypothesis vacuously, so one exists. `check` only ever
 moves a group down the ladder narrow → near → wide → pinned → literal.
-Widening happens at most twice per group. Pinning strictly shrinks the set of
+Widening happens at most twice per group, and narrowing from a trace is
+attempted once per group and undone if it fails. Pinning strictly shrinks the set of
 results the group must reproduce. A group whose used results are all
 pinned has no use left and is deleted. Each move is therefore bounded, the
 number of groups is finite, and the procedure stops at a graph where
@@ -158,8 +159,11 @@ command, and its dependencies are the recorded dependencies.
   remove it. A rule verifies its own results on every build, so a process
   that later diverges fails its rule and never hands a different file
   downstream.
-- **Operands are sufficient, not necessary and not complete.** A narrow
-  operand set is enough to reproduce this build. It is not a statement
+- **Operands are sufficient, not necessary and not complete.** Any
+  choice of *R(G)* that passes the check is admissible, which is why the
+  operands can come from Rewind's log of opens, from the neighbours of
+  those files, or from a system call trace of the group's own replay. An
+  operand set that passes is enough to reproduce this build. It is not a statement
   about which other files could have affected the group. Nothing here
   speaks about a build with an edited input: that is a different run with
   a different trace.

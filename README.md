@@ -150,10 +150,16 @@ A group that fails moves down a ladder:
    Rewind's I/O log records opens, so `make` fails at narrow and passes
    here.
 3. **Wide.** Operands are every entry that existed.
-4. **Pinned.** The group replays, and the specific results that differ
+4. **Traced.** A group that passed at near or wide is replayed once more
+   under `strace`. The trace has what Rewind's log lacks: every `stat`,
+   `access`, `readlink` and directory listing. The group's operands are
+   cut down to the entries the trace shows it touching, plus the contents
+   of any directory it listed, and that smaller set is checked like any
+   other. If it fails, the group keeps the wider set that worked.
+5. **Pinned.** The group replays, and the specific results that differ
    are taken from the recording. `configure` writes the same `Makefile`
    every time and a different `config.log`.
-5. **Literal.** The group is not replayed and all of its writes come from
+6. **Literal.** The group is not replayed and all of its writes come from
    the recording. `mktemp` lands here: the file name is random and later
    commands carry the recorded name in their `argv`.
 
@@ -354,10 +360,12 @@ either checked or reported.
   and each command can be its own group. A recording made with
   `--cores N` interleaves commands, and commands that overlap are merged
   into one group. The last row of the results table is such a recording.
-- **`stat` and directory listings are not in the trace.** Groups that
-  depend on them move to the near rung or, for `configure` and `cmake`,
-  the wide one, where they are correct and coarse. Recording lookups in
-  Rewind would let them stay narrow.
+- **`stat` and directory listings are not in Rewind's trace.** nixsplice
+  recovers them by tracing the replay, which costs one extra replay of
+  each group that needed them. A path reached only through a symlinked
+  directory, or named relative to the working directory by one of the
+  older system calls, is not resolved, and a group that depends on one
+  keeps its wider inputs.
 - **Pipe input is captured at the `execve` only.** A here-string or a
   short here-document is already in the pipe when the command starts, and
   is recorded and fed back. Input the shell writes while the command is
