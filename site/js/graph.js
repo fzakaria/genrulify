@@ -1,9 +1,13 @@
-// Lays out the optimized build graph in layers and draws it as SVG.
+// Lays out a build graph in layers and draws it as SVG.
 //
 // A node's layer is one more than the deepest node it consumes, so every
 // edge points right. Nodes in one layer do not depend on each other, which
 // lets a crowded layer wrap into several columns without crossing its own
 // edges.
+//
+// Drawing is keyed by node id. A second call with fewer nodes moves the
+// nodes that stay to their new places and fades out the ones that are
+// gone, which is how the page shows dead-code elimination happen.
 
 const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
 
@@ -23,6 +27,10 @@ const ROWS_PER_COLUMN = 18;
 // How far an edge's control points sit from its ends, as a share of the
 // horizontal distance, which gives the curve its S shape.
 const EDGE_CURVE = 0.5;
+
+// How long a removed node takes to fade, which the stylesheet's
+// transition on `.node.leaving` matches.
+const LEAVE_MILLISECONDS = 450;
 
 /** Places every node. Returns the nodes with x, y, width and the canvas size. */
 export function layout(nodes, labelOf) {
@@ -75,20 +83,44 @@ function element(name, attributes = {}) {
   return created;
 }
 
+/** The layer of `svg` with the given class, created on first use. */
+function layerGroup(svg, name) {
+  return svg.querySelector(`:scope > g.${name}`) ?? svg.appendChild(element("g", { class: name }));
+}
+
+/** Creates the element of one node. Its place and class are set by `draw`. */
+function createNode(node, onSelect) {
+  const group = element("g", { tabindex: "0", role: "button" });
+  group.dataset.id = node.id;
+  group.append(element("rect", { height: NODE_HEIGHT }), element("text", { x: LABEL_PADDING / 2, y: NODE_HEIGHT / 2 + 4 }));
+  group.addEventListener("click", () => onSelect(node.id));
+  group.addEventListener("keydown", (event) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      onSelect(node.id);
+    }
+  });
+  return group;
+}
+
 /**
  * Draws the graph into `svg`. `classOf` gives a node its outcome class and
- * `onSelect` is called with a node's id when the node is activated.
+ * `onSelect` is called with a node's id when the node is activated. Nodes
+ * already drawn by an earlier call keep their element and move.
  */
 export function draw(svg, nodes, { labelOf, classOf, onSelect }) {
   const { placed, width, height } = layout(nodes, labelOf);
-  svg.replaceChildren();
   svg.setAttribute("width", width);
   svg.setAttribute("height", height);
   svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
 
-  // Edges go under the nodes.
-  const edges = element("g");
-  svg.append(edges);
+  // Edges go under the nodes. They are redrawn and fade in, because a
+  // curve between two moving nodes has no good intermediate shape.
+  const edges = layerGroup(svg, "edges");
+  const nodeLayer = layerGroup(svg, "nodes");
+  const redrawn = nodeLayer.childElementCount > 0;
+  edges.replaceChildren();
+  edges.classList.toggle("redrawn", redrawn);
   for (const { node, x, y } of placed.values()) {
     for (const input of node.inputs) {
       const from = placed.get(input.node);
@@ -97,7 +129,7 @@ export function draw(svg, nodes, { labelOf, classOf, onSelect }) {
       const endY = y + NODE_HEIGHT / 2;
       const bend = (x - startX) * EDGE_CURVE;
       const path = element("path", {
-        class: "edge",
+        class: `edge ${classOf(node)}`,
         d: `M${startX},${startY} C${startX + bend},${startY} ${x - bend},${endY} ${x},${endY}`,
       });
       path.dataset.from = input.node;
@@ -106,26 +138,35 @@ export function draw(svg, nodes, { labelOf, classOf, onSelect }) {
     }
   }
 
+  // Find the elements an earlier call drew. One that is already leaving
+  // is not reused: a node that comes back gets a fresh element.
+  const drawn = new Map();
+  for (const group of nodeLayer.querySelectorAll(".node:not(.leaving)")) {
+    drawn.set(group.dataset.id, group);
+  }
+
   for (const { node, x, y, width: nodeWidth, label } of placed.values()) {
-    const group = element("g", {
-      class: `node ${classOf(node)}`,
-      transform: `translate(${x},${y})`,
-      tabindex: "0",
-      role: "button",
-    });
-    group.dataset.id = node.id;
-    group.append(element("rect", { width: nodeWidth, height: NODE_HEIGHT }));
-    const text = element("text", { x: LABEL_PADDING / 2, y: NODE_HEIGHT / 2 + 4 });
-    text.textContent = label;
-    group.append(text);
-    group.addEventListener("click", () => onSelect(node.id));
-    group.addEventListener("keydown", (event) => {
-      if (event.key === "Enter" || event.key === " ") {
-        event.preventDefault();
-        onSelect(node.id);
-      }
-    });
-    svg.append(group);
+    let group = drawn.get(node.id);
+    drawn.delete(node.id);
+    const selected = group?.classList.contains("selected") ?? false;
+
+    // A node that appears in a graph already on the page fades in.
+    const entering = redrawn && !group;
+    if (!group) {
+      group = createNode(node, onSelect);
+      nodeLayer.append(group);
+    }
+    group.setAttribute("class", `node ${classOf(node)}${selected ? " selected" : ""}${entering ? " entering" : ""}`);
+    group.style.transform = `translate(${x}px, ${y}px)`;
+    group.querySelector("rect").setAttribute("width", nodeWidth);
+    group.querySelector("text").textContent = label;
+  }
+
+  // Whatever is left was not asked for again.
+  for (const group of drawn.values()) {
+    group.classList.add("leaving");
+    group.classList.remove("selected");
+    setTimeout(() => group.remove(), LEAVE_MILLISECONDS);
   }
 }
 

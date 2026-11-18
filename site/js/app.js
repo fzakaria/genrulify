@@ -1,6 +1,7 @@
 // The explorer: one recorded build at a time, as a timeline of process
-// groups, the optimized graph, and the details of whichever group or node
-// is selected. All data is static JSON and text that the compiler wrote.
+// groups, the graph before and after dead-code elimination, the same graph
+// as an MLIR module, and the details of whichever group or node is
+// selected. All data is static JSON and text that the compiler wrote.
 
 import { draw, highlight } from "./graph.js";
 
@@ -42,6 +43,33 @@ const PACKAGE_PARAMETER = "pkg";
 // Hex digits of the NAR hash shown in the stats line.
 const SHOWN_HASH_DIGITS = 16;
 
+// How many operands a line of the module listing shows before it counts
+// the rest. An operation given a source tree has thousands.
+const SHOWN_OPERANDS = 8;
+
+// How many entries the listing prints for the selected operation.
+const SHOWN_ENTRIES = 6;
+
+// An SSA value as MLIR prints it: `%4`, one result of several as `%4#2`,
+// and the definition of several results as `%4:3`.
+const VALUE_PATTERN = /(%\d+(?:[#:]\d+)?)/;
+
+// The headings over the graph, before and after elimination.
+const GraphText = Object.freeze({
+  RECORDED: {
+    title: "The graph as recorded",
+    caption:
+      "One node per operation, and an edge wherever one operation consumes a file version another wrote. " +
+      "The grey nodes are groups whose writes never reach an output. Run the elimination above to delete them.",
+  },
+  OPTIMIZED: {
+    title: "What is left",
+    caption:
+      "The optimized graph. Every node that is not a dashed box of recorded bytes is one build rule. " +
+      "Select a node, or a cell above.",
+  },
+});
+
 // What the page is showing. `selection` is a group's step or a node's id.
 const state = {
   packages: [],
@@ -50,8 +78,12 @@ const state = {
   files: new Map(),
   nodeOfStep: new Map(),
   groupOfStep: new Map(),
+  nodeOfValue: new Map(),
   selection: null,
   lane: Lane.PROCESS,
+
+  // Whether dead-code elimination has been run on the page.
+  eliminated: false,
 };
 
 async function fetchText(path) {
@@ -90,8 +122,16 @@ function outcomeOf(group) {
   return group.outcome ?? Outcome.NARROW;
 }
 
+/** The nodes the page is showing: every operation, or the survivors. */
+function shownNodes() {
+  return state.eliminated ? state.graph.nodes.filter((node) => !node.dead) : state.graph.nodes;
+}
+
 /** The class that colors a graph node. */
 function nodeClass(node) {
+  if (node.dead) {
+    return Outcome.DEAD;
+  }
   if (node.op === Op.OUTPUT) {
     return "output";
   }
@@ -132,7 +172,7 @@ function renderStats(hash) {
   const groups = state.graph.groups;
   const count = (outcome) => groups.filter((group) => outcomeOf(group) === outcome).length;
   const pinned = groups.reduce((total, group) => total + (group.pinned?.length ?? 0), 0);
-  const rules = state.graph.nodes.filter((node) => node.op !== Op.LITERAL).length;
+  const rules = state.graph.nodes.filter((node) => node.op !== Op.LITERAL && !node.dead).length;
   const parts = [
     `${groups.length.toLocaleString()} process groups`,
     `${count(Outcome.NARROW) + count(Outcome.NEAR) + count(Outcome.TRACED) + count(Outcome.WIDE)} replayed`,
@@ -210,6 +250,18 @@ function table(headings, rows) {
 }
 
 function renderFiles(node) {
+  // An eliminated operation is described by counts alone.
+  if (node.dead) {
+    const given = node.inputs.reduce((total, input) => total + input.count, 0);
+    return [
+      create("p", {
+        textContent:
+          `Given ${given.toLocaleString()} ${given === 1 ? "entry" : "entries"} and wrote ` +
+          `${node.writeCount.toLocaleString()}, none of which anything reads.`,
+      }),
+    ];
+  }
+
   const inputs = node.inputs.map((input) => {
     const more = input.count - input.paths.length;
     const paths = input.paths.join("\n") + (more > 0 ? `\n… and ${more} more` : "");
@@ -257,7 +309,7 @@ async function renderLane() {
     tab.classList.toggle("active", tab.dataset.lane === state.lane);
   }
   const { node, group } = selected();
-  const absent = [create("p", { className: "muted", textContent: "This group was eliminated, so the optimized graph has no node for it." })];
+  const absent = [create("p", { className: "muted", textContent: "This group was eliminated, so no rule is generated for it." })];
   let content;
   if (state.lane === Lane.PROCESS) {
     content = renderProcesses(group);
@@ -266,12 +318,143 @@ async function renderLane() {
   } else if (state.lane === Lane.FILES) {
     content = renderFiles(node);
   } else if (state.lane === Lane.MLIR) {
-    content = [create("pre", { textContent: node.mlir })];
+    content = [create("pre", {}, valueTokens(node.mlir))];
+  } else if (node.dead) {
+    content = absent;
   } else {
     const file = state.lane === Lane.BAZEL ? "BUILD.bazel" : "BUCK";
     content = [create("pre", { textContent: ruleText(await packageFile(file), node.id) })];
   }
   $("lane").replaceChildren(...content);
+}
+
+/** Draws the graph the page is showing and says which one it is. */
+function renderGraph() {
+  const text = state.eliminated ? GraphText.OPTIMIZED : GraphText.RECORDED;
+  $("graph-title").textContent = text.title;
+  $("graph-caption").textContent = text.caption;
+  draw($("graph"), shownNodes(), { labelOf: nodeLabel, classOf: nodeClass, onSelect: select });
+}
+
+/** The number of the value, or the first of the values, an operation defines. */
+function definedValue(node) {
+  const match = /^%(\d+)/.exec(node.mlir);
+  return match ? Number(match[1]) : null;
+}
+
+/** Printed MLIR as text and one element per SSA value, so a value can be pointed at. */
+function valueTokens(text) {
+  return text.split(VALUE_PATTERN).map((part, index) => {
+    // Odd parts are what the pattern captured.
+    if (index % 2 === 0) {
+      return part;
+    }
+    const token = create("span", { className: "value", textContent: part });
+    token.dataset.value = /\d+/.exec(part)[0];
+    return token;
+  });
+}
+
+/**
+ * The first line of an operation as printed, up to where its entries
+ * start, with a long operand list cut short.
+ */
+function headLine(node) {
+  const first = node.mlir.split("\n", 1)[0];
+  const arrow = node.op === Op.OUTPUT ? "" : " -> ";
+  const operandCount = node.inputs.reduce((total, input) => total + input.count, 0);
+
+  // An operand list opens at the first parenthesis followed by a value.
+  const open = first.indexOf("(%");
+  if (operandCount === 0 || open < 0) {
+    return first.replace(/ -> \[\]?$/, "") + arrow;
+  }
+  const operands = first
+    .slice(open + 1)
+    .replace(/\) -> \[\]?$|\)$/, "")
+    .split(", ");
+  const more = operandCount - SHOWN_OPERANDS;
+  const shown = operands.slice(0, SHOWN_OPERANDS).join(", ") + (more > 0 ? `, … ${more.toLocaleString()} more` : "");
+  return `${first.slice(0, open + 1)}${shown})${arrow}`;
+}
+
+/** One operation on one line, with its entries replaced by their count. */
+function summaryLine(node) {
+  if (node.op === Op.OUTPUT) {
+    return headLine(node);
+  }
+  return `${headLine(node)}[${node.writeCount.toLocaleString()} ${node.writeCount === 1 ? "entry" : "entries"}]`;
+}
+
+/** An operation with its first entries printed. The MLIR tab of the detail panel has the rest. */
+function excerpt(node) {
+  if (node.op === Op.OUTPUT) {
+    return headLine(node);
+  }
+  const entries = node.mlir.split("\n").filter((line) => line.trimStart().startsWith("#splice.entry"));
+  const more = node.writeCount - SHOWN_ENTRIES;
+  const lines = [`${headLine(node)}[`, ...entries.slice(0, SHOWN_ENTRIES)];
+  if (more > 0) {
+    lines.push(`    … ${more.toLocaleString()} more`);
+  }
+  return [...lines, "]"].join("\n");
+}
+
+/** The module listing: one line per operation, with the selected one printed in full. */
+function renderModule() {
+  const selectedId = selected().node?.id;
+  const rows = shownNodes().map((node) => {
+    const open = node.id === selectedId;
+    const row = create("li", { className: `op ${nodeClass(node)}` }, [
+      create("code", {}, valueTokens(open ? excerpt(node) : summaryLine(node))),
+    ]);
+    row.classList.toggle("selected", open);
+    row.dataset.id = node.id;
+    return row;
+  });
+  const listing = $("module");
+  const scrolled = listing.scrollTop;
+  listing.replaceChildren(...rows);
+  listing.scrollTop = scrolled;
+
+  // Bring the selected operation into view without moving the page.
+  const row = listing.querySelector(".op.selected");
+  if (row && (row.offsetTop < listing.scrollTop || row.offsetTop > listing.scrollTop + listing.clientHeight - row.clientHeight)) {
+    listing.scrollTop = row.offsetTop - listing.clientHeight / 3;
+  }
+  const dead = state.graph.nodes.filter((node) => node.dead).length;
+  $("module-caption").textContent = state.eliminated
+    ? `${rows.length} operations are left. Elimination removed ${dead}. The values keep the numbers they had before.`
+    : `${rows.length} operations, ${dead} of them with no use for anything they define.`;
+}
+
+/** Makes the module listing respond to the pointer. Called once. */
+function wireModule() {
+  const listing = $("module");
+  const mark = (event, on) => {
+    const value = event.target.closest?.(".value")?.dataset.value;
+    if (value === undefined) {
+      return;
+    }
+    for (const token of listing.querySelectorAll(`.value[data-value="${value}"]`)) {
+      token.classList.toggle("same", on);
+    }
+  };
+  listing.addEventListener("mouseover", (event) => mark(event, true));
+  listing.addEventListener("mouseout", (event) => mark(event, false));
+
+  // A value leads to the operation that defines it, and anywhere else on
+  // a line selects that line's operation.
+  listing.addEventListener("click", (event) => {
+    const token = event.target.closest(".value");
+    const row = event.target.closest(".op");
+    const defining = token && state.nodeOfValue.get(Number(token.dataset.value));
+    if (defining && shownNodes().includes(defining)) {
+      select(defining.id);
+    } else if (row) {
+      select(row.dataset.id);
+    }
+  });
 }
 
 /** The node and the group the current selection refers to, either of which may be absent. */
@@ -291,6 +474,7 @@ function select(selection) {
     cell.classList.toggle("selected", group !== undefined && Number(cell.dataset.step) === group.step);
   }
   highlight($("graph"), node?.id ?? null);
+  renderModule();
 
   $("detail").hidden = false;
   $("detail-title").textContent = node ? nodeLabel(node) : group.name;
@@ -323,9 +507,14 @@ async function load(id) {
     state.graph.nodes.filter((node) => node.op === Op.EXEC || node.demoted).map((node) => [node.step, node]),
   );
 
+  state.nodeOfValue = new Map(state.graph.nodes.map((node) => [definedValue(node), node]));
+
+  // A graph drawn for another package shares no nodes with this one.
+  $("graph").replaceChildren();
   renderStats(hash);
   renderTimeline();
-  draw($("graph"), state.graph.nodes, { labelOf: nodeLabel, classOf: nodeClass, onSelect: select });
+  renderGraph();
+  renderModule();
   const sourceRoot = $("package-files").dataset.sourceRoot;
   for (const [link, file] of [["mlir", "graph.mlir.gz"], ["bazel", "BUILD.bazel"], ["buck", "BUCK"], ["json", "graph.json"]]) {
     $(`download-${link}`).href = `${sourceRoot}/${id}/${file}`;
@@ -339,10 +528,20 @@ function packageFromLocation() {
 
 async function main() {
   $("eliminate").addEventListener("click", () => {
-    const eliminated = $("timeline").classList.toggle("eliminated");
-    $("eliminate").setAttribute("aria-pressed", String(eliminated));
-    $("eliminate").textContent = eliminated ? "Bring the dead groups back" : "Run dead-code elimination";
+    state.eliminated = !state.eliminated;
+    $("timeline").classList.toggle("eliminated", state.eliminated);
+    $("eliminate").setAttribute("aria-pressed", String(state.eliminated));
+    $("eliminate").textContent = state.eliminated ? "Bring the dead groups back" : "Run dead-code elimination";
+
+    // A selected operation that was just eliminated has nothing to show.
+    if (state.eliminated && selected().node?.dead) {
+      state.selection = null;
+      $("detail").hidden = true;
+    }
+    renderGraph();
+    renderModule();
   });
+  wireModule();
   for (const tab of $("lanes").querySelectorAll("a")) {
     tab.addEventListener("click", (event) => {
       event.preventDefault();

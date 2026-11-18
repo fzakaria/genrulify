@@ -52,7 +52,8 @@
       <code>execve</code>. Every file a process group writes becomes an SSA value in an
       <a href="https://mlir.llvm.org">MLIR</a> dialect, dead processes are eliminated, each
       survivor is replayed alone against the recording, and what is left is lowered to one
-      <code>genrule</code> per group. There are no rules for C or autotools here.
+      <code>genrule</code> per group, whose <code>cmd</code> is the command line that was
+      recorded. There are no rules for C or autotools here.
       <span class="claim">Nix, Bazel and Buck2 produce the same NAR.</span>
     </p>
     <p class="examples muted">Try: <span id="packages"></span></p>
@@ -75,13 +76,24 @@
       </span>
     </div>
     <div id="timeline" role="list" aria-label="Process groups"></div>
-
-    <h2>What is left</h2>
     <p class="muted caption">
-      The optimized graph. A node is one build rule, and an edge means one rule consumes a file
-      version the other wrote. Select a node, or a cell above.
+      Elimination is the one MLIR pass that runs, and it is the stock canonicalizer deleting
+      operations whose results have no uses. How much of the tree a group is given, and which
+      files fall back to recorded bytes, was settled earlier by replaying each group, and is
+      already in the module when it is imported.
     </p>
-    <div id="graph-scroll"><svg id="graph" role="img" aria-label="The optimized build graph"></svg></div>
+
+    <h2 id="graph-title">The graph as recorded</h2>
+    <p class="muted caption" id="graph-caption"></p>
+    <div id="graph-scroll"><svg id="graph" role="img" aria-label="The build graph"></svg></div>
+
+    <h2>The same graph as MLIR</h2>
+    <p class="muted caption">
+      The module in the <code>splice</code> dialect, one operation per line. Point at a value to
+      see every place it appears. Select a value to jump to the operation that defines it, or a
+      line to read the whole operation. <span id="module-caption"></span>
+    </p>
+    <ol id="module" aria-label="The operations of the module"></ol>
 
     <section id="detail" hidden>
       <h2 id="detail-title"></h2>
@@ -116,9 +128,19 @@
         A group is <em>replayed</em> when running it alone in a sandbox, given only its recorded
         inputs, leaves files with the recorded hashes. A group that needs more than the files it
         opened is replayed once under a system call tracer and then given exactly the files,
-        directories and listings the trace shows it touching. A group that cannot be reproduced, such as
-        <code>mktemp</code>, is kept as <em>recorded bytes</em>. A group is <em>dead</em> when no
-        output depends on anything it wrote.
+        directories and listings the trace shows it touching. A file that differs on every run,
+        such as a log with a timestamp in it, is <em>pinned</em>: the group still runs, and that
+        one file is taken from the recording. A group that cannot be reproduced at all, such as
+        hello's <code>make check</code>, whose test log never matches, is kept as
+        <em>recorded bytes</em>. A group is <em>dead</em> when no output depends on anything it
+        wrote.
+      </p>
+      <p>
+        A rule's <code>cmd</code> is the recorded command line, handed to
+        <code>sandbox.sh</code>, a shell script that ships in the generated workspace. The
+        script puts the rule's inputs back at the paths the command saw, runs the command, and
+        fails the rule unless every output has the recorded hash. The BUILD.bazel and BUCK tabs
+        show the rule for whichever node is selected.
       </p>
       <p>
         The graph recomputes the build that was recorded. It is not an incremental build for
