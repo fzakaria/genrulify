@@ -20,6 +20,11 @@
     "note": "GNU bash 5.3: autotools, 11,847 execve calls, six outputs"
   },
   {
+    "id": "sqlite",
+    "label": "sqlite",
+    "note": "SQLite 3.53.3 with its test phase off: one 9 MB C file, six outputs"
+  },
+  {
     "id": "hexyl",
     "label": "hexyl (Rust)",
     "note": "hexyl 0.17.0: a Rust crate built by cargo, 176 rustc invocations"

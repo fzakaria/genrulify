@@ -211,8 +211,8 @@ why dead-code elimination, opening and demotion each preserve the claim.
 
 ## Results
 
-`tools/convert.sh` was run on 19 packages from the nixpkgs revision in
-`flake.lock`, recorded with Rewind 0.16.0 on x86_64-linux. They have 39
+`tools/convert.sh` was run on 20 packages from the nixpkgs revision in
+`flake.lock`, recorded with Rewind 0.16.0 on x86_64-linux. They have 45
 outputs between them. For every output, the NAR Bazel built and the NAR
 Buck2 built are the NAR Rewind recorded.
 
@@ -236,6 +236,7 @@ Buck2 built are the NAR Rewind recorded.
 | `gawk-5.4.1` | autotools | 6,857 | 85 | 15 | 2 | 3 | 4 | 1 | 18 |
 | `gnused-4.10` | autotools | 8,848 | 77 | 13 | 0 | 3 | 1 | 1 | 15 |
 | `bash-interactive-5.3p15` | autotools, 6 outputs | 11,847 | 160 | 34 | 1 | 3 | 1 | 2 | 40 |
+| `sqlite-3.53.3`, tests off | `configure`, 6 outputs | 1,121 | 149 | 25 | 1 | 2 | 1 | 3 | 31 |
 | `lua-5.2.4`, `make` opened | Makefile | 386 | 130 | 68 | 2 | 0 | 0 | 1 | 70 |
 | `hello-2.12.3`, `make` opened | autotools | 4,605 | 445 | 164 | 0 | 1 | 1 | 1 | 165 |
 | `hello-2.12.3`, `make` opened, 4 jobs | autotools | 4,605 | 233 | 17 | 1 | 1 | 1 | 1 | 18 |
@@ -255,12 +256,12 @@ comes from the recording, so the steps after it see what they saw when
 the build was recorded.
 
 The literals are `mktemp`, whose random name later commands carry in
-their `argv`, and in `bash` one `find` that writes a checksum file
-differently each time.
+their `argv`, and in `bash` and `sqlite` one `find` that writes a
+checksum file differently each time.
 
 A literal does not mean the output came from the recording. Across the
-39 outputs, 1,281 files, directories and symlinks were written by
-replayed rules and 9 were not. All 9 are small files the builder's
+45 outputs, 2,375 files, directories and symlinks were written by
+replayed rules and 10 were not. All 10 are small files the builder's
 shell wrote with a redirection, such as
 `nix-support/propagated-build-inputs`. No output entry comes from a
 process group that failed to replay.
@@ -272,8 +273,10 @@ correct and gets coarser: 18 rules where the one-job recording gives
 165.
 
 Rewind also compares what it built with
-[cache.nixos.org](https://cache.nixos.org). 37 of the 39 outputs are
-bit-identical to what Hydra built, so for those the Bazel and Buck2
+[cache.nixos.org](https://cache.nixos.org). `sqlite` was built with its
+tests off, which is a different derivation, so it has nothing to compare
+with. Of the 39 outputs of the other 19 packages, 37 are bit-identical
+to what Hydra built, so for those the Bazel and Buck2
 archives equal the public binary cache. The other two, one output each of
 `six` and `gnused`, differ between Hydra and this machine under plain Nix
 as well. nixsplice reproduces the recorded build, and that is the build
@@ -297,9 +300,12 @@ Capturing the pipe's contents made `xargs` replayable, which made the
 that verifies is only as real as its replayed share, which is why the
 table reports it.
 
-`sqlite` is not in the table. Rewind takes hours to record its
-single-file compile on one virtual CPU and the run had not finished when
-this was written.
+`sqlite` is in the table with its test phase disabled. The compile of
+its single 9 MB source file thrashed in Rewind's default 1 GiB guest
+and needed `REWIND_ARGS='--mem 3072'`. With that, the build recorded in
+ten minutes, but sqlite's own test runner then estimated 44 hours for
+its suite on one virtual CPU. What limits a conversion in practice is
+how long the build takes to record.
 
 ## Finer cuts
 
@@ -340,6 +346,9 @@ either checked or reported.
   that is nondeterministic and still matched both times will be caught by
   its own genrule on a later build, which fails. It is not caught
   earlier.
+- **A build has to be recordable.** Rewind runs the build on one virtual
+  CPU with at most 3 GiB of memory. A build that needs more of either
+  cannot be recorded, or takes days.
 - **Record with one job for fine rules.** Rewind's default tells the
   build it has one core, so `make` and `ninja` run one command at a time
   and each command can be its own group. A recording made with
