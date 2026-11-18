@@ -37,3 +37,11 @@ test -s platform.layer
 if "$compiler" emit "$data/example" "$scratch/graph.mlir" "$scratch/workspace" 2> /dev/null; then
     exit 1
 fi
+
+# The description lists every operation and every process group as JSON.
+cd "$scratch"
+"$compiler" describe "$data/example" "$scratch/graph.mlir" > "$scratch/description.json"
+grep -q '"id":"s764_dd"' "$scratch/description.json"
+grep -q '"node":"s735_dd"' "$scratch/description.json"
+grep -q '"op":"output"' "$scratch/description.json"
+grep -q 'oflag=append' "$scratch/description.json"

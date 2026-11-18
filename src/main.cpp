@@ -15,6 +15,7 @@ constexpr std::string_view kUsage =
     "       nixsplice import RECORDING\n"
     "       nixsplice opt GRAPH.mlir\n"
     "       nixsplice emit RECORDING GRAPH.mlir WORKSPACE\n"
+    "       nixsplice describe RECORDING GRAPH.mlir\n"
     "       nixsplice reference RECORDING OUTPUT ARCHIVE.nar\n"
     "       nixsplice verify REFERENCE.nar ARCHIVE.nar\n"
     "       nixsplice replay PLAN.json RESULT.layer LAYER...\n"
@@ -102,6 +103,11 @@ void run(std::span<char *> args) {
     auto module = parse(context, args[1]);
     splice_ir::optimize(*module);
     print(*module);
+    return;
+  }
+  if (args.size() == 3 && command == "describe") {
+    auto module = parse(context, args[2]);
+    splice_ir::describeGraph(*module, splice_ir::Recording::load(args[1]));
     return;
   }
   if (args.size() == 4 && command == "emit") {

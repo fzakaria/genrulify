@@ -45,6 +45,7 @@ add_executable(nixsplice
   src/lower.cpp
   src/check.cpp
   src/emit.cpp
+  src/describe.cpp
   src/verify.cpp)
 add_dependencies(nixsplice SpliceIncGen)
 target_link_libraries(nixsplice PRIVATE MLIR LLVM absl::strings nlohmann_json::nlohmann_json)
