@@ -14,5 +14,8 @@ pkgs.stdenv.mkDerivation {
     pkgs.abseil-cpp
     pkgs.nlohmann_json
   ];
+  SPLICE_BASH = pkgs.bash;
+  SPLICE_COREUTILS = pkgs.coreutils;
+  SPLICE_NIX = pkgs.nix;
   doCheck = true;
 }

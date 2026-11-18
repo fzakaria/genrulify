@@ -14,6 +14,7 @@
         default = import ./nix/package.nix { inherit pkgs; };
       };
       devShells.${system}.default = pkgs.mkShell {
+        inherit (self.packages.${system}.default) SPLICE_BASH SPLICE_COREUTILS SPLICE_NIX;
         inputsFrom = [ self.packages.${system}.default ];
       };
       formatter.${system} = pkgs.nixfmt-tree;
