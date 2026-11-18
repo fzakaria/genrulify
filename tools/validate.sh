@@ -4,7 +4,7 @@
 # the generated workspace with both systems, and require every archive to
 # be the NAR Rewind recorded.
 #
-# usage: tools/convert.sh INSTALLABLE [OPEN]
+# usage: tools/validate.sh INSTALLABLE [OPEN]
 #   INSTALLABLE  a flake reference such as nixpkgs#hello, or a .drv path
 #   OPEN         programs to treat as driver code, e.g. 'make|bash|sh'
 #
@@ -22,7 +22,7 @@
 # Set GENRULIFY_COMPILER to a genrulify binary to use it in place of the
 # flake's build, so that a batch of conversions uses one compiler.
 set -euo pipefail
-installable=${1:?usage: tools/convert.sh INSTALLABLE [OPEN]}
+installable=${1:?usage: tools/validate.sh INSTALLABLE [OPEN]}
 open=${2:-}
 root=$(cd "$(dirname "$0")/.." && pwd)
 work=${GENRULIFY_WORK:-$(mktemp -d "${TMPDIR:-/tmp}/genrulify.XXXXXXXX")}
