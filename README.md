@@ -209,19 +209,21 @@ why dead-code elimination, opening and demotion each preserve the claim.
 
 ## Results
 
-`tools/convert.sh` was run on 14 packages from the nixpkgs revision in
-`flake.lock`, recorded with Rewind 0.16.0 on x86_64-linux. For every
-output of every package, the NAR Bazel built and the NAR Buck2 built are
-the NAR Rewind recorded.
+`tools/convert.sh` was run on 19 packages from the nixpkgs revision in
+`flake.lock`, recorded with Rewind 0.16.0 on x86_64-linux. They have 39
+outputs between them. For every output, the NAR Bazel built and the NAR
+Buck2 built are the NAR Rewind recorded.
 
 | Package | Build | `execve` | Groups | Replayed | Wide | Pinned files | Literal | Genrules |
 | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
 | `colstr-1.0.0` | stdenv, one `c++` | 83 | 52 | 6 | 0 | 0 | 1 | 7 |
 | `sl-5.05` | Makefile | 94 | 55 | 8 | 0 | 0 | 1 | 9 |
 | `tree-2.3.2` | Makefile | 183 | 73 | 12 | 1 | 0 | 1 | 14 |
-| `cowsay-3.8.4` | Makefile, Perl | 147 | 79 | 13 | 1 | 0 | 1 | 15 |
+| `cowsay-3.8.4` | Makefile, Perl | 147 | 79 | 14 | 1 | 0 | 0 | 16 |
 | `hello-go` | `go build` | 192 | 53 | 6 | 0 | 0 | 1 | 7 |
 | `python3.14-six-1.17.0` | `pyproject-build` | 137 | 99 | 7 | 0 | 0 | 0 | 9 |
+| `hexyl-0.17.0` | Rust, `cargo` | 612 | 79 | 19 | 5 | 7 | 1 | 20 |
+| `ninja-1.13.2` | Python bootstrap, Ninja | 493 | 79 | 16 | 2 | 2 | 1 | 17 |
 | `tinyxml2-11.0.0` | CMake | 275 | 54 | 9 | 3 | 2 | 1 | 10 |
 | `jsoncpp-1.9.8` | CMake | 602 | 81 | 14 | 3 | 3 | 1 | 16 |
 | `lz4-1.10.0` | patch, CMake | 806 | 105 | 18 | 3 | 2 | 2 | 22 |
@@ -229,34 +231,56 @@ the NAR Rewind recorded.
 | `patchelf-0.15.2` | autotools | 503 | 59 | 11 | 3 | 1 | 1 | 12 |
 | `which-2.25` | patch, autotools | 1,137 | 82 | 12 | 3 | 1 | 1 | 15 |
 | `hello-2.12.3` | autotools | 4,605 | 70 | 12 | 4 | 2 | 1 | 13 |
-| `gnused-4.10` | autotools | 8,848 | 77 | 13 | 3 | 5 | 1 | 15 |
+| `gawk-5.4.1` | autotools | 6,857 | 85 | 15 | 5 | 4 | 1 | 18 |
+| `gnused-4.10` | autotools | 8,848 | 77 | 13 | 3 | 1 | 1 | 15 |
+| `bash-interactive-5.3p15` | autotools, 6 outputs | 11,847 | 160 | 34 | 4 | 1 | 2 | 40 |
+| `lua-5.2.4`, `make` opened | Makefile | 386 | 130 | 68 | 2 | 0 | 1 | 70 |
 | `hello-2.12.3`, `make` opened | autotools | 4,605 | 445 | 164 | 1 | 1 | 1 | 165 |
 
 *Replayed* groups reproduced their recorded writes in two consecutive
-passes. *Wide* counts the replayed groups that needed the whole tree: 17
-unopened `make` invocations, 6 `configure`, 3 `cmake` and one
-`find | xargs`. Everything not replayed or literal is dead.
+passes. *Wide* counts the replayed groups that needed the whole tree,
+mostly `configure`, `cmake`, `cargo` and unopened `make`. Everything not
+replayed or literal is dead.
 
 *Pinned files* are what a replayed group wrote differently from the
 recording. Most are logs (`config.log`, `CMakeConfigureLog.yaml`,
-`test-suite.log`). The rest record the machine: `CMakeSystem.cmake` holds
-the kernel version, and in three packages `configure` or `cmake` wrote a
-`Makefile`, `config.status` or `config.h` on the host that differs from
-the one written in the VM. A pinned file comes from the recording, so the
-steps after it see what they saw when the build was recorded.
+`test-suite.log`) or records of the machine: `CMakeSystem.cmake` holds
+the kernel version and cargo's `.rustc_info.json` the host. A pinned file
+comes from the recording, so the steps after it see what they saw when
+the build was recorded.
 
-The literals have two causes. `mktemp` picks a random name that later
-commands carry in their `argv`. In `cowsay`, a `cat` reads a
-here-document the shell wrote into a pipe, and the trace does not hold
-those bytes.
+The literals are `mktemp`, whose random name later commands carry in
+their `argv`, and in `bash` one `find` that writes a checksum file
+differently each time.
 
-These packages have 27 outputs between them. Rewind also compares what
-it built with [cache.nixos.org](https://cache.nixos.org): 25 of the 27
-are bit-identical to what Hydra built, so for those the Bazel and Buck2
+Rewind also compares what it built with
+[cache.nixos.org](https://cache.nixos.org). 37 of the 39 outputs are
+bit-identical to what Hydra built, so for those the Bazel and Buck2
 archives equal the public binary cache. The other two, one output each of
-`six` and `gnused`, are not reproducible between Hydra and this machine
-under Nix either. nixsplice reproduces the recorded build, and that is
-the build it was compared with.
+`six` and `gnused`, differ between Hydra and this machine under plain Nix
+as well. nixsplice reproduces the recorded build, and that is the build
+it was compared with.
+
+Two things are worth knowing about how those numbers came about.
+
+`gnused` failed once. Its `configure` passed both replay checks and then
+wrote a different `config.h` inside Bazel's sandbox while four other
+conversions were loading the machine. The failing rule named the files,
+which is what `nixsplice learn` and the retry loop in `tools/convert.sh`
+are for: a rule that fails to reproduce during a build is pinned from
+the build log and the graph is built again. On a quiet machine the same
+package converts in one build with only `config.log` pinned.
+
+`hexyl` first passed for the wrong reason. stdenv installs the binary
+with a here-string piped into `xargs cp`, that group was a literal, and
+so the installed binary came from the recording and `rustc` never ran.
+Capturing the pipe's contents made `xargs` replayable, which made the
+`cargo build` live, and it reproduces the recorded binary. A conversion
+that verifies is only as real as its replayed share, which is why the
+table reports it.
+
+`sqlite` is not in the table: Rewind had not finished recording its
+single-file compile after 36 minutes and I stopped it.
 
 ## Finer cuts
 

@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Regenerate the data one package contributes to the site from a checked
-# recording: the optimized graph as MLIR and as JSON, and both build files.
+# recording: the optimized graph as compressed MLIR and as JSON, and both
+# build files.
 #
 # usage: tools/site-data.sh RECORDING ID
 #   RECORDING  a directory `nixsplice record` and `nixsplice check` wrote
@@ -23,7 +24,12 @@ compiler=$(nix build --no-link --print-out-paths "$root")/bin/nixsplice
 rm -rf "$out"
 mkdir -p "$out"
 "$compiler" describe "$recording" "$work/graph.mlir" > "$out/graph.json"
-cp "$work/graph.mlir" "$work/workspace/BUILD.bazel" "$work/workspace/BUCK" "$out/"
+cp "$work/workspace/BUILD.bazel" "$work/workspace/BUCK" "$out/"
+
+# A group that was given a whole source tree prints thousands of operands,
+# so the graph of a large package runs to megabytes of text. The page shows
+# each operation from graph.json and only links to the whole module.
+gzip --best --no-name --stdout "$work/graph.mlir" > "$out/graph.mlir.gz"
 
 # The site shows the NAR hash every build agreed on.
 "$compiler" reference "$recording" out "$work/out.nar"

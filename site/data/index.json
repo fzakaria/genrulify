@@ -10,6 +10,31 @@
     "note": "GNU hello 2.12.3: autotools, make, make check, make install"
   },
   {
+    "id": "bash",
+    "label": "bash",
+    "note": "GNU bash 5.3: autotools, 11,847 execve calls, six outputs"
+  },
+  {
+    "id": "hexyl",
+    "label": "hexyl (Rust)",
+    "note": "hexyl 0.17.0: a Rust crate built by cargo, 176 rustc invocations"
+  },
+  {
+    "id": "ninja",
+    "label": "ninja",
+    "note": "ninja 1.13.2: bootstrapped by a Python script, then built by itself"
+  },
+  {
+    "id": "gawk",
+    "label": "gawk",
+    "note": "GNU awk 5.4.1: autoreconf and autotools, three outputs"
+  },
+  {
+    "id": "lua-make",
+    "label": "lua, make opened",
+    "note": "Lua 5.2.4 with make treated as driver code: one genrule per recipe"
+  },
+  {
     "id": "gnused",
     "label": "sed",
     "note": "GNU sed 4.10: autotools and gnulib, 8,848 execve calls, two outputs"

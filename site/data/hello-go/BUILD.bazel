@@ -2,7 +2,7 @@ genrule(
     name = "s1410_cp",
     srcs = [":literals/sandbox_715.layer",":plans/s1410_cp.json",":platform.layer"],
     outs = ["s1410_cp.layer"],
-    cmd = "'/nix/store/0yqaj2zk6639s8hn61mma00z7p6s8rq7-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s1410_cp.json)\" \"$@\" \"$(location :literals/sandbox_715.layer)\" \"$(location :platform.layer)\"",
+    cmd = "'/nix/store/a3z311rmr5hhy8zyyv64fd96v6rqjfpw-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s1410_cp.json)\" \"$@\" \"$(location :literals/sandbox_715.layer)\" \"$(location :platform.layer)\"",
     tags = ["no-remote"],
 )
 
@@ -10,7 +10,7 @@ genrule(
     name = "s1436_chmod",
     srcs = [":literals/sandbox_715.layer",":plans/s1436_chmod.json",":platform.layer",":s1410_cp"],
     outs = ["s1436_chmod.layer"],
-    cmd = "'/nix/store/0yqaj2zk6639s8hn61mma00z7p6s8rq7-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s1436_chmod.json)\" \"$@\" \"$(location :literals/sandbox_715.layer)\" \"$(location :s1410_cp)\" \"$(location :platform.layer)\"",
+    cmd = "'/nix/store/a3z311rmr5hhy8zyyv64fd96v6rqjfpw-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s1436_chmod.json)\" \"$@\" \"$(location :literals/sandbox_715.layer)\" \"$(location :s1410_cp)\" \"$(location :platform.layer)\"",
     tags = ["no-remote"],
 )
 
@@ -18,7 +18,7 @@ genrule(
     name = "s2039_go",
     srcs = [":literals/sandbox_715.layer",":plans/s2039_go.json",":platform.layer",":s1436_chmod"],
     outs = ["s2039_go.layer"],
-    cmd = "'/nix/store/0yqaj2zk6639s8hn61mma00z7p6s8rq7-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s2039_go.json)\" \"$@\" \"$(location :literals/sandbox_715.layer)\" \"$(location :s1436_chmod)\" \"$(location :platform.layer)\"",
+    cmd = "'/nix/store/a3z311rmr5hhy8zyyv64fd96v6rqjfpw-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s2039_go.json)\" \"$@\" \"$(location :literals/sandbox_715.layer)\" \"$(location :s1436_chmod)\" \"$(location :platform.layer)\"",
     tags = ["no-remote"],
 )
 
@@ -26,7 +26,7 @@ genrule(
     name = "s2217499_mkdir",
     srcs = [":literals/sandbox_715.layer",":plans/s2217499_mkdir.json",":platform.layer",":s1436_chmod"],
     outs = ["s2217499_mkdir.layer"],
-    cmd = "'/nix/store/0yqaj2zk6639s8hn61mma00z7p6s8rq7-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s2217499_mkdir.json)\" \"$@\" \"$(location :literals/sandbox_715.layer)\" \"$(location :s1436_chmod)\" \"$(location :platform.layer)\"",
+    cmd = "'/nix/store/a3z311rmr5hhy8zyyv64fd96v6rqjfpw-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s2217499_mkdir.json)\" \"$@\" \"$(location :literals/sandbox_715.layer)\" \"$(location :s1436_chmod)\" \"$(location :platform.layer)\"",
     tags = ["no-remote"],
 )
 
@@ -34,7 +34,7 @@ genrule(
     name = "s2217520_cp",
     srcs = [":literals/sandbox_715.layer",":plans/s2217520_cp.json",":platform.layer",":s1436_chmod",":s2039_go",":s2217499_mkdir"],
     outs = ["s2217520_cp.layer"],
-    cmd = "'/nix/store/0yqaj2zk6639s8hn61mma00z7p6s8rq7-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s2217520_cp.json)\" \"$@\" \"$(location :literals/sandbox_715.layer)\" \"$(location :s1436_chmod)\" \"$(location :s2039_go)\" \"$(location :s2217499_mkdir)\" \"$(location :platform.layer)\"",
+    cmd = "'/nix/store/a3z311rmr5hhy8zyyv64fd96v6rqjfpw-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s2217520_cp.json)\" \"$@\" \"$(location :literals/sandbox_715.layer)\" \"$(location :s1436_chmod)\" \"$(location :s2039_go)\" \"$(location :s2217499_mkdir)\" \"$(location :platform.layer)\"",
     tags = ["no-remote"],
 )
 
@@ -42,7 +42,7 @@ genrule(
     name = "s2218114_find_sort_cut_xargs",
     srcs = [":literals/lit_2218083_mktemp.layer",":literals/sandbox_715.layer",":plans/s2218114_find_sort_cut_xargs.json",":platform.layer",":s1436_chmod",":s2217499_mkdir",":s2217520_cp"],
     outs = ["s2218114_find_sort_cut_xargs.layer"],
-    cmd = "'/nix/store/0yqaj2zk6639s8hn61mma00z7p6s8rq7-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s2218114_find_sort_cut_xargs.json)\" \"$@\" \"$(location :literals/lit_2218083_mktemp.layer)\" \"$(location :literals/sandbox_715.layer)\" \"$(location :s1436_chmod)\" \"$(location :s2217499_mkdir)\" \"$(location :s2217520_cp)\" \"$(location :platform.layer)\"",
+    cmd = "'/nix/store/a3z311rmr5hhy8zyyv64fd96v6rqjfpw-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s2218114_find_sort_cut_xargs.json)\" \"$@\" \"$(location :literals/lit_2218083_mktemp.layer)\" \"$(location :literals/sandbox_715.layer)\" \"$(location :s1436_chmod)\" \"$(location :s2217499_mkdir)\" \"$(location :s2217520_cp)\" \"$(location :platform.layer)\"",
     tags = ["no-remote"],
 )
 
@@ -50,7 +50,7 @@ genrule(
     name = "archive",
     srcs = [":plans/archive.json",":s2217499_mkdir",":s2217520_cp",":s2218114_find_sort_cut_xargs"],
     outs = ["out.nar"],
-    cmd = "'/nix/store/0yqaj2zk6639s8hn61mma00z7p6s8rq7-nixsplice-0.1.0/bin/nixsplice' pack \"$(location :plans/archive.json)\" \"$@\" \"$(location :s2217499_mkdir)\" \"$(location :s2217520_cp)\" \"$(location :s2218114_find_sort_cut_xargs)\"",
+    cmd = "'/nix/store/a3z311rmr5hhy8zyyv64fd96v6rqjfpw-nixsplice-0.1.0/bin/nixsplice' pack \"$(location :plans/archive.json)\" \"$@\" \"$(location :s2217499_mkdir)\" \"$(location :s2217520_cp)\" \"$(location :s2218114_find_sort_cut_xargs)\"",
     tags = ["no-remote"],
 )
 
