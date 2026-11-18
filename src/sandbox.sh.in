@@ -219,6 +219,13 @@ for id in "${!pipe_last_writer[@]}"; do
     pipe_w[$id]=$writer
 done
 
+# The script's own standard error, kept on a descriptor of its own. A
+# process can be given a file as descriptor 2 and the script's standard
+# error as descriptor 3, and by the time 3 is placed, 2 is already the
+# file.
+script_error=$((next_descriptor++))
+eval "exec $script_error>&2"
+
 # Files of bytes the builder had written into a pipe, by name. Each is
 # opened once, so that the processes that shared the pipe share the
 # file's offset and none of them reads what another already read.
@@ -307,7 +314,7 @@ while [ $# -gt 0 ]; do
             what=${spec#*=}
             case $what in
                 null) eval "exec $fd<> /dev/null" ;;
-                err) eval "exec $fd>&2" ;;
+                err) eval "exec $fd>&$script_error" ;;
                 pipe-r:*) eval "exec $fd<&${pipe_r[${what#pipe-r:}]}" ;;
                 pipe-w:*) eval "exec $fd>&${pipe_w[${what#pipe-w:}]}" ;;
                 data:*) eval "exec $fd<&${feed[${what#data:}]}" ;;
@@ -328,7 +335,7 @@ while [ $# -gt 0 ]; do
 
         # Drop every descriptor the script holds, so that a pipe is open
         # only in the processes the recording saw it open in.
-        for held in "${pipe_r[@]}" "${pipe_w[@]}" "${feed[@]}"; do
+        for held in "${pipe_r[@]}" "${pipe_w[@]}" "${feed[@]}" "$script_error"; do
             eval "exec $held>&-"
         done
         exec "${command[@]}"
@@ -357,6 +364,15 @@ done
 for id in "${!pipe_r[@]}"; do
     (
         for held in "${pipe_w[@]}" "${feed[@]}"; do eval "exec $held>&-"; done
+
+        # Hold the read end of this pipe alone. A helper that kept another
+        # pipe's read end open would keep that pipe's writer from ever
+        # being told that its reader is gone.
+        for other in "${!pipe_r[@]}"; do
+            if [ "$other" != "$id" ]; then
+                eval "exec ${pipe_r[$other]}<&-"
+            fi
+        done
         for reader in ${pipe_readers[$id]//,/ }; do
             while kill -0 "${pids[$reader]}" 2> /dev/null; do
                 "$C/sleep" 0.02

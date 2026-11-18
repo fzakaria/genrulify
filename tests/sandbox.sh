@@ -74,3 +74,52 @@ test ! -e "$scratch/out/other.ok"
 "$script" --name tree --in "$scratch" --in "$data/example" --out "$scratch/out" pack /out
 "$compiler" verify "$scratch/out/tree.nar" "$scratch/out/tree.nar" > /dev/null
 grep -q symlink "$scratch/out/tree.nar"
+
+# The rest starts processes, which needs bubblewrap and user namespaces.
+# A build sandbox may have neither, so try one command and stop here when
+# it cannot run. The commands are the coreutils the example was recorded
+# with, whose store closure is the example's.
+coreutils=$(grep -m1 -- '-coreutils-' "$scratch/workspace/closure.txt")/bin
+if [ ! -x "$coreutils/true" ]; then
+    exit 0
+fi
+: > "$scratch/actions/probe.manifest"
+if ! "$script" --name probe --in "$scratch/workspace" --in "$scratch" --out "$scratch/out" \
+    run --env 0 --status 0 --argc 1 -- "$coreutils/true" 2> /dev/null; then
+    echo "skipping the cases that start processes" >&2
+    exit 0
+fi
+
+# Runs the step named $1 with the workspace's closure and environment.
+start() {
+    name=$1
+    shift
+    "$script" --name "$name" --in "$scratch/workspace" --in "$scratch" --out "$scratch/out" --timeout 20 "$@"
+}
+
+# A chain of pipes ends when its last reader does. `yes` never stops by
+# itself: head exits after one line, cat is then killed writing to a pipe
+# nobody reads, and yes after cat. Whichever pipe the script happens to
+# look after first, no helper may keep the other pipe's read end open, or
+# cat would never be told. Both orders of the two pipe ids are tried.
+SIGPIPE_STATUS=141
+for ids in "1 2" "2 1"; do
+    set -- $ids
+    : > "$scratch/actions/chain.manifest"
+    start chain --pipe "$1:0:1:1" --pipe "$2:1:2:1" \
+        run --env 0 --fd "1=pipe-w:$1" --status "$SIGPIPE_STATUS" --argc 1 -- "$coreutils/yes" \
+        run --env 0 --fd "0=pipe-r:$1" --fd "1=pipe-w:$2" --status "$SIGPIPE_STATUS" --argc 1 -- "$coreutils/cat" \
+        run --env 0 --fd "0=pipe-r:$2" --fd 1=null --status 0 --argc 3 -- "$coreutils/head" -n 1
+done
+
+# A descriptor sent to the script's standard error gets that, whatever
+# order the descriptors are listed in. Here descriptor 2 is a file and is
+# listed before descriptor 1, which is where echo writes. Nothing may
+# reach the file.
+{
+    line in dir 700 1 /build '' ''
+    line out file 644 1 /build/log e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 order/build/log
+} > "$scratch/actions/order.manifest"
+start order run --cwd /build --env 0 --fd 2=file:w:/build/log --fd 1=err --status 0 --argc 2 -- \
+    "$coreutils/echo" written 2> "$scratch/order.err"
+grep -q '^written$' "$scratch/order.err"
