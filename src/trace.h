@@ -1,11 +1,22 @@
 #pragma once
 
+#include <compare>
 #include <cstdint>
 #include <filesystem>
+#include <optional>
+#include <set>
 #include <string>
 #include <vector>
 
 namespace splice_ir {
+// One program in one process: the process and the step of the execve that
+// started the program.
+struct Image {
+  int pid = 0;
+  uint64_t step = 0;
+  auto operator<=>(const Image &) const = default;
+};
+
 // A process the builder started and the stretch of the run the process and
 // its descendants were alive for. A cut is where the build can be split:
 // everything inside one is replayed by starting the one process.
@@ -27,6 +38,12 @@ struct Cut {
   // Every path the process or a descendant opened for reading or executed,
   // each once, in the order first seen.
   std::vector<std::string> reads;
+
+  // The nearest image above the cut that is driver code only because the
+  // trace shows it running other commands. Closing that image makes the
+  // image the cut instead. Empty when the builder, or a program opened by
+  // name, started the cut.
+  std::optional<Image> opener;
 };
 
 // What the event stream and the read and write records say about a run.
@@ -77,7 +94,13 @@ enum class Granularity {
 // that the program only ran other commands. A program that also writes
 // files of its own, as ninja does its log and cargo its fingerprints, is
 // still opened by name alone.
+//
+// `closed` lists images that must not be opened on the evidence of the
+// trace. The recorder closes a driver that fed a command through a pipe:
+// what a shell builtin wrote into a pipe is in no file and in no command
+// line, so the command can only be replayed as part of the shell.
 Analysis analyze(const std::filesystem::path &events,
                  const std::filesystem::path &trace, const std::string &open,
-                 Granularity granularity = Granularity::Fine);
+                 Granularity granularity = Granularity::Fine,
+                 const std::set<Image> &closed = {});
 } // namespace splice_ir

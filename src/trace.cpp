@@ -224,8 +224,10 @@ struct Events {
   // Matches the names of programs whose processes are driver code.
   std::optional<std::regex> open;
 
-  // Whether a process is driver code on the evidence of what it did.
+  // Whether a process is driver code on the evidence of what it did, and
+  // the images that are not to be, whatever the evidence.
   Granularity granularity = Granularity::Fine;
+  std::set<Image> closed;
 
   // The steps at which each process opened a file of the build for
   // writing or renamed one, in order. The event stream reports both at
@@ -339,8 +341,11 @@ public:
     const auto &process = events.processes.at(pid);
     const auto name = programName(process.execs[index]);
     bool opened = events.open && std::regex_match(name, *events.open);
-    if (!opened && events.granularity == Granularity::Fine) {
-      opened = onlyRunsCommands(pid, index);
+    if (!opened && events.granularity == Granularity::Fine &&
+        !events.closed.contains({pid, process.execs[index].step}) &&
+        onlyRunsCommands(pid, index)) {
+      opened = true;
+      evident.insert(key);
     }
 
     // Remember the answer for anything that is not a shell before looking
@@ -363,6 +368,52 @@ public:
       opened = exec(pid, index + 1);
     }
     return execs[key] = opened;
+  }
+
+  // The nearest image above a process's execve number `index` that is
+  // opened only on the evidence of the trace: an earlier program of the
+  // same process, or the program an ancestor was running when it forked
+  // the next process down.
+  std::optional<Image> opener(int pid, size_t index) {
+    const auto found = [&](int process, size_t exec) -> std::optional<Image> {
+      this->exec(process, exec);
+      if (!evident.contains({process, exec})) {
+        return std::nullopt;
+      }
+      return Image{process, events.processes.at(process).execs[exec].step};
+    };
+    const int first = pid == *events.builder ? 1 : 0;
+    for (int earlier = static_cast<int>(index) - 1; earlier >= first; --earlier) {
+      if (const auto image = found(pid, earlier)) {
+        return image;
+      }
+    }
+    for (int child = pid; child != *events.builder;) {
+      const auto &process = events.processes.at(child);
+      if (!process.parent || !events.processes.contains(*process.parent)) {
+        return std::nullopt;
+      }
+      const int parent = *process.parent;
+      const auto &execs = events.processes.at(parent).execs;
+
+      // The program the parent was running at the fork, if it had called
+      // execve by then. A parent that had not is a subshell.
+      for (int running = static_cast<int>(execs.size()) - 1; running >= 0;
+           --running) {
+        if (execs[running].step > process.forked) {
+          continue;
+        }
+        const int lowest = parent == *events.builder ? 1 : 0;
+        if (running < lowest) {
+          break;
+        }
+        if (const auto image = found(parent, running)) {
+          return image;
+        }
+      }
+      child = parent;
+    }
+    return std::nullopt;
   }
 
 private:
@@ -461,6 +512,9 @@ private:
   const Events &events;
   std::map<int, std::vector<int>> children;
   std::map<std::pair<int, size_t>, bool> execs;
+
+  // The execve calls opened on the evidence of the trace alone.
+  std::set<std::pair<int, size_t>> evident;
 };
 
 // The execve at which a process stopped being driver code, if the process
@@ -512,9 +566,11 @@ std::optional<int> owner(const Events &events, Opened &opened, int pid,
 } // namespace
 
 Analysis analyze(const fs::path &eventFile, const fs::path &traceFile,
-                 const std::string &open, Granularity granularity) {
+                 const std::string &open, Granularity granularity,
+                 const std::set<Image> &closed) {
   auto events = readEvents(eventFile);
   events.granularity = granularity;
+  events.closed = closed;
   if (!open.empty()) {
     events.open = std::regex(open);
   }
@@ -544,6 +600,7 @@ Analysis analyze(const fs::path &eventFile, const fs::path &traceFile,
     cut.status = process.status;
     cut.filename = exec->filename;
     cut.name = programName(*exec);
+    cut.opener = opened.opener(pid, exec - process.execs.data());
     cuts.emplace(pid, std::move(cut));
   }
 

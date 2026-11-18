@@ -129,6 +129,12 @@ private:
   std::string run;
 };
 
+// How many times a run is cut again to close drivers that fed a command
+// through a pipe. Each round closes at least one driver that the round
+// before had open, and a build has few such pipelines nested in each
+// other.
+constexpr size_t kMaxRefinements = 16;
+
 // /proc carries NUL-delimited argv and envp, including empty arguments.
 // `source` names the file and step for the message when the data is cut
 // short. A process started with no environment has an empty envp, which
@@ -477,7 +483,7 @@ void recordRun(const std::string &run, const fs::path &drvPath,
     const auto events = scratch.path / "events.jsonl";
     writeBytes(events, rewind.events());
     const auto runDirectory = rewind.directory();
-    const auto analysis =
+    auto analysis =
         analyze(events, runDirectory / "trace.bin", open, granularity);
 
     // Rewind's manifest holds how long the run took, which bounds how long
@@ -494,27 +500,73 @@ void recordRun(const std::string &run, const fs::path &drvPath,
     recording.finalStep = analysis.finalStep;
     recording.lost = analysis.lost;
 
-    // Inspect every cut process at its execve.
-    std::vector<Process> processes(analysis.cuts.size());
-    std::vector<Arguments> environments(analysis.cuts.size());
-    parallelFor(analysis.cuts.size(), [&](size_t index) {
-      processes[index] = inspect(rewind, analysis.cuts[index], recording.roots,
-                                 environments[index]);
-    });
-
-    // Most processes inherit the same environment. Store each one once.
-    std::map<Arguments, size_t> known;
-    for (size_t index = 0; index < processes.size(); ++index) {
-      const auto [slot, fresh] =
-          known.emplace(environments[index], recording.environments.size());
-      if (fresh) {
-        recording.environments.push_back(environments[index]);
+    // What the trace shows of a process at its execve, kept across rounds
+    // of the loop below: asking Rewind is the slow part.
+    std::map<Image, std::pair<Process, Arguments>> inspected;
+    std::set<Image> closed;
+    for (size_t round = 0;; ++round) {
+      // Inspect every cut process the earlier rounds have not seen.
+      std::vector<const Cut *> unseen;
+      for (const auto &cut : analysis.cuts) {
+        if (inspected.try_emplace({cut.pid, cut.step}).second) {
+          unseen.push_back(&cut);
+        }
       }
-      processes[index].environment = slot->second;
+      std::vector<std::pair<Process, Arguments>> fresh(unseen.size());
+      parallelFor(unseen.size(), [&](size_t index) {
+        fresh[index].first = inspect(rewind, *unseen[index], recording.roots,
+                                     fresh[index].second);
+      });
+      for (size_t index = 0; index < unseen.size(); ++index) {
+        inspected[{unseen[index]->pid, unseen[index]->step}] =
+            std::move(fresh[index]);
+      }
+
+      // Most processes inherit the same environment. Store each one once.
+      std::vector<Process> processes;
+      std::map<Arguments, size_t> known;
+      recording.environments.clear();
+      for (const auto &cut : analysis.cuts) {
+        const auto &[process, environment] = inspected.at({cut.pid, cut.step});
+        const auto [slot, added] =
+            known.emplace(environment, recording.environments.size());
+        if (added) {
+          recording.environments.push_back(environment);
+        }
+        processes.push_back(process);
+        processes.back().environment = slot->second;
+      }
+      recording.groups =
+          group(std::move(processes), analysis.cuts, recording.roots);
+      captureBuilderPipes(rewind, recording.groups);
+
+      // A command that reads a pipe a driver wrote into while the command
+      // ran cannot be replayed alone: the bytes came from a shell builtin
+      // and are in no file. When the driver is one the trace opened, close
+      // it, so that the driver is replayed whole with the command inside,
+      // and cut the run again.
+      std::map<Image, const Cut *> cutOf;
+      for (const auto &cut : analysis.cuts) {
+        cutOf[{cut.pid, cut.step}] = &cut;
+      }
+      std::set<Image> more;
+      for (const auto &group : recording.groups) {
+        const auto reader = readerOfDriverPipe(group);
+        if (!reader) {
+          continue;
+        }
+        const auto *cut = cutOf.at({reader->first->pid, reader->first->step});
+        if (cut->opener && !closed.contains(*cut->opener)) {
+          more.insert(*cut->opener);
+        }
+      }
+      if (more.empty() || round == kMaxRefinements) {
+        break;
+      }
+      closed.insert(more.begin(), more.end());
+      analysis =
+          analyze(events, runDirectory / "trace.bin", open, granularity, closed);
     }
-    recording.groups =
-        group(std::move(processes), analysis.cuts, recording.roots);
-    captureBuilderPipes(rewind, recording.groups);
 
     // Snapshot the writable roots where the graph needs a state: before
     // and after each group, when the builder starts and when it exits.

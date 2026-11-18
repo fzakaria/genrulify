@@ -101,6 +101,17 @@ grep -q '"pid":6' "$scratch/discarded"
 test "$(wc -l < "$scratch/redirected")" = 1
 grep -q '"pid":6' "$scratch/redirected"
 
+# A cut says which process, opened on the evidence of the trace, started
+# it: here the recipe shell, pid 5, which called execve at step 7. A driver
+# can be closed again by naming that process, and then the driver is the
+# cut. The recorder does this for a driver that fed a command through a
+# pipe, because what a builtin wrote into a pipe is in no file.
+grep -q '"opener":{"pid":5,"step":7}' "$scratch/fine"
+"$compiler" cuts --close 5@7 "$scratch/events" "$scratch/trace" > "$scratch/closed"
+test "$(wc -l < "$scratch/closed")" = 1
+grep -q '"pid":5' "$scratch/closed"
+grep -q '"opener":{"pid":4,"step":5}' "$scratch/closed"
+
 # With coarse cuts and make opened, the recipe shell is the only cut and it
 # spans the compiler.
 "$compiler" cuts --coarse "$scratch/events" "$scratch/trace" make > "$scratch/recipe"

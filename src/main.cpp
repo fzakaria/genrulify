@@ -6,13 +6,14 @@
 #include "action.h"
 #include "trace.h"
 #include <iostream>
+#include <set>
 #include <span>
 #include <stdexcept>
 
 namespace {
 constexpr std::string_view kUsage =
     "usage: genrulify record [--coarse] RUN DERIVATION.drv RECORDING [OPEN]\n"
-    "       genrulify cuts [--coarse] EVENTS.jsonl TRACE.bin [OPEN]\n"
+    "       genrulify cuts [--coarse] [--close PID@STEP]... EVENTS.jsonl TRACE.bin [OPEN]\n"
     "       genrulify accessed STRACE-DIRECTORY\n"
     "       genrulify check RECORDING [PASS...]\n"
     "       genrulify learn RECORDING < BUILD.log\n"
@@ -29,8 +30,13 @@ constexpr std::string_view kUsage =
     "driver code. Programs that only run other commands are found without\n"
     "being named, unless --coarse is given.\n";
 
-// The option that stops the cuts at the commands the builder runs.
+// The option that stops the cuts at the commands the builder runs, and the
+// option that keeps one image from being opened.
 constexpr std::string_view kCoarseOption = "--coarse";
+constexpr std::string_view kCloseOption = "--close";
+
+// The separator between the process and the step of an image.
+constexpr char kImageSeparator = '@';
 
 // The passes named on a command line, or every pass when none is named.
 std::vector<splice_ir::Pass> passesFrom(std::span<char *> names) {
@@ -78,6 +84,20 @@ void run(std::span<char *> args) {
     args = rest;
   }
 
+  // Take the images to close, written PID@STEP, out as well.
+  std::set<splice_ir::Image> closed;
+  while (rest.size() > 2 && rest[1] == kCloseOption) {
+    const std::string image = rest[2];
+    const auto separator = image.find(kImageSeparator);
+    if (separator == std::string::npos) {
+      throw std::runtime_error("expected PID@STEP, found " + image);
+    }
+    closed.insert({std::stoi(image.substr(0, separator)),
+                   std::stoull(image.substr(separator + 1))});
+    rest.erase(rest.begin() + 1, rest.begin() + 3);
+    args = rest;
+  }
+
   // Commands that only need a recording.
   if ((args.size() == 4 || args.size() == 5) && command == "record") {
     splice_ir::recordRun(args[1], args[2], args[3],
@@ -102,10 +122,13 @@ void run(std::span<char *> args) {
     // One JSON object per cut, for inspecting a run before recording it.
     const std::string open = args.size() == 4 ? args[3] : "";
     for (const auto &cut :
-         splice_ir::analyze(args[1], args[2], open, granularity).cuts) {
-      const nlohmann::json line = {{"pid", cut.pid},     {"step", cut.step},
-                                   {"end", cut.end},     {"status", cut.status},
-                                   {"name", cut.name},   {"reads", cut.reads}};
+         splice_ir::analyze(args[1], args[2], open, granularity, closed).cuts) {
+      nlohmann::json line = {{"pid", cut.pid},     {"step", cut.step},
+                             {"end", cut.end},     {"status", cut.status},
+                             {"name", cut.name},   {"reads", cut.reads}};
+      if (cut.opener) {
+        line["opener"] = {{"pid", cut.opener->pid}, {"step", cut.opener->step}};
+      }
       llvm::outs() << line.dump() << "\n";
     }
     return;

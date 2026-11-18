@@ -37,6 +37,12 @@ bool readable(const Descriptor &descriptor);
 bool writable(const Descriptor &descriptor);
 bool isPipe(const Descriptor &descriptor);
 
+// The process of a group that reads a pipe nothing in the group writes and
+// whose waiting bytes the recording did not catch, and the descriptor it
+// reads the pipe on. The driver wrote that pipe, after the process began.
+std::optional<std::pair<const Process *, int>> readerOfDriverPipe(
+    const Group &group);
+
 // Why a group cannot be replayed whatever its inputs are, or nothing when
 // replay can at least be attempted.
 std::optional<std::string> unreplayable(const Group &group);

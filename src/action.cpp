@@ -294,7 +294,8 @@ bool isPipe(const Descriptor &descriptor) {
   return descriptor.target.starts_with(kPipePrefix);
 }
 
-std::optional<std::string> unreplayable(const Group &group) {
+std::optional<std::pair<const Process *, int>> readerOfDriverPipe(
+    const Group &group) {
   // Find the pipes some process of the group writes.
   std::set<std::string> written;
   for (const auto &process : group.processes) {
@@ -304,24 +305,31 @@ std::optional<std::string> unreplayable(const Group &group) {
       }
     }
   }
-
   for (const auto &process : group.processes) {
     for (const auto &descriptor : process.fds) {
-      // The bytes of a pipe that only the builder wrote, as a here-document
-      // is, were never in a file. The group can be replayed only if the
-      // recording caught them waiting in the pipe.
-      if (isPipe(descriptor)) {
-        if (readable(descriptor) && !written.contains(descriptor.target) &&
-            !descriptor.input) {
-          return absl::StrCat(process.name, " reads descriptor ",
-                              descriptor.fd, " from a pipe the builder wrote");
-        }
-        continue;
+      if (isPipe(descriptor) && readable(descriptor) &&
+          !written.contains(descriptor.target) && !descriptor.input) {
+        return std::pair{&process, descriptor.fd};
       }
+    }
+  }
+  return std::nullopt;
+}
 
-      // A target that is not a path, such as a socket or an eventfd, holds
-      // state the recording did not capture.
-      if (!descriptor.target.starts_with("/")) {
+std::optional<std::string> unreplayable(const Group &group) {
+  // The bytes of a pipe that only the builder wrote, as a here-document
+  // is, were never in a file. The group can be replayed only if the
+  // recording caught them waiting in the pipe.
+  if (const auto reader = readerOfDriverPipe(group)) {
+    return absl::StrCat(reader->first->name, " reads descriptor ",
+                        reader->second, " from a pipe the builder wrote");
+  }
+
+  // A target that is not a path, such as a socket or an eventfd, holds
+  // state the recording did not capture.
+  for (const auto &process : group.processes) {
+    for (const auto &descriptor : process.fds) {
+      if (!isPipe(descriptor) && !descriptor.target.starts_with("/")) {
         return absl::StrCat(process.name, " holds ", descriptor.target);
       }
     }
