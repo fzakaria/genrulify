@@ -5,14 +5,40 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Theory and MLIR dialect · genrulify</title>
     <meta name="description" content="How a recorded Nix build becomes a graph of file versions, what the splice dialect represents, and why replayed groups compose." />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧬</text></svg>"
+    />
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#16181d" media="(prefers-color-scheme: dark)" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="genrulify" />
+    <meta property="og:title" content="genrulify — the theory behind the genrules" />
+    <meta
+      property="og:description"
+      content="How a recorded Nix build becomes a graph of file versions, what the splice dialect represents, and why replayed groups compose."
+    />
+
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
     <header class="site">
-      <a class="wordmark" href="./">genrulify</a>
-      <nav class="site" aria-label="Site">
-        <a href="./">Explorer</a>
-        <a href="theory.html" aria-current="page">Theory</a>
+      <h1><a href=".">genrulify</a></h1>
+      <nav class="site">
+        <a href="theory.html">Theory</a>
+        <a href="https://nixmultiverse.com/" title="every version of every package nixpkgs ever shipped">
+          Multiverse
+        </a>
+        <a href="https://trynix.dev/" title="trynix: boot anything nixpkgs ever shipped, in your browser">
+          Boot a package
+        </a>
+        <a href="https://seenix.dev/" title="seenix: every byte of a Nix closure, one pixel each">
+          Seenix
+        </a>
+        <a href="https://omniflake.com/" title="omniflake: thousands of Nix flakes from one flake input">
+          Omniflake
+        </a>
         <a href="https://github.com/fzakaria/genrulify">GitHub</a>
       </nav>
     </header>
@@ -110,7 +136,9 @@
       <p>
         The checker runs surviving groups in isolation and checks their exit statuses
         and used results. It can widen the inputs, pin individual results to recorded
-        bytes, or replace a group with a literal. MLIR's canonicalizer can remove
+        bytes, or replace a group with a literal. A group that needed wider inputs is
+        replayed once under a system call tracer, and its inputs are cut back to what
+        the trace shows it touching. MLIR's canonicalizer can remove
         groups whose results have no users. In the limiting case every output entry
         can be supplied as a literal. The explorer reports replay coverage so you
         can tell how much work each graph actually recomputes.
@@ -128,5 +156,14 @@
         or <a href="https://github.com/fzakaria/genrulify/blob/main/src/Splice.td">inspect the dialect definition</a>.
       </p>
     </main>
+
+    <footer class="muted">
+      Made with ❤️ by
+      <a href="https://fzakaria.com">Farid Zakaria</a>
+      ·
+      <a href="https://github.com/fzakaria/genrulify/blob/main/LICENSE">MIT</a>
+      ·
+      <a href="https://github.com/fzakaria/genrulify">GitHub</a>
+    </footer>
   </body>
 </html>
