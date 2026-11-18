@@ -1,0 +1,22 @@
+[
+  {
+    "id": "hello-make",
+    "label": "hello, make opened",
+    "note": "GNU hello 2.12.3 from nixpkgs with make treated as driver code: one genrule per make recipe"
+  },
+  {
+    "id": "hello",
+    "label": "hello",
+    "note": "GNU hello 2.12.3 from nixpkgs: autotools, make, make check, make install"
+  },
+  {
+    "id": "colstr",
+    "label": "colstr",
+    "note": "colstr 1.0.0 from nixpkgs: one C++ file, built by stdenv with no build system"
+  },
+  {
+    "id": "example",
+    "label": "in-place append",
+    "note": "Three dd commands, the second of which appends to the file the first wrote"
+  }
+]

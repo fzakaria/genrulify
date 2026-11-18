@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>nixsplice</title>
+    <meta
+      name="description"
+      content="Compile a recorded Nix build into Bazel and Buck2 genrules, one per process group, and get the same NAR out of all three."
+    />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧬</text></svg>"
+    />
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#16181d" media="(prefers-color-scheme: dark)" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="nixsplice" />
+    <meta property="og:title" content="nixsplice — any Nix build, as genrules" />
+    <meta
+      property="og:description"
+      content="A recorded Nix build, cut at every execve, versioned as SSA over files, and lowered to one Bazel or Buck2 genrule per process group."
+    />
+
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <header class="site">
+      <h1><a href=".">nixsplice</a></h1>
+      <nav class="site">
+        <a href="https://nixmultiverse.com/" title="every version of every package nixpkgs ever shipped">
+          Multiverse
+        </a>
+        <a href="https://trynix.dev/" title="trynix: boot anything nixpkgs ever shipped, in your browser">
+          Boot a package
+        </a>
+        <a href="https://seenix.dev/" title="seenix: every byte of a Nix closure, one pixel each">
+          Seenix
+        </a>
+        <a href="https://omniflake.com/" title="omniflake: thousands of Nix flakes from one flake input">
+          Omniflake
+        </a>
+        <a href="https://github.com/fzakaria/nixsplice">GitHub</a>
+      </nav>
+    </header>
+
+    <p class="intro">
+      <strong class="lede">Any Nix build, as genrules.</strong> A build recorded by
+      <a href="https://rewindvm.dev">Rewind</a> is cut wherever the builder calls
+      <code>execve</code>. Every file a process group writes becomes an SSA value in an
+      <a href="https://mlir.llvm.org">MLIR</a> dialect, dead processes are eliminated, each
+      survivor is replayed alone against the recording, and what is left is lowered to one
+      <code>genrule</code> per group. There are no rules for C or autotools here.
+      <span class="claim">Nix, Bazel and Buck2 produce the same NAR.</span>
+    </p>
+    <p class="examples muted">Try: <span id="packages"></span></p>
+
+    <p class="muted" id="stats" aria-live="polite">Loading the recording.</p>
+
+    <h2>Every process group, in the order it ran</h2>
+    <p class="muted caption">
+      One cell per group. Most of a build only looks at the filesystem, or writes files nothing
+      reads. Marking <code>splice.exec</code> as <code>Pure</code> lets MLIR delete those.
+    </p>
+    <div class="controls">
+      <button id="eliminate" type="button" aria-pressed="false">Run dead-code elimination</button>
+      <span class="legend">
+        <span class="key narrow"></span> replayed
+        <span class="key wide"></span> replayed, given the whole tree
+        <span class="key literal"></span> recorded bytes
+        <span class="key dead"></span> dead
+      </span>
+    </div>
+    <div id="timeline" role="list" aria-label="Process groups"></div>
+
+    <h2>What is left</h2>
+    <p class="muted caption">
+      The optimized graph. A node is one build rule, and an edge means one rule consumes a file
+      version the other wrote. Select a node, or a cell above.
+    </p>
+    <div id="graph-scroll"><svg id="graph" role="img" aria-label="The optimized build graph"></svg></div>
+
+    <section id="detail" hidden>
+      <h2 id="detail-title"></h2>
+      <p class="muted" id="detail-summary"></p>
+      <nav id="lanes" aria-label="Views of the selected group">
+        <a href="#" data-lane="process" class="active">Processes</a>
+        <a href="#" data-lane="files">Files</a>
+        <a href="#" data-lane="mlir">MLIR</a>
+        <a href="#" data-lane="bazel">BUILD.bazel</a>
+        <a href="#" data-lane="buck">BUCK</a>
+      </nav>
+      <div id="lane"></div>
+    </section>
+
+    <p class="muted downloads">
+      Whole files for this package:
+      <a id="download-mlir" href="#">graph.mlir</a> ·
+      <a id="download-bazel" href="#">BUILD.bazel</a> ·
+      <a id="download-buck" href="#">BUCK</a> ·
+      <a id="download-json" href="#">graph.json</a>
+    </p>
+
+    <details id="help">
+      <summary class="muted">Reading this page</summary>
+      <p>
+        A <em>cut</em> starts where the builder, or a subshell it forked, calls
+        <code>execve</code>. Cuts that share a pipe or ran at the same time form a
+        <em>group</em>. The filesystem is snapshotted before and after each group, and the
+        difference is what the group wrote.
+      </p>
+      <p>
+        A group is <em>replayed</em> when running it alone in a sandbox, given only its recorded
+        inputs, leaves files with the recorded hashes. A group that needs more than the files it
+        opened is given the whole tree. A group that cannot be reproduced, such as
+        <code>mktemp</code>, is kept as <em>recorded bytes</em>. A group is <em>dead</em> when no
+        output depends on anything it wrote.
+      </p>
+      <p>
+        The graph recomputes the build that was recorded. It is not an incremental build for
+        edited sources: change an input and the recording no longer describes the build.
+      </p>
+    </details>
+
+    <footer class="muted">
+      Made with ❤️ by
+      <a href="https://fzakaria.com">Farid Zakaria</a>
+      ·
+      <a href="https://github.com/fzakaria/nixsplice/blob/main/LICENSE">MIT</a>
+      ·
+      <a href="https://github.com/fzakaria/nixsplice">GitHub</a>
+      <div id="store" hidden><code id="store-path-footer"></code></div>
+    </footer>
+
+    <script type="module" src="js/app.js"></script>
+  </body>
+</html>

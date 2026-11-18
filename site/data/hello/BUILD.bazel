@@ -1,0 +1,104 @@
+genrule(
+    name = "s1375_tar",
+    srcs = [":literals/sandbox_721.layer",":plans/s1375_tar.json",":platform.layer"],
+    outs = ["s1375_tar.layer"],
+    cmd = "'/nix/store/25iwf6pkkx4yyw25xqg5bps4kgx4ajg3-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s1375_tar.json)\" \"$@\" \"$(location :literals/sandbox_721.layer)\" \"$(location :platform.layer)\"",
+    tags = ["no-remote"],
+)
+
+genrule(
+    name = "s3620_cp",
+    srcs = [":literals/sandbox_721.layer",":plans/s3620_cp.json",":platform.layer",":s1375_tar"],
+    outs = ["s3620_cp.layer"],
+    cmd = "'/nix/store/25iwf6pkkx4yyw25xqg5bps4kgx4ajg3-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s3620_cp.json)\" \"$@\" \"$(location :literals/sandbox_721.layer)\" \"$(location :s1375_tar)\" \"$(location :platform.layer)\"",
+    tags = ["no-remote"],
+)
+
+genrule(
+    name = "s3664_cp",
+    srcs = [":literals/sandbox_721.layer",":plans/s3664_cp.json",":platform.layer",":s1375_tar"],
+    outs = ["s3664_cp.layer"],
+    cmd = "'/nix/store/25iwf6pkkx4yyw25xqg5bps4kgx4ajg3-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s3664_cp.json)\" \"$@\" \"$(location :literals/sandbox_721.layer)\" \"$(location :s1375_tar)\" \"$(location :platform.layer)\"",
+    tags = ["no-remote"],
+)
+
+genrule(
+    name = "s3937_find_basename_stat_mktemp__4",
+    srcs = [":literals/sandbox_721.layer",":plans/s3937_find_basename_stat_mktemp__4.json",":platform.layer",":s1375_tar"],
+    outs = ["s3937_find_basename_stat_mktemp__4.layer"],
+    cmd = "'/nix/store/25iwf6pkkx4yyw25xqg5bps4kgx4ajg3-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s3937_find_basename_stat_mktemp__4.json)\" \"$@\" \"$(location :literals/sandbox_721.layer)\" \"$(location :s1375_tar)\" \"$(location :platform.layer)\"",
+    tags = ["no-remote"],
+)
+
+genrule(
+    name = "s4163_configure",
+    srcs = [":literals/glue_3488.layer",":literals/sandbox_721.layer",":plans/s4163_configure.json",":platform.layer",":s1375_tar",":s3620_cp",":s3664_cp",":s3937_find_basename_stat_mktemp__4"],
+    outs = ["s4163_configure.layer"],
+    cmd = "'/nix/store/25iwf6pkkx4yyw25xqg5bps4kgx4ajg3-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s4163_configure.json)\" \"$@\" \"$(location :literals/glue_3488.layer)\" \"$(location :literals/sandbox_721.layer)\" \"$(location :s1375_tar)\" \"$(location :s3620_cp)\" \"$(location :s3664_cp)\" \"$(location :s3937_find_basename_stat_mktemp__4)\" \"$(location :platform.layer)\"",
+    tags = ["no-remote"],
+)
+
+genrule(
+    name = "s89934_make",
+    srcs = [":literals/glue_89863.layer",":literals/lit_4163_configure.layer",":literals/sandbox_721.layer",":plans/s89934_make.json",":platform.layer",":s1375_tar",":s3620_cp",":s3664_cp",":s3937_find_basename_stat_mktemp__4",":s4163_configure"],
+    outs = ["s89934_make.layer"],
+    cmd = "'/nix/store/25iwf6pkkx4yyw25xqg5bps4kgx4ajg3-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s89934_make.json)\" \"$@\" \"$(location :literals/glue_89863.layer)\" \"$(location :literals/lit_4163_configure.layer)\" \"$(location :literals/sandbox_721.layer)\" \"$(location :s1375_tar)\" \"$(location :s3620_cp)\" \"$(location :s3664_cp)\" \"$(location :s3937_find_basename_stat_mktemp__4)\" \"$(location :s4163_configure)\" \"$(location :platform.layer)\"",
+    tags = ["no-remote"],
+)
+
+genrule(
+    name = "s109185_make",
+    srcs = [":literals/glue_107101.layer",":literals/lit_4163_configure.layer",":literals/sandbox_721.layer",":plans/s109185_make.json",":platform.layer",":s1375_tar",":s3620_cp",":s3664_cp",":s3937_find_basename_stat_mktemp__4",":s4163_configure",":s89934_make"],
+    outs = ["s109185_make.layer"],
+    cmd = "'/nix/store/25iwf6pkkx4yyw25xqg5bps4kgx4ajg3-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s109185_make.json)\" \"$@\" \"$(location :literals/glue_107101.layer)\" \"$(location :literals/lit_4163_configure.layer)\" \"$(location :literals/sandbox_721.layer)\" \"$(location :s1375_tar)\" \"$(location :s3620_cp)\" \"$(location :s3664_cp)\" \"$(location :s3937_find_basename_stat_mktemp__4)\" \"$(location :s4163_configure)\" \"$(location :s89934_make)\" \"$(location :platform.layer)\"",
+    tags = ["no-remote"],
+)
+
+genrule(
+    name = "s113816_mkdir",
+    srcs = [":literals/sandbox_721.layer",":plans/s113816_mkdir.json",":platform.layer",":s1375_tar"],
+    outs = ["s113816_mkdir.layer"],
+    cmd = "'/nix/store/25iwf6pkkx4yyw25xqg5bps4kgx4ajg3-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s113816_mkdir.json)\" \"$@\" \"$(location :literals/sandbox_721.layer)\" \"$(location :s1375_tar)\" \"$(location :platform.layer)\"",
+    tags = ["no-remote"],
+)
+
+genrule(
+    name = "s113869_make",
+    srcs = [":literals/glue_107101.layer",":literals/lit_109185_make.layer",":literals/lit_4163_configure.layer",":literals/sandbox_721.layer",":plans/s113869_make.json",":platform.layer",":s109185_make",":s113816_mkdir",":s1375_tar",":s3620_cp",":s3664_cp",":s3937_find_basename_stat_mktemp__4",":s4163_configure",":s89934_make"],
+    outs = ["s113869_make.layer"],
+    cmd = "'/nix/store/25iwf6pkkx4yyw25xqg5bps4kgx4ajg3-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s113869_make.json)\" \"$@\" \"$(location :literals/glue_107101.layer)\" \"$(location :literals/lit_109185_make.layer)\" \"$(location :literals/lit_4163_configure.layer)\" \"$(location :literals/sandbox_721.layer)\" \"$(location :s109185_make)\" \"$(location :s113816_mkdir)\" \"$(location :s1375_tar)\" \"$(location :s3620_cp)\" \"$(location :s3664_cp)\" \"$(location :s3937_find_basename_stat_mktemp__4)\" \"$(location :s4163_configure)\" \"$(location :s89934_make)\" \"$(location :platform.layer)\"",
+    tags = ["no-remote"],
+)
+
+genrule(
+    name = "s121116_find_patchelf",
+    srcs = [":literals/sandbox_721.layer",":plans/s121116_find_patchelf.json",":platform.layer",":s113816_mkdir",":s113869_make",":s1375_tar"],
+    outs = ["s121116_find_patchelf.layer"],
+    cmd = "'/nix/store/25iwf6pkkx4yyw25xqg5bps4kgx4ajg3-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s121116_find_patchelf.json)\" \"$@\" \"$(location :literals/sandbox_721.layer)\" \"$(location :s113816_mkdir)\" \"$(location :s113869_make)\" \"$(location :s1375_tar)\" \"$(location :platform.layer)\"",
+    tags = ["no-remote"],
+)
+
+genrule(
+    name = "s121412_find_xargs",
+    srcs = [":literals/sandbox_721.layer",":plans/s121412_find_xargs.json",":platform.layer",":s113816_mkdir",":s113869_make",":s1375_tar"],
+    outs = ["s121412_find_xargs.layer"],
+    cmd = "'/nix/store/25iwf6pkkx4yyw25xqg5bps4kgx4ajg3-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s121412_find_xargs.json)\" \"$@\" \"$(location :literals/sandbox_721.layer)\" \"$(location :s113816_mkdir)\" \"$(location :s113869_make)\" \"$(location :s1375_tar)\" \"$(location :platform.layer)\"",
+    tags = ["no-remote"],
+)
+
+genrule(
+    name = "s121609_find_sort_cut_xargs",
+    srcs = [":literals/lit_121578_mktemp.layer",":literals/sandbox_721.layer",":plans/s121609_find_sort_cut_xargs.json",":platform.layer",":s113816_mkdir",":s113869_make",":s121116_find_patchelf",":s1375_tar"],
+    outs = ["s121609_find_sort_cut_xargs.layer"],
+    cmd = "'/nix/store/25iwf6pkkx4yyw25xqg5bps4kgx4ajg3-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s121609_find_sort_cut_xargs.json)\" \"$@\" \"$(location :literals/lit_121578_mktemp.layer)\" \"$(location :literals/sandbox_721.layer)\" \"$(location :s113816_mkdir)\" \"$(location :s113869_make)\" \"$(location :s121116_find_patchelf)\" \"$(location :s1375_tar)\" \"$(location :platform.layer)\"",
+    tags = ["no-remote"],
+)
+
+genrule(
+    name = "archive",
+    srcs = [":plans/archive.json",":s113816_mkdir",":s113869_make",":s121412_find_xargs",":s121609_find_sort_cut_xargs"],
+    outs = ["out.nar"],
+    cmd = "'/nix/store/25iwf6pkkx4yyw25xqg5bps4kgx4ajg3-nixsplice-0.1.0/bin/nixsplice' pack \"$(location :plans/archive.json)\" \"$@\" \"$(location :s113816_mkdir)\" \"$(location :s113869_make)\" \"$(location :s121412_find_xargs)\" \"$(location :s121609_find_sort_cut_xargs)\"",
+    tags = ["no-remote"],
+)
+

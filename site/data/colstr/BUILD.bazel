@@ -1,0 +1,56 @@
+genrule(
+    name = "s2004_cp",
+    srcs = [":literals/sandbox_717.layer",":plans/s2004_cp.json",":platform.layer"],
+    outs = ["s2004_cp.layer"],
+    cmd = "'/nix/store/25iwf6pkkx4yyw25xqg5bps4kgx4ajg3-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s2004_cp.json)\" \"$@\" \"$(location :literals/sandbox_717.layer)\" \"$(location :platform.layer)\"",
+    tags = ["no-remote"],
+)
+
+genrule(
+    name = "s2030_chmod",
+    srcs = [":literals/sandbox_717.layer",":plans/s2030_chmod.json",":platform.layer",":s2004_cp"],
+    outs = ["s2030_chmod.layer"],
+    cmd = "'/nix/store/25iwf6pkkx4yyw25xqg5bps4kgx4ajg3-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s2030_chmod.json)\" \"$@\" \"$(location :literals/sandbox_717.layer)\" \"$(location :s2004_cp)\" \"$(location :platform.layer)\"",
+    tags = ["no-remote"],
+)
+
+genrule(
+    name = "s2607_c__",
+    srcs = [":literals/sandbox_717.layer",":plans/s2607_c__.json",":platform.layer",":s2030_chmod"],
+    outs = ["s2607_c__.layer"],
+    cmd = "'/nix/store/25iwf6pkkx4yyw25xqg5bps4kgx4ajg3-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s2607_c__.json)\" \"$@\" \"$(location :literals/sandbox_717.layer)\" \"$(location :s2030_chmod)\" \"$(location :platform.layer)\"",
+    tags = ["no-remote"],
+)
+
+genrule(
+    name = "s3057_install",
+    srcs = [":literals/sandbox_717.layer",":plans/s3057_install.json",":platform.layer",":s2030_chmod",":s2607_c__"],
+    outs = ["s3057_install.layer"],
+    cmd = "'/nix/store/25iwf6pkkx4yyw25xqg5bps4kgx4ajg3-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s3057_install.json)\" \"$@\" \"$(location :literals/sandbox_717.layer)\" \"$(location :s2030_chmod)\" \"$(location :s2607_c__)\" \"$(location :platform.layer)\"",
+    tags = ["no-remote"],
+)
+
+genrule(
+    name = "s3276_find_patchelf",
+    srcs = [":literals/sandbox_717.layer",":plans/s3276_find_patchelf.json",":platform.layer",":s2030_chmod",":s3057_install"],
+    outs = ["s3276_find_patchelf.layer"],
+    cmd = "'/nix/store/25iwf6pkkx4yyw25xqg5bps4kgx4ajg3-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s3276_find_patchelf.json)\" \"$@\" \"$(location :literals/sandbox_717.layer)\" \"$(location :s2030_chmod)\" \"$(location :s3057_install)\" \"$(location :platform.layer)\"",
+    tags = ["no-remote"],
+)
+
+genrule(
+    name = "s3650_find_sort_cut_xargs",
+    srcs = [":literals/lit_3614_mktemp.layer",":literals/sandbox_717.layer",":plans/s3650_find_sort_cut_xargs.json",":platform.layer",":s2030_chmod",":s3057_install",":s3276_find_patchelf"],
+    outs = ["s3650_find_sort_cut_xargs.layer"],
+    cmd = "'/nix/store/25iwf6pkkx4yyw25xqg5bps4kgx4ajg3-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s3650_find_sort_cut_xargs.json)\" \"$@\" \"$(location :literals/lit_3614_mktemp.layer)\" \"$(location :literals/sandbox_717.layer)\" \"$(location :s2030_chmod)\" \"$(location :s3057_install)\" \"$(location :s3276_find_patchelf)\" \"$(location :platform.layer)\"",
+    tags = ["no-remote"],
+)
+
+genrule(
+    name = "archive",
+    srcs = [":plans/archive.json",":s3057_install",":s3650_find_sort_cut_xargs"],
+    outs = ["out.nar"],
+    cmd = "'/nix/store/25iwf6pkkx4yyw25xqg5bps4kgx4ajg3-nixsplice-0.1.0/bin/nixsplice' pack \"$(location :plans/archive.json)\" \"$@\" \"$(location :s3057_install)\" \"$(location :s3650_find_sort_cut_xargs)\"",
+    tags = ["no-remote"],
+)
+

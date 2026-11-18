@@ -1,0 +1,340 @@
+/* System fonts, one accent, dark mode via media query. The tokens and the
+   site chrome match nixpkgs-multiverse, trynix and seenix, so the sites
+   read as one family. */
+:root {
+  --bg: #ffffff;
+  --fg: #1a1a1a;
+  --muted: #6a6a6a;
+  --line: #e0e0e0;
+  --accent: #4f6bed;
+  --code-bg: #f4f4f4;
+
+  /* One color per outcome of a process group. Replayed groups take the
+     accent, so the eye lands on what the build systems run. */
+  --narrow: var(--accent);
+  --wide: #2f8f83;
+  --literal: #c7791a;
+  --dead: #d2d2d2;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #16181d;
+    --fg: #e6e6e6;
+    --muted: #9a9a9a;
+    --line: #33363d;
+    --accent: #8fa3ff;
+    --code-bg: #22252c;
+    --wide: #5fc2b5;
+    --literal: #e0a04a;
+    --dead: #3d4048;
+  }
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0 auto;
+  padding: 1rem;
+  max-width: 60rem;
+  background: var(--bg);
+  color: var(--fg);
+  font:
+    15px/1.5 system-ui,
+    sans-serif;
+}
+h1 {
+  font-size: 1.3rem;
+  margin: 0.2rem 0;
+}
+h1 a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* The site header: the title on the left, the top-level destinations on
+   the right. Wraps to two lines on a narrow phone. */
+header.site {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.3rem 1rem;
+  margin: 0.2rem 0 0.6rem;
+}
+nav.site {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.2rem 1rem;
+  font-size: 14px;
+}
+nav.site a {
+  color: var(--accent);
+  text-decoration: none;
+}
+nav.site a:hover {
+  text-decoration: underline;
+}
+h2 {
+  font-size: 1.1rem;
+  margin: 1.4rem 0 0.2rem;
+}
+.muted {
+  color: var(--muted);
+}
+a {
+  color: var(--accent);
+}
+code {
+  font:
+    13px/1.5 ui-monospace,
+    monospace;
+  background: var(--code-bg);
+  border-radius: 3px;
+  padding: 0.1rem 0.3rem;
+}
+.lede {
+  font-weight: 600;
+}
+.claim {
+  text-decoration: underline var(--muted);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+.intro,
+.examples,
+.caption {
+  margin: 0.4rem 0;
+}
+.examples a {
+  text-decoration: none;
+}
+.examples a.active {
+  color: var(--fg);
+  font-weight: 600;
+}
+#stats {
+  margin: 0.8rem 0 0;
+  font-variant-numeric: tabular-nums;
+}
+#stats code {
+  background: none;
+  padding: 0;
+}
+
+/* The button above the timeline and the key to its colors. */
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+  margin: 0.6rem 0;
+}
+button {
+  padding: 0.4rem 0.9rem;
+  background: var(--code-bg);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  font: inherit;
+  color: var(--fg);
+  cursor: pointer;
+}
+button:hover {
+  border-color: var(--accent);
+}
+button[aria-pressed="true"] {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.legend {
+  font-size: 13px;
+  color: var(--muted);
+}
+.key {
+  display: inline-block;
+  width: 0.7rem;
+  height: 0.7rem;
+  margin: 0 0.25rem 0 0.7rem;
+  border-radius: 2px;
+  vertical-align: -1px;
+}
+.key:first-child {
+  margin-left: 0;
+}
+
+/* The timeline: one square per process group, wrapping like text. */
+#timeline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+}
+.cell {
+  width: 14px;
+  height: 14px;
+  padding: 0;
+  border: 0;
+  border-radius: 2px;
+  transition:
+    opacity 0.5s,
+    transform 0.5s;
+}
+.cell:hover,
+.cell.selected {
+  outline: 2px solid var(--fg);
+  outline-offset: 1px;
+}
+.narrow {
+  background: var(--narrow);
+}
+.wide {
+  background: var(--wide);
+}
+.literal {
+  background: var(--literal);
+}
+.dead {
+  background: var(--dead);
+}
+
+/* A replayed group with files pinned to the recording keeps its color and
+   gains a corner of the literal color. */
+.cell.pinned {
+  background-image: linear-gradient(135deg, transparent 55%, var(--literal) 55%);
+}
+
+/* After elimination the dead cells shrink away and the rest keep their
+   place, so the survivors can be found where they ran. */
+#timeline.eliminated .cell.dead {
+  opacity: 0.12;
+  transform: scale(0.45);
+}
+
+/* The graph scrolls sideways when a build has a long chain. */
+#graph-scroll {
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  margin: 0.6rem 0;
+}
+#graph {
+  display: block;
+}
+#graph .edge {
+  fill: none;
+  stroke: var(--line);
+  stroke-width: 1.2;
+}
+#graph .edge.touching {
+  stroke: var(--fg);
+  stroke-width: 1.6;
+}
+#graph .node rect {
+  fill: var(--bg);
+  stroke-width: 1.5;
+  rx: 4px;
+  cursor: pointer;
+}
+#graph .node text {
+  font:
+    12px ui-monospace,
+    monospace;
+  fill: var(--fg);
+  pointer-events: none;
+}
+#graph .node.narrow rect {
+  stroke: var(--narrow);
+}
+#graph .node.wide rect {
+  stroke: var(--wide);
+}
+#graph .node.literal rect {
+  stroke: var(--literal);
+  stroke-dasharray: 4 3;
+}
+#graph .node.output rect {
+  stroke: var(--fg);
+  fill: var(--code-bg);
+}
+#graph .node.selected rect {
+  fill: var(--code-bg);
+  stroke-width: 2.5;
+}
+
+/* The lanes of the detail panel: anchors over a rule, like the tab strips
+   on the sibling sites. */
+#lanes {
+  display: flex;
+  flex-wrap: wrap;
+  border-bottom: 1px solid var(--line);
+  margin: 0.6rem 0;
+}
+#lanes a {
+  padding: 0.4rem 0.8rem;
+  color: var(--muted);
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+}
+#lanes a.active {
+  color: var(--fg);
+  border-bottom-color: var(--accent);
+}
+pre {
+  font:
+    13px/1.5 ui-monospace,
+    monospace;
+  background: var(--code-bg);
+  border-radius: 4px;
+  padding: 0.7rem 0.8rem;
+  overflow-x: auto;
+  margin: 0.5rem 0;
+}
+
+/* Tables of file entries. */
+table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 13px;
+}
+th {
+  text-align: left;
+  font-weight: 600;
+  color: var(--muted);
+  border-bottom: 1px solid var(--line);
+  padding: 0.25rem 0.5rem 0.25rem 0;
+}
+td {
+  padding: 0.2rem 0.5rem 0.2rem 0;
+  vertical-align: top;
+  border-bottom: 1px solid var(--line);
+  overflow-wrap: anywhere;
+}
+td code {
+  background: none;
+  padding: 0;
+}
+.unused {
+  color: var(--muted);
+}
+.downloads {
+  margin-top: 1.4rem;
+  font-size: 14px;
+}
+#help {
+  margin-top: 1rem;
+}
+#help summary {
+  cursor: pointer;
+}
+footer {
+  margin-top: 2rem;
+  padding: 0.8rem 0;
+  border-top: 1px solid var(--line);
+  font-size: 13px;
+  text-align: center;
+}
+#store code {
+  font-size: min(12px, 2.1vw);
+  white-space: nowrap;
+  background: none;
+  padding: 0;
+}

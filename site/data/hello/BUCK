@@ -1,0 +1,126 @@
+export_file(name = "literals/glue_107101.layer", src = "literals/glue_107101.layer")
+export_file(name = "literals/glue_3488.layer", src = "literals/glue_3488.layer")
+export_file(name = "literals/glue_89863.layer", src = "literals/glue_89863.layer")
+export_file(name = "literals/lit_109185_make.layer", src = "literals/lit_109185_make.layer")
+export_file(name = "literals/lit_121578_mktemp.layer", src = "literals/lit_121578_mktemp.layer")
+export_file(name = "literals/lit_4163_configure.layer", src = "literals/lit_4163_configure.layer")
+export_file(name = "literals/sandbox_721.layer", src = "literals/sandbox_721.layer")
+export_file(name = "plans/archive.json", src = "plans/archive.json")
+export_file(name = "plans/s109185_make.json", src = "plans/s109185_make.json")
+export_file(name = "plans/s113816_mkdir.json", src = "plans/s113816_mkdir.json")
+export_file(name = "plans/s113869_make.json", src = "plans/s113869_make.json")
+export_file(name = "plans/s121116_find_patchelf.json", src = "plans/s121116_find_patchelf.json")
+export_file(name = "plans/s121412_find_xargs.json", src = "plans/s121412_find_xargs.json")
+export_file(name = "plans/s121609_find_sort_cut_xargs.json", src = "plans/s121609_find_sort_cut_xargs.json")
+export_file(name = "plans/s1375_tar.json", src = "plans/s1375_tar.json")
+export_file(name = "plans/s3620_cp.json", src = "plans/s3620_cp.json")
+export_file(name = "plans/s3664_cp.json", src = "plans/s3664_cp.json")
+export_file(name = "plans/s3937_find_basename_stat_mktemp__4.json", src = "plans/s3937_find_basename_stat_mktemp__4.json")
+export_file(name = "plans/s4163_configure.json", src = "plans/s4163_configure.json")
+export_file(name = "plans/s89934_make.json", src = "plans/s89934_make.json")
+export_file(name = "platform.layer", src = "platform.layer")
+
+genrule(
+    name = "s1375_tar",
+    srcs = [":literals/sandbox_721.layer",":plans/s1375_tar.json",":platform.layer"],
+    out = "s1375_tar.layer",
+    cmd = "'/nix/store/25iwf6pkkx4yyw25xqg5bps4kgx4ajg3-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s1375_tar.json)\" \"$OUT\" \"$(location :literals/sandbox_721.layer)\" \"$(location :platform.layer)\"",
+    remote = False,
+)
+
+genrule(
+    name = "s3620_cp",
+    srcs = [":literals/sandbox_721.layer",":plans/s3620_cp.json",":platform.layer",":s1375_tar"],
+    out = "s3620_cp.layer",
+    cmd = "'/nix/store/25iwf6pkkx4yyw25xqg5bps4kgx4ajg3-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s3620_cp.json)\" \"$OUT\" \"$(location :literals/sandbox_721.layer)\" \"$(location :s1375_tar)\" \"$(location :platform.layer)\"",
+    remote = False,
+)
+
+genrule(
+    name = "s3664_cp",
+    srcs = [":literals/sandbox_721.layer",":plans/s3664_cp.json",":platform.layer",":s1375_tar"],
+    out = "s3664_cp.layer",
+    cmd = "'/nix/store/25iwf6pkkx4yyw25xqg5bps4kgx4ajg3-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s3664_cp.json)\" \"$OUT\" \"$(location :literals/sandbox_721.layer)\" \"$(location :s1375_tar)\" \"$(location :platform.layer)\"",
+    remote = False,
+)
+
+genrule(
+    name = "s3937_find_basename_stat_mktemp__4",
+    srcs = [":literals/sandbox_721.layer",":plans/s3937_find_basename_stat_mktemp__4.json",":platform.layer",":s1375_tar"],
+    out = "s3937_find_basename_stat_mktemp__4.layer",
+    cmd = "'/nix/store/25iwf6pkkx4yyw25xqg5bps4kgx4ajg3-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s3937_find_basename_stat_mktemp__4.json)\" \"$OUT\" \"$(location :literals/sandbox_721.layer)\" \"$(location :s1375_tar)\" \"$(location :platform.layer)\"",
+    remote = False,
+)
+
+genrule(
+    name = "s4163_configure",
+    srcs = [":literals/glue_3488.layer",":literals/sandbox_721.layer",":plans/s4163_configure.json",":platform.layer",":s1375_tar",":s3620_cp",":s3664_cp",":s3937_find_basename_stat_mktemp__4"],
+    out = "s4163_configure.layer",
+    cmd = "'/nix/store/25iwf6pkkx4yyw25xqg5bps4kgx4ajg3-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s4163_configure.json)\" \"$OUT\" \"$(location :literals/glue_3488.layer)\" \"$(location :literals/sandbox_721.layer)\" \"$(location :s1375_tar)\" \"$(location :s3620_cp)\" \"$(location :s3664_cp)\" \"$(location :s3937_find_basename_stat_mktemp__4)\" \"$(location :platform.layer)\"",
+    remote = False,
+)
+
+genrule(
+    name = "s89934_make",
+    srcs = [":literals/glue_89863.layer",":literals/lit_4163_configure.layer",":literals/sandbox_721.layer",":plans/s89934_make.json",":platform.layer",":s1375_tar",":s3620_cp",":s3664_cp",":s3937_find_basename_stat_mktemp__4",":s4163_configure"],
+    out = "s89934_make.layer",
+    cmd = "'/nix/store/25iwf6pkkx4yyw25xqg5bps4kgx4ajg3-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s89934_make.json)\" \"$OUT\" \"$(location :literals/glue_89863.layer)\" \"$(location :literals/lit_4163_configure.layer)\" \"$(location :literals/sandbox_721.layer)\" \"$(location :s1375_tar)\" \"$(location :s3620_cp)\" \"$(location :s3664_cp)\" \"$(location :s3937_find_basename_stat_mktemp__4)\" \"$(location :s4163_configure)\" \"$(location :platform.layer)\"",
+    remote = False,
+)
+
+genrule(
+    name = "s109185_make",
+    srcs = [":literals/glue_107101.layer",":literals/lit_4163_configure.layer",":literals/sandbox_721.layer",":plans/s109185_make.json",":platform.layer",":s1375_tar",":s3620_cp",":s3664_cp",":s3937_find_basename_stat_mktemp__4",":s4163_configure",":s89934_make"],
+    out = "s109185_make.layer",
+    cmd = "'/nix/store/25iwf6pkkx4yyw25xqg5bps4kgx4ajg3-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s109185_make.json)\" \"$OUT\" \"$(location :literals/glue_107101.layer)\" \"$(location :literals/lit_4163_configure.layer)\" \"$(location :literals/sandbox_721.layer)\" \"$(location :s1375_tar)\" \"$(location :s3620_cp)\" \"$(location :s3664_cp)\" \"$(location :s3937_find_basename_stat_mktemp__4)\" \"$(location :s4163_configure)\" \"$(location :s89934_make)\" \"$(location :platform.layer)\"",
+    remote = False,
+)
+
+genrule(
+    name = "s113816_mkdir",
+    srcs = [":literals/sandbox_721.layer",":plans/s113816_mkdir.json",":platform.layer",":s1375_tar"],
+    out = "s113816_mkdir.layer",
+    cmd = "'/nix/store/25iwf6pkkx4yyw25xqg5bps4kgx4ajg3-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s113816_mkdir.json)\" \"$OUT\" \"$(location :literals/sandbox_721.layer)\" \"$(location :s1375_tar)\" \"$(location :platform.layer)\"",
+    remote = False,
+)
+
+genrule(
+    name = "s113869_make",
+    srcs = [":literals/glue_107101.layer",":literals/lit_109185_make.layer",":literals/lit_4163_configure.layer",":literals/sandbox_721.layer",":plans/s113869_make.json",":platform.layer",":s109185_make",":s113816_mkdir",":s1375_tar",":s3620_cp",":s3664_cp",":s3937_find_basename_stat_mktemp__4",":s4163_configure",":s89934_make"],
+    out = "s113869_make.layer",
+    cmd = "'/nix/store/25iwf6pkkx4yyw25xqg5bps4kgx4ajg3-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s113869_make.json)\" \"$OUT\" \"$(location :literals/glue_107101.layer)\" \"$(location :literals/lit_109185_make.layer)\" \"$(location :literals/lit_4163_configure.layer)\" \"$(location :literals/sandbox_721.layer)\" \"$(location :s109185_make)\" \"$(location :s113816_mkdir)\" \"$(location :s1375_tar)\" \"$(location :s3620_cp)\" \"$(location :s3664_cp)\" \"$(location :s3937_find_basename_stat_mktemp__4)\" \"$(location :s4163_configure)\" \"$(location :s89934_make)\" \"$(location :platform.layer)\"",
+    remote = False,
+)
+
+genrule(
+    name = "s121116_find_patchelf",
+    srcs = [":literals/sandbox_721.layer",":plans/s121116_find_patchelf.json",":platform.layer",":s113816_mkdir",":s113869_make",":s1375_tar"],
+    out = "s121116_find_patchelf.layer",
+    cmd = "'/nix/store/25iwf6pkkx4yyw25xqg5bps4kgx4ajg3-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s121116_find_patchelf.json)\" \"$OUT\" \"$(location :literals/sandbox_721.layer)\" \"$(location :s113816_mkdir)\" \"$(location :s113869_make)\" \"$(location :s1375_tar)\" \"$(location :platform.layer)\"",
+    remote = False,
+)
+
+genrule(
+    name = "s121412_find_xargs",
+    srcs = [":literals/sandbox_721.layer",":plans/s121412_find_xargs.json",":platform.layer",":s113816_mkdir",":s113869_make",":s1375_tar"],
+    out = "s121412_find_xargs.layer",
+    cmd = "'/nix/store/25iwf6pkkx4yyw25xqg5bps4kgx4ajg3-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s121412_find_xargs.json)\" \"$OUT\" \"$(location :literals/sandbox_721.layer)\" \"$(location :s113816_mkdir)\" \"$(location :s113869_make)\" \"$(location :s1375_tar)\" \"$(location :platform.layer)\"",
+    remote = False,
+)
+
+genrule(
+    name = "s121609_find_sort_cut_xargs",
+    srcs = [":literals/lit_121578_mktemp.layer",":literals/sandbox_721.layer",":plans/s121609_find_sort_cut_xargs.json",":platform.layer",":s113816_mkdir",":s113869_make",":s121116_find_patchelf",":s1375_tar"],
+    out = "s121609_find_sort_cut_xargs.layer",
+    cmd = "'/nix/store/25iwf6pkkx4yyw25xqg5bps4kgx4ajg3-nixsplice-0.1.0/bin/nixsplice' replay \"$(location :plans/s121609_find_sort_cut_xargs.json)\" \"$OUT\" \"$(location :literals/lit_121578_mktemp.layer)\" \"$(location :literals/sandbox_721.layer)\" \"$(location :s113816_mkdir)\" \"$(location :s113869_make)\" \"$(location :s121116_find_patchelf)\" \"$(location :s1375_tar)\" \"$(location :platform.layer)\"",
+    remote = False,
+)
+
+genrule(
+    name = "archive",
+    srcs = [":plans/archive.json",":s113816_mkdir",":s113869_make",":s121412_find_xargs",":s121609_find_sort_cut_xargs"],
+    out = "out.nar",
+    cmd = "'/nix/store/25iwf6pkkx4yyw25xqg5bps4kgx4ajg3-nixsplice-0.1.0/bin/nixsplice' pack \"$(location :plans/archive.json)\" \"$OUT\" \"$(location :s113816_mkdir)\" \"$(location :s113869_make)\" \"$(location :s121412_find_xargs)\" \"$(location :s121609_find_sort_cut_xargs)\"",
+    remote = False,
+)
+
