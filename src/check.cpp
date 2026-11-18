@@ -16,6 +16,10 @@ using Json = nlohmann::json;
 constexpr std::string_view kRecordedLayer = "recorded";
 
 constexpr std::string_view kReportFile = "check.json";
+
+// How many consecutive passes over every live group must reproduce the
+// recording without an adjustment before the verdicts are accepted.
+constexpr size_t kCleanPasses = 2;
 constexpr int kJsonIndent = 1;
 
 // One live splice.exec, ready to replay without the module.
@@ -54,8 +58,10 @@ Verdict adjust(Verdict verdict, const ReplayFailure &failure) {
 void replayAlone(const Recording &recording, Task &task) {
   Scratch scratch;
   const auto extension = std::string(kLayerExtension);
-  const auto recorded = scratch.path / (std::string(kRecordedLayer) + extension);
-  const auto platform = scratch.path / (std::string(kPlatformLayer) + extension);
+  const auto recorded =
+      scratch.path / (std::string(kRecordedLayer) + extension);
+  const auto platform =
+      scratch.path / (std::string(kPlatformLayer) + extension);
   writeRecordedLayer(recording, task.operands, recorded);
 
   std::vector<Entry> platformEntries;
@@ -82,56 +88,69 @@ void checkRecording(const Recording &recording) {
   std::set<std::pair<uint64_t, Verdict>> reproduced;
   std::map<uint64_t, std::string> failures;
 
-  // Each round imports with the verdicts so far and replays the groups the
-  // outputs depend on. A demotion changes which groups are live and what
-  // they are given, so repeat until a round demotes nothing.
-  for (bool changed = true; changed;) {
-    changed = false;
-    mlir::MLIRContext context;
-    context.getOrLoadDialect<SpliceDialect>();
-    auto module = importRecording(context, recording, verdicts);
-    optimize(*module);
+  // A pass replays every group the outputs depend on until nothing needs
+  // adjusting. One clean pass is one sample of each group, and a group
+  // that differs from run to run can pass a single sample by luck. So a
+  // pass is repeated, from scratch, until the required number in a row
+  // adjust nothing.
+  for (size_t clean = 0; clean < kCleanPasses;) {
+    reproduced.clear();
+    bool adjusted = false;
 
-    std::vector<Task> tasks;
-    for (auto &op : module->getBody()->getOperations()) {
-      auto exec = llvm::dyn_cast<ExecOp>(op);
-      if (!exec) {
-        continue;
-      }
-      Task task;
-      task.step = exec.getStep();
-      if (const auto known = verdicts.find(task.step); known != verdicts.end()) {
-        task.verdict = known->second;
-      }
-      if (recording.lost != 0 && task.verdict.rung == Rung::Narrow) {
-        task.verdict.rung = Rung::Wide;
-      }
-      if (reproduced.contains({task.step, task.verdict})) {
-        continue;
-      }
-      task.plan = execPlan(exec, recording, [](mlir::Value) {
-        return std::string(kRecordedLayer);
-      });
-      for (const auto input : exec.getInputs()) {
-        task.operands.push_back(*entryOf(input));
-      }
-      tasks.push_back(std::move(task));
-    }
+    // Each round imports with the verdicts so far. A demotion changes which
+    // groups are live and what they are given, so repeat until a round
+    // demotes nothing.
+    for (bool changed = true; changed;) {
+      changed = false;
+      mlir::MLIRContext context;
+      context.getOrLoadDialect<SpliceDialect>();
+      auto module = importRecording(context, recording, verdicts);
+      optimize(*module);
 
-    parallelFor(tasks.size(),
-                [&](size_t index) { replayAlone(recording, tasks[index]); });
-    for (const auto &task : tasks) {
-      if (!task.failure) {
-        reproduced.insert({task.step, task.verdict});
-        continue;
+      std::vector<Task> tasks;
+      for (auto &op : module->getBody()->getOperations()) {
+        auto exec = llvm::dyn_cast<ExecOp>(op);
+        if (!exec) {
+          continue;
+        }
+        Task task;
+        task.step = exec.getStep();
+        if (const auto known = verdicts.find(task.step);
+            known != verdicts.end()) {
+          task.verdict = known->second;
+        }
+        if (recording.lost != 0 && task.verdict.rung == Rung::Narrow) {
+          task.verdict.rung = Rung::Wide;
+        }
+        if (reproduced.contains({task.step, task.verdict})) {
+          continue;
+        }
+        task.plan = execPlan(exec, recording, [](mlir::Value) {
+          return std::string(kRecordedLayer);
+        });
+        for (const auto input : exec.getInputs()) {
+          task.operands.push_back(*entryOf(input));
+        }
+        tasks.push_back(std::move(task));
       }
-      verdicts[task.step] = adjust(task.verdict, *task.failure);
-      failures[task.step] = task.failure->what();
-      changed = true;
-      llvm::errs() << "step " << task.step << " failed at "
-                   << rungName(task.verdict.rung) << ": "
-                   << task.failure->what() << "\n";
+
+      parallelFor(tasks.size(),
+                  [&](size_t index) { replayAlone(recording, tasks[index]); });
+      for (const auto &task : tasks) {
+        if (!task.failure) {
+          reproduced.insert({task.step, task.verdict});
+          continue;
+        }
+        verdicts[task.step] = adjust(task.verdict, *task.failure);
+        failures[task.step] = task.failure->what();
+        changed = true;
+        adjusted = true;
+        llvm::errs() << "step " << task.step << " failed at "
+                     << rungName(task.verdict.rung) << ": "
+                     << task.failure->what() << "\n";
+      }
     }
+    clean = adjusted ? 0 : clean + 1;
   }
   saveVerdicts(recording, verdicts);
 
@@ -156,7 +175,8 @@ void checkRecording(const Recording &recording) {
   size_t kept = 0;
   for (const auto &group : recording.groups) {
     Verdict verdict;
-    if (const auto known = verdicts.find(group.start); known != verdicts.end()) {
+    if (const auto known = verdicts.find(group.start);
+        known != verdicts.end()) {
       verdict = known->second;
     }
 
@@ -169,11 +189,12 @@ void checkRecording(const Recording &recording) {
     } else if (demotedSteps.contains(group.start)) {
       outcome = std::string(rungName(Rung::Literal));
     }
-    Json item = {{"step", group.start},
-                 {"name", label(group)},
-                 {"processes", group.processes.size()},
-                 {"outcome", outcome},
-                 {"pinned", replayed ? verdict.pinned : std::set<std::string>{}}};
+    Json item = {
+        {"step", group.start},
+        {"name", label(group)},
+        {"processes", group.processes.size()},
+        {"outcome", outcome},
+        {"pinned", replayed ? verdict.pinned : std::set<std::string>{}}};
     if (!replayed && demotedSteps.contains(group.start)) {
       ++kept;
       const auto structural = unreplayable(group);
@@ -183,9 +204,10 @@ void checkRecording(const Recording &recording) {
   }
   writeBytes(recording.directory / kReportFile,
              Json{{"groups", groups}}.dump(kJsonIndent) + "\n");
-  llvm::errs() << recording.groups.size() << " process groups: "
-               << replayedSteps.size() << " replayed and reproduced, "
-               << kept << " kept as recorded bytes, "
+  llvm::errs() << recording.groups.size()
+               << " process groups: " << replayedSteps.size()
+               << " replayed and reproduced, " << kept
+               << " kept as recorded bytes, "
                << recording.groups.size() - replayedSteps.size() - kept
                << " dead\n";
 }
