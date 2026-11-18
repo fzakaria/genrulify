@@ -2,7 +2,14 @@
 pkgs.stdenv.mkDerivation {
   pname = "nixsplice";
   version = "0.1.0";
-  src = ../.;
+  src = pkgs.lib.fileset.toSource {
+    root = ../.;
+    fileset = pkgs.lib.fileset.unions [
+      ../CMakeLists.txt
+      ../src
+      ../tests
+    ];
+  };
   nativeBuildInputs = [
     pkgs.cmake
     pkgs.ninja

@@ -1,6 +1,6 @@
 #include "dialect.h"
-#include "llvm/ADT/TypeSwitch.h"
 #include "mlir/IR/Builders.h"
+#include "llvm/ADT/TypeSwitch.h"
 
 #include "Dialect.cpp.inc"
 #define GET_TYPEDEF_CLASSES

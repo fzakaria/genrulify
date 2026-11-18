@@ -18,3 +18,10 @@ for step in 764 746 778; do
         exit 1
     fi
 done
+
+# An in-process shell mutation in both copies of the script is unsupported.
+sed 's/of=bundle status=none/of=bundle status=none; touch untracked/g' "$data/derivation.json" > "$scratch/extra.json"
+sed 's/of=bundle status=none/of=bundle status=none; touch untracked/g' "$data/events.jsonl" > "$scratch/events"
+if "$compiler" import "$scratch/extra.json" "$scratch/events"; then
+    exit 1
+fi

@@ -1,10 +1,10 @@
-#include "compiler.h"
-#include "dialect.h"
-#include "tools.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_split.h"
+#include "compiler.h"
+#include "dialect.h"
 #include "mlir/IR/Builders.h"
 #include "nlohmann/json.hpp"
+#include "tools.h"
 #include <fcntl.h>
 #include <fstream>
 #include <map>
@@ -49,47 +49,62 @@ Script readBuilder(const std::filesystem::path &path) {
   const auto &drv = *derivations.begin();
   const auto &env = drv.at("env");
   const std::string output = env.at("out");
-  const auto expectedEnv = Json{{"out", output}, {"builder", kBash},
-                                {"system", "x86_64-linux"}, {"name", drv.at("name")}};
-  require(env == expectedEnv && drv.at("builder") == kBash && drv.at("system") == "x86_64-linux",
+  const auto expectedEnv = Json{{"out", output},
+                                {"builder", kBash},
+                                {"system", "x86_64-linux"},
+                                {"name", drv.at("name")}};
+  require(env == expectedEnv && drv.at("builder") == kBash &&
+              drv.at("system") == "x86_64-linux",
           "expected the pinned Bash builder and its standard environment");
-  require(drv.at("outputs").size() == 1 && drv.at("outputs").at("out").size() == 1 &&
-          output == absl::StrCat(kStore, drv.at("outputs").at("out").at("path").get<std::string>()),
-          "expected one input-addressed out path");
+  require(
+      drv.at("outputs").size() == 1 &&
+          drv.at("outputs").at("out").size() == 1 &&
+          output ==
+              absl::StrCat(
+                  kStore,
+                  drv.at("outputs").at("out").at("path").get<std::string>()),
+      "expected one input-addressed out path");
 
   Script script;
   script.args = drv.at("args").get<Args>();
-  require(script.args.size() == 3 && script.args[0] == "-eu" && script.args[1] == "-c",
+  require(script.args.size() == 3 && script.args[0] == "-eu" &&
+              script.args[1] == "-c",
           "expected bash -eu -c with an inline script");
   for (const std::string source : drv.at("inputs").at("srcs")) {
     script.sources.insert(absl::StrCat(kStore, source));
   }
 
   // Accept whole commands before interpreting any filesystem effects.
-  for (const std::string_view line : absl::StrSplit(script.args.back(), '\n', absl::SkipEmpty())) {
+  for (const std::string_view line :
+       absl::StrSplit(script.args.back(), '\n', absl::SkipEmpty())) {
     Args argv = absl::StrSplit(line, ' ');
     constexpr size_t copyArgs = 4;
     constexpr size_t appendArgs = 6;
     const bool append = argv.size() == appendArgs;
     require((append || argv.size() == copyArgs) && argv.front() == kDd &&
-            argv[1].starts_with("if=") && argv[2].starts_with("of=") &&
-            argv.back() == "status=none", "unsupported builder command");
+                argv[1].starts_with("if=") && argv[2].starts_with("of=") &&
+                argv.back() == "status=none",
+            "unsupported builder command");
     require(!append || (argv[3] == "oflag=append" && argv[4] == "conv=notrunc"),
             "unsupported dd flags");
     const std::string src = argv[1].substr(3);
     const std::string dst = argv[2].substr(3);
-    require((script.sources.contains(src) || std::regex_match(src, scratchName)) &&
-            (dst == kOutput || std::regex_match(dst, scratchName)) && src != dst,
-            "unsupported input or output path");
+    require(
+        (script.sources.contains(src) || std::regex_match(src, scratchName)) &&
+            (dst == kOutput || std::regex_match(dst, scratchName)) &&
+            src != dst,
+        "unsupported input or output path");
     const auto target = dst == kOutput ? output : absl::StrCat(kBuild, dst);
     if (dst == kOutput) {
       argv[2] = absl::StrCat("of=", output);
     }
-    script.commands.push_back({std::move(argv), script.sources.contains(src) ? src : absl::StrCat(kBuild, src),
-                               target, O_CREAT | O_WRONLY | (append ? O_APPEND : O_TRUNC)});
+    script.commands.push_back(
+        {std::move(argv),
+         script.sources.contains(src) ? src : absl::StrCat(kBuild, src), target,
+         O_CREAT | O_WRONLY | (append ? O_APPEND : O_TRUNC)});
   }
   require(!script.commands.empty() && script.commands.back().path == output &&
-          std::ranges::count(script.commands, output, &Command::path) == 1,
+              std::ranges::count(script.commands, output, &Command::path) == 1,
           "expected exactly one final write to $out");
   return script;
 }
@@ -115,7 +130,8 @@ void matchTrace(Script &script, const std::filesystem::path &path) {
 
     // Boot and shutdown have their own execs and device opens.
     if (sender == 1) {
-      require(type != "exec" || (next == Expect::Builder && kind.at("filename") == "/init"),
+      require(type != "exec" ||
+                  (next == Expect::Builder && kind.at("filename") == "/init"),
               "unexpected init exec");
       continue;
     }
@@ -131,7 +147,8 @@ void matchTrace(Script &script, const std::filesystem::path &path) {
     if (type == "exec") {
       require(next == Expect::Command, "unexpected exec or missing child exit");
       auto &cmd = script.commands.at(index);
-      require(kind.at("filename") == kDd && kind.at("argv") == cmd.argv, "dd exec differs from script");
+      require(kind.at("filename") == kDd && kind.at("argv") == cmd.argv,
+              "dd exec differs from script");
       cmd.step = step;
       pid = sender;
       next = Expect::Open;
@@ -146,22 +163,26 @@ void matchTrace(Script &script, const std::filesystem::path &path) {
       continue;
     }
     if (type == "exit" && sender == pid) {
-      require(next == Expect::Exit && kind.at("status") == 0, "missing write-open or failed child");
+      require(next == Expect::Exit && kind.at("status") == 0,
+              "missing write-open or failed child");
       next = ++index == script.commands.size() ? Expect::Done : Expect::Command;
       pid = 0;
       continue;
     }
     if (type == "exit" && sender == builderPid) {
-      require(next == Expect::Done && kind.at("status") == 0, "failed or incomplete builder");
+      require(next == Expect::Done && kind.at("status") == 0,
+              "failed or incomplete builder");
     }
-    require(type != "unlink" && type != "rename" && type != "unknown", "unsupported filesystem event");
+    require(type != "unlink" && type != "rename" && type != "unknown",
+            "unsupported filesystem event");
   }
   require(file.eof() && next == Expect::Done, "incomplete Rewind events");
 }
 } // namespace
 
-mlir::OwningOpRef<mlir::ModuleOp> importTrace(mlir::MLIRContext &context,
-    const std::filesystem::path &drv, const std::filesystem::path &events) {
+mlir::OwningOpRef<mlir::ModuleOp>
+importTrace(mlir::MLIRContext &context, const std::filesystem::path &drv,
+            const std::filesystem::path &events) {
   auto script = readBuilder(drv);
   matchTrace(script, events);
   mlir::OpBuilder builder(&context);
@@ -175,17 +196,23 @@ mlir::OwningOpRef<mlir::ModuleOp> importTrace(mlir::MLIRContext &context,
   std::map<std::string, uint64_t> versions;
   for (const auto &cmd : script.commands) {
     if (!latest.contains(cmd.source) && script.sources.contains(cmd.source)) {
-      latest[cmd.source] = SourceOp::create(builder, loc, file, cmd.source).getFile();
+      latest[cmd.source] =
+          SourceOp::create(builder, loc, file, cmd.source).getFile();
     }
-    require(latest.contains(cmd.source), "read of a scratch file before its first write");
+    require(latest.contains(cmd.source),
+            "read of a scratch file before its first write");
     auto input = latest.at(cmd.source);
     auto version = ++versions[cmd.path];
     if ((cmd.flags & O_APPEND) && latest.contains(cmd.path)) {
-      latest[cmd.path] = AppendOp::create(builder, loc, file, latest.at(cmd.path), input,
-                                         cmd.path, cmd.step, version).getFile();
+      latest[cmd.path] =
+          AppendOp::create(builder, loc, file, latest.at(cmd.path), input,
+                           cmd.path, cmd.step, version)
+              .getFile();
       continue;
     }
-    latest[cmd.path] = CopyOp::create(builder, loc, file, input, cmd.path, cmd.step, version).getFile();
+    latest[cmd.path] =
+        CopyOp::create(builder, loc, file, input, cmd.path, cmd.step, version)
+            .getFile();
   }
   PublishOp::create(builder, loc, latest.at(script.commands.back().path));
   return module;
