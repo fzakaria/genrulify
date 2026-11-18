@@ -103,9 +103,11 @@ std::optional<std::string> unreplayable(const Group &group) {
   for (const auto &process : group.processes) {
     for (const auto &descriptor : process.fds) {
       // The bytes of a pipe that only the builder wrote, as a here-document
-      // is, were never in a file and are not in the recording.
+      // is, were never in a file. The group can be replayed only if the
+      // recording caught them waiting in the pipe.
       if (isPipe(descriptor)) {
-        if (readable(descriptor) && !written.contains(descriptor.target)) {
+        if (readable(descriptor) && !written.contains(descriptor.target) &&
+            descriptor.input.empty()) {
           return absl::StrCat(process.name, " reads descriptor ",
                               descriptor.fd, " from a pipe the builder wrote");
         }

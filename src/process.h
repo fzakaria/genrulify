@@ -39,6 +39,11 @@ void writeBytes(const std::filesystem::path &path, std::string_view bytes);
 // The SHA-256 of a file's bytes in lowercase hex.
 std::string digest(const std::filesystem::path &path);
 
+// Bytes as lowercase hex and back. JSON strings cannot hold arbitrary
+// bytes, so recorded pipe contents travel in hex.
+std::string toHex(std::string_view bytes);
+std::string fromHex(std::string_view hex);
+
 // Throws a runtime error carrying `message` unless `condition` holds.
 void check(bool condition, std::string_view message);
 

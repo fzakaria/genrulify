@@ -305,9 +305,10 @@ either checked or reported.
 - **`stat` and directory listings are not in the trace.** Groups that
   depend on them fall to the wide rung, where they are correct and
   coarse. Recording lookups in Rewind would let them stay narrow.
-- **Bytes written by the builder through a pipe are not recorded.** A
-  command fed by a here-document cannot be replayed and becomes a
-  literal.
+- **Pipe input is captured at the `execve` only.** A here-string or a
+  short here-document is already in the pipe when the command starts, and
+  is recorded and fed back. Input the shell writes while the command is
+  running is not, and such a command becomes a literal.
 - **The platform is part of the input.** Rules read the host's
   `/nix/store` and are marked local-only. The kernel and CPU are whatever
   the host has.

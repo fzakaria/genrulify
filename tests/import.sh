@@ -33,3 +33,29 @@ echo '{"764": {"rung": "literal"}}' > "$scratch/recording/verdicts.json"
 "$compiler" import "$scratch/recording" > "$scratch/demoted.mlir"
 grep -q 'splice.literal "dd" at 764 demoted' "$scratch/demoted.mlir"
 test "$(grep -c 'splice.exec "dd"' "$scratch/demoted.mlir")" = 2
+
+# A process whose standard input is a pipe only the builder wrote, as a
+# here-string is, can be replayed only if the recording captured the bytes
+# that were waiting in the pipe. Give the append such a descriptor: without
+# captured bytes the group is demoted, and with them it is a splice.exec.
+with_pipe() {
+    # $1 is the JSON to add to the descriptor, $2 the recording to write.
+    cp -r "$data/example" "$2"
+    chmod -R u+w "$2"
+
+    # The append is the process with "step": 764. Its descriptor list opens
+    # on the nearest "fds" line above that one.
+    step=$(grep -n '"step": 764' "$data/example/recording.json" | cut -d: -f1)
+    fds=$(head -n "$step" "$data/example/recording.json" | grep -n '"fds": \[' | tail -n 1 | cut -d: -f1)
+    awk -v at="$fds" -v extra="$1" '
+        { print }
+        NR == at {
+            print "{\"fd\": 0, \"target\": \"pipe:[9]\", \"mode\": 256, \"flags\": 0, \"position\": 0" extra "},"
+        }' "$data/example/recording.json" > "$2/recording.json"
+}
+with_pipe '' "$scratch/unfed"
+"$compiler" import "$scratch/unfed" > "$scratch/unfed.mlir"
+grep -q 'splice.literal "dd" at 764 demoted' "$scratch/unfed.mlir"
+with_pipe ', "input": "68690a"' "$scratch/fed"
+"$compiler" import "$scratch/fed" > "$scratch/fed.mlir"
+grep -q 'splice.exec "dd" at 764' "$scratch/fed.mlir"

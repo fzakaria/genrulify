@@ -24,12 +24,14 @@ Json toJson(const Descriptor &descriptor) {
           {"target", descriptor.target},
           {"mode", descriptor.mode},
           {"flags", descriptor.flags},
-          {"position", descriptor.position}};
+          {"position", descriptor.position},
+          {"input", descriptor.input}};
 }
 
 Descriptor descriptorFromJson(const Json &json) {
-  return {json.at("fd"), json.at("target"), json.at("mode"), json.at("flags"),
-          json.at("position")};
+  return {json.at("fd"),       json.at("target"),
+          json.at("mode"),     json.at("flags"),
+          json.at("position"), json.value("input", std::string())};
 }
 
 } // namespace

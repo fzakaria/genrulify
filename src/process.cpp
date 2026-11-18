@@ -82,6 +82,16 @@ std::string digest(const fs::path &path) {
   return llvm::toHex(hash.final(), /*LowerCase=*/true);
 }
 
+std::string toHex(std::string_view bytes) {
+  return llvm::toHex(llvm::StringRef(bytes), /*LowerCase=*/true);
+}
+
+std::string fromHex(std::string_view hex) {
+  std::string bytes;
+  check(llvm::tryGetFromHex(llvm::StringRef(hex), bytes), "invalid hex string");
+  return bytes;
+}
+
 int run(const Arguments &args, const fs::path &input, const fs::path &output,
         const fs::path &error) {
   const auto program = llvm::sys::findProgramByName(args.at(0));

@@ -16,7 +16,8 @@ Fix one run of one derivation's builder. Number its observable moments
   with a target. The writable roots are `/build` and the output paths.
 - **T2, images.** For every `execve` the trace gives the step, the
   program the kernel loaded, `argv`, the environment, the working
-  directory and the descriptor table.
+  directory, the descriptor table, and the bytes waiting in any pipe the
+  process inherited for reading.
 - **T3, lifetimes.** Every fork, `execve` and exit, with pid, parent and
   wait status, ordered by step.
 - **T4, platform.** Everything a process can observe that the build
@@ -167,7 +168,10 @@ command, and its dependencies are the recorded dependencies.
   does not snapshot `/tmp`. A group that depends on any of these fails its
   check and is demoted, so the gap costs replay coverage and cannot make
   a checked graph wrong.
-- **T2 does not include pipe contents.** Bytes the driver wrote into a
-  pipe are not recoverable, so a group that reads them is a literal.
+- **T2 covers pipe contents only at the `execve`.** A shell writes a
+  here-string or a short here-document into a pipe before it starts the
+  command, so the bytes are there to capture. Bytes the driver writes
+  into a pipe while the command is already running are not captured. A
+  group that needed them fails its check and becomes a literal.
 - **P is an assumption.** The rules read the host's store and run on the
   host's kernel and CPU.

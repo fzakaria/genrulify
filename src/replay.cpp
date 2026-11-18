@@ -251,7 +251,12 @@ public:
     }
   }
 
-  ~Supervisor() { close(devNull); }
+  ~Supervisor() {
+    close(devNull);
+    for (const auto &[target, fd] : fed) {
+      close(fd);
+    }
+  }
 
   // Runs every process to completion and returns their wait statuses in
   // plan order.
@@ -403,9 +408,14 @@ private:
     if (isPipe(descriptor)) {
       const auto pipe = pipes.find(descriptor.target);
 
-      // The other end was the builder's, as for a command substitution.
-      // Nothing replays the builder, so the bytes go nowhere.
+      // The other end was the builder's. What the builder wrote into the
+      // pipe before starting the process is fed back in. What the builder
+      // read out of it, as for a command substitution, goes nowhere,
+      // because nothing replays the builder.
       if (pipe == pipes.end()) {
+        if (readable(descriptor) && !descriptor.input.empty()) {
+          return feed(descriptor);
+        }
         return devNull;
       }
       return readable(descriptor) ? pipe->second.readEnd
@@ -444,6 +454,36 @@ private:
             "cannot seek in " + descriptor.target);
     }
     return fd;
+  }
+
+  // A pipe that already holds the bytes the builder wrote, with no writer
+  // left, so the reader sees the bytes and then end of file. Processes
+  // that inherited the same pipe share the one copy.
+  int feed(const Descriptor &descriptor) {
+    if (const auto known = fed.find(descriptor.target); known != fed.end()) {
+      return known->second;
+    }
+    const auto bytes = fromHex(descriptor.input);
+    std::array<int, 2> ends{};
+    check(pipe2(ends.data(), O_CLOEXEC) == 0, "cannot create a pipe");
+
+    // The whole input is written before any reader exists, so the pipe has
+    // to be able to hold it.
+    if (bytes.size() > static_cast<size_t>(fcntl(ends[1], F_GETPIPE_SZ))) {
+      fcntl(ends[1], F_SETPIPE_SZ, static_cast<int>(bytes.size()));
+    }
+    const bool fits =
+        bytes.size() <= static_cast<size_t>(fcntl(ends[1], F_GETPIPE_SZ));
+    const bool written =
+        fits && write(ends[1], bytes.data(), bytes.size()) ==
+                    static_cast<ssize_t>(bytes.size());
+    close(ends[1]);
+    if (!written) {
+      close(ends[0]);
+      throw std::runtime_error("cannot feed " + descriptor.target);
+    }
+    fed[descriptor.target] = ends[0];
+    return ends[0];
   }
 
   // Closes the runner's copy of a pipe's write end once every writer has
@@ -521,6 +561,9 @@ private:
   fs::path root;
   int devNull = -1;
   std::map<std::string, Pipe> pipes;
+
+  // Read ends of the pipes that hold captured builder input, by target.
+  std::map<std::string, int> fed;
 
   // Guards `children`, `aborted` and the pipes' write ends.
   std::mutex mutex;

@@ -1,6 +1,9 @@
 #include "absl/strings/str_split.h"
 #include "compiler.h"
 #include "layer.h"
+#include "plan.h"
+#include "llvm/ADT/SmallString.h"
+#include "llvm/Support/FileSystem.h"
 #include "recording.h"
 #include "tools.h"
 #include "trace.h"
@@ -21,6 +24,9 @@ constexpr std::string_view kBuildRoot = "/build";
 // `rewind cat` exits with this status when the path did not exist at the
 // step, which is how a snapshot learns that an output is not there yet.
 constexpr int kRewindMissing = 3;
+
+// How long to wait for Rewind to read a pipe before giving up on it.
+constexpr std::string_view kPipeReadSeconds = "30";
 
 // The link target prefix of a pipe in /proc/PID/fd.
 constexpr std::string_view kPipePrefix = "pipe:";
@@ -68,6 +74,27 @@ public:
       entries.emplace(name, std::move(entry));
     }
     return entries;
+  }
+
+  // The bytes waiting in a pipe that a process holds, read without
+  // disturbing the run. Empty when Rewind could not produce them in time:
+  // a pipe whose writer is still running has no end to read up to.
+  std::string pipeContents(uint64_t step, const std::string &path) const {
+    llvm::SmallString<128> file;
+    if (llvm::sys::fs::createTemporaryFile("nixsplice", "pipe", file)) {
+      return {};
+    }
+    const fs::path output = file.str().str();
+    Arguments args{std::string(kTimeout), std::string(kPipeReadSeconds)};
+    for (const auto &argument :
+         command({"cat", run, std::to_string(step), path})) {
+      args.push_back(argument);
+    }
+    const int status =
+        splice_ir::run(args, {}, output, fs::path("/dev/null"));
+    auto bytes = status == 0 ? readBytes(output) : std::string();
+    fs::remove(output);
+    return bytes;
   }
 
   std::string events() const {
@@ -329,6 +356,43 @@ std::vector<Group> group(std::vector<Process> processes,
   }
   return groups;
 }
+// Captures the input of every process that reads a pipe no process of its
+// group writes. The builder wrote such a pipe, typically a here-string or a
+// short here-document, and wrote it before starting the reader, so at the
+// reader's execve the pipe holds everything the reader will ever get from
+// it. Whether that holds for a given pipe is not assumed: the replay check
+// rejects a group whose captured input does not reproduce its writes.
+void captureBuilderPipes(const Rewind &rewind, std::vector<Group> &groups) {
+  struct Wanted {
+    Process *process;
+    Descriptor *descriptor;
+  };
+  std::vector<Wanted> wanted;
+  for (auto &group : groups) {
+    std::set<std::string> written;
+    for (const auto &process : group.processes) {
+      for (const auto &descriptor : process.fds) {
+        if (isPipe(descriptor) && writable(descriptor)) {
+          written.insert(descriptor.target);
+        }
+      }
+    }
+    for (auto &process : group.processes) {
+      for (auto &descriptor : process.fds) {
+        if (isPipe(descriptor) && readable(descriptor) &&
+            !written.contains(descriptor.target)) {
+          wanted.push_back({&process, &descriptor});
+        }
+      }
+    }
+  }
+  parallelFor(wanted.size(), [&](size_t index) {
+    const auto &[process, descriptor] = wanted[index];
+    const auto path = "/proc/" + std::to_string(process->pid) + "/fd/" +
+                      std::to_string(descriptor->fd);
+    descriptor->input = toHex(rewind.pipeContents(process->step, path));
+  });
+}
 } // namespace
 
 void recordRun(const std::string &run, const fs::path &drvPath,
@@ -396,6 +460,7 @@ void recordRun(const std::string &run, const fs::path &drvPath,
     }
     recording.groups =
         group(std::move(processes), analysis.cuts, recording.roots);
+    captureBuilderPipes(rewind, recording.groups);
 
     // Snapshot the writable roots where the graph needs a state: before
     // and after each group, when the builder starts and when it exits.

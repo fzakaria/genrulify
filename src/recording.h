@@ -23,6 +23,13 @@ struct Descriptor {
   // The open flags and file offset from fdinfo.
   uint32_t flags = 0;
   uint64_t position = 0;
+
+  // For the read end of a pipe that nothing replayable writes: the bytes
+  // that were waiting in the pipe at the execve, in hex. A shell writes a
+  // here-string or a short here-document into a pipe before it starts the
+  // command, so these bytes are the command's whole input. Empty when the
+  // recording did not capture them.
+  std::string input;
 };
 
 // One process the builder started, at the step of the execve that turned
