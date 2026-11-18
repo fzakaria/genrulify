@@ -19,7 +19,7 @@ constexpr std::string_view kUsage =
     "       genrulify import RECORDING\n"
     "       genrulify opt GRAPH.mlir\n"
     "       genrulify emit RECORDING GRAPH.mlir WORKSPACE\n"
-    "       genrulify describe RECORDING GRAPH.mlir\n"
+    "       genrulify describe RECORDING RECORDED.mlir\n"
     "       genrulify reference RECORDING OUTPUT ARCHIVE.nar\n"
     "       genrulify verify REFERENCE.nar ARCHIVE.nar\n";
 

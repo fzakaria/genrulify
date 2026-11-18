@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Regenerate the data one package contributes to the site from a checked
-# recording: the optimized graph as compressed MLIR and as JSON, and both
-# build files.
+# recording: the optimized graph as compressed MLIR, a JSON description of
+# the graph before and after optimization, and both build files.
 #
 # usage: tools/site-data.sh RECORDING ID
 #   RECORDING  a directory `genrulify record` and `genrulify check` wrote
@@ -23,7 +23,10 @@ compiler=$(nix build --no-link --print-out-paths "$root")/bin/genrulify
 "$compiler" emit "$recording" "$work/graph.mlir" "$work/workspace"
 rm -rf "$out"
 mkdir -p "$out"
-"$compiler" describe "$recording" "$work/graph.mlir" > "$out/graph.json"
+
+# The description is made from the module before optimization, so the page
+# can show what elimination removes.
+"$compiler" describe "$recording" "$work/recorded.mlir" > "$out/graph.json"
 cp "$work/workspace/BUILD.bazel" "$work/workspace/BUCK" "$out/"
 
 # A group that was given a whole source tree prints thousands of operands,

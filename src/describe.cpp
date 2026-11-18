@@ -16,16 +16,21 @@ constexpr size_t kListedPaths = 40;
 constexpr size_t kDigestPrefix = 12;
 
 // The most bytes of an operation's printed form a description carries. An
-// operation given a whole source tree prints thousands of operands.
+// operation given a whole source tree prints thousands of operands. An
+// eliminated operation gets less room, because a build has many of them
+// and a page shows them only on the way to removing them.
 constexpr size_t kPrintedBytes = 6000;
+constexpr size_t kEliminatedPrintedBytes = 1200;
 
 // An operation as the module prints it, cut to a readable length.
-std::string printed(mlir::Operation &op) {
+std::string printed(mlir::Operation &op, size_t limit) {
   std::string text;
   llvm::raw_string_ostream stream(text);
   op.print(stream);
-  if (text.size() > kPrintedBytes) {
-    text.resize(kPrintedBytes);
+  if (text.size() > limit) {
+    // Cut at a line so that an entry is shown whole or not at all.
+    const auto line = text.rfind('\n', limit);
+    text.resize(line == std::string::npos ? limit : line);
     text += "\n…";
   }
   return text;
@@ -41,21 +46,28 @@ Json describeEntry(const Entry &entry) {
 }
 
 // The entries an operation wrote, with whether anything uses each one.
-Json describeWrites(mlir::Operation &op) {
+// `survivor` is the same operation in the optimized module, where a use by
+// an eliminated operation no longer counts.
+Json describeWrites(mlir::Operation &op, mlir::Operation &survivor) {
   Json writes = Json::array();
-  for (const auto result : op.getResults()) {
+  for (unsigned index = 0; index < op.getNumResults(); ++index) {
     if (writes.size() == kListedPaths) {
       break;
     }
-    auto entry = describeEntry(*entryOf(result));
-    entry["used"] = !result.use_empty();
+    auto entry = describeEntry(*entryOf(op.getResult(index)));
+    entry["used"] = !survivor.getResult(index).use_empty();
     writes.push_back(std::move(entry));
   }
   return writes;
 }
 
+// Whether a description lists the paths of an operation's operands or
+// only counts them.
+enum class Paths { Listed, Counted };
+
 // An operation's operands, grouped by the target that produces them.
-Json describeInputs(mlir::OperandRange operands, size_t outputCount) {
+Json describeInputs(mlir::OperandRange operands, size_t outputCount,
+                    Paths paths) {
   std::map<std::string, Json> producers;
   for (const auto value : operands) {
     const auto name = targetName(value.getDefiningOp(), outputCount);
@@ -64,7 +76,7 @@ Json describeInputs(mlir::OperandRange operands, size_t outputCount) {
       producer = {{"node", name}, {"count", 0}, {"paths", Json::array()}};
     }
     producer["count"] = producer["count"].get<size_t>() + 1;
-    if (producer["paths"].size() < kListedPaths) {
+    if (paths == Paths::Listed && producer["paths"].size() < kListedPaths) {
       producer["paths"].push_back(entryOf(value)->path);
     }
   }
@@ -82,17 +94,41 @@ void describeGraph(mlir::ModuleOp module, const Recording &recording) {
     outputCount += llvm::isa<OutputOp>(op) ? 1 : 0;
   }
 
-  // One node per operation, in the order the build ran them.
+  // Optimize a copy, and find each operation that survives by its target
+  // name, which elimination does not change.
+  mlir::OwningOpRef<mlir::ModuleOp> optimized(module.clone());
+  optimize(*optimized);
+  std::map<std::string, mlir::Operation *> survivors;
+  for (auto &op : optimized->getBody()->getOperations()) {
+    survivors[targetName(&op, outputCount)] = &op;
+  }
+
+  // One node per recorded operation, in the order the build ran them. The
+  // printed form keeps the value numbers of the module before elimination,
+  // so that the text of a surviving operation still names the same values
+  // while the eliminated ones are on the page.
   Json nodes = Json::array();
   for (auto &op : module.getBody()->getOperations()) {
-    Json node = {{"id", targetName(&op, outputCount)}, {"mlir", printed(op)}};
+    const auto id = targetName(&op, outputCount);
+    const auto survivor = survivors.find(id);
+    const bool dead = survivor == survivors.end();
+    Json node = {{"id", id},
+                 {"dead", dead},
+                 {"mlir", printed(op, dead ? kEliminatedPrintedBytes
+                                           : kPrintedBytes)}};
+    const auto listed = dead ? Paths::Counted : Paths::Listed;
+    const auto writes = dead ? Json::array()
+                             : (llvm::isa<OutputOp>(op)
+                                    ? Json::array()
+                                    : describeWrites(op, *survivor->second));
     if (auto exec = llvm::dyn_cast<ExecOp>(op)) {
       node.update({{"op", "exec"},
                    {"name", exec.getName()},
                    {"step", exec.getStep()},
-                   {"inputs", describeInputs(exec.getInputs(), outputCount)},
+                   {"inputs",
+                    describeInputs(exec.getInputs(), outputCount, listed)},
                    {"writeCount", op.getNumResults()},
-                   {"writes", describeWrites(op)}});
+                   {"writes", writes}});
     } else if (auto literal = llvm::dyn_cast<LiteralOp>(op)) {
       node.update({{"op", "literal"},
                    {"name", literal.getName()},
@@ -100,12 +136,13 @@ void describeGraph(mlir::ModuleOp module, const Recording &recording) {
                    {"demoted", literal.getDemoted()},
                    {"inputs", Json::array()},
                    {"writeCount", op.getNumResults()},
-                   {"writes", describeWrites(op)}});
+                   {"writes", writes}});
     } else if (auto output = llvm::dyn_cast<OutputOp>(op)) {
       node.update({{"op", "output"},
                    {"name", output.getName()},
                    {"path", output.getPath()},
-                   {"inputs", describeInputs(output.getEntries(), outputCount)}});
+                   {"inputs", describeInputs(output.getEntries(), outputCount,
+                                             listed)}});
     }
     nodes.push_back(std::move(node));
   }

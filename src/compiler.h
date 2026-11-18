@@ -94,8 +94,10 @@ bool learnFromBuild(const Recording &recording, std::istream &log);
 void emitWorkspace(mlir::ModuleOp module, const Recording &recording,
                    const std::filesystem::path &destination);
 
-// Prints a JSON description of a graph and of every process group in its
-// recording, for tools that show a conversion to people.
+// Prints a JSON description of a recorded graph and of every process
+// group in its recording, for tools that show a conversion to people.
+// `module` is the graph before optimization: the description marks the
+// operations optimization removes, so both graphs can be drawn from it.
 void describeGraph(mlir::ModuleOp module, const Recording &recording);
 
 // Writes the NAR of a derivation output as the recording saw it when the

@@ -56,8 +56,15 @@ if "$compiler" emit "$data/example" "$scratch/graph.mlir" "$scratch/workspace" 2
 fi
 
 # The description lists every operation and every process group as JSON.
+# It is made from the module before optimization and marks the operations
+# that elimination removes, so a page can draw the graph both ways. The
+# example has nothing to eliminate, so an operation nothing reads is added.
 cd "$scratch"
-"$compiler" describe "$data/example" "$scratch/graph.mlir" > "$scratch/description.json"
+sed 's|^  splice.output|  %9 = splice.exec "ls" at 749(%1) -> [\n      #splice.entry<"/build/listing" file 644 mtime 1 "00">\n  ]\n&|' \
+    "$scratch/graph.mlir" > "$scratch/recorded.mlir"
+"$compiler" describe "$data/example" "$scratch/recorded.mlir" > "$scratch/description.json"
+grep -q '"dead":true,"id":"s749_ls"' "$scratch/description.json"
+grep -q '"dead":false,"id":"s764_dd"' "$scratch/description.json"
 grep -q '"id":"s764_dd"' "$scratch/description.json"
 grep -q '"node":"s735_dd"' "$scratch/description.json"
 grep -q '"op":"output"' "$scratch/description.json"
