@@ -1,0 +1,545 @@
+#include "action.h"
+#include "absl/strings/str_cat.h"
+#include "absl/strings/str_join.h"
+#include "absl/strings/str_split.h"
+#include "sandbox_script.h"
+#include "tools.h"
+#include <fcntl.h>
+#include <format>
+#include <regex>
+#include <set>
+#include <sys/stat.h>
+#include <sys/wait.h>
+
+namespace splice_ir {
+namespace fs = std::filesystem;
+namespace {
+constexpr std::string_view kPipePrefix = "pipe:";
+constexpr std::string_view kDevicePrefix = "/dev/";
+
+// A label names at most this many processes before it counts the rest.
+constexpr size_t kLabelNames = 4;
+
+// The name of a splice.literal for the single output of a derivation.
+constexpr std::string_view kArchiveName = "archive";
+
+// A replay runs natively and the recording ran in a VM, so a group that
+// needs many times the whole build's recorded wall time is stuck. The
+// floor covers recordings too short to scale from.
+constexpr uint64_t kTimeoutFactor = 10;
+constexpr uint64_t kMinimumTimeoutSeconds = 300;
+constexpr uint64_t kMillisecondsPerSecond = 1000;
+
+// The sandbox script wires descriptors below this number. A shell keeps
+// its own bookkeeping descriptors above it, and no recorded command has
+// been seen to depend on inheriting one.
+constexpr int kWiredDescriptors = 10;
+
+// A shell exits with this value plus the signal number when a child is
+// killed by a signal, and so does bubblewrap.
+constexpr int kSignalExitBase = 128;
+
+// The separator of a manifest line's fields, which no path may contain.
+constexpr char kFieldSeparator = '\x1f';
+
+constexpr int kStandardInput = 0;
+
+// The characters an artifact name keeps. Everything else becomes `=XX`,
+// which is safe in a Bazel label, a Buck2 path and a file name.
+bool keptInArtifact(char c) {
+  return std::isalnum(static_cast<unsigned char>(c)) != 0 || c == '_' ||
+         c == '.' || c == '+' || c == '/' || c == '-';
+}
+
+std::string escaped(char c) {
+  return std::format("={:02X}", static_cast<unsigned char>(c));
+}
+
+// Replaces every character that is not safe in a target name.
+std::string sanitize(std::string_view text) {
+  std::string safe;
+  for (const char c : text) {
+    const bool keep = std::isalnum(static_cast<unsigned char>(c)) != 0 ||
+                      c == '_' || c == '.' || c == '-';
+    safe.push_back(keep ? c : '_');
+  }
+  return safe;
+}
+
+// The number in a pipe's /proc link target, `pipe:[501]`.
+std::string pipeId(const Descriptor &descriptor) {
+  static const std::regex digits("[0-9]+");
+  std::smatch match;
+  check(std::regex_search(descriptor.target, match, digits),
+        "unexpected pipe target " + descriptor.target);
+  return match.str();
+}
+
+// The exit status a sandbox reports for a recorded wait status.
+int expectedExit(int status) {
+  if (WIFSIGNALED(status)) {
+    return kSignalExitBase + WTERMSIG(status);
+  }
+  return WEXITSTATUS(status);
+}
+
+// Which processes hold each end of a pipe that has both ends in a step.
+struct PipeEnds {
+  std::set<size_t> readers;
+  std::set<size_t> writers;
+
+  // Whether the recording saw a writer die of SIGPIPE, which means the
+  // read side went away while the writer still had output.
+  bool broke = false;
+};
+
+std::map<std::string, PipeEnds> sharedPipes(const Action &action) {
+  std::map<std::string, PipeEnds> pipes;
+  for (size_t index = 0; index < action.processes.size(); ++index) {
+    const auto &process = action.processes[index];
+    for (const auto &descriptor : process.fds) {
+      if (!isPipe(descriptor) || descriptor.fd >= kWiredDescriptors) {
+        continue;
+      }
+      auto &pipe = pipes[pipeId(descriptor)];
+      (readable(descriptor) ? pipe.readers : pipe.writers).insert(index);
+      pipe.broke |= writable(descriptor) && WIFSIGNALED(process.status) &&
+                    WTERMSIG(process.status) == SIGPIPE;
+    }
+  }
+
+  // A pipe with one end in the step had the builder on the other end.
+  std::erase_if(pipes, [](const auto &named) {
+    return named.second.readers.empty() || named.second.writers.empty();
+  });
+  return pipes;
+}
+
+std::string environmentFile(size_t index) {
+  return absl::StrCat(kEnvironmentsDirectory, "/", index, ".env");
+}
+
+// The file holding the bytes the builder had written into a pipe.
+std::string dataFile(const Action &action, size_t process, int fd) {
+  return absl::StrCat(kActionsDirectory, "/", action.name, ".", process, ".",
+                      fd, ".data");
+}
+
+// What the sandbox script should put at one descriptor of one process.
+std::string descriptorSpec(const Action &action, const Recording &recording,
+                           const std::map<std::string, PipeEnds> &pipes,
+                           size_t index, const Descriptor &descriptor) {
+  if (isPipe(descriptor)) {
+    const auto id = pipeId(descriptor);
+    if (pipes.contains(id)) {
+      return absl::StrCat(readable(descriptor) ? "pipe-r:" : "pipe-w:", id);
+    }
+
+    // The other end was the builder's. What the builder wrote into the
+    // pipe before starting the process is fed back in. What the builder
+    // read out of it, as for a command substitution, goes nowhere, because
+    // nothing replays the builder.
+    if (readable(descriptor) && descriptor.input) {
+      return "data:" + dataFile(action, index, descriptor.fd);
+    }
+    return "null";
+  }
+
+  // The guest's console devices do not exist outside the VM, and no build
+  // output depends on what was written to them.
+  if (descriptor.target.starts_with(kDevicePrefix)) {
+    return descriptor.fd == kStandardInput ? "null" : "err";
+  }
+
+  // A store path the build could only read is not staged. The sandbox
+  // mounts the host's copy at the same path.
+  const bool inClosure = std::ranges::any_of(
+      recording.closure, [&](const std::string &path) {
+        return isBelow(descriptor.target, path);
+      });
+  if (inClosure) {
+    return "store:" + descriptor.target;
+  }
+
+  // A file the shell opened for the process. An offset or the append flag
+  // means the redirection added to the file, and otherwise it replaced it.
+  const int access = descriptor.flags & O_ACCMODE;
+  if (access == O_RDONLY) {
+    return "file:r:" + descriptor.target;
+  }
+  const bool adds = (descriptor.flags & O_APPEND) != 0 || descriptor.position != 0;
+  return absl::StrCat(adds ? "file:a:" : "file:w:", descriptor.target);
+}
+
+std::string manifestLine(std::string_view tag, const ActionEntry &item) {
+  for (const std::string_view field :
+       {std::string_view(item.entry.path), std::string_view(item.entry.content),
+        std::string_view(item.artifact)}) {
+    check(field.find(kFieldSeparator) == std::string_view::npos &&
+              field.find('\n') == std::string_view::npos,
+          "a path with a control character cannot be staged: " +
+              item.entry.path);
+  }
+  const std::string separator(1, kFieldSeparator);
+  return absl::StrCat(tag, separator, kindName(item.entry.kind), separator,
+                      std::format("{:o}", item.entry.mode), separator,
+                      item.entry.mtime, separator, item.entry.path, separator,
+                      item.entry.content, separator, item.artifact, "\n");
+}
+
+// Reads a failed step's output back into what failed.
+ReplayFailure parseFailure(const std::string &output) {
+  const auto headline = output.find(kNotReproduced);
+  if (headline == std::string::npos) {
+    // The step did not get as far as comparing results.
+    constexpr size_t kTailBytes = 600;
+    ReplayFailure failure("the step could not run: " +
+                          output.substr(output.size() > kTailBytes
+                                            ? output.size() - kTailBytes
+                                            : 0));
+    failure.wrongStatus = true;
+    return failure;
+  }
+  const auto lineStart = output.rfind('\n', headline);
+  const auto report =
+      output.substr(lineStart == std::string::npos ? 0 : lineStart + 1);
+  ReplayFailure failure(report);
+  for (const std::string_view line : absl::StrSplit(report, '\n')) {
+    const auto problem = absl::StripLeadingAsciiWhitespace(line);
+    if (problem.starts_with(kDiffersPrefix)) {
+      const auto end = problem.find(kDiffersSeparator);
+      failure.differing.emplace_back(problem.substr(
+          kDiffersPrefix.size(), end - kDiffersPrefix.size()));
+    } else if (problem.starts_with(kMissingPrefix)) {
+      failure.differing.emplace_back(problem.substr(kMissingPrefix.size()));
+    } else if (problem.find(kExitedWith) != std::string_view::npos) {
+      failure.wrongStatus = true;
+    }
+  }
+  return failure;
+}
+} // namespace
+
+bool readable(const Descriptor &descriptor) {
+  return (descriptor.mode & S_IRUSR) != 0;
+}
+
+bool writable(const Descriptor &descriptor) {
+  return (descriptor.mode & S_IWUSR) != 0;
+}
+
+bool isPipe(const Descriptor &descriptor) {
+  return descriptor.target.starts_with(kPipePrefix);
+}
+
+std::optional<std::string> unreplayable(const Group &group) {
+  // Find the pipes some process of the group writes.
+  std::set<std::string> written;
+  for (const auto &process : group.processes) {
+    for (const auto &descriptor : process.fds) {
+      if (isPipe(descriptor) && writable(descriptor)) {
+        written.insert(descriptor.target);
+      }
+    }
+  }
+
+  for (const auto &process : group.processes) {
+    for (const auto &descriptor : process.fds) {
+      // The bytes of a pipe that only the builder wrote, as a here-document
+      // is, were never in a file. The group can be replayed only if the
+      // recording caught them waiting in the pipe.
+      if (isPipe(descriptor)) {
+        if (readable(descriptor) && !written.contains(descriptor.target) &&
+            !descriptor.input) {
+          return absl::StrCat(process.name, " reads descriptor ",
+                              descriptor.fd, " from a pipe the builder wrote");
+        }
+        continue;
+      }
+
+      // A target that is not a path, such as a socket or an eventfd, holds
+      // state the recording did not capture.
+      if (!descriptor.target.starts_with("/")) {
+        return absl::StrCat(process.name, " holds ", descriptor.target);
+      }
+    }
+  }
+  return std::nullopt;
+}
+
+std::string label(const Group &group) {
+  Arguments names;
+  for (const auto &process : group.processes) {
+    if (names.size() == kLabelNames) {
+      names.push_back(absl::StrCat("+", group.processes.size() - kLabelNames));
+      break;
+    }
+    names.push_back(process.name);
+  }
+  return absl::StrJoin(names, "|");
+}
+
+std::string targetName(mlir::Operation *op, size_t outputCount) {
+  if (auto exec = llvm::dyn_cast<ExecOp>(op)) {
+    return absl::StrCat("s", exec.getStep(), "_", sanitize(exec.getName()));
+  }
+  if (auto literal = llvm::dyn_cast<LiteralOp>(op)) {
+    // A demoted group and the builder's writes just before the group share
+    // a step, so the two kinds of literal get different prefixes.
+    if (literal.getDemoted()) {
+      return absl::StrCat("lit_", literal.getStep(), "_",
+                          sanitize(literal.getName()));
+    }
+    return absl::StrCat(sanitize(literal.getName()), "_", literal.getStep());
+  }
+  auto output = llvm::cast<OutputOp>(op);
+
+  // A derivation with one output gets the short name.
+  if (outputCount == 1) {
+    return std::string(kArchiveName);
+  }
+  return absl::StrCat(kArchiveName, "_", sanitize(output.getName()));
+}
+
+std::string artifactName(std::string_view target, std::string_view guestPath) {
+  std::string name(target);
+  for (const char c : guestPath) {
+    name += keptInArtifact(c) ? std::string(1, c) : escaped(c);
+  }
+  return name;
+}
+
+std::string buckOutputName(std::string_view target, std::string_view artifact) {
+  // Drop the target and its separator: the name is used inside the rule.
+  std::string name;
+  for (const char c : artifact.substr(target.size() + 1)) {
+    name += c == '.' ? escaped(c) : std::string(1, c);
+  }
+  return name;
+}
+
+Action execAction(ExecOp op, const Recording &recording,
+                  const std::function<std::string(mlir::Value)> &operandArtifact,
+                  const ArtifactOf &platformArtifact) {
+  Action action;
+  action.name = targetName(op, 0);
+  action.processes = recording.group(op.getStep()).processes;
+  action.timeoutSeconds =
+      std::max(kMinimumTimeoutSeconds,
+               kTimeoutFactor * recording.wallMilliseconds /
+                   kMillisecondsPerSecond);
+
+  // The guest's /bin and /etc are part of what a process can observe.
+  for (const auto &[path, entry] : recording.platform()) {
+    action.inputs.push_back(
+        {entry, entry.kind == EntryKind::File ? platformArtifact(entry) : ""});
+  }
+  for (const auto input : op.getInputs()) {
+    const auto entry = *entryOf(input);
+    action.inputs.push_back(
+        {entry, entry.kind == EntryKind::File ? operandArtifact(input) : ""});
+  }
+  for (const auto result : op.getResults()) {
+    if (result.use_empty()) {
+      continue;
+    }
+    const auto entry = *entryOf(result);
+    action.results.push_back({entry, entry.kind == EntryKind::File
+                                         ? artifactName(action.name, entry.path)
+                                         : ""});
+  }
+  return action;
+}
+
+Action outputAction(OutputOp op, size_t outputCount,
+                    const std::function<std::string(mlir::Value)> &operandArtifact) {
+  Action action;
+  action.name = targetName(op, outputCount);
+  action.output = op.getPath().str();
+  for (const auto value : op.getEntries()) {
+    const auto entry = *entryOf(value);
+    action.inputs.push_back(
+        {entry, entry.kind == EntryKind::File ? operandArtifact(value) : ""});
+  }
+  return action;
+}
+
+std::vector<Arguments> actionArguments(const Action &action,
+                                       const Recording &recording) {
+  std::vector<Arguments> lines;
+  if (!action.output.empty()) {
+    lines.push_back({"--name", action.name, "pack", action.output});
+    return lines;
+  }
+
+  // The step's own options: its name, its deadline and the pipes between
+  // its processes.
+  Arguments options{"--name", action.name, "--timeout",
+                    std::to_string(action.timeoutSeconds)};
+  const auto pipes = sharedPipes(action);
+  for (const auto &[id, pipe] : pipes) {
+    options.insert(options.end(),
+                   {"--pipe",
+                    absl::StrCat(id, ":", *pipe.writers.rbegin(), ":",
+                                 absl::StrJoin(pipe.readers, ","), ":",
+                                 pipe.broke ? 1 : 0)});
+  }
+  lines.push_back(std::move(options));
+
+  for (size_t index = 0; index < action.processes.size(); ++index) {
+    const auto &process = action.processes[index];
+    check(!process.argv.empty(), "missing executable arguments");
+    Arguments wiring{"run", "--cwd", process.cwd, "--env",
+                     std::to_string(process.environment)};
+
+    // The kernel loads `exe`. For a script that is the interpreter, and
+    // argv already names the script. When the path given to execve, or
+    // argv[0], is another path to `exe`, as with a multi-call binary
+    // reached through a symlink, running that path is the same execve and
+    // reads as the command that was typed. A name that differs from the
+    // program shown is passed along as argv[0].
+    const auto names = [&](const std::string &path) {
+      std::error_code error;
+      return fs::path(path).is_absolute() &&
+             fs::canonical(path, error) == fs::path(process.exe) && !error;
+    };
+    const auto &program = names(process.filename)       ? process.filename
+                          : names(process.argv.front()) ? process.argv.front()
+                                                        : process.exe;
+    if (process.argv.front() != program) {
+      wiring.insert(wiring.end(), {"--argv0", process.argv.front()});
+    }
+    for (const auto &descriptor : process.fds) {
+      if (descriptor.fd >= kWiredDescriptors) {
+        continue;
+      }
+      wiring.insert(wiring.end(),
+                    {"--fd", absl::StrCat(descriptor.fd, "=",
+                                          descriptorSpec(action, recording,
+                                                         pipes, index,
+                                                         descriptor))});
+    }
+
+    // Keep the recorded order: wait for every process that had already
+    // exited when this one called execve.
+    Arguments earlier;
+    for (size_t other = 0; other < index; ++other) {
+      if (action.processes[other].exit < process.step) {
+        earlier.push_back(std::to_string(other));
+      }
+    }
+    if (!earlier.empty()) {
+      wiring.insert(wiring.end(), {"--after", absl::StrJoin(earlier, ",")});
+    }
+    wiring.insert(wiring.end(),
+                  {"--status", std::to_string(expectedExit(process.status)),
+                   "--argc", std::to_string(process.argv.size()), "--"});
+    lines.push_back(std::move(wiring));
+
+    Arguments command{program};
+    command.insert(command.end(), process.argv.begin() + 1, process.argv.end());
+    lines.push_back(std::move(command));
+  }
+  return lines;
+}
+
+Arguments writeActionFiles(const Action &action, const fs::path &directory) {
+  Arguments written;
+  fs::create_directories(directory / kActionsDirectory);
+
+  // The manifest: everything to stage, then everything to expect.
+  std::string manifest;
+  for (const auto &input : action.inputs) {
+    manifest += manifestLine("in", input);
+  }
+  for (const auto &result : action.results) {
+    manifest += manifestLine("out", result);
+  }
+  const auto name =
+      absl::StrCat(kActionsDirectory, "/", action.name, ".manifest");
+  writeBytes(directory / name, manifest);
+  written.push_back(name);
+
+  // The bytes the builder had waiting in a pipe for a process.
+  const auto pipes = sharedPipes(action);
+  for (size_t index = 0; index < action.processes.size(); ++index) {
+    for (const auto &descriptor : action.processes[index].fds) {
+      const bool fed = isPipe(descriptor) && readable(descriptor) &&
+                       descriptor.input && descriptor.fd < kWiredDescriptors &&
+                       !pipes.contains(pipeId(descriptor));
+      if (!fed) {
+        continue;
+      }
+      const auto file = dataFile(action, index, descriptor.fd);
+      writeBytes(directory / file, fromHex(*descriptor.input));
+      written.push_back(file);
+    }
+  }
+  return written;
+}
+
+void writeSharedFiles(const Recording &recording, const fs::path &directory) {
+  writeBytes(directory / kSandboxFile, kSandboxScript);
+  fs::permissions(directory / kSandboxFile,
+                  fs::perms::owner_all | fs::perms::group_read |
+                      fs::perms::group_exec | fs::perms::others_read |
+                      fs::perms::others_exec);
+  writeBytes(directory / kClosureFile,
+             absl::StrJoin(recording.closure, "\n") + "\n");
+
+  // An environment is NAME=VALUE entries, each ended by a NUL, because a
+  // value can hold any other byte.
+  fs::create_directories(directory / kEnvironmentsDirectory);
+  for (size_t index = 0; index < recording.environments.size(); ++index) {
+    std::string bytes;
+    for (const auto &variable : recording.environments[index]) {
+      bytes += variable;
+      bytes.push_back('\0');
+    }
+    writeBytes(directory / environmentFile(index), bytes);
+  }
+}
+
+Arguments sharedFiles(const Action &action) {
+  std::set<std::string> files{std::string(kSandboxFile)};
+  if (!action.processes.empty()) {
+    files.insert(std::string(kClosureFile));
+  }
+  for (const auto &process : action.processes) {
+    files.insert(environmentFile(process.environment));
+  }
+  return Arguments(files.begin(), files.end());
+}
+
+std::optional<ReplayFailure> runAction(const Action &action,
+                                       const Recording &recording,
+                                       const fs::path &shared,
+                                       const fs::path &trace) {
+  Scratch scratch;
+  writeActionFiles(action, scratch.path);
+
+  // A traced run tells the script where to write and which tracer to use.
+  Arguments command;
+  if (!trace.empty()) {
+    command = {std::string(kEnv), "GENRULIFY_TRACE=" + trace.string(),
+               absl::StrCat("GENRULIFY_STRACE=", kStrace)};
+  }
+  command.insert(command.end(),
+                 {(shared / kSandboxFile).string(), "--in", shared.string(),
+                  "--in", scratch.path.string(), "--in",
+                  recording.directory.string(), "--out",
+                  (scratch.path / "out").string()});
+  for (const auto &line : actionArguments(action, recording)) {
+    command.insert(command.end(), line.begin(), line.end());
+  }
+
+  // The script reports on standard error, after whatever the step's
+  // processes printed there. Its standard output carries nothing.
+  const auto output = scratch.path / "output";
+  const int status = run(command, "/dev/null", "/dev/null", output);
+  if (status == 0) {
+    return std::nullopt;
+  }
+  return parseFailure(readBytes(output));
+}
+} // namespace splice_ir

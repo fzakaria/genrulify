@@ -1,5 +1,4 @@
 #include "access.h"
-#include "tools.h"
 #include <fstream>
 #include <regex>
 #include <vector>
@@ -7,10 +6,6 @@
 namespace splice_ir {
 namespace fs = std::filesystem;
 namespace {
-// The longest string argument strace prints in full. Its default cuts a
-// path at 32 bytes.
-constexpr std::string_view kStringLimit = "4096";
-
 // The marker of a call that failed, and the open flag of a listing.
 constexpr std::string_view kFailed = ") = -1 ";
 constexpr std::string_view kDirectoryFlag = "O_DIRECTORY";
@@ -127,22 +122,5 @@ Accessed readAccesses(const fs::path &directory) {
     }
   }
   return accessed;
-}
-
-std::vector<std::string> traceCommand(const fs::path &output) {
-  // Follow children, one output file per process so that lines are never
-  // interleaved, print descriptor paths, and trace the calls that take a
-  // path.
-  return {std::string(kStrace),
-          "-f",
-          "-ff",
-          "-y",
-          "-qq",
-          "-s",
-          std::string(kStringLimit),
-          "-e",
-          "trace=%file",
-          "-o",
-          output.string()};
 }
 } // namespace splice_ir

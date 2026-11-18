@@ -1,7 +1,6 @@
 #include "absl/strings/str_split.h"
 #include "compiler.h"
-#include "layer.h"
-#include "plan.h"
+#include "action.h"
 #include "llvm/ADT/SmallString.h"
 #include "llvm/Support/FileSystem.h"
 #include "recording.h"
@@ -9,6 +8,7 @@
 #include "trace.h"
 #include <map>
 #include <mutex>
+#include <sys/stat.h>
 #include <optional>
 #include <set>
 
@@ -182,6 +182,39 @@ private:
   std::mutex mutex;
 };
 
+// The permission, setuid, setgid and sticky bits of a mode.
+constexpr mode_t kModeBits = 07777;
+
+// Reads the entry at a host path the way a snapshot records the entry at
+// `guestPath`. Throws for anything other than a regular file, a directory
+// or a symlink.
+Entry observe(const fs::path &host, const std::string &guestPath) {
+  struct stat status {};
+  check(lstat(host.c_str(), &status) == 0, "cannot stat " + host.string());
+  Entry entry;
+  entry.path = guestPath;
+  entry.mode = status.st_mode & kModeBits;
+  entry.mtime = status.st_mtim.tv_sec;
+  if (S_ISDIR(status.st_mode)) {
+    entry.kind = EntryKind::Directory;
+    return entry;
+  }
+  if (S_ISLNK(status.st_mode)) {
+    entry.kind = EntryKind::Symlink;
+
+    // A symlink's permission bits are not settable on Linux and carry no
+    // meaning, so every symlink has mode zero.
+    entry.mode = 0;
+    entry.content = fs::read_symlink(host).string();
+    return entry;
+  }
+  check(S_ISREG(status.st_mode),
+        "not a file, directory or symlink: " + host.string());
+  entry.kind = EntryKind::File;
+  entry.content = digest(host);
+  return entry;
+}
+
 // Records the entry at a host path and everything below it. The walk
 // needs owner access to hash a file or list a directory that the build left
 // unreadable, so the recorded mode is read before access is granted.
@@ -264,6 +297,7 @@ Process inspect(const Rewind &rewind, const Cut &cut, const Arguments &roots,
   process.exit = cut.end;
   process.status = cut.status;
   process.name = cut.name;
+  process.filename = cut.filename;
   process.argv = fields(rewind.cat(cut.step, proc + "/cmdline"));
   environment = fields(rewind.cat(cut.step, proc + "/environ"));
 

@@ -1,0 +1,401 @@
+#!@SPLICE_BASH@/bin/bash
+# Runs one step of a recorded build the way the recording saw it run, and
+# checks that it left what the recording saw it leave.
+#
+# A generated genrule calls this script with the step's real command line.
+# The script exists because a recorded command only makes sense in the
+# place it ran: it names /build and the output path absolutely, expects its
+# recorded environment and descriptors, and must not see files the rule
+# did not declare. So the script stages the declared inputs under a
+# private root, mounts that root and the store closure at their recorded
+# paths with bubblewrap, starts each process, and compares every declared
+# result with the recorded kind, mode and SHA-256 before handing it on.
+#
+# usage: sandbox.sh --name NAME --in DIR... --out DIR [--timeout SECONDS]
+#                   [--pipe ID:LAST_WRITER:READERS:BROKE]...
+#                   (run OPTIONS --argc N -- PROGRAM ARG...)...
+#        sandbox.sh --name NAME --in DIR... --out DIR pack GUEST_PATH
+#
+# Files are looked up by name under each --in directory:
+#   actions/NAME.manifest   the entries to stage and the results to expect
+#   closure.txt             store paths to mount read-only
+#   env/N.env               an environment, NUL-separated NAME=VALUE
+#
+# run options:
+#   --cwd DIR        working directory inside the sandbox
+#   --env N          which environment file to use
+#   --argv0 TEXT     argv[0], when it differs from PROGRAM
+#   --fd N=SPEC      descriptor N: null, err, pipe-r:ID, pipe-w:ID,
+#                    data:FILE (bytes the builder had written into a pipe),
+#                    store:PATH, or file:r|w|a:GUEST_PATH
+#   --after I,J      start only after processes I and J have exited
+#   --status N       the exit status the recording saw
+set -u
+
+C=@SPLICE_COREUTILS@/bin
+BWRAP=@SPLICE_BWRAP@/bin/bwrap
+NIX_STORE=@SPLICE_NIX@/bin/nix-store
+
+# The identity the Nix sandbox gives a builder, which the recording had.
+BUILD_UID=1000
+BUILD_GID=100
+BUILD_HOST=localhost
+
+# The phrases a failure is reported with. `genrulify learn` reads them back
+# out of a build log.
+NOT_REPRODUCED=" did not reproduce the recording:"
+
+# The field separator of a manifest line. A tab would do, except that the
+# shell merges adjacent tabs and so loses an empty field.
+FS=$'\x1f'
+
+fail() {
+    echo "sandbox.sh: $*" >&2
+    exit 2
+}
+
+# ---- arguments up to the first `run` or `pack` ------------------------------
+
+name=
+out=
+timeout=
+in_dirs=()
+declare -A pipe_last_writer pipe_readers pipe_broke
+while [ $# -gt 0 ]; do
+    case $1 in
+        --name) name=$2; shift 2 ;;
+        --in) in_dirs+=("$2"); shift 2 ;;
+        --out) out=$2; shift 2 ;;
+        --timeout) timeout=$2; shift 2 ;;
+        --pipe)
+            IFS=: read -r id last readers broke <<< "$2"
+            pipe_last_writer[$id]=$last
+            pipe_readers[$id]=$readers
+            pipe_broke[$id]=$broke
+            shift 2
+            ;;
+        run | pack) break ;;
+        *) fail "unknown option $1" ;;
+    esac
+done
+[ -n "$name" ] && [ -n "$out" ] || fail "--name and --out are required"
+
+# A process that waits for input the recording had and this run does not
+# would wait forever. Run the whole step under a deadline.
+if [ -n "$timeout" ] && [ -z "${GENRULIFY_DEADLINE:-}" ]; then
+    saved=(--name "$name" --out "$out")
+    for dir in "${in_dirs[@]}"; do saved+=(--in "$dir"); done
+    for id in "${!pipe_last_writer[@]}"; do
+        saved+=(--pipe "$id:${pipe_last_writer[$id]}:${pipe_readers[$id]}:${pipe_broke[$id]}")
+    done
+    GENRULIFY_DEADLINE=1 exec "$C/timeout" --kill-after=10 "$timeout" "$0" "${saved[@]}" "$@"
+fi
+
+# The first --in directory that holds a file.
+find_input() {
+    local dir
+    for dir in "${in_dirs[@]}"; do
+        if [ -e "$dir/$1" ]; then
+            printf '%s' "$dir/$1"
+            return 0
+        fi
+    done
+    fail "no input named $1"
+}
+
+scratch=$("$C/mktemp" -d) || fail "cannot create a scratch directory"
+cleanup() {
+    # Staged directories keep their recorded modes, which can deny the
+    # owner the access removal needs.
+    "$C/chmod" -R u+rwx "$scratch" 2> /dev/null
+    "$C/rm" -rf "$scratch"
+}
+trap cleanup EXIT
+root=$scratch/root
+"$C/mkdir" -p "$root/build" "$root/nix/store" "$root/tmp" "$root/bin" "$root/etc"
+
+# ---- stage the declared inputs ----------------------------------------------
+
+manifest=$(find_input "actions/$name.manifest")
+declare -A known        # guest paths the step was given or is expected to write
+directories=()          # mode, mtime and path of every staged directory
+results=()              # the manifest's `out` lines
+
+while IFS=$FS read -r tag kind mode mtime path content artifact; do
+    known[$path]=1
+    if [ "$tag" = out ]; then
+        results+=("$kind$FS$mode$FS$mtime$FS$path$FS$content$FS$artifact")
+        continue
+    fi
+    host=$root$path
+    case $kind in
+        dir)
+            "$C/mkdir" -p "$host"
+            directories+=("$mode$FS$mtime$FS$path")
+            ;;
+        link)
+            "$C/mkdir" -p "${host%/*}"
+            "$C/ln" -s "$content" "$host"
+            "$C/touch" -h -d "@$mtime" "$host"
+            ;;
+        file)
+            "$C/mkdir" -p "${host%/*}"
+            "$C/cp" "$(find_input "$artifact")" "$host" || fail "cannot stage $path"
+            "$C/chmod" "$mode" "$host"
+            "$C/touch" -d "@$mtime" "$host"
+            ;;
+        *) fail "unknown entry kind $kind" ;;
+    esac
+done < "$manifest"
+
+# A directory gets its recorded mode and mtime last: the mode can deny the
+# writes that created its children, and those writes move its mtime.
+if [ ${#directories[@]} -gt 0 ]; then
+    while IFS=$FS read -r mode mtime path; do
+        "$C/chmod" "$mode" "$root$path"
+        "$C/touch" -d "@$mtime" "$root$path"
+    done < <(printf '%s\n' "${directories[@]}" | "$C/sort" -t"$FS" -k3,3r)
+fi
+
+# ---- pack: serialize one output path as a NAR -------------------------------
+
+if [ "${1:-}" = pack ]; then
+    guest=$2
+    [ -e "$root$guest" ] || [ -L "$root$guest" ] || fail "nothing was published at $guest"
+    "$C/mkdir" -p "$out"
+    "$NIX_STORE" --dump "$root$guest" > "$out/$name.nar" || fail "cannot archive $guest"
+    exit 0
+fi
+
+# ---- start the processes ----------------------------------------------------
+
+# The sandbox every process shares: the staged tree as the only writable
+# state, the store closure at its own paths, nothing else.
+sandbox=("$BWRAP" --unshare-all --die-with-parent --clearenv
+    --uid "$BUILD_UID" --gid "$BUILD_GID" --hostname "$BUILD_HOST"
+    --dev /dev --proc /proc
+    --bind "$root/tmp" /tmp
+    --bind "$root/nix/store" /nix/store
+    --ro-bind "$root/bin" /bin --ro-bind "$root/etc" /etc)
+while IFS= read -r store_path; do
+    sandbox+=(--ro-bind "$store_path" "$store_path")
+done < "$(find_input closure.txt)"
+sandbox+=(--bind "$root/build" /build)
+
+# Pipes between the processes. The script holds both ends of each one, the
+# way the builder did, and gives each process the end it had.
+declare -A pipe_r pipe_w
+for id in "${!pipe_last_writer[@]}"; do
+    fifo=$scratch/pipe.$id
+    "$C/mkfifo" "$fifo"
+    exec {both}<> "$fifo" {reader}< "$fifo" {writer}> "$fifo"
+    exec {both}>&-
+    "$C/rm" "$fifo"
+    pipe_r[$id]=$reader
+    pipe_w[$id]=$writer
+done
+
+pids=()             # the pid of each process, by index
+names=()            # its program's name, for messages
+expected=()         # the exit status the recording saw
+declare -A status   # exit status by pid, for every child that has been reaped
+problems=()
+
+# Waits for any one child and records how it ended.
+reap() {
+    local pid
+    wait -n -p pid
+    local code=$?
+    [ -n "${pid:-}" ] && status[$pid]=$code
+}
+
+index=0
+while [ $# -gt 0 ]; do
+    [ "$1" = run ] || fail "expected run, found $1"
+    shift
+    cwd=/build
+    env_file=
+    argv0=
+    fds=()
+    after=
+    want=0
+    argc=0
+    while [ "$1" != -- ]; do
+        case $1 in
+            --cwd) cwd=$2 ;;
+            --env) env_file=$2 ;;
+            --argv0) argv0=$2 ;;
+            --fd) fds+=("$2") ;;
+            --after) after=$2 ;;
+            --status) want=$2 ;;
+            --argc) argc=$2 ;;
+            *) fail "unknown run option $1" ;;
+        esac
+        shift 2
+    done
+    shift
+    argv=("${@:1:argc}")
+    shift "$argc"
+
+    # Keep the recorded order: a process starts once every process that had
+    # exited before its execve has exited here.
+    for other in ${after//,/ }; do
+        while [ -z "${status[${pids[$other]}]:-}" ]; do
+            reap
+        done
+    done
+
+    command=("${sandbox[@]}")
+    if [ -n "$env_file" ]; then
+        while IFS= read -r -d '' variable; do
+            command+=(--setenv "${variable%%=*}" "${variable#*=}")
+        done < "$(find_input "env/$env_file.env")"
+    fi
+    command+=(--chdir "$cwd")
+    [ -n "$argv0" ] && command+=(--argv0 "$argv0")
+    command+=(-- "${argv[@]}")
+
+    # A traced run puts the same sandbox under strace, which follows it
+    # inside and exits with its status.
+    if [ -n "${GENRULIFY_TRACE:-}" ]; then
+        command=("$GENRULIFY_STRACE" -f -ff -y -qq -s 4096 -e trace=%file
+            -o "$GENRULIFY_TRACE/$index" "${command[@]}")
+    fi
+
+    (
+        # Place this process's descriptors.
+        for spec in "${fds[@]}"; do
+            fd=${spec%%=*}
+            what=${spec#*=}
+            case $what in
+                null) eval "exec $fd<> /dev/null" ;;
+                err) eval "exec $fd>&2" ;;
+                pipe-r:*) eval "exec $fd<&${pipe_r[${what#pipe-r:}]}" ;;
+                pipe-w:*) eval "exec $fd>&${pipe_w[${what#pipe-w:}]}" ;;
+                data:*) eval "exec $fd< \"\$(find_input \"\${what#data:}\")\"" ;;
+                store:*) eval "exec $fd< \"\${what#store:}\"" ;;
+                file:r:*) eval "exec $fd< \"\$root\${what#file:r:}\"" ;;
+                file:w:*) eval "exec $fd> \"\$root\${what#file:w:}\"" ;;
+                file:a:*) eval "exec $fd>> \"\$root\${what#file:a:}\"" ;;
+                *) fail "unknown descriptor $spec" ;;
+            esac || exit 126
+        done
+
+        # Drop every pipe end the script holds, so that a pipe is open only
+        # in the processes the recording saw it open in.
+        for held in "${pipe_r[@]}" "${pipe_w[@]}"; do
+            eval "exec $held>&-"
+        done
+        exec "${command[@]}"
+    ) &
+    pids[index]=$!
+    names[index]=${argv0:-${argv[0]}}
+    names[index]=${names[index]##*/}
+    expected[index]=$want
+
+    # Close the script's copy of a pipe's write end once every writer has
+    # its own, so that readers see end of file when the writers exit.
+    for id in "${!pipe_w[@]}"; do
+        if [ "${pipe_last_writer[$id]}" = "$index" ]; then
+            eval "exec ${pipe_w[$id]}>&-"
+            unset "pipe_w[$id]"
+        fi
+    done
+    index=$((index + 1))
+done
+
+# The builder kept reading a pipe after the processes that held its read
+# end were gone, as a `while read` loop or a command substitution does.
+# Nothing replays the builder, so once those processes have exited the
+# leftover bytes are discarded and the writers can finish. If the recording
+# saw a writer killed for writing on, the read end is closed instead.
+for id in "${!pipe_r[@]}"; do
+    (
+        for held in "${pipe_w[@]}"; do eval "exec $held>&-"; done
+        for reader in ${pipe_readers[$id]//,/ }; do
+            while kill -0 "${pids[$reader]}" 2> /dev/null; do
+                "$C/sleep" 0.02
+            done
+        done
+        if [ "${pipe_broke[$id]}" != 1 ]; then
+            "$C/cat" <&"${pipe_r[$id]}" > /dev/null
+        fi
+    ) &
+    eval "exec ${pipe_r[$id]}<&-"
+done
+
+# A process must end the way the recording saw it end.
+for ((i = 0; i < index; i++)); do
+    while [ -z "${status[${pids[$i]}]:-}" ]; do
+        reap
+    done
+    actual=${status[${pids[$i]}]}
+    if [ "$actual" != "${expected[$i]}" ]; then
+        problems+=("${names[$i]} exited with $actual, recorded ${expected[$i]}")
+    fi
+done
+
+# ---- check the results ------------------------------------------------------
+
+describe() {
+    # Prints "KIND MODE CONTENT" for a host path.
+    local path=$1
+    if [ -L "$path" ]; then
+        printf 'link 0 %s' "$("$C/readlink" "$path")"
+    elif [ -d "$path" ]; then
+        printf 'dir %s ' "$("$C/stat" -c %a "$path")"
+    else
+        local digest
+        digest=$("$C/sha256sum" < "$path")
+        printf 'file %s %s' "$("$C/stat" -c %a "$path")" "${digest%% *}"
+    fi
+}
+
+if [ ${#results[@]} -gt 0 ]; then
+    while IFS=$FS read -r kind mode mtime path content artifact; do
+        host=$root$path
+        want="$kind $mode $content"
+
+        # A process that picks a random name, as mktemp does, wrote the
+        # recorded entry under another one. What later steps can observe of
+        # a path is its kind, mode and content, so an entry in the same
+        # directory that this step neither was given nor is expected to
+        # write, and that matches all three, is the recorded entry. Later
+        # steps were recorded using the old name and get it under that one.
+        if [ ! -e "$host" ] && [ ! -L "$host" ]; then
+            for candidate in "${host%/*}"/* "${host%/*}"/.[!.]*; do
+                [ -e "$candidate" ] || [ -L "$candidate" ] || continue
+                [ -z "${known[${candidate#"$root"}]:-}" ] || continue
+                if [ "$(describe "$candidate")" = "$want" ]; then
+                    known[${candidate#"$root"}]=1
+                    host=$candidate
+                    break
+                fi
+            done
+        fi
+        if [ ! -e "$host" ] && [ ! -L "$host" ]; then
+            problems+=("missing $path")
+            continue
+        fi
+        got=$(describe "$host")
+        if [ "$got" != "$want" ]; then
+            problems+=("differs $path: got $got, recorded $want")
+            continue
+        fi
+        if [ -n "$artifact" ]; then
+            "$C/mkdir" -p "$out/${artifact%/*}"
+            "$C/cp" "$host" "$out/$artifact"
+        fi
+    done < <(printf '%s\n' "${results[@]}")
+fi
+
+if [ ${#problems[@]} -gt 0 ]; then
+    echo "$name$NOT_REPRODUCED" >&2
+    printf '  %s\n' "${problems[@]}" >&2
+    exit 1
+fi
+
+# Every rule writes a stamp, so a step whose results are all directories
+# still has a file for the build system to track.
+"$C/mkdir" -p "$out"
+: > "$out/$name.ok"

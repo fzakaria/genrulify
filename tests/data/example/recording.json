@@ -104,7 +104,8 @@
      "name": "dd",
      "pid": 35,
      "status": 0,
-     "step": 735
+     "step": 735,
+     "filename": "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/dd"
     }
    ],
    "reads": [],
@@ -155,7 +156,8 @@
      "name": "dd",
      "pid": 36,
      "status": 0,
-     "step": 764
+     "step": 764,
+     "filename": "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/dd"
     }
    ],
    "reads": [],
@@ -204,7 +206,8 @@
      "name": "dd",
      "pid": 34,
      "status": 0,
-     "step": 782
+     "step": 782,
+     "filename": "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/dd"
     }
    ],
    "reads": [

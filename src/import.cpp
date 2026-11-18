@@ -3,7 +3,7 @@
 #include "mlir/IR/Builders.h"
 #include "mlir/Pass/PassManager.h"
 #include "mlir/Transforms/Passes.h"
-#include "plan.h"
+#include "action.h"
 #include <set>
 
 namespace splice_ir {

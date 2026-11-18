@@ -50,6 +50,7 @@ nlohmann::json toJson(const Process &process) {
           {"exit", process.exit},
           {"status", process.status},
           {"name", process.name},
+          {"filename", process.filename},
           {"exe", process.exe},
           {"cwd", process.cwd},
           {"argv", process.argv},
@@ -64,6 +65,7 @@ Process processFromJson(const nlohmann::json &json) {
   process.exit = json.at("exit");
   process.status = json.at("status");
   process.name = json.at("name");
+  process.filename = json.value("filename", std::string());
   process.exe = json.at("exe");
   process.cwd = json.at("cwd");
   process.argv = json.at("argv").get<Arguments>();

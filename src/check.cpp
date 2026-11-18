@@ -2,8 +2,7 @@
 #include "absl/strings/str_cat.h"
 #include "access.h"
 #include "compiler.h"
-#include "layer.h"
-#include "lower.h"
+#include "action.h"
 #include "llvm/Support/raw_ostream.h"
 #include <optional>
 #include <regex>
@@ -13,10 +12,6 @@ namespace splice_ir {
 namespace fs = std::filesystem;
 namespace {
 using Json = nlohmann::json;
-
-// The single layer a checked group is given: its operands, straight from
-// the recording.
-constexpr std::string_view kRecordedLayer = "recorded";
 
 constexpr std::string_view kReportFile = "check.json";
 
@@ -29,8 +24,7 @@ constexpr int kJsonIndent = 1;
 struct Task {
   uint64_t step = 0;
   Verdict verdict;
-  Plan plan;
-  std::vector<Entry> operands;
+  Action action;
 
   // Unset when the replay reproduced the recording.
   std::optional<ReplayFailure> failure;
@@ -68,30 +62,14 @@ Verdict adjust(Verdict verdict, const ReplayFailure &failure) {
   return verdict;
 }
 
-// Replays one group against recorded inputs in a private directory.
-void replayAlone(const Recording &recording, Task &task,
-                 const fs::path &trace = {}) {
-  Scratch scratch;
-  const auto extension = std::string(kLayerExtension);
-  const auto recorded =
-      scratch.path / (std::string(kRecordedLayer) + extension);
-  const auto platform =
-      scratch.path / (std::string(kPlatformLayer) + extension);
-  writeRecordedLayer(recording, task.operands, recorded);
-
-  std::vector<Entry> platformEntries;
-  for (const auto &[path, entry] : recording.platform()) {
-    platformEntries.push_back(entry);
-  }
-  writeRecordedLayer(recording, platformEntries, platform);
+// Replays one group alone, with its operands read from the recording.
+void replayAlone(const Recording &recording, const fs::path &shared,
+                 Task &task, const fs::path &trace = {}) {
   try {
-    const std::vector<fs::path> layers{recorded, platform};
-    replayPlan(task.plan, layers, scratch.path / "result", trace);
-  } catch (const ReplayFailure &failure) {
-    task.failure = failure;
+    task.failure = runAction(task.action, recording, shared, trace);
   } catch (const std::exception &error) {
-    // Anything else, such as a sandbox that could not start, says nothing
-    // about which results differ.
+    // A step that could not even be described, such as one with a path the
+    // manifest cannot hold, says nothing about which results differ.
     task.failure = ReplayFailure(error.what());
     task.failure->wrongStatus = true;
   }
@@ -153,6 +131,11 @@ void checkRecording(const Recording &recording) {
   std::set<std::pair<uint64_t, Verdict>> reproduced;
   std::map<uint64_t, std::string> failures;
 
+  // The sandbox script and what every step shares, written before any
+  // thread starts a step.
+  Scratch shared;
+  writeSharedFiles(recording, shared.path);
+
   // The live splice.exec operations under the current verdicts, each as a
   // task that can be replayed without the module.
   const auto liveTasks = [&] {
@@ -175,12 +158,15 @@ void checkRecording(const Recording &recording) {
       if (recording.lost != 0 && task.verdict.rung == Rung::Narrow) {
         task.verdict.rung = Rung::Wide;
       }
-      task.plan = execPlan(exec, recording, [](mlir::Value) {
-        return std::string(kRecordedLayer);
-      });
-      for (const auto input : exec.getInputs()) {
-        task.operands.push_back(*entryOf(input));
-      }
+
+      // Every file comes straight from the recording's blobs, which are
+      // named by content.
+      const auto blob = [](const Entry &entry) {
+        return absl::StrCat(kBlobsDirectory, "/", entry.content);
+      };
+      task.action = execAction(
+          exec, recording,
+          [&](mlir::Value value) { return blob(*entryOf(value)); }, blob);
       tasks.push_back(std::move(task));
     }
     return tasks;
@@ -205,7 +191,7 @@ void checkRecording(const Recording &recording) {
           return reproduced.contains({task.step, task.verdict});
         });
         parallelFor(tasks.size(), [&](size_t index) {
-          replayAlone(recording, tasks[index]);
+          replayAlone(recording, shared.path, tasks[index]);
         });
         for (const auto &task : tasks) {
           if (!task.failure) {
@@ -241,7 +227,7 @@ void checkRecording(const Recording &recording) {
     std::vector<Accessed> accesses(tasks.size());
     parallelFor(tasks.size(), [&](size_t index) {
       Scratch trace;
-      replayAlone(recording, tasks[index], trace.path);
+      replayAlone(recording, shared.path, tasks[index], trace.path);
       if (!tasks[index].failure) {
         accesses[index] = readAccesses(trace.path);
       }

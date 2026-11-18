@@ -20,7 +20,8 @@ struct Cut {
   // The wait status of the process.
   int status = 0;
 
-  // The last name of the path passed to execve.
+  // The path passed to execve, and its last name.
+  std::string filename;
   std::string name;
 
   // Every path the process or a descendant opened for reading or executed,

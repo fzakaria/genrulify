@@ -1,8 +1,9 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_join.h"
+#include "absl/strings/str_replace.h"
+#include "action.h"
 #include "compiler.h"
-#include "layer.h"
-#include "lower.h"
+#include <regex>
 #include <set>
 
 namespace splice_ir {
@@ -10,13 +11,6 @@ namespace fs = std::filesystem;
 namespace {
 using Json = nlohmann::json;
 enum class Backend { Bazel, Buck2 };
-
-// Workspace-relative directories for the files the genrules read.
-constexpr std::string_view kPlansDirectory = "plans";
-constexpr std::string_view kLiteralsDirectory = "literals";
-
-// The file a single-output derivation's archive rule writes.
-constexpr std::string_view kNarExtension = ".nar";
 
 constexpr std::string_view kBuckConfig = R"([cells]
 root = .
@@ -38,78 +32,169 @@ constexpr std::string_view kBuckToolchains =
     "load(\"@prelude//toolchains:demo.bzl\", \"system_demo_toolchains\")\n"
     "system_demo_toolchains()\n";
 
-// One genrule: the labels it consumes, the file it writes and the
-// genrulify subcommand that turns one into the other.
-struct Action {
-  std::string name;
-  std::string output;
-  std::string verb;
+// The names Buck2 gives a rule's stamp and its archive among its outputs.
+constexpr std::string_view kBuckStampName = "ok";
+constexpr std::string_view kBuckArchiveName = "nar";
 
-  // The plan file first, then every layer the plan names.
-  std::string plan;
-  std::vector<std::string> layers;
+// The indent of a rule's attributes, and of the items of an attribute
+// that spans several lines.
+constexpr std::string_view kAttributeIndent = "    ";
+constexpr std::string_view kItemIndent = "        ";
+
+// A file a rule reads that another rule wrote.
+struct Generated {
+  std::string target;
+  std::string artifact;
+  auto operator<=>(const Generated &) const = default;
 };
 
-struct Workspace {
-  // Files that exist in the workspace, by path relative to its root.
+// One genrule: the files it reads, the files it writes, and the recorded
+// command lines that turn one into the other.
+struct Rule {
+  std::string name;
+
+  // Files that exist in the workspace: the sandbox script and its shared
+  // inputs, the rule's manifest, and bytes taken from the recording.
   std::set<std::string> sources;
-  std::vector<Action> actions;
+
+  // File versions written by other rules, and the rules whose stamp this
+  // rule waits for because it uses a directory or a symlink they made.
+  std::set<Generated> generated;
+  std::set<std::string> stamps;
+
+  // The files this rule writes, and whether its last output is a NAR.
+  std::vector<std::string> outputs;
+  bool archive = false;
+
+  std::vector<Arguments> arguments;
 };
 
 std::string quote(std::string_view value) { return Json(value).dump(); }
 
-// The label of a source file or of a rule in the workspace's one package.
-// Both build systems accept the same spelling.
-std::string label(std::string_view name) { return absl::StrCat(":", name); }
-
-std::string rule(Backend backend, const Action &action) {
-  // Both systems expand $(location label) to the path of a source file or
-  // of another rule's output.
-  const auto location = [](const std::string &label) {
-    return absl::StrCat("\"$(location ", label, ")\"");
-  };
-  std::vector<std::string> arguments;
-  for (const auto &layer : action.layers) {
-    arguments.push_back(location(layer));
+// A Starlark list of strings, one item per line, as an attribute's value.
+std::string list(const Arguments &items) {
+  if (items.empty()) {
+    return "[]";
   }
-  const auto runner = fs::canonical("/proc/self/exe").string();
-  const auto target = backend == Backend::Bazel ? "$@" : "$OUT";
-  const auto command =
-      absl::StrCat("'", runner, "' ", action.verb, " ", location(action.plan),
-                   " \"", target, "\" ", absl::StrJoin(arguments, " "));
-
-  std::set<std::string> sources(action.layers.begin(), action.layers.end());
-  sources.insert(action.plan);
-  const auto output = backend == Backend::Bazel
-                          ? absl::StrCat("outs = [", quote(action.output), "]")
-                          : absl::StrCat("out = ", quote(action.output));
-
-  // The actions read the host's Nix store, which a remote worker may not
-  // have.
-  const auto policy =
-      backend == Backend::Bazel ? "tags = [\"no-remote\"]" : "remote = False";
-  return absl::StrCat("genrule(\n    name = ", quote(action.name),
-                      ",\n    srcs = ", Json(sources).dump(), ",\n    ", output,
-                      ",\n    cmd = ", quote(command), ",\n    ", policy,
-                      ",\n)\n\n");
+  std::string text = "[\n";
+  for (const auto &item : items) {
+    absl::StrAppend(&text, kItemIndent, quote(item), ",\n");
+  }
+  return absl::StrCat(text, kAttributeIndent, "]");
 }
 
-std::string buildFile(Backend backend, const Workspace &workspace) {
-  std::string text;
-
-  // Buck2 needs a target for every source file a rule names. Bazel takes
-  // the file's path as a label.
-  if (backend == Backend::Buck2) {
-    for (const auto &source : workspace.sources) {
-      absl::StrAppend(&text, "export_file(name = ", quote(source),
-                      ", src = ", quote(source), ")\n");
-    }
-    text += "\n";
+// Quotes an argument the way a shell needs it typed.
+std::string shellQuote(const std::string &argument) {
+  static const std::regex plain("[A-Za-z0-9_@%+=:,./-]+");
+  if (std::regex_match(argument, plain)) {
+    return argument;
   }
-  for (const auto &action : workspace.actions) {
-    text += rule(backend, action);
+  return absl::StrCat("'", absl::StrReplaceAll(argument, {{"'", "'\\''"}}),
+                      "'");
+}
+
+// One line of a rule's command: recorded arguments, quoted for the shell
+// and then for the build system, which gives `$` a meaning of its own.
+std::string commandLine(Backend backend, const Arguments &arguments) {
+  Arguments words;
+  for (const auto &argument : arguments) {
+    words.push_back(shellQuote(argument));
+  }
+  const auto line = absl::StrJoin(words, " ");
+  if (backend == Backend::Bazel) {
+    return absl::StrReplaceAll(line, {{"$", "$$"}});
+  }
+  return absl::StrReplaceAll(line, {{"$(", "\\$("}});
+}
+
+std::string stampFile(std::string_view target) {
+  return absl::StrCat(target, kStampExtension);
+}
+
+std::string renderRule(Backend backend, const Rule &rule) {
+  const bool bazel = backend == Backend::Bazel;
+
+  // Inputs. Both systems find a workspace file by its path. A file from
+  // another rule is that rule's output in Bazel and a named output of the
+  // rule in Buck2.
+  Arguments sources;
+  for (const auto &file : rule.sources) {
+    sources.push_back(bazel ? absl::StrCat(":", file) : file);
+  }
+  for (const auto &input : rule.generated) {
+    sources.push_back(
+        bazel ? absl::StrCat(":", input.artifact)
+              : absl::StrCat(":", input.target, "[",
+                             buckOutputName(input.target, input.artifact),
+                             "]"));
+  }
+  for (const auto &target : rule.stamps) {
+    sources.push_back(bazel ? absl::StrCat(":", stampFile(target))
+                            : absl::StrCat(":", target, "[", kBuckStampName,
+                                           "]"));
+  }
+
+  // Outputs. A replay rule ends with its stamp and an archive rule with
+  // its NAR.
+  const auto last = rule.archive ? absl::StrCat(rule.name, kArchiveExtension)
+                                 : stampFile(rule.name);
+  std::vector<std::string> attributes{
+      absl::StrCat("name = ", quote(rule.name)),
+      absl::StrCat("srcs = ", list(sources))};
+  if (bazel) {
+    Arguments files = rule.outputs;
+    files.push_back(last);
+    attributes.push_back(absl::StrCat("outs = ", list(files)));
+  } else {
+    // Buck2 names every output, and builds the default one when a rule is
+    // asked for without a name.
+    std::string named = "{\n";
+    for (const auto &artifact : rule.outputs) {
+      absl::StrAppend(&named, kItemIndent,
+                      quote(buckOutputName(rule.name, artifact)), ": [",
+                      quote(artifact), "],\n");
+    }
+    absl::StrAppend(&named, kItemIndent,
+                    quote(rule.archive ? kBuckArchiveName : kBuckStampName),
+                    ": [", quote(last), "],\n", kAttributeIndent, "}");
+    attributes.push_back(absl::StrCat("outs = ", named));
+    attributes.push_back(absl::StrCat("default_outs = [", quote(last), "]"));
+  }
+
+  // The command: where the sandbox script finds its inputs and puts its
+  // outputs, then the recorded command lines, one per line.
+  Arguments lines{bazel ? "./sandbox.sh --in . --in $(RULEDIR) --out $(RULEDIR)"
+                        : "$SRCDIR/sandbox.sh --in $SRCDIR --out $OUT"};
+  for (const auto &arguments : rule.arguments) {
+    lines.push_back(commandLine(backend, arguments));
+  }
+  attributes.push_back(absl::StrCat("cmd = \" \".join(", list(lines), ")"));
+
+  // The steps read the host's Nix store, which a remote worker may not
+  // have.
+  attributes.push_back(bazel ? "tags = [\"no-remote\"]" : "remote = False");
+
+  std::string text = "genrule(\n";
+  for (const auto &attribute : attributes) {
+    absl::StrAppend(&text, kAttributeIndent, attribute, ",\n");
+  }
+  return text + ")\n\n";
+}
+
+std::string buildFile(Backend backend, const std::vector<Rule> &rules) {
+  std::string text;
+  for (const auto &rule : rules) {
+    text += renderRule(backend, rule);
   }
   return text;
+}
+
+// Copies a recorded file's bytes into the workspace under an artifact name.
+void writeArtifact(const Recording &recording, const Entry &entry,
+                   const fs::path &file) {
+  fs::create_directories(file.parent_path());
+  fs::copy_file(recording.blob(entry.content), file,
+                fs::copy_options::overwrite_existing);
 }
 } // namespace
 
@@ -117,83 +202,97 @@ void emitWorkspace(mlir::ModuleOp module, const Recording &recording,
                    const fs::path &destination) {
   check(fs::create_directory(destination), "destination already exists");
   try {
-    fs::create_directory(destination / kPlansDirectory);
-    fs::create_directory(destination / kLiteralsDirectory);
-    const auto extension = std::string(kLayerExtension);
-    Workspace workspace;
+    writeSharedFiles(recording, destination);
 
-    // Every replay needs the guest's /bin and /etc.
-    const auto platform = std::string(kPlatformLayer) + extension;
-    std::vector<Entry> platformEntries;
+    // The guest's /bin and /etc, as files every replay rule reads.
+    const ArtifactOf platformArtifact = [](const Entry &entry) {
+      return artifactName(kPlatformTarget, entry.path);
+    };
+    std::set<std::string> platformFiles;
     for (const auto &[path, entry] : recording.platform()) {
-      platformEntries.push_back(entry);
+      if (entry.kind == EntryKind::File) {
+        const auto artifact = platformArtifact(entry);
+        writeArtifact(recording, entry, destination / artifact);
+        platformFiles.insert(artifact);
+      }
     }
-    writeRecordedLayer(recording, platformEntries, destination / platform);
-    workspace.sources.insert(platform);
-    const auto platformLabel = label(platform);
 
     size_t outputCount = 0;
     for (auto &op : module.getBody()->getOperations()) {
       outputCount += llvm::isa<OutputOp>(op) ? 1 : 0;
     }
-
-    // The label of the layer that holds a value: a source file for a
-    // literal, another rule for an exec.
-    llvm::DenseMap<mlir::Operation *, std::string> labels;
-    const LayerOf layerOf = [&](mlir::Value value) {
-      return targetName(value.getDefiningOp(), outputCount);
-    };
-    const auto layerLabels = [&](mlir::OperandRange values) {
-      std::set<std::string> unique;
-      for (const auto value : values) {
-        unique.insert(labels.lookup(value.getDefiningOp()));
-      }
-      return std::vector<std::string>(unique.begin(), unique.end());
-    };
-    const auto addPlan = [&](const Plan &plan, const std::string &name) {
-      const auto file = absl::StrCat(kPlansDirectory, "/", name, ".json");
-      savePlan(plan, destination / file);
-      workspace.sources.insert(file);
-      return label(file);
+    const auto artifactOf = [&](mlir::Value value) {
+      return artifactName(targetName(value.getDefiningOp(), outputCount),
+                          entryOf(value)->path);
     };
 
-    for (auto &op : module.getBody()->getOperations()) {
-      const auto name = targetName(&op, outputCount);
-      if (auto literal = llvm::dyn_cast<LiteralOp>(op)) {
-        const auto file =
-            absl::StrCat(kLiteralsDirectory, "/", name, extension);
-        std::vector<Entry> entries;
-        for (const auto entry : literal.getWrites().getAsRange<EntryAttr>()) {
-          entries.push_back(fromAttribute(entry));
+    // Sorts a rule's operands into workspace files and other rules' files.
+    const auto addOperands = [&](Rule &rule, mlir::OperandRange operands) {
+      for (const auto value : operands) {
+        auto *producer = value.getDefiningOp();
+        const auto target = targetName(producer, outputCount);
+        const bool file = entryOf(value)->kind == EntryKind::File;
+        if (llvm::isa<LiteralOp>(producer)) {
+          if (file) {
+            rule.sources.insert(artifactOf(value));
+          }
+          continue;
         }
-        writeRecordedLayer(recording, entries, destination / file);
-        workspace.sources.insert(file);
-        labels[&op] = label(file);
+        rule.stamps.insert(target);
+        if (file) {
+          rule.generated.insert({target, artifactOf(value)});
+        }
+      }
+    };
+
+    std::vector<Rule> rules;
+    for (auto &op : module.getBody()->getOperations()) {
+      if (auto literal = llvm::dyn_cast<LiteralOp>(op)) {
+        // Recorded bytes are files checked into the workspace.
+        const auto target = targetName(&op, outputCount);
+        for (const auto attribute :
+             literal.getWrites().getAsRange<EntryAttr>()) {
+          const auto entry = fromAttribute(attribute);
+          if (entry.kind == EntryKind::File) {
+            writeArtifact(recording, entry,
+                          destination / artifactName(target, entry.path));
+          }
+        }
         continue;
       }
+
+      Rule rule;
+      Action action;
       if (auto exec = llvm::dyn_cast<ExecOp>(op)) {
-        Action action{name, name + extension, "replay",
-                      addPlan(execPlan(exec, recording, layerOf), name),
-                      layerLabels(exec.getInputs())};
-        action.layers.push_back(platformLabel);
-        workspace.actions.push_back(std::move(action));
-        labels[&op] = label(name);
-        continue;
+        action = execAction(exec, recording, artifactOf, platformArtifact);
+        rule.sources.insert(platformFiles.begin(), platformFiles.end());
+        addOperands(rule, exec.getInputs());
+        for (const auto &result : action.results) {
+          if (!result.artifact.empty()) {
+            rule.outputs.push_back(result.artifact);
+          }
+        }
+      } else if (auto output = llvm::dyn_cast<OutputOp>(op)) {
+        action = outputAction(output, outputCount, artifactOf);
+        rule.archive = true;
+        addOperands(rule, output.getEntries());
+      } else {
+        throw std::runtime_error("unsupported operation: " +
+                                 op.getName().getStringRef().str());
       }
-      if (auto output = llvm::dyn_cast<OutputOp>(op)) {
-        workspace.actions.push_back(
-            {name, absl::StrCat(output.getName().str(), kNarExtension), "pack",
-             addPlan(outputPlan(output, layerOf), name),
-             layerLabels(output.getEntries())});
-        continue;
+      rule.name = action.name;
+      for (const auto &file : sharedFiles(action)) {
+        rule.sources.insert(file);
       }
-      throw std::runtime_error("unsupported operation: " +
-                               op.getName().getStringRef().str());
+      for (const auto &file : writeActionFiles(action, destination)) {
+        rule.sources.insert(file);
+      }
+      rule.arguments = actionArguments(action, recording);
+      rules.push_back(std::move(rule));
     }
 
-    writeBytes(destination / "BUILD.bazel",
-               buildFile(Backend::Bazel, workspace));
-    writeBytes(destination / "BUCK", buildFile(Backend::Buck2, workspace));
+    writeBytes(destination / "BUILD.bazel", buildFile(Backend::Bazel, rules));
+    writeBytes(destination / "BUCK", buildFile(Backend::Buck2, rules));
     writeBytes(destination / "WORKSPACE", "");
     writeBytes(destination / "MODULE.bazel", "");
     writeBytes(destination / ".buckconfig", kBuckConfig);
@@ -208,24 +307,38 @@ void emitWorkspace(mlir::ModuleOp module, const Recording &recording,
 void writeReference(const Recording &recording, const std::string &output,
                     const fs::path &archive) {
   const auto path = recording.outputs.find(output);
-  check(path != recording.outputs.end(), "the derivation has no output " + output);
+  check(path != recording.outputs.end(),
+        "the derivation has no output " + output);
 
-  // Pack the entries below the output path as the builder left them.
-  constexpr std::string_view kFinalLayer = "final";
-  Scratch scratch;
-  const auto layer =
-      scratch.path / (std::string(kFinalLayer) + std::string(kLayerExtension));
-  Plan plan;
-  plan.name = output;
-  plan.output = path->second;
-  std::vector<Entry> entries;
+  // Pack the entries below the output path as the builder left them, with
+  // each file's bytes read straight from the recording's blobs.
+  Action action;
+  action.name = output;
+  action.output = path->second;
   for (const auto &[entryPath, entry] : recording.state(recording.finalStep)) {
     if (isBelow(entryPath, path->second)) {
-      entries.push_back(entry);
-      plan.inputs.push_back({std::string(kFinalLayer), entryPath});
+      action.inputs.push_back(
+          {entry, entry.kind == EntryKind::File
+                      ? absl::StrCat(kBlobsDirectory, "/", entry.content)
+                      : ""});
     }
   }
-  writeRecordedLayer(recording, entries, layer);
-  packPlan(plan, {layer}, archive);
+
+  Scratch scratch;
+  writeSharedFiles(recording, scratch.path);
+  writeActionFiles(action, scratch.path);
+  Arguments command{(scratch.path / kSandboxFile).string(),
+                    "--in",
+                    scratch.path.string(),
+                    "--in",
+                    recording.directory.string(),
+                    "--out",
+                    (scratch.path / "out").string()};
+  for (const auto &line : actionArguments(action, recording)) {
+    command.insert(command.end(), line.begin(), line.end());
+  }
+  execute(command);
+  fs::copy_file(scratch.path / "out" / absl::StrCat(output, kArchiveExtension),
+                archive, fs::copy_options::overwrite_existing);
 }
 } // namespace splice_ir

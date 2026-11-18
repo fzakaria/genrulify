@@ -45,8 +45,10 @@ struct Process {
   uint64_t exit = 0;
   int status = 0;
 
-  // The last name of the path passed to execve, for labels.
+  // The last name of the path passed to execve, for labels, and the path
+  // itself, which is empty in recordings made before it was kept.
   std::string name;
+  std::string filename;
 
   // The program the kernel loaded. For a script this path is the
   // interpreter, and argv already carries the script's path.

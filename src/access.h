@@ -23,8 +23,4 @@ struct Accessed {
 // process. A path is taken from a successful call only: a lookup that
 // failed names something the group did not have.
 Accessed readAccesses(const std::filesystem::path &directory);
-
-// The strace arguments that produce files readAccesses understands,
-// writing to `output` plus a suffix per process.
-std::vector<std::string> traceCommand(const std::filesystem::path &output);
 } // namespace splice_ir

@@ -10,6 +10,7 @@ inline constexpr std::string_view kDd = "@SPLICE_COREUTILS@/bin/dd";
 inline constexpr std::string_view kCat = "@SPLICE_COREUTILS@/bin/cat";
 inline constexpr std::string_view kChmod = "@SPLICE_COREUTILS@/bin/chmod";
 inline constexpr std::string_view kRm = "@SPLICE_COREUTILS@/bin/rm";
+inline constexpr std::string_view kEnv = "@SPLICE_COREUTILS@/bin/env";
 inline constexpr std::string_view kTimeout = "@SPLICE_COREUTILS@/bin/timeout";
 inline constexpr std::string_view kStrace = "@SPLICE_STRACE@/bin/strace";
 inline constexpr std::string_view kNixStore = "@SPLICE_NIX@/bin/nix-store";

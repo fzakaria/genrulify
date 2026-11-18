@@ -427,6 +427,7 @@ Analysis analyze(const fs::path &eventFile, const fs::path &traceFile,
     cut.step = exec->step;
     cut.end = process.exited.value_or(analysis.finalStep);
     cut.status = process.status;
+    cut.filename = exec->filename;
     cut.name = programName(*exec);
     cuts.emplace(pid, std::move(cut));
   }

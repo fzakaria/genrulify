@@ -30,6 +30,12 @@ foreach(tool BASH COREUTILS NIX BWRAP TAR STRACE)
   endif()
 endforeach()
 configure_file(src/tools.h.in tools.h @ONLY)
+
+# The sandbox script is configured with the same pinned tools and then
+# embedded in the compiler, which writes it into every workspace.
+configure_file(src/sandbox.sh.in sandbox.sh @ONLY)
+file(READ ${CMAKE_CURRENT_BINARY_DIR}/sandbox.sh SANDBOX_SCRIPT)
+configure_file(src/sandbox_script.h.in sandbox_script.h @ONLY)
 add_executable(genrulify
   src/main.cpp
   src/dialect.cpp
@@ -38,11 +44,8 @@ add_executable(genrulify
   src/recording.cpp
   src/trace.cpp
   src/record.cpp
-  src/layer.cpp
-  src/plan.cpp
-  src/replay.cpp
+  src/action.cpp
   src/import.cpp
-  src/lower.cpp
   src/check.cpp
   src/access.cpp
   src/emit.cpp
@@ -53,6 +56,6 @@ target_link_libraries(genrulify PRIVATE MLIR LLVM absl::strings nlohmann_json::n
 target_compile_options(genrulify PRIVATE -Wall -Wextra -Wno-unused-parameter)
 install(TARGETS genrulify)
 enable_testing()
-foreach(test check-ir cuts import opt emit reference replay learn access)
+foreach(test check-ir cuts import opt emit reference sandbox learn access)
   add_test(NAME ${test} COMMAND bash ${CMAKE_SOURCE_DIR}/tests/${test}.sh $<TARGET_FILE:genrulify> ${CMAKE_SOURCE_DIR}/tests/data)
 endforeach()

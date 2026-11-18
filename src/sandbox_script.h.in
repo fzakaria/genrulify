@@ -1,0 +1,8 @@
+#pragma once
+#include <string_view>
+
+namespace splice_ir {
+// The sandbox script every emitted workspace carries, with the store paths
+// of the tools it uses filled in when the compiler was built.
+inline constexpr std::string_view kSandboxScript = R"GENRULIFY(@SANDBOX_SCRIPT@)GENRULIFY";
+} // namespace splice_ir

@@ -1,7 +1,8 @@
 # Lowering writes one genrule per operation for both build systems. The
-# test emits the example recording and checks the rules, their dependency
-# edges, the plan files and the literal layer, then checks that emit will
-# not write into an existing directory.
+# test emits the example recording and checks that each rule names the real
+# files it reads and writes and shows the recorded command, that the
+# workspace holds everything the commands refer to, and that emit will not
+# write into an existing directory.
 set -eu
 compiler=$1
 data=$2
@@ -16,22 +17,38 @@ for file in BUILD.bazel BUCK; do
     test "$(grep -c '^genrule(' "$file")" = 4
     grep -q 'name = "s764_dd"' "$file"
     grep -q 'name = "archive"' "$file"
+
+    # A rule's command is the recorded command line, run by the script that
+    # ships in the workspace. Nothing in a build file calls the compiler.
+    grep -q 'bin/dd if=.*-body.txt of=bundle oflag=append conv=notrunc status=none' "$file"
+    if grep -q "bin/genrulify" "$file"; then
+        exit 1
+    fi
 done
 
-# The append depends on the first dd's layer and on the sandbox literal.
-grep -A1 'name = "s764_dd"' BUILD.bazel | grep -q '":s735_dd"'
-grep -A1 'name = "s764_dd"' BUILD.bazel | grep -q '":literals/sandbox_717.layer"'
+# The append reads the version of /build/bundle the first dd wrote and
+# writes its own, as real files in both systems.
+rule() {
+    sed -n "/name = \"$2\"/,/^)/p" "$1"
+}
+rule BUILD.bazel s764_dd | grep -q '":s735_dd/build/bundle"'
+rule BUILD.bazel s764_dd | grep -q '"s764_dd/build/bundle"'
+rule BUILD.bazel s764_dd | grep -q '"./sandbox.sh --in . --in $(RULEDIR) --out $(RULEDIR)"'
+rule BUCK s764_dd | grep -q '":s735_dd\[build/bundle\]"'
+rule BUCK s764_dd | grep -q '"\$SRCDIR/sandbox.sh --in \$SRCDIR --out \$OUT"'
 
-# Bazel writes to $@ and Buck2 to $OUT, and Buck2 exports its source files.
-grep -q 'replay .*\$@' BUILD.bazel
-grep -q 'replay .*\$OUT' BUCK
-grep -q 'export_file(name = "plans/s764_dd.json"' BUCK
+# The archive rule takes the last dd's file and writes a NAR.
+rule BUILD.bazel archive | grep -q '"archive.nar"'
+rule BUILD.bazel archive | grep -q 'pack /nix/store/l1dx8g9mr73bdp8y6i2yp92xprmz8xzg-genrulify-example'
 
-# A plan carries the recorded argv and the entry the group must reproduce.
-grep -q 'oflag=append' plans/s764_dd.json
-grep -q '50f55425c6b2fa76153714d7097567804eabbe75984a18b4534537973c24d9fa' plans/s764_dd.json
-test -s literals/sandbox_717.layer
-test -s platform.layer
+# The workspace carries what the commands refer to by name: the script, the
+# closure, the environment, the guest's /etc and each rule's manifest, which
+# holds the entry the rule must reproduce.
+test -x sandbox.sh
+test -s closure.txt
+test -s env/0.env
+test -s platform/etc/hosts
+grep -q '50f55425c6b2fa76153714d7097567804eabbe75984a18b4534537973c24d9fa' actions/s764_dd.manifest
 
 # An existing destination is left alone.
 if "$compiler" emit "$data/example" "$scratch/graph.mlir" "$scratch/workspace" 2> /dev/null; then

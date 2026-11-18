@@ -3,7 +3,7 @@
 #include "dialect.h"
 #include "mlir/IR/Verifier.h"
 #include "mlir/Parser/Parser.h"
-#include "plan.h"
+#include "action.h"
 #include "trace.h"
 #include <iostream>
 #include <span>
@@ -21,13 +21,7 @@ constexpr std::string_view kUsage =
     "       genrulify emit RECORDING GRAPH.mlir WORKSPACE\n"
     "       genrulify describe RECORDING GRAPH.mlir\n"
     "       genrulify reference RECORDING OUTPUT ARCHIVE.nar\n"
-    "       genrulify verify REFERENCE.nar ARCHIVE.nar\n"
-    "       genrulify replay PLAN.json RESULT.layer LAYER...\n"
-    "       genrulify pack PLAN.json ARCHIVE.nar LAYER...\n";
-
-// The number of arguments before the layer list of `replay` and `pack`:
-// the command, the plan and the output.
-constexpr size_t kPlanArguments = 3;
+    "       genrulify verify REFERENCE.nar ARCHIVE.nar\n";
 
 mlir::OwningOpRef<mlir::ModuleOp> parse(mlir::MLIRContext &context,
                                         const char *file) {
@@ -48,19 +42,6 @@ void print(mlir::ModuleOp module) {
 
 void run(std::span<char *> args) {
   const std::string_view command = args.empty() ? "" : args[0];
-
-  // The two commands a generated genrule runs.
-  if (args.size() >= kPlanArguments && (command == "replay" || command == "pack")) {
-    const auto plan = splice_ir::loadPlan(args[1]);
-    const std::vector<std::filesystem::path> layers(
-        args.begin() + kPlanArguments, args.end());
-    if (command == "replay") {
-      splice_ir::replayPlan(plan, layers, args[2]);
-      return;
-    }
-    splice_ir::packPlan(plan, layers, args[2]);
-    return;
-  }
 
   // Commands that only need a recording.
   if ((args.size() == 4 || args.size() == 5) && command == "record") {
