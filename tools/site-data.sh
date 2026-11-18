@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Regenerate the data one package contributes to the site from a checked
-# recording: the optimized graph as compressed MLIR, a JSON description of
-# the graph before and after optimization, and both build files.
+# recording: the optimized graph as compressed MLIR, a compressed JSON
+# description of the graph under every choice of passes, and both build
+# files.
 #
 # usage: tools/site-data.sh RECORDING ID
 #   RECORDING  a directory `genrulify record` and `genrulify check` wrote
@@ -14,9 +15,9 @@ out=$root/site/data/$id
 work=$(mktemp -d)
 trap 'chmod -R u+w "$work" && rm -rf "$work"' EXIT
 
-# The build files name the compiler by path, so use the flake's build and
-# not whatever is in a development tree.
-compiler=$(nix build --no-link --print-out-paths "$root")/bin/genrulify
+# Use the flake's build of the compiler and not whatever is in a
+# development tree, unless a batch has pinned one.
+compiler=${GENRULIFY_COMPILER:-$(nix build --no-link --print-out-paths "$root")/bin/genrulify}
 
 "$compiler" import "$recording" > "$work/recorded.mlir"
 "$compiler" opt "$work/recorded.mlir" > "$work/graph.mlir"
@@ -24,9 +25,11 @@ compiler=$(nix build --no-link --print-out-paths "$root")/bin/genrulify
 rm -rf "$out"
 mkdir -p "$out"
 
-# The description is made from the module before optimization, so the page
-# can show what elimination removes.
-"$compiler" describe "$recording" "$work/recorded.mlir" > "$out/graph.json"
+# The description is made from the module before optimization and holds
+# the graph under every choice of passes, so the page can switch them on
+# and off. It runs to megabytes for a large package and compresses well.
+"$compiler" describe "$recording" "$work/recorded.mlir" |
+    gzip --best --no-name > "$out/graph.json.gz"
 cp "$work/workspace/BUILD.bazel" "$work/workspace/BUCK" "$out/"
 
 # A group that was given a whole source tree prints thousands of operands,

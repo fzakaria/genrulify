@@ -15,6 +15,12 @@
 #
 # Set GENRULIFY_PASSES to the passes to optimize with, for example `dce`
 # for one rule per live process group. Every pass runs by default.
+#
+# Set GENRULIFY_COARSE to cut the build only at the commands the builder
+# itself runs, which leaves `make` as one rule.
+#
+# Set GENRULIFY_COMPILER to a genrulify binary to use it in place of the
+# flake's build, so that a batch of conversions uses one compiler.
 set -euo pipefail
 installable=${1:?usage: tools/convert.sh INSTALLABLE [OPEN]}
 open=${2:-}
@@ -23,7 +29,7 @@ work=${GENRULIFY_WORK:-$(mktemp -d "${TMPDIR:-/tmp}/genrulify.XXXXXXXX")}
 echo "Artifacts: $work"
 
 # Pin every tool to the flake's nixpkgs so a rerun uses the same versions.
-compiler=$(nix build --no-link --print-out-paths "$root")/bin/genrulify
+compiler=${GENRULIFY_COMPILER:-$(nix build --no-link --print-out-paths "$root")/bin/genrulify}
 bazel=$(nix build --inputs-from "$root" --no-link --print-out-paths nixpkgs#bazel_7)/bin/bazel
 buck=$(nix build --inputs-from "$root" --no-link --print-out-paths nixpkgs#buck2)/bin/buck2
 
@@ -42,7 +48,7 @@ if [ ! -e "$work/recording/recording.json" ]; then
     rewind nix "$drv" --quiet --json ${REWIND_ARGS:-} > "$work/run.json"
     run=$(jq -er .id "$work/run.json")
     test "$(jq -er .ending "$work/run.json")" = exited:0
-    "$compiler" record "$run" "$drv" "$work/recording" ${open:+"$open"}
+    "$compiler" record ${GENRULIFY_COARSE:+--coarse} "$run" "$drv" "$work/recording" ${open:+"$open"}
 fi
 
 # Derive the graph and replay every live process group against the
