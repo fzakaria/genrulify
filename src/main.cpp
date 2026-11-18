@@ -4,16 +4,27 @@
 #include "mlir/Parser/Parser.h"
 #include "mlir/Pass/PassManager.h"
 #include "mlir/Transforms/Passes.h"
+#include "package.h"
 #include <span>
 #include <stdexcept>
 
 namespace {
 constexpr std::string_view usage =
     "usage: nixsplice import derivation.json events.jsonl\n"
+    "       nixsplice replay-action action.json input.nar output.nar\n"
+    "       nixsplice capture run.json derivation.drv bundle\n"
     "       nixsplice opt graph.mlir\n"
     "       nixsplice emit graph.mlir directory\n"
     "       nixsplice verify run.json reference.nar backend.nar\n";
 void run(std::span<char *> args) {
+  if (args.size() == 4 && std::string_view(args[0]) == "replay-action") {
+    splice_ir::replayAction(args[1], args[2], args[3]);
+    return;
+  }
+  if (args.size() == 4 && std::string_view(args[0]) == "capture") {
+    splice_ir::capturePackage(args[1], args[2], args[3]);
+    return;
+  }
   if (args.size() == 4 && std::string_view(args[0]) == "verify") {
     splice_ir::verifyArchives(args[1], args[2], args[3]);
     return;
@@ -35,7 +46,8 @@ void run(std::span<char *> args) {
     if (!module) {
       throw std::runtime_error("cannot parse module");
     }
-    splice_ir::emitWorkspace(*module, args[2]);
+    splice_ir::emitWorkspace(
+        *module, std::filesystem::absolute(args[1]).parent_path(), args[2]);
     return;
   } else {
     throw std::runtime_error(std::string(usage));

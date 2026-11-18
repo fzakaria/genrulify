@@ -3,6 +3,7 @@
 #include "compiler.h"
 #include "dialect.h"
 #include "nlohmann/json.hpp"
+#include "process.h"
 #include "tools.h"
 #include <fstream>
 #include <regex>
@@ -41,15 +42,17 @@ void writeFile(const fs::path &path, std::string_view contents) {
 struct Action {
   std::string name;
   std::vector<std::string> inputs;
+  std::string manifest;
 };
 
 struct Graph {
   std::map<std::string, fs::path> sources;
   std::vector<Action> actions;
   std::string output;
+  bool archive = false;
 };
 
-Graph readGraph(mlir::ModuleOp module) {
+Graph readGraph(mlir::ModuleOp module, const fs::path &assets) {
   Graph graph;
   llvm::DenseMap<mlir::Value, std::string> labels;
   const std::regex storeFile(
@@ -57,6 +60,35 @@ Graph readGraph(mlir::ModuleOp module) {
   for (auto &op : module.getBody()->getOperations()) {
     if (!graph.output.empty()) {
       throw std::runtime_error("publish must end the module");
+    }
+    if (auto seed = llvm::dyn_cast<SeedOp>(op)) {
+      check(seed.getAsset() == "source.nar", "unknown source archive");
+      graph.sources.emplace("inputs/source.nar", assets / "source.nar");
+      labels[seed.getTree()] = ":inputs/source.nar";
+      continue;
+    }
+    if (auto exec = llvm::dyn_cast<ExecOp>(op)) {
+      const auto name = exec.getAction().str();
+      static const std::set<std::string> supported{"compile", "install",
+                                                   "patchelf", "strip"};
+      check(supported.contains(name), "unknown package action");
+      const auto filename = name + ".json";
+      const auto label = "inputs/" + filename;
+      check(graph.sources.emplace(label, assets / filename).second,
+            "duplicate package action");
+      const auto manifest = Json::parse(readBytes(assets / filename));
+      check(manifest.at("action") == name &&
+                manifest.at("step") == exec.getStep(),
+            "action manifest differs from IR");
+      graph.actions.push_back(
+          {name, {labels.lookup(exec.getInput()), ":" + label}, ":" + label});
+      labels[exec.getTree()] = ":" + name;
+      continue;
+    }
+    if (auto package = llvm::dyn_cast<PackageOp>(op)) {
+      graph.output = labels.lookup(package.getTree());
+      graph.archive = true;
+      continue;
     }
     if (auto source = llvm::dyn_cast<SourceOp>(op)) {
       fs::path path(source.getPath().str());
@@ -117,6 +149,16 @@ std::string buildFile(Backend backend, const Graph &graph) {
   }
   const auto output = backend == Backend::Bazel ? "$@" : "$OUT";
   for (const auto &action : graph.actions) {
+    if (!action.manifest.empty()) {
+      const auto runner = fs::canonical("/proc/self/exe").string();
+      const auto cmd = absl::StrCat(
+          "'", runner, "' replay-action \"$(location ", action.manifest,
+          ")\" \"$(location ", action.inputs.front(), ")\" \"", output, "\"");
+      const auto filename =
+          graph.output == ":" + action.name ? "out.nar" : action.name + ".nar";
+      text += rule(backend, action, filename, cmd);
+      continue;
+    }
     std::vector<std::string> locations;
     for (const auto &input : action.inputs) {
       locations.push_back(absl::StrCat("\"$(location ", input, ")\""));
@@ -124,6 +166,11 @@ std::string buildFile(Backend backend, const Graph &graph) {
     const auto cmd = absl::StrCat(kCat, " ", absl::StrJoin(locations, " "),
                                   " > \"", output, "\"");
     text += rule(backend, action, action.name + ".bin", cmd);
+  }
+
+  if (graph.archive) {
+    return text + absl::StrCat("alias(name = \"archive\", actual = \"",
+                               graph.output, "\")\n");
   }
 
   // Backend artifacts have backend-defined modes. Pack the regular Nix file
@@ -137,8 +184,9 @@ std::string buildFile(Backend backend, const Graph &graph) {
 }
 } // namespace
 
-void emitWorkspace(mlir::ModuleOp module, const fs::path &destination) {
-  auto graph = readGraph(module);
+void emitWorkspace(mlir::ModuleOp module, const fs::path &assets,
+                   const fs::path &destination) {
+  auto graph = readGraph(module, assets);
   if (!fs::create_directory(destination)) {
     throw std::runtime_error("destination already exists");
   }

@@ -39,6 +39,10 @@ void execute(const Arguments &args, const std::filesystem::path &input,
     redirect[0] = input.native();
   }
   if (!output.empty()) {
+    // LLVM redirects overwrite in place. Discard bytes from an earlier, longer
+    // command.
+    std::ofstream fresh(output, std::ios::binary | std::ios::trunc);
+    check(fresh.good(), "cannot open " + output.string());
     redirect[1] = output.native();
   }
   const int status =
