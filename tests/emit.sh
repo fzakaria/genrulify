@@ -50,6 +50,24 @@ test -s env/0.env
 test -s platform/etc/hosts
 grep -q '50f55425c6b2fa76153714d7097567804eabbe75984a18b4534537973c24d9fa' actions/s764_dd.manifest
 
+# A process substitution leaves a pipe on a high descriptor, and the bytes
+# the builder had written into it are part of the recording. The rule
+# wires that descriptor to a file of those bytes, named after the pipe so
+# that every descriptor on the pipe shares the one file. The fixture has no
+# such pipe, so each process's standard input is turned into one.
+cp -r "$data/example" "$scratch/piped"
+chmod -R u+w "$scratch/piped"
+sed -i '/"fd": 0,/,/"target"/ {
+    s|"fd": 0,|"fd": 63,|
+    s|"input": null|"input": "6869"|
+    s|"target": "/dev/null"|"target": "pipe:[77]"|
+}' "$scratch/piped/recording.json"
+"$compiler" import "$scratch/piped" > "$scratch/piped.mlir"
+"$compiler" emit "$scratch/piped" "$scratch/piped.mlir" "$scratch/piped-workspace"
+grep -q -- '--fd 63=data:actions/s764_dd.pipe77.data' "$scratch/piped-workspace/BUILD.bazel"
+grep -q '":actions/s764_dd.pipe77.data"' "$scratch/piped-workspace/BUILD.bazel"
+test "$(cat "$scratch/piped-workspace/actions/s764_dd.pipe77.data")" = hi
+
 # An existing destination is left alone.
 if "$compiler" emit "$data/example" "$scratch/graph.mlir" "$scratch/workspace" 2> /dev/null; then
     exit 1

@@ -30,11 +30,6 @@ constexpr uint64_t kTimeoutFactor = 10;
 constexpr uint64_t kMinimumTimeoutSeconds = 300;
 constexpr uint64_t kMillisecondsPerSecond = 1000;
 
-// The sandbox script wires descriptors below this number. A shell keeps
-// its own bookkeeping descriptors above it, and no recorded command has
-// been seen to depend on inheriting one.
-constexpr int kWiredDescriptors = 10;
-
 // A shell exits with this value plus the signal number when a child is
 // killed by a signal, and so does bubblewrap.
 constexpr int kSignalExitBase = 128;
@@ -98,7 +93,7 @@ std::map<std::string, PipeEnds> sharedPipes(const Action &action) {
   for (size_t index = 0; index < action.processes.size(); ++index) {
     const auto &process = action.processes[index];
     for (const auto &descriptor : process.fds) {
-      if (!isPipe(descriptor) || descriptor.fd >= kWiredDescriptors) {
+      if (!isPipe(descriptor)) {
         continue;
       }
       auto &pipe = pipes[pipeId(descriptor)];
@@ -119,16 +114,19 @@ std::string environmentFile(size_t index) {
   return absl::StrCat(kEnvironmentsDirectory, "/", index, ".env");
 }
 
-// The file holding the bytes the builder had written into a pipe.
-std::string dataFile(const Action &action, size_t process, int fd) {
-  return absl::StrCat(kActionsDirectory, "/", action.name, ".", process, ".",
-                      fd, ".data");
+// The file holding the bytes the builder had written into a pipe. The
+// file is named after the pipe, so that every descriptor on the pipe,
+// in whichever process, reads from the one file the way they shared the
+// one pipe.
+std::string dataFile(const Action &action, const Descriptor &descriptor) {
+  return absl::StrCat(kActionsDirectory, "/", action.name, ".pipe",
+                      pipeId(descriptor), ".data");
 }
 
 // What the sandbox script should put at one descriptor of one process.
 std::string descriptorSpec(const Action &action, const Recording &recording,
                            const std::map<std::string, PipeEnds> &pipes,
-                           size_t index, const Descriptor &descriptor) {
+                           const Descriptor &descriptor) {
   if (isPipe(descriptor)) {
     const auto id = pipeId(descriptor);
     if (pipes.contains(id)) {
@@ -140,7 +138,7 @@ std::string descriptorSpec(const Action &action, const Recording &recording,
     // read out of it, as for a command substitution, goes nowhere, because
     // nothing replays the builder.
     if (readable(descriptor) && descriptor.input) {
-      return "data:" + dataFile(action, index, descriptor.fd);
+      return "data:" + dataFile(action, descriptor);
     }
     return "null";
   }
@@ -165,6 +163,12 @@ std::string descriptorSpec(const Action &action, const Recording &recording,
   // means the redirection added to the file, and otherwise it replaced it.
   const int access = descriptor.flags & O_ACCMODE;
   if (access == O_RDONLY) {
+    // A shell loop that reads a file line by line hands its commands the
+    // file already read up to some offset.
+    if (descriptor.position != 0) {
+      return absl::StrCat("file:r@", descriptor.position, ":",
+                          descriptor.target);
+    }
     return "file:r:" + descriptor.target;
   }
   const bool adds = (descriptor.flags & O_APPEND) != 0 || descriptor.position != 0;
@@ -410,14 +414,10 @@ std::vector<Arguments> actionArguments(const Action &action,
       wiring.insert(wiring.end(), {"--argv0", process.argv.front()});
     }
     for (const auto &descriptor : process.fds) {
-      if (descriptor.fd >= kWiredDescriptors) {
-        continue;
-      }
       wiring.insert(wiring.end(),
                     {"--fd", absl::StrCat(descriptor.fd, "=",
                                           descriptorSpec(action, recording,
-                                                         pipes, index,
-                                                         descriptor))});
+                                                         pipes, descriptor))});
     }
 
     // Keep the recorded order: wait for every process that had already
@@ -460,17 +460,23 @@ Arguments writeActionFiles(const Action &action, const fs::path &directory) {
   writeBytes(directory / name, manifest);
   written.push_back(name);
 
-  // The bytes the builder had waiting in a pipe for a process.
+  // The bytes the builder had waiting in a pipe. The first process to
+  // hold the pipe saw all of them. A later one saw what was left, which
+  // sharing the file reproduces.
   const auto pipes = sharedPipes(action);
-  for (size_t index = 0; index < action.processes.size(); ++index) {
-    for (const auto &descriptor : action.processes[index].fds) {
-      const bool fed = isPipe(descriptor) && readable(descriptor) &&
-                       descriptor.input && descriptor.fd < kWiredDescriptors &&
-                       !pipes.contains(pipeId(descriptor));
-      if (!fed) {
+  std::set<std::string> fed;
+  for (const auto &process : action.processes) {
+    for (const auto &descriptor : process.fds) {
+      const bool feeds = isPipe(descriptor) && readable(descriptor) &&
+                         descriptor.input &&
+                         !pipes.contains(pipeId(descriptor));
+      if (!feeds) {
         continue;
       }
-      const auto file = dataFile(action, index, descriptor.fd);
+      const auto file = dataFile(action, descriptor);
+      if (!fed.insert(file).second) {
+        continue;
+      }
       writeBytes(directory / file, fromHex(*descriptor.input));
       written.push_back(file);
     }

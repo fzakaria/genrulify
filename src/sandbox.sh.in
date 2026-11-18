@@ -27,7 +27,9 @@
 #   --argv0 TEXT     argv[0], when it differs from PROGRAM
 #   --fd N=SPEC      descriptor N: null, err, pipe-r:ID, pipe-w:ID,
 #                    data:FILE (bytes the builder had written into a pipe),
-#                    store:PATH, or file:r|w|a:GUEST_PATH
+#                    store:PATH, file:r|w|a:GUEST_PATH, or
+#                    file:r@OFFSET:GUEST_PATH for a file already read up to
+#                    an offset
 #   --after I,J      start only after processes I and J have exited
 #   --status N       the exit status the recording saw
 set -u
@@ -53,6 +55,21 @@ fail() {
     echo "sandbox.sh: $*" >&2
     exit 2
 }
+
+# The script keeps pipe ends and fed files open on descriptors of its own
+# until each process has the ones it needs. Those must not collide with a
+# descriptor a process is to be given, such as the 63 of a process
+# substitution, so they are numbered from above the highest one asked for.
+FIRST_HELD_DESCRIPTOR=100
+next_descriptor=$FIRST_HELD_DESCRIPTOR
+previous=
+for argument in "$@"; do
+    number=${argument%%=*}
+    if [ "$previous" = --fd ] && [[ $number =~ ^[0-9]+$ ]] && [ "$number" -ge "$next_descriptor" ]; then
+        next_descriptor=$((number + 1))
+    fi
+    previous=$argument
+done
 
 # ---- arguments up to the first `run` or `pack` ------------------------------
 
@@ -186,14 +203,26 @@ sandbox+=(--bind "$root/build" /build)
 # way the builder did, and gives each process the end it had.
 declare -A pipe_r pipe_w
 for id in "${!pipe_last_writer[@]}"; do
-    fifo=$scratch/pipe.$id
-    "$C/mkfifo" "$fifo"
-    exec {both}<> "$fifo" {reader}< "$fifo" {writer}> "$fifo"
-    exec {both}>&-
-    "$C/rm" "$fifo"
+    # The shell has no call for pipe(2), and a named fifo will not do: a
+    # process that opens /dev/fd/63, as one given a process substitution
+    # does, would block until the fifo has a writer, which a pipe never
+    # asks for. A process substitution of the script's own is a real pipe.
+    # Opening that pipe for reading and writing through /proc yields both
+    # ends, and each end is then opened on its own.
+    both=$((next_descriptor++))
+    reader=$((next_descriptor++))
+    writer=$((next_descriptor++))
+    eval "exec $both<> <(:)" || fail "cannot create a pipe"
+    eval "exec $reader< /proc/self/fd/$both $writer> /proc/self/fd/$both" || fail "cannot open a pipe"
+    eval "exec $both>&-"
     pipe_r[$id]=$reader
     pipe_w[$id]=$writer
 done
+
+# Files of bytes the builder had written into a pipe, by name. Each is
+# opened once, so that the processes that shared the pipe share the
+# file's offset and none of them reads what another already read.
+declare -A feed
 
 pids=()             # the pid of each process, by index
 names=()            # its program's name, for messages
@@ -255,6 +284,15 @@ while [ $# -gt 0 ]; do
     [ -n "$argv0" ] && command+=(--argv0 "$argv0")
     command+=(-- "${argv[@]}")
 
+    # Open the fed files this process is the first to use.
+    for spec in "${fds[@]}"; do
+        what=${spec#*=}
+        if [[ $what == data:* ]] && [ -z "${feed[${what#data:}]:-}" ]; then
+            feed[${what#data:}]=$((next_descriptor++))
+            eval "exec ${feed[${what#data:}]}< \"\$(find_input \"\${what#data:}\")\"" || fail "cannot open ${what#data:}"
+        fi
+    done
+
     # A traced run puts the same sandbox under strace, which follows it
     # inside and exits with its status.
     if [ -n "${GENRULIFY_TRACE:-}" ]; then
@@ -272,18 +310,25 @@ while [ $# -gt 0 ]; do
                 err) eval "exec $fd>&2" ;;
                 pipe-r:*) eval "exec $fd<&${pipe_r[${what#pipe-r:}]}" ;;
                 pipe-w:*) eval "exec $fd>&${pipe_w[${what#pipe-w:}]}" ;;
-                data:*) eval "exec $fd< \"\$(find_input \"\${what#data:}\")\"" ;;
+                data:*) eval "exec $fd<&${feed[${what#data:}]}" ;;
                 store:*) eval "exec $fd< \"\${what#store:}\"" ;;
                 file:r:*) eval "exec $fd< \"\$root\${what#file:r:}\"" ;;
+                file:r@*)
+                    # head reads exactly the bytes asked for, which leaves
+                    # the descriptor at the offset.
+                    offset=${what#file:r@}
+                    eval "exec $fd< \"\$root\${offset#*:}\"" &&
+                        "$C/head" -c "${offset%%:*}" <&"$fd" > /dev/null
+                    ;;
                 file:w:*) eval "exec $fd> \"\$root\${what#file:w:}\"" ;;
                 file:a:*) eval "exec $fd>> \"\$root\${what#file:a:}\"" ;;
                 *) fail "unknown descriptor $spec" ;;
             esac || exit 126
         done
 
-        # Drop every pipe end the script holds, so that a pipe is open only
-        # in the processes the recording saw it open in.
-        for held in "${pipe_r[@]}" "${pipe_w[@]}"; do
+        # Drop every descriptor the script holds, so that a pipe is open
+        # only in the processes the recording saw it open in.
+        for held in "${pipe_r[@]}" "${pipe_w[@]}" "${feed[@]}"; do
             eval "exec $held>&-"
         done
         exec "${command[@]}"
@@ -311,7 +356,7 @@ done
 # saw a writer killed for writing on, the read end is closed instead.
 for id in "${!pipe_r[@]}"; do
     (
-        for held in "${pipe_w[@]}"; do eval "exec $held>&-"; done
+        for held in "${pipe_w[@]}" "${feed[@]}"; do eval "exec $held>&-"; done
         for reader in ${pipe_readers[$id]//,/ }; do
             while kill -0 "${pids[$reader]}" 2> /dev/null; do
                 "$C/sleep" 0.02
