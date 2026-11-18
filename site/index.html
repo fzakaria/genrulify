@@ -121,6 +121,11 @@
         The graph recomputes the build that was recorded. It is not an incremental build for
         edited sources: change an input and the recording no longer describes the build.
       </p>
+      <p>
+        Why a graph in which every node passed its replay check has to produce the recorded
+        output, under any scheduler, is written up in
+        <a href="https://github.com/fzakaria/nixsplice/blob/main/docs/theory.md">the theory note</a>.
+      </p>
     </details>
 
     <footer class="muted">
