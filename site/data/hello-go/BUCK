@@ -1,67 +1,170 @@
-export_file(name = "literals/lit_2218083_mktemp.layer", src = "literals/lit_2218083_mktemp.layer")
-export_file(name = "literals/sandbox_715.layer", src = "literals/sandbox_715.layer")
-export_file(name = "plans/archive.json", src = "plans/archive.json")
-export_file(name = "plans/s1410_cp.json", src = "plans/s1410_cp.json")
-export_file(name = "plans/s1436_chmod.json", src = "plans/s1436_chmod.json")
-export_file(name = "plans/s2039_go.json", src = "plans/s2039_go.json")
-export_file(name = "plans/s2217499_mkdir.json", src = "plans/s2217499_mkdir.json")
-export_file(name = "plans/s2217520_cp.json", src = "plans/s2217520_cp.json")
-export_file(name = "plans/s2218114_find_sort_cut_xargs.json", src = "plans/s2218114_find_sort_cut_xargs.json")
-export_file(name = "platform.layer", src = "platform.layer")
-
 genrule(
     name = "s1410_cp",
-    srcs = [":literals/sandbox_715.layer",":plans/s1410_cp.json",":platform.layer"],
-    out = "s1410_cp.layer",
-    cmd = "'/nix/store/15q8hglpw6k5a6pdskha40d43imb8jnz-genrulify-0.1.0/bin/genrulify' replay \"$(location :plans/s1410_cp.json)\" \"$OUT\" \"$(location :literals/sandbox_715.layer)\" \"$(location :platform.layer)\"",
+    srcs = [
+        "actions/s1410_cp.manifest",
+        "closure.txt",
+        "env/13.env",
+        "platform",
+        "sandbox.sh",
+    ],
+    out = "s1410_cp",
+    cmd = " ".join([
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s1410_cp --timeout 394",
+        "run --cwd /build --env 13 --argv0 cp --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 7 --",
+        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/cp -r --preserve=timestamps --reflink=auto -- /nix/store/w0ac0h6gz1xiaycrbnxwhd2ra9l6mfq8-src src",
+    ]),
     remote = False,
 )
 
 genrule(
     name = "s1436_chmod",
-    srcs = [":literals/sandbox_715.layer",":plans/s1436_chmod.json",":platform.layer",":s1410_cp"],
-    out = "s1436_chmod.layer",
-    cmd = "'/nix/store/15q8hglpw6k5a6pdskha40d43imb8jnz-genrulify-0.1.0/bin/genrulify' replay \"$(location :plans/s1436_chmod.json)\" \"$OUT\" \"$(location :literals/sandbox_715.layer)\" \"$(location :s1410_cp)\" \"$(location :platform.layer)\"",
+    srcs = [
+        "actions/s1436_chmod.manifest",
+        "closure.txt",
+        "env/14.env",
+        "platform",
+        "sandbox.sh",
+        ":s1410_cp",
+    ],
+    out = "s1436_chmod",
+    cmd = " ".join([
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s1436_chmod --timeout 394",
+        "run --cwd /build --env 14 --argv0 chmod --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 5 --",
+        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/chmod -R u+w -- src",
+    ]),
     remote = False,
 )
 
 genrule(
     name = "s2039_go",
-    srcs = [":literals/sandbox_715.layer",":plans/s2039_go.json",":platform.layer",":s1436_chmod"],
-    out = "s2039_go.layer",
-    cmd = "'/nix/store/15q8hglpw6k5a6pdskha40d43imb8jnz-genrulify-0.1.0/bin/genrulify' replay \"$(location :plans/s2039_go.json)\" \"$OUT\" \"$(location :literals/sandbox_715.layer)\" \"$(location :s1436_chmod)\" \"$(location :platform.layer)\"",
+    srcs = [
+        "actions/s2039_go.manifest",
+        "closure.txt",
+        "env/25.env",
+        "platform",
+        "sandbox.sh",
+        ":s1436_chmod",
+    ],
+    out = "s2039_go",
+    cmd = " ".join([
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s2039_go --timeout 394",
+        "run --cwd /build/src --env 25 --argv0 go --fd 0=null --fd 1=null --fd 2=null --status 0 --argc 6 --",
+        "/nix/store/iqq9yz2yrcrzsn52h3vkkz72i92h1zds-go-1.26.8/bin/go install -ldflags=-buildid= -p 1 .",
+    ]),
     remote = False,
 )
 
 genrule(
     name = "s2217499_mkdir",
-    srcs = [":literals/sandbox_715.layer",":plans/s2217499_mkdir.json",":platform.layer",":s1436_chmod"],
-    out = "s2217499_mkdir.layer",
-    cmd = "'/nix/store/15q8hglpw6k5a6pdskha40d43imb8jnz-genrulify-0.1.0/bin/genrulify' replay \"$(location :plans/s2217499_mkdir.json)\" \"$OUT\" \"$(location :literals/sandbox_715.layer)\" \"$(location :s1436_chmod)\" \"$(location :platform.layer)\"",
+    srcs = [
+        "actions/s2217499_mkdir.manifest",
+        "closure.txt",
+        "env/30.env",
+        "platform",
+        "sandbox.sh",
+        ":s1436_chmod",
+    ],
+    out = "s2217499_mkdir",
+    cmd = " ".join([
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s2217499_mkdir --timeout 394",
+        "run --cwd /build/src --env 30 --argv0 mkdir --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 3 --",
+        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/mkdir -p /nix/store/58hm8df496lhnj0gpbvvzbk6542b6smq-hello-go",
+    ]),
     remote = False,
 )
 
 genrule(
     name = "s2217520_cp",
-    srcs = [":literals/sandbox_715.layer",":plans/s2217520_cp.json",":platform.layer",":s1436_chmod",":s2039_go",":s2217499_mkdir"],
-    out = "s2217520_cp.layer",
-    cmd = "'/nix/store/15q8hglpw6k5a6pdskha40d43imb8jnz-genrulify-0.1.0/bin/genrulify' replay \"$(location :plans/s2217520_cp.json)\" \"$OUT\" \"$(location :literals/sandbox_715.layer)\" \"$(location :s1436_chmod)\" \"$(location :s2039_go)\" \"$(location :s2217499_mkdir)\" \"$(location :platform.layer)\"",
+    srcs = [
+        "actions/s2217520_cp.manifest",
+        "closure.txt",
+        "env/31.env",
+        "platform",
+        "sandbox.sh",
+        ":s1436_chmod",
+        ":s2039_go",
+        ":s2217499_mkdir",
+    ],
+    out = "s2217520_cp",
+    cmd = " ".join([
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s2217520_cp --timeout 394",
+        "run --cwd /build/src --env 31 --argv0 cp --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 4 --",
+        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/cp -r /build/go/bin /nix/store/58hm8df496lhnj0gpbvvzbk6542b6smq-hello-go",
+    ]),
+    remote = False,
+)
+
+genrule(
+    name = "s2218083_mktemp",
+    srcs = [
+        "actions/s2218083_mktemp.manifest",
+        "closure.txt",
+        "env/35.env",
+        "platform",
+        "sandbox.sh",
+        ":s1436_chmod",
+    ],
+    out = "s2218083_mktemp",
+    cmd = " ".join([
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s2218083_mktemp --timeout 394",
+        "run --cwd /build/src --env 35 --argv0 mktemp --fd 0=null --fd 1=null --fd 2=err --status 0 --argc 3 --",
+        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/mktemp --tmpdir=/build striperr.XXXXXX",
+    ]),
     remote = False,
 )
 
 genrule(
     name = "s2218114_find_sort_cut_xargs",
-    srcs = [":literals/lit_2218083_mktemp.layer",":literals/sandbox_715.layer",":plans/s2218114_find_sort_cut_xargs.json",":platform.layer",":s1436_chmod",":s2217499_mkdir",":s2217520_cp"],
-    out = "s2218114_find_sort_cut_xargs.layer",
-    cmd = "'/nix/store/15q8hglpw6k5a6pdskha40d43imb8jnz-genrulify-0.1.0/bin/genrulify' replay \"$(location :plans/s2218114_find_sort_cut_xargs.json)\" \"$OUT\" \"$(location :literals/lit_2218083_mktemp.layer)\" \"$(location :literals/sandbox_715.layer)\" \"$(location :s1436_chmod)\" \"$(location :s2217499_mkdir)\" \"$(location :s2217520_cp)\" \"$(location :platform.layer)\"",
+    srcs = [
+        "actions/s2218114_find_sort_cut_xargs.manifest",
+        "closure.txt",
+        "env/38.env",
+        "env/40.env",
+        "env/41.env",
+        "env/42.env",
+        "platform",
+        "sandbox.sh",
+        ":s1436_chmod",
+        ":s2217499_mkdir",
+        ":s2217520_cp",
+        ":s2218083_mktemp",
+    ],
+    out = "s2218114_find_sort_cut_xargs",
+    cmd = " ".join([
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s2218114_find_sort_cut_xargs --timeout 394 --pipe 976:0:1:0 --pipe 977:1:2:0 --pipe 978:2:3:0",
+        "run --cwd /build/src --env 38 --argv0 find --fd 0=null --fd 1=pipe-w:976 --fd 2=err --status 0 --argc 10 --",
+        "/nix/store/ycrbcy9sg4knpnik6a01dk70l0m673x7-findutils-4.11.0/bin/find /nix/store/58hm8df496lhnj0gpbvvzbk6542b6smq-hello-go/bin -type f -a '!' -path '/nix/store/58hm8df496lhnj0gpbvvzbk6542b6smq-hello-go/lib/debug/*' -printf '%D-%i,%p\\0'",
+        "run --cwd /build/src --env 40 --argv0 sort --fd 0=pipe-r:976 --fd 1=pipe-w:977 --fd 2=err --after 0 --status 0 --argc 5 --",
+        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/sort -t, -k1,1 -u -z",
+        "run --cwd /build/src --env 41 --argv0 cut --fd 0=pipe-r:977 --fd 1=pipe-w:978 --fd 2=err --after 0,1 --status 0 --argc 4 --",
+        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/cut -d, -f2- -z",
+        "run --cwd /build/src --env 42 --argv0 xargs --fd 0=pipe-r:978 --fd 1=err --fd 2=file:w:/build/striperr.7iLUCO --after 0,1,2 --status 0 --argc 10 --",
+        "/nix/store/ycrbcy9sg4knpnik6a01dk70l0m673x7-findutils-4.11.0/bin/xargs -r -0 -n1 -P 1 -- strip -S -p",
+    ]),
     remote = False,
 )
 
 genrule(
     name = "archive",
-    srcs = [":plans/archive.json",":s2217499_mkdir",":s2217520_cp",":s2218114_find_sort_cut_xargs"],
-    out = "out.nar",
-    cmd = "'/nix/store/15q8hglpw6k5a6pdskha40d43imb8jnz-genrulify-0.1.0/bin/genrulify' pack \"$(location :plans/archive.json)\" \"$OUT\" \"$(location :s2217499_mkdir)\" \"$(location :s2217520_cp)\" \"$(location :s2218114_find_sort_cut_xargs)\"",
+    srcs = [
+        "actions/archive.manifest",
+        "sandbox.sh",
+        ":s2217499_mkdir",
+        ":s2217520_cp",
+        ":s2218114_find_sort_cut_xargs",
+    ],
+    out = "archive.nar",
+    cmd = " ".join([
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name archive pack /nix/store/58hm8df496lhnj0gpbvvzbk6542b6smq-hello-go",
+    ]),
     remote = False,
 )
 

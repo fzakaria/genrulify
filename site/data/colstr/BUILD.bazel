@@ -1,56 +1,225 @@
 genrule(
     name = "s2016_cp",
-    srcs = [":literals/sandbox_716.layer",":plans/s2016_cp.json",":platform.layer"],
-    outs = ["s2016_cp.layer"],
-    cmd = "'/nix/store/15q8hglpw6k5a6pdskha40d43imb8jnz-genrulify-0.1.0/bin/genrulify' replay \"$(location :plans/s2016_cp.json)\" \"$@\" \"$(location :literals/sandbox_716.layer)\" \"$(location :platform.layer)\"",
+    srcs = [
+        ":actions/s2016_cp.manifest",
+        ":closure.txt",
+        ":env/13.env",
+        ":platform/bin/sh",
+        ":platform/etc/group",
+        ":platform/etc/hosts",
+        ":platform/etc/passwd",
+        ":sandbox.sh",
+    ],
+    outs = [
+        "s2016_cp/build/source/LICENSE",
+        "s2016_cp/build/source/main.cpp",
+        "s2016_cp.ok",
+    ],
+    cmd = " ".join([
+        "./sandbox.sh --in . --in $(RULEDIR) --out $(RULEDIR)",
+        "--name s2016_cp --timeout 300",
+        "run --cwd /build --env 13 --argv0 cp --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 7 --",
+        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/cp -r --preserve=timestamps --reflink=auto -- /nix/store/y4j27ncqyj9gqnq8x4wrzrk9365b5j9f-source source",
+    ]),
     tags = ["no-remote"],
 )
 
 genrule(
     name = "s2049_chmod",
-    srcs = [":literals/sandbox_716.layer",":plans/s2049_chmod.json",":platform.layer",":s2016_cp"],
-    outs = ["s2049_chmod.layer"],
-    cmd = "'/nix/store/15q8hglpw6k5a6pdskha40d43imb8jnz-genrulify-0.1.0/bin/genrulify' replay \"$(location :plans/s2049_chmod.json)\" \"$@\" \"$(location :literals/sandbox_716.layer)\" \"$(location :s2016_cp)\" \"$(location :platform.layer)\"",
+    srcs = [
+        ":actions/s2049_chmod.manifest",
+        ":closure.txt",
+        ":env/14.env",
+        ":platform/bin/sh",
+        ":platform/etc/group",
+        ":platform/etc/hosts",
+        ":platform/etc/passwd",
+        ":sandbox.sh",
+        ":s2016_cp/build/source/LICENSE",
+        ":s2016_cp/build/source/main.cpp",
+        ":s2016_cp.ok",
+    ],
+    outs = [
+        "s2049_chmod/build/source/main.cpp",
+        "s2049_chmod.ok",
+    ],
+    cmd = " ".join([
+        "./sandbox.sh --in . --in $(RULEDIR) --out $(RULEDIR)",
+        "--name s2049_chmod --timeout 300",
+        "run --cwd /build --env 14 --argv0 chmod --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 5 --",
+        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/chmod -R u+w -- source",
+    ]),
     tags = ["no-remote"],
 )
 
 genrule(
     name = "s2622_c__",
-    srcs = [":literals/sandbox_716.layer",":plans/s2622_c__.json",":platform.layer",":s2049_chmod"],
-    outs = ["s2622_c__.layer"],
-    cmd = "'/nix/store/15q8hglpw6k5a6pdskha40d43imb8jnz-genrulify-0.1.0/bin/genrulify' replay \"$(location :plans/s2622_c__.json)\" \"$@\" \"$(location :literals/sandbox_716.layer)\" \"$(location :s2049_chmod)\" \"$(location :platform.layer)\"",
+    srcs = [
+        ":actions/s2622_c__.manifest",
+        ":closure.txt",
+        ":env/25.env",
+        ":platform/bin/sh",
+        ":platform/etc/group",
+        ":platform/etc/hosts",
+        ":platform/etc/passwd",
+        ":sandbox.sh",
+        ":s2049_chmod/build/source/main.cpp",
+        ":s2049_chmod.ok",
+    ],
+    outs = [
+        "s2622_c__/build/source/a.out",
+        "s2622_c__.ok",
+    ],
+    cmd = " ".join([
+        "./sandbox.sh --in . --in $(RULEDIR) --out $(RULEDIR)",
+        "--name s2622_c__ --timeout 300",
+        "run --cwd /build/source --env 25 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 3 --",
+        "/nix/store/10dxp0qxqxxsyiljrh2kp0xqhz6arhcx-bash-5.3p15/bin/bash /nix/store/j1938gsbvbhkyz4kbmvjk56r479mkw3s-gcc-wrapper-16.2.0/bin/c++ main.cpp",
+    ]),
     tags = ["no-remote"],
 )
 
 genrule(
     name = "s3122_install",
-    srcs = [":literals/sandbox_716.layer",":plans/s3122_install.json",":platform.layer",":s2049_chmod",":s2622_c__"],
-    outs = ["s3122_install.layer"],
-    cmd = "'/nix/store/15q8hglpw6k5a6pdskha40d43imb8jnz-genrulify-0.1.0/bin/genrulify' replay \"$(location :plans/s3122_install.json)\" \"$@\" \"$(location :literals/sandbox_716.layer)\" \"$(location :s2049_chmod)\" \"$(location :s2622_c__)\" \"$(location :platform.layer)\"",
+    srcs = [
+        ":actions/s3122_install.manifest",
+        ":closure.txt",
+        ":env/26.env",
+        ":platform/bin/sh",
+        ":platform/etc/group",
+        ":platform/etc/hosts",
+        ":platform/etc/passwd",
+        ":sandbox.sh",
+        ":s2622_c__/build/source/a.out",
+        ":s2049_chmod.ok",
+        ":s2622_c__.ok",
+    ],
+    outs = [
+        "s3122_install/nix/store/s7lfxf6nljg66na31h9ay8qj8adiwdxs-colstr-1.0.0/bin/colstr",
+        "s3122_install.ok",
+    ],
+    cmd = " ".join([
+        "./sandbox.sh --in . --in $(RULEDIR) --out $(RULEDIR)",
+        "--name s3122_install --timeout 300",
+        "run --cwd /build/source --env 26 --argv0 install --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 4 --",
+        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/install -Dm755 a.out /nix/store/s7lfxf6nljg66na31h9ay8qj8adiwdxs-colstr-1.0.0/bin/colstr",
+    ]),
     tags = ["no-remote"],
 )
 
 genrule(
     name = "s3345_find_patchelf",
-    srcs = [":literals/sandbox_716.layer",":plans/s3345_find_patchelf.json",":platform.layer",":s2049_chmod",":s3122_install"],
-    outs = ["s3345_find_patchelf.layer"],
-    cmd = "'/nix/store/15q8hglpw6k5a6pdskha40d43imb8jnz-genrulify-0.1.0/bin/genrulify' replay \"$(location :plans/s3345_find_patchelf.json)\" \"$@\" \"$(location :literals/sandbox_716.layer)\" \"$(location :s2049_chmod)\" \"$(location :s3122_install)\" \"$(location :platform.layer)\"",
+    srcs = [
+        ":actions/s3345_find_patchelf.manifest",
+        ":closure.txt",
+        ":env/28.env",
+        ":env/29.env",
+        ":platform/bin/sh",
+        ":platform/etc/group",
+        ":platform/etc/hosts",
+        ":platform/etc/passwd",
+        ":sandbox.sh",
+        ":s3122_install/nix/store/s7lfxf6nljg66na31h9ay8qj8adiwdxs-colstr-1.0.0/bin/colstr",
+        ":s2049_chmod.ok",
+        ":s3122_install.ok",
+    ],
+    outs = [
+        "s3345_find_patchelf/nix/store/s7lfxf6nljg66na31h9ay8qj8adiwdxs-colstr-1.0.0/bin/colstr",
+        "s3345_find_patchelf.ok",
+    ],
+    cmd = " ".join([
+        "./sandbox.sh --in . --in $(RULEDIR) --out $(RULEDIR)",
+        "--name s3345_find_patchelf --timeout 300 --pipe 474:0:1:0",
+        "run --cwd /build/source --env 28 --argv0 find --fd 0=null --fd 1=pipe-w:474 --fd 2=err --status 0 --argc 5 --",
+        "/nix/store/ycrbcy9sg4knpnik6a01dk70l0m673x7-findutils-4.11.0/bin/find /nix/store/s7lfxf6nljg66na31h9ay8qj8adiwdxs-colstr-1.0.0 -type f -print0",
+        "run --cwd /build/source --env 29 --argv0 patchelf --fd 0=pipe-r:474 --fd 1=err --fd 2=err --fd 63=pipe-r:474 --after 0 --status 0 --argc 3 --",
+        "/nix/store/qcwnw71iksl68k7fipizi6wn0s1xms9v-patchelf-0.15.2/bin/patchelf --shrink-rpath /nix/store/s7lfxf6nljg66na31h9ay8qj8adiwdxs-colstr-1.0.0/bin/colstr",
+    ]),
+    tags = ["no-remote"],
+)
+
+genrule(
+    name = "s3690_mktemp",
+    srcs = [
+        ":actions/s3690_mktemp.manifest",
+        ":closure.txt",
+        ":env/30.env",
+        ":platform/bin/sh",
+        ":platform/etc/group",
+        ":platform/etc/hosts",
+        ":platform/etc/passwd",
+        ":sandbox.sh",
+        ":s2049_chmod.ok",
+    ],
+    outs = [
+        "s3690_mktemp/build/striperr.WNwmmf",
+        "s3690_mktemp.ok",
+    ],
+    cmd = " ".join([
+        "./sandbox.sh --in . --in $(RULEDIR) --out $(RULEDIR)",
+        "--name s3690_mktemp --timeout 300",
+        "run --cwd /build/source --env 30 --argv0 mktemp --fd 0=null --fd 1=null --fd 2=err --status 0 --argc 3 --",
+        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/mktemp --tmpdir=/build striperr.XXXXXX",
+    ]),
     tags = ["no-remote"],
 )
 
 genrule(
     name = "s3721_find_sort_cut_xargs",
-    srcs = [":literals/lit_3690_mktemp.layer",":literals/sandbox_716.layer",":plans/s3721_find_sort_cut_xargs.json",":platform.layer",":s2049_chmod",":s3122_install",":s3345_find_patchelf"],
-    outs = ["s3721_find_sort_cut_xargs.layer"],
-    cmd = "'/nix/store/15q8hglpw6k5a6pdskha40d43imb8jnz-genrulify-0.1.0/bin/genrulify' replay \"$(location :plans/s3721_find_sort_cut_xargs.json)\" \"$@\" \"$(location :literals/lit_3690_mktemp.layer)\" \"$(location :literals/sandbox_716.layer)\" \"$(location :s2049_chmod)\" \"$(location :s3122_install)\" \"$(location :s3345_find_patchelf)\" \"$(location :platform.layer)\"",
+    srcs = [
+        ":actions/s3721_find_sort_cut_xargs.manifest",
+        ":closure.txt",
+        ":env/33.env",
+        ":env/35.env",
+        ":env/36.env",
+        ":env/37.env",
+        ":platform/bin/sh",
+        ":platform/etc/group",
+        ":platform/etc/hosts",
+        ":platform/etc/passwd",
+        ":sandbox.sh",
+        ":s3345_find_patchelf/nix/store/s7lfxf6nljg66na31h9ay8qj8adiwdxs-colstr-1.0.0/bin/colstr",
+        ":s3690_mktemp/build/striperr.WNwmmf",
+        ":s2049_chmod.ok",
+        ":s3122_install.ok",
+        ":s3345_find_patchelf.ok",
+        ":s3690_mktemp.ok",
+    ],
+    outs = [
+        "s3721_find_sort_cut_xargs/nix/store/s7lfxf6nljg66na31h9ay8qj8adiwdxs-colstr-1.0.0/bin/colstr",
+        "s3721_find_sort_cut_xargs.ok",
+    ],
+    cmd = " ".join([
+        "./sandbox.sh --in . --in $(RULEDIR) --out $(RULEDIR)",
+        "--name s3721_find_sort_cut_xargs --timeout 300 --pipe 500:0:1:0 --pipe 501:1:2:0 --pipe 502:2:3:0",
+        "run --cwd /build/source --env 33 --argv0 find --fd 0=null --fd 1=pipe-w:500 --fd 2=err --status 0 --argc 10 --",
+        "/nix/store/ycrbcy9sg4knpnik6a01dk70l0m673x7-findutils-4.11.0/bin/find /nix/store/s7lfxf6nljg66na31h9ay8qj8adiwdxs-colstr-1.0.0/bin -type f -a '!' -path '/nix/store/s7lfxf6nljg66na31h9ay8qj8adiwdxs-colstr-1.0.0/lib/debug/*' -printf '%D-%i,%p\\0'",
+        "run --cwd /build/source --env 35 --argv0 sort --fd 0=pipe-r:500 --fd 1=pipe-w:501 --fd 2=err --after 0 --status 0 --argc 5 --",
+        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/sort -t, -k1,1 -u -z",
+        "run --cwd /build/source --env 36 --argv0 cut --fd 0=pipe-r:501 --fd 1=pipe-w:502 --fd 2=err --after 0,1 --status 0 --argc 4 --",
+        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/cut -d, -f2- -z",
+        "run --cwd /build/source --env 37 --argv0 xargs --fd 0=pipe-r:502 --fd 1=err --fd 2=file:w:/build/striperr.WNwmmf --after 0,1,2 --status 0 --argc 10 --",
+        "/nix/store/ycrbcy9sg4knpnik6a01dk70l0m673x7-findutils-4.11.0/bin/xargs -r -0 -n1 -P 1 -- strip -S -p",
+    ]),
     tags = ["no-remote"],
 )
 
 genrule(
     name = "archive",
-    srcs = [":plans/archive.json",":s3122_install",":s3721_find_sort_cut_xargs"],
-    outs = ["out.nar"],
-    cmd = "'/nix/store/15q8hglpw6k5a6pdskha40d43imb8jnz-genrulify-0.1.0/bin/genrulify' pack \"$(location :plans/archive.json)\" \"$@\" \"$(location :s3122_install)\" \"$(location :s3721_find_sort_cut_xargs)\"",
+    srcs = [
+        ":actions/archive.manifest",
+        ":sandbox.sh",
+        ":s3721_find_sort_cut_xargs/nix/store/s7lfxf6nljg66na31h9ay8qj8adiwdxs-colstr-1.0.0/bin/colstr",
+        ":s3122_install.ok",
+        ":s3721_find_sort_cut_xargs.ok",
+    ],
+    outs = [
+        "archive.nar",
+    ],
+    cmd = " ".join([
+        "./sandbox.sh --in . --in $(RULEDIR) --out $(RULEDIR)",
+        "--name archive pack /nix/store/s7lfxf6nljg66na31h9ay8qj8adiwdxs-colstr-1.0.0",
+    ]),
     tags = ["no-remote"],
 )
 

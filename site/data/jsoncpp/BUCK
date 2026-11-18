@@ -1,150 +1,384 @@
-export_file(name = "literals/glue_21389.layer", src = "literals/glue_21389.layer")
-export_file(name = "literals/lit_20704_mktemp.layer", src = "literals/lit_20704_mktemp.layer")
-export_file(name = "literals/lit_2700_cmake.layer", src = "literals/lit_2700_cmake.layer")
-export_file(name = "literals/sandbox_721.layer", src = "literals/sandbox_721.layer")
-export_file(name = "plans/archive_dev.json", src = "plans/archive_dev.json")
-export_file(name = "plans/archive_out.json", src = "plans/archive_out.json")
-export_file(name = "plans/s14364_make.json", src = "plans/s14364_make.json")
-export_file(name = "plans/s1473_cp.json", src = "plans/s1473_cp.json")
-export_file(name = "plans/s18013_mkdir.json", src = "plans/s18013_mkdir.json")
-export_file(name = "plans/s18078_make.json", src = "plans/s18078_make.json")
-export_file(name = "plans/s19355_mkdir.json", src = "plans/s19355_mkdir.json")
-export_file(name = "plans/s19376_mv.json", src = "plans/s19376_mv.json")
-export_file(name = "plans/s19519_mv.json", src = "plans/s19519_mv.json")
-export_file(name = "plans/s19603_sed.json", src = "plans/s19603_sed.json")
-export_file(name = "plans/s2021_chmod.json", src = "plans/s2021_chmod.json")
-export_file(name = "plans/s20356_find_patchelf.json", src = "plans/s20356_find_patchelf.json")
-export_file(name = "plans/s20735_find_sort_cut_xargs.json", src = "plans/s20735_find_sort_cut_xargs.json")
-export_file(name = "plans/s21366_mkdir.json", src = "plans/s21366_mkdir.json")
-export_file(name = "plans/s2328_mkdir.json", src = "plans/s2328_mkdir.json")
-export_file(name = "plans/s2700_cmake.json", src = "plans/s2700_cmake.json")
-export_file(name = "platform.layer", src = "platform.layer")
-
 genrule(
     name = "s1473_cp",
-    srcs = [":literals/sandbox_721.layer",":plans/s1473_cp.json",":platform.layer"],
-    out = "s1473_cp.layer",
-    cmd = "'/nix/store/15q8hglpw6k5a6pdskha40d43imb8jnz-genrulify-0.1.0/bin/genrulify' replay \"$(location :plans/s1473_cp.json)\" \"$OUT\" \"$(location :literals/sandbox_721.layer)\" \"$(location :platform.layer)\"",
+    srcs = [
+        "actions/s1473_cp.manifest",
+        "closure.txt",
+        "env/12.env",
+        "platform",
+        "sandbox.sh",
+    ],
+    out = "s1473_cp",
+    cmd = " ".join([
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s1473_cp --timeout 300",
+        "run --cwd /build --env 12 --argv0 cp --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 4 --",
+        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/cp -a /nix/store/qy0yqfmvirf9nbj6ndwnndnc58l9rrra-source source",
+    ]),
     remote = False,
 )
 
 genrule(
     name = "s2021_chmod",
-    srcs = [":literals/sandbox_721.layer",":plans/s2021_chmod.json",":platform.layer",":s1473_cp"],
-    out = "s2021_chmod.layer",
-    cmd = "'/nix/store/15q8hglpw6k5a6pdskha40d43imb8jnz-genrulify-0.1.0/bin/genrulify' replay \"$(location :plans/s2021_chmod.json)\" \"$OUT\" \"$(location :literals/sandbox_721.layer)\" \"$(location :s1473_cp)\" \"$(location :platform.layer)\"",
+    srcs = [
+        "actions/s2021_chmod.manifest",
+        "closure.txt",
+        "env/13.env",
+        "platform",
+        "sandbox.sh",
+        ":s1473_cp",
+    ],
+    out = "s2021_chmod",
+    cmd = " ".join([
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s2021_chmod --timeout 300",
+        "run --cwd /build --env 13 --argv0 chmod --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 4 --",
+        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/chmod -R +w source",
+    ]),
     remote = False,
 )
 
 genrule(
     name = "s2328_mkdir",
-    srcs = [":literals/sandbox_721.layer",":plans/s2328_mkdir.json",":platform.layer",":s2021_chmod"],
-    out = "s2328_mkdir.layer",
-    cmd = "'/nix/store/15q8hglpw6k5a6pdskha40d43imb8jnz-genrulify-0.1.0/bin/genrulify' replay \"$(location :plans/s2328_mkdir.json)\" \"$OUT\" \"$(location :literals/sandbox_721.layer)\" \"$(location :s2021_chmod)\" \"$(location :platform.layer)\"",
+    srcs = [
+        "actions/s2328_mkdir.manifest",
+        "closure.txt",
+        "env/18.env",
+        "platform",
+        "sandbox.sh",
+        ":s2021_chmod",
+    ],
+    out = "s2328_mkdir",
+    cmd = " ".join([
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s2328_mkdir --timeout 300",
+        "run --cwd /build/source --env 18 --argv0 mkdir --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 3 --",
+        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/mkdir -p build",
+    ]),
     remote = False,
 )
 
 genrule(
     name = "s2700_cmake",
-    srcs = [":literals/sandbox_721.layer",":plans/s2700_cmake.json",":platform.layer",":s2021_chmod",":s2328_mkdir"],
-    out = "s2700_cmake.layer",
-    cmd = "'/nix/store/15q8hglpw6k5a6pdskha40d43imb8jnz-genrulify-0.1.0/bin/genrulify' replay \"$(location :plans/s2700_cmake.json)\" \"$OUT\" \"$(location :literals/sandbox_721.layer)\" \"$(location :s2021_chmod)\" \"$(location :s2328_mkdir)\" \"$(location :platform.layer)\"",
+    srcs = [
+        "actions/s2700_cmake.manifest",
+        "closure.txt",
+        "env/21.env",
+        "platform",
+        "sandbox.sh",
+        ":s2021_chmod",
+        ":s2328_mkdir",
+    ],
+    out = "s2700_cmake",
+    cmd = " ".join([
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s2700_cmake --timeout 300",
+        "run --cwd /build/source/build --env 21 --argv0 cmake --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 28 --",
+        "/nix/store/jcvvpih1046akxcwh9hdiak5q24jqcf0-cmake-4.4.3/bin/cmake .. -DCMAKE_FIND_USE_SYSTEM_PACKAGE_REGISTRY=OFF -DCMAKE_FIND_USE_PACKAGE_REGISTRY=OFF -DCMAKE_EXPORT_NO_PACKAGE_REGISTRY=ON -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF -DCMAKE_INSTALL_LOCALEDIR=/nix/store/g1jcfq4b6favy36p099qwrh3f385cmlw-jsoncpp-1.9.8/share/locale -DCMAKE_INSTALL_LIBEXECDIR=/nix/store/g1jcfq4b6favy36p099qwrh3f385cmlw-jsoncpp-1.9.8/libexec -DCMAKE_INSTALL_LIBDIR=/nix/store/g1jcfq4b6favy36p099qwrh3f385cmlw-jsoncpp-1.9.8/lib -DCMAKE_INSTALL_DOCDIR=/nix/store/g1jcfq4b6favy36p099qwrh3f385cmlw-jsoncpp-1.9.8/share/doc/jsoncpp -DCMAKE_INSTALL_INFODIR=/nix/store/g1jcfq4b6favy36p099qwrh3f385cmlw-jsoncpp-1.9.8/share/info -DCMAKE_INSTALL_MANDIR=/nix/store/g1jcfq4b6favy36p099qwrh3f385cmlw-jsoncpp-1.9.8/share/man -DCMAKE_INSTALL_INCLUDEDIR=/nix/store/q957fj0pjwaa0b8hbyyvr51cksyh5bxi-jsoncpp-1.9.8-dev/include -DCMAKE_INSTALL_SBINDIR=/nix/store/g1jcfq4b6favy36p099qwrh3f385cmlw-jsoncpp-1.9.8/sbin -DCMAKE_INSTALL_BINDIR=/nix/store/g1jcfq4b6favy36p099qwrh3f385cmlw-jsoncpp-1.9.8/bin -DCMAKE_INSTALL_NAME_DIR=/nix/store/g1jcfq4b6favy36p099qwrh3f385cmlw-jsoncpp-1.9.8/lib -DCMAKE_STRIP=/nix/store/j1938gsbvbhkyz4kbmvjk56r479mkw3s-gcc-wrapper-16.2.0/bin/strip -DCMAKE_RANLIB=/nix/store/j1938gsbvbhkyz4kbmvjk56r479mkw3s-gcc-wrapper-16.2.0/bin/ranlib -DCMAKE_AR=/nix/store/j1938gsbvbhkyz4kbmvjk56r479mkw3s-gcc-wrapper-16.2.0/bin/ar -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ -DCMAKE_INSTALL_PREFIX=/nix/store/g1jcfq4b6favy36p099qwrh3f385cmlw-jsoncpp-1.9.8 -DJSONCPP_USE_SECURE_MEMORY=OFF -DBUILD_SHARED_LIBS=ON -DBUILD_OBJECT_LIBS=OFF -DJSONCPP_WITH_CMAKE_PACKAGE=ON -DBUILD_STATIC_LIBS=OFF",
+    ]),
     remote = False,
 )
 
 genrule(
     name = "s14364_make",
-    srcs = [":literals/lit_2700_cmake.layer",":literals/sandbox_721.layer",":plans/s14364_make.json",":platform.layer",":s2021_chmod",":s2328_mkdir",":s2700_cmake"],
-    out = "s14364_make.layer",
-    cmd = "'/nix/store/15q8hglpw6k5a6pdskha40d43imb8jnz-genrulify-0.1.0/bin/genrulify' replay \"$(location :plans/s14364_make.json)\" \"$OUT\" \"$(location :literals/lit_2700_cmake.layer)\" \"$(location :literals/sandbox_721.layer)\" \"$(location :s2021_chmod)\" \"$(location :s2328_mkdir)\" \"$(location :s2700_cmake)\" \"$(location :platform.layer)\"",
+    srcs = [
+        "actions/s14364_make.manifest",
+        "closure.txt",
+        "env/23.env",
+        "lit_2700_cmake",
+        "platform",
+        "sandbox.sh",
+        ":s2021_chmod",
+        ":s2328_mkdir",
+        ":s2700_cmake",
+    ],
+    out = "s14364_make",
+    cmd = " ".join([
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s14364_make --timeout 300",
+        "run --cwd /build/source/build --env 23 --argv0 make --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 3 --",
+        "/nix/store/p5frwjlmkgj2987iy9plr7nav9l72xz4-gnumake-4.4.1/bin/make -j1 SHELL=/nix/store/10dxp0qxqxxsyiljrh2kp0xqhz6arhcx-bash-5.3p15/bin/bash",
+    ]),
     remote = False,
 )
 
 genrule(
     name = "s18013_mkdir",
-    srcs = [":literals/sandbox_721.layer",":plans/s18013_mkdir.json",":platform.layer",":s2021_chmod",":s2328_mkdir"],
-    out = "s18013_mkdir.layer",
-    cmd = "'/nix/store/15q8hglpw6k5a6pdskha40d43imb8jnz-genrulify-0.1.0/bin/genrulify' replay \"$(location :plans/s18013_mkdir.json)\" \"$OUT\" \"$(location :literals/sandbox_721.layer)\" \"$(location :s2021_chmod)\" \"$(location :s2328_mkdir)\" \"$(location :platform.layer)\"",
+    srcs = [
+        "actions/s18013_mkdir.manifest",
+        "closure.txt",
+        "env/24.env",
+        "platform",
+        "sandbox.sh",
+        ":s2021_chmod",
+        ":s2328_mkdir",
+    ],
+    out = "s18013_mkdir",
+    cmd = " ".join([
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s18013_mkdir --timeout 300",
+        "run --cwd /build/source/build --env 24 --argv0 mkdir --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 3 --",
+        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/mkdir -p /nix/store/g1jcfq4b6favy36p099qwrh3f385cmlw-jsoncpp-1.9.8",
+    ]),
     remote = False,
 )
 
 genrule(
     name = "s18078_make",
-    srcs = [":literals/lit_2700_cmake.layer",":literals/sandbox_721.layer",":plans/s18078_make.json",":platform.layer",":s14364_make",":s18013_mkdir",":s2021_chmod",":s2328_mkdir",":s2700_cmake"],
-    out = "s18078_make.layer",
-    cmd = "'/nix/store/15q8hglpw6k5a6pdskha40d43imb8jnz-genrulify-0.1.0/bin/genrulify' replay \"$(location :plans/s18078_make.json)\" \"$OUT\" \"$(location :literals/lit_2700_cmake.layer)\" \"$(location :literals/sandbox_721.layer)\" \"$(location :s14364_make)\" \"$(location :s18013_mkdir)\" \"$(location :s2021_chmod)\" \"$(location :s2328_mkdir)\" \"$(location :s2700_cmake)\" \"$(location :platform.layer)\"",
+    srcs = [
+        "actions/s18078_make.manifest",
+        "closure.txt",
+        "env/23.env",
+        "lit_2700_cmake",
+        "platform",
+        "sandbox.sh",
+        ":s14364_make",
+        ":s18013_mkdir",
+        ":s2021_chmod",
+        ":s2328_mkdir",
+        ":s2700_cmake",
+    ],
+    out = "s18078_make",
+    cmd = " ".join([
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s18078_make --timeout 300",
+        "run --cwd /build/source/build --env 23 --argv0 make --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 4 --",
+        "/nix/store/p5frwjlmkgj2987iy9plr7nav9l72xz4-gnumake-4.4.1/bin/make -j1 SHELL=/nix/store/10dxp0qxqxxsyiljrh2kp0xqhz6arhcx-bash-5.3p15/bin/bash install",
+    ]),
     remote = False,
 )
 
 genrule(
     name = "s19355_mkdir",
-    srcs = [":literals/sandbox_721.layer",":plans/s19355_mkdir.json",":platform.layer",":s18078_make",":s2021_chmod",":s2328_mkdir"],
-    out = "s19355_mkdir.layer",
-    cmd = "'/nix/store/15q8hglpw6k5a6pdskha40d43imb8jnz-genrulify-0.1.0/bin/genrulify' replay \"$(location :plans/s19355_mkdir.json)\" \"$OUT\" \"$(location :literals/sandbox_721.layer)\" \"$(location :s18078_make)\" \"$(location :s2021_chmod)\" \"$(location :s2328_mkdir)\" \"$(location :platform.layer)\"",
+    srcs = [
+        "actions/s19355_mkdir.manifest",
+        "closure.txt",
+        "env/24.env",
+        "platform",
+        "sandbox.sh",
+        ":s18078_make",
+        ":s2021_chmod",
+        ":s2328_mkdir",
+    ],
+    out = "s19355_mkdir",
+    cmd = " ".join([
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s19355_mkdir --timeout 300",
+        "run --cwd /build/source/build --env 24 --argv0 mkdir --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 3 --",
+        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/mkdir -p /nix/store/q957fj0pjwaa0b8hbyyvr51cksyh5bxi-jsoncpp-1.9.8-dev/lib",
+    ]),
     remote = False,
 )
 
 genrule(
     name = "s19376_mv",
-    srcs = [":literals/sandbox_721.layer",":plans/s19376_mv.json",":platform.layer",":s18013_mkdir",":s18078_make",":s19355_mkdir",":s2021_chmod",":s2328_mkdir"],
-    out = "s19376_mv.layer",
-    cmd = "'/nix/store/15q8hglpw6k5a6pdskha40d43imb8jnz-genrulify-0.1.0/bin/genrulify' replay \"$(location :plans/s19376_mv.json)\" \"$OUT\" \"$(location :literals/sandbox_721.layer)\" \"$(location :s18013_mkdir)\" \"$(location :s18078_make)\" \"$(location :s19355_mkdir)\" \"$(location :s2021_chmod)\" \"$(location :s2328_mkdir)\" \"$(location :platform.layer)\"",
+    srcs = [
+        "actions/s19376_mv.manifest",
+        "closure.txt",
+        "env/27.env",
+        "platform",
+        "sandbox.sh",
+        ":s18013_mkdir",
+        ":s18078_make",
+        ":s19355_mkdir",
+        ":s2021_chmod",
+        ":s2328_mkdir",
+    ],
+    out = "s19376_mv",
+    cmd = " ".join([
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s19376_mv --timeout 300",
+        "run --cwd /build/source/build --env 27 --argv0 mv --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 3 --",
+        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/mv /nix/store/g1jcfq4b6favy36p099qwrh3f385cmlw-jsoncpp-1.9.8/lib/pkgconfig /nix/store/q957fj0pjwaa0b8hbyyvr51cksyh5bxi-jsoncpp-1.9.8-dev/lib/pkgconfig",
+    ]),
     remote = False,
 )
 
 genrule(
     name = "s19519_mv",
-    srcs = [":literals/sandbox_721.layer",":plans/s19519_mv.json",":platform.layer",":s18013_mkdir",":s18078_make",":s19355_mkdir",":s2021_chmod",":s2328_mkdir"],
-    out = "s19519_mv.layer",
-    cmd = "'/nix/store/15q8hglpw6k5a6pdskha40d43imb8jnz-genrulify-0.1.0/bin/genrulify' replay \"$(location :plans/s19519_mv.json)\" \"$OUT\" \"$(location :literals/sandbox_721.layer)\" \"$(location :s18013_mkdir)\" \"$(location :s18078_make)\" \"$(location :s19355_mkdir)\" \"$(location :s2021_chmod)\" \"$(location :s2328_mkdir)\" \"$(location :platform.layer)\"",
+    srcs = [
+        "actions/s19519_mv.manifest",
+        "closure.txt",
+        "env/27.env",
+        "platform",
+        "sandbox.sh",
+        ":s18013_mkdir",
+        ":s18078_make",
+        ":s19355_mkdir",
+        ":s2021_chmod",
+        ":s2328_mkdir",
+    ],
+    out = "s19519_mv",
+    cmd = " ".join([
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s19519_mv --timeout 300",
+        "run --cwd /build/source/build --env 27 --argv0 mv --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 3 --",
+        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/mv /nix/store/g1jcfq4b6favy36p099qwrh3f385cmlw-jsoncpp-1.9.8/lib/cmake /nix/store/q957fj0pjwaa0b8hbyyvr51cksyh5bxi-jsoncpp-1.9.8-dev/lib/cmake",
+    ]),
     remote = False,
 )
 
 genrule(
     name = "s19603_sed",
-    srcs = [":literals/sandbox_721.layer",":plans/s19603_sed.json",":platform.layer",":s18078_make",":s19355_mkdir",":s19376_mv",":s2021_chmod",":s2328_mkdir"],
-    out = "s19603_sed.layer",
-    cmd = "'/nix/store/15q8hglpw6k5a6pdskha40d43imb8jnz-genrulify-0.1.0/bin/genrulify' replay \"$(location :plans/s19603_sed.json)\" \"$OUT\" \"$(location :literals/sandbox_721.layer)\" \"$(location :s18078_make)\" \"$(location :s19355_mkdir)\" \"$(location :s19376_mv)\" \"$(location :s2021_chmod)\" \"$(location :s2328_mkdir)\" \"$(location :platform.layer)\"",
+    srcs = [
+        "actions/s19603_sed.manifest",
+        "closure.txt",
+        "env/29.env",
+        "platform",
+        "sandbox.sh",
+        ":s18078_make",
+        ":s19355_mkdir",
+        ":s19376_mv",
+        ":s2021_chmod",
+        ":s2328_mkdir",
+    ],
+    out = "s19603_sed",
+    cmd = " ".join([
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s19603_sed --timeout 300",
+        "run --cwd /build/source/build --env 29 --argv0 sed --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 4 --",
+        "/nix/store/1ggxndc1gd5061j5hqprhnhx9p30yilv-gnused-4.10/bin/sed -i '/^includedir=/s,=${prefix},=/nix/store/q957fj0pjwaa0b8hbyyvr51cksyh5bxi-jsoncpp-1.9.8-dev,' /nix/store/q957fj0pjwaa0b8hbyyvr51cksyh5bxi-jsoncpp-1.9.8-dev/lib/pkgconfig/jsoncpp.pc",
+    ]),
     remote = False,
 )
 
 genrule(
     name = "s20356_find_patchelf",
-    srcs = [":literals/sandbox_721.layer",":plans/s20356_find_patchelf.json",":platform.layer",":s18013_mkdir",":s18078_make",":s2021_chmod",":s2328_mkdir"],
-    out = "s20356_find_patchelf.layer",
-    cmd = "'/nix/store/15q8hglpw6k5a6pdskha40d43imb8jnz-genrulify-0.1.0/bin/genrulify' replay \"$(location :plans/s20356_find_patchelf.json)\" \"$OUT\" \"$(location :literals/sandbox_721.layer)\" \"$(location :s18013_mkdir)\" \"$(location :s18078_make)\" \"$(location :s2021_chmod)\" \"$(location :s2328_mkdir)\" \"$(location :platform.layer)\"",
+    srcs = [
+        "actions/s20356_find_patchelf.manifest",
+        "closure.txt",
+        "env/40.env",
+        "env/41.env",
+        "platform",
+        "sandbox.sh",
+        ":s18013_mkdir",
+        ":s18078_make",
+        ":s2021_chmod",
+        ":s2328_mkdir",
+    ],
+    out = "s20356_find_patchelf",
+    cmd = " ".join([
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s20356_find_patchelf --timeout 300 --pipe 1096:0:1:0",
+        "run --cwd /build/source/build --env 40 --argv0 find --fd 0=null --fd 1=pipe-w:1096 --fd 2=err --status 0 --argc 5 --",
+        "/nix/store/ycrbcy9sg4knpnik6a01dk70l0m673x7-findutils-4.11.0/bin/find /nix/store/g1jcfq4b6favy36p099qwrh3f385cmlw-jsoncpp-1.9.8 -type f -print0",
+        "run --cwd /build/source/build --env 41 --argv0 patchelf --fd 0=pipe-r:1096 --fd 1=err --fd 2=err --fd 63=pipe-r:1096 --after 0 --status 0 --argc 3 --",
+        "/nix/store/qcwnw71iksl68k7fipizi6wn0s1xms9v-patchelf-0.15.2/bin/patchelf --shrink-rpath /nix/store/g1jcfq4b6favy36p099qwrh3f385cmlw-jsoncpp-1.9.8/lib/libjsoncpp.so.1.9.8",
+    ]),
+    remote = False,
+)
+
+genrule(
+    name = "s20704_mktemp",
+    srcs = [
+        "actions/s20704_mktemp.manifest",
+        "closure.txt",
+        "env/42.env",
+        "platform",
+        "sandbox.sh",
+        ":s2021_chmod",
+        ":s2328_mkdir",
+    ],
+    out = "s20704_mktemp",
+    cmd = " ".join([
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s20704_mktemp --timeout 300",
+        "run --cwd /build/source/build --env 42 --argv0 mktemp --fd 0=null --fd 1=null --fd 2=err --status 0 --argc 3 --",
+        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/mktemp --tmpdir=/build striperr.XXXXXX",
+    ]),
     remote = False,
 )
 
 genrule(
     name = "s20735_find_sort_cut_xargs",
-    srcs = [":literals/lit_20704_mktemp.layer",":literals/sandbox_721.layer",":plans/s20735_find_sort_cut_xargs.json",":platform.layer",":s18013_mkdir",":s18078_make",":s2021_chmod",":s20356_find_patchelf",":s2328_mkdir"],
-    out = "s20735_find_sort_cut_xargs.layer",
-    cmd = "'/nix/store/15q8hglpw6k5a6pdskha40d43imb8jnz-genrulify-0.1.0/bin/genrulify' replay \"$(location :plans/s20735_find_sort_cut_xargs.json)\" \"$OUT\" \"$(location :literals/lit_20704_mktemp.layer)\" \"$(location :literals/sandbox_721.layer)\" \"$(location :s18013_mkdir)\" \"$(location :s18078_make)\" \"$(location :s2021_chmod)\" \"$(location :s20356_find_patchelf)\" \"$(location :s2328_mkdir)\" \"$(location :platform.layer)\"",
+    srcs = [
+        "actions/s20735_find_sort_cut_xargs.manifest",
+        "closure.txt",
+        "env/45.env",
+        "env/47.env",
+        "env/48.env",
+        "env/49.env",
+        "platform",
+        "sandbox.sh",
+        ":s18013_mkdir",
+        ":s18078_make",
+        ":s2021_chmod",
+        ":s20356_find_patchelf",
+        ":s20704_mktemp",
+        ":s2328_mkdir",
+    ],
+    out = "s20735_find_sort_cut_xargs",
+    cmd = " ".join([
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s20735_find_sort_cut_xargs --timeout 300 --pipe 1119:0:1:0 --pipe 1120:1:2:0 --pipe 1121:2:3:0",
+        "run --cwd /build/source/build --env 45 --argv0 find --fd 0=null --fd 1=pipe-w:1119 --fd 2=err --status 0 --argc 10 --",
+        "/nix/store/ycrbcy9sg4knpnik6a01dk70l0m673x7-findutils-4.11.0/bin/find /nix/store/g1jcfq4b6favy36p099qwrh3f385cmlw-jsoncpp-1.9.8/lib -type f -a '!' -path '/nix/store/g1jcfq4b6favy36p099qwrh3f385cmlw-jsoncpp-1.9.8/lib/debug/*' -printf '%D-%i,%p\\0'",
+        "run --cwd /build/source/build --env 47 --argv0 sort --fd 0=pipe-r:1119 --fd 1=pipe-w:1120 --fd 2=err --after 0 --status 0 --argc 5 --",
+        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/sort -t, -k1,1 -u -z",
+        "run --cwd /build/source/build --env 48 --argv0 cut --fd 0=pipe-r:1120 --fd 1=pipe-w:1121 --fd 2=err --after 0,1 --status 0 --argc 4 --",
+        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/cut -d, -f2- -z",
+        "run --cwd /build/source/build --env 49 --argv0 xargs --fd 0=pipe-r:1121 --fd 1=err --fd 2=file:w:/build/striperr.oq3yJI --after 0,1,2 --status 0 --argc 10 --",
+        "/nix/store/ycrbcy9sg4knpnik6a01dk70l0m673x7-findutils-4.11.0/bin/xargs -r -0 -n1 -P 1 -- strip -S -p",
+    ]),
     remote = False,
 )
 
 genrule(
     name = "s21366_mkdir",
-    srcs = [":literals/sandbox_721.layer",":plans/s21366_mkdir.json",":platform.layer",":s18078_make",":s2021_chmod",":s2328_mkdir"],
-    out = "s21366_mkdir.layer",
-    cmd = "'/nix/store/15q8hglpw6k5a6pdskha40d43imb8jnz-genrulify-0.1.0/bin/genrulify' replay \"$(location :plans/s21366_mkdir.json)\" \"$OUT\" \"$(location :literals/sandbox_721.layer)\" \"$(location :s18078_make)\" \"$(location :s2021_chmod)\" \"$(location :s2328_mkdir)\" \"$(location :platform.layer)\"",
+    srcs = [
+        "actions/s21366_mkdir.manifest",
+        "closure.txt",
+        "env/24.env",
+        "platform",
+        "sandbox.sh",
+        ":s18078_make",
+        ":s2021_chmod",
+        ":s2328_mkdir",
+    ],
+    out = "s21366_mkdir",
+    cmd = " ".join([
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s21366_mkdir --timeout 300",
+        "run --cwd /build/source/build --env 24 --argv0 mkdir --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 3 --",
+        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/mkdir -p /nix/store/q957fj0pjwaa0b8hbyyvr51cksyh5bxi-jsoncpp-1.9.8-dev/nix-support",
+    ]),
     remote = False,
 )
 
 genrule(
     name = "archive_dev",
-    srcs = [":literals/glue_21389.layer",":plans/archive_dev.json",":s18078_make",":s19355_mkdir",":s19376_mv",":s19519_mv",":s19603_sed",":s21366_mkdir"],
-    out = "dev.nar",
-    cmd = "'/nix/store/15q8hglpw6k5a6pdskha40d43imb8jnz-genrulify-0.1.0/bin/genrulify' pack \"$(location :plans/archive_dev.json)\" \"$OUT\" \"$(location :literals/glue_21389.layer)\" \"$(location :s18078_make)\" \"$(location :s19355_mkdir)\" \"$(location :s19376_mv)\" \"$(location :s19519_mv)\" \"$(location :s19603_sed)\" \"$(location :s21366_mkdir)\"",
+    srcs = [
+        "actions/archive_dev.manifest",
+        "glue_21389",
+        "sandbox.sh",
+        ":s18078_make",
+        ":s19355_mkdir",
+        ":s19376_mv",
+        ":s19519_mv",
+        ":s19603_sed",
+        ":s21366_mkdir",
+    ],
+    out = "archive_dev.nar",
+    cmd = " ".join([
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name archive_dev pack /nix/store/q957fj0pjwaa0b8hbyyvr51cksyh5bxi-jsoncpp-1.9.8-dev",
+    ]),
     remote = False,
 )
 
 genrule(
     name = "archive_out",
-    srcs = [":plans/archive_out.json",":s18013_mkdir",":s18078_make",":s20735_find_sort_cut_xargs"],
-    out = "out.nar",
-    cmd = "'/nix/store/15q8hglpw6k5a6pdskha40d43imb8jnz-genrulify-0.1.0/bin/genrulify' pack \"$(location :plans/archive_out.json)\" \"$OUT\" \"$(location :s18013_mkdir)\" \"$(location :s18078_make)\" \"$(location :s20735_find_sort_cut_xargs)\"",
+    srcs = [
+        "actions/archive_out.manifest",
+        "sandbox.sh",
+        ":s18013_mkdir",
+        ":s18078_make",
+        ":s20735_find_sort_cut_xargs",
+    ],
+    out = "archive_out.nar",
+    cmd = " ".join([
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name archive_out pack /nix/store/g1jcfq4b6favy36p099qwrh3f385cmlw-jsoncpp-1.9.8",
+    ]),
     remote = False,
 )
 

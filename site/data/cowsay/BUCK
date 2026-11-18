@@ -1,149 +1,396 @@
-export_file(name = "literals/glue_4110.layer", src = "literals/glue_4110.layer")
-export_file(name = "literals/glue_4156.layer", src = "literals/glue_4156.layer")
-export_file(name = "literals/sandbox_716.layer", src = "literals/sandbox_716.layer")
-export_file(name = "plans/archive_man.json", src = "plans/archive_man.json")
-export_file(name = "plans/archive_out.json", src = "plans/archive_out.json")
-export_file(name = "plans/s2274_cp.json", src = "plans/s2274_cp.json")
-export_file(name = "plans/s2443_chmod.json", src = "plans/s2443_chmod.json")
-export_file(name = "plans/s3242_mkdir.json", src = "plans/s3242_mkdir.json")
-export_file(name = "plans/s3306_make.json", src = "plans/s3306_make.json")
-export_file(name = "plans/s4039_mv.json", src = "plans/s4039_mv.json")
-export_file(name = "plans/s4110_chmod.json", src = "plans/s4110_chmod.json")
-export_file(name = "plans/s4156_cat.json", src = "plans/s4156_cat.json")
-export_file(name = "plans/s4177_chmod.json", src = "plans/s4177_chmod.json")
-export_file(name = "plans/s4395_mkdir.json", src = "plans/s4395_mkdir.json")
-export_file(name = "plans/s4416_mv.json", src = "plans/s4416_mv.json")
-export_file(name = "plans/s4820_find_stat_mktemp_sed__10.json", src = "plans/s4820_find_stat_mktemp_sed__10.json")
-export_file(name = "plans/s5657_find_xargs.json", src = "plans/s5657_find_xargs.json")
-export_file(name = "plans/s5734_find_sort_readlink_ln__1.json", src = "plans/s5734_find_sort_readlink_ln__1.json")
-export_file(name = "plans/s6013_find_xargs.json", src = "plans/s6013_find_xargs.json")
-export_file(name = "platform.layer", src = "platform.layer")
-
 genrule(
     name = "s2274_cp",
-    srcs = [":literals/sandbox_716.layer",":plans/s2274_cp.json",":platform.layer"],
-    out = "s2274_cp.layer",
-    cmd = "'/nix/store/15q8hglpw6k5a6pdskha40d43imb8jnz-genrulify-0.1.0/bin/genrulify' replay \"$(location :plans/s2274_cp.json)\" \"$OUT\" \"$(location :literals/sandbox_716.layer)\" \"$(location :platform.layer)\"",
+    srcs = [
+        "actions/s2274_cp.manifest",
+        "closure.txt",
+        "env/13.env",
+        "platform",
+        "sandbox.sh",
+    ],
+    out = "s2274_cp",
+    cmd = " ".join([
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s2274_cp --timeout 300",
+        "run --cwd /build --env 13 --argv0 cp --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 7 --",
+        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/cp -r --preserve=timestamps --reflink=auto -- /nix/store/y0gicmliwz659c2xcpv0q6cg81f32ygv-source source",
+    ]),
     remote = False,
 )
 
 genrule(
     name = "s2443_chmod",
-    srcs = [":literals/sandbox_716.layer",":plans/s2443_chmod.json",":platform.layer",":s2274_cp"],
-    out = "s2443_chmod.layer",
-    cmd = "'/nix/store/15q8hglpw6k5a6pdskha40d43imb8jnz-genrulify-0.1.0/bin/genrulify' replay \"$(location :plans/s2443_chmod.json)\" \"$OUT\" \"$(location :literals/sandbox_716.layer)\" \"$(location :s2274_cp)\" \"$(location :platform.layer)\"",
+    srcs = [
+        "actions/s2443_chmod.manifest",
+        "closure.txt",
+        "env/14.env",
+        "platform",
+        "sandbox.sh",
+        ":s2274_cp",
+    ],
+    out = "s2443_chmod",
+    cmd = " ".join([
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s2443_chmod --timeout 300",
+        "run --cwd /build --env 14 --argv0 chmod --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 5 --",
+        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/chmod -R u+w -- source",
+    ]),
     remote = False,
 )
 
 genrule(
     name = "s3242_mkdir",
-    srcs = [":literals/sandbox_716.layer",":plans/s3242_mkdir.json",":platform.layer",":s2443_chmod"],
-    out = "s3242_mkdir.layer",
-    cmd = "'/nix/store/15q8hglpw6k5a6pdskha40d43imb8jnz-genrulify-0.1.0/bin/genrulify' replay \"$(location :plans/s3242_mkdir.json)\" \"$OUT\" \"$(location :literals/sandbox_716.layer)\" \"$(location :s2443_chmod)\" \"$(location :platform.layer)\"",
+    srcs = [
+        "actions/s3242_mkdir.manifest",
+        "closure.txt",
+        "env/27.env",
+        "platform",
+        "sandbox.sh",
+        ":s2443_chmod",
+    ],
+    out = "s3242_mkdir",
+    cmd = " ".join([
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s3242_mkdir --timeout 300",
+        "run --cwd /build/source --env 27 --argv0 mkdir --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 3 --",
+        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/mkdir -p /nix/store/s5w9gi7p8m7yx878yxkf8q8480i82qj7-cowsay-3.8.4",
+    ]),
     remote = False,
 )
 
 genrule(
     name = "s3306_make",
-    srcs = [":literals/sandbox_716.layer",":plans/s3306_make.json",":platform.layer",":s2443_chmod",":s3242_mkdir"],
-    out = "s3306_make.layer",
-    cmd = "'/nix/store/15q8hglpw6k5a6pdskha40d43imb8jnz-genrulify-0.1.0/bin/genrulify' replay \"$(location :plans/s3306_make.json)\" \"$OUT\" \"$(location :literals/sandbox_716.layer)\" \"$(location :s2443_chmod)\" \"$(location :s3242_mkdir)\" \"$(location :platform.layer)\"",
+    srcs = [
+        "actions/s3306_make.manifest",
+        "closure.txt",
+        "env/26.env",
+        "platform",
+        "sandbox.sh",
+        ":s2443_chmod",
+        ":s3242_mkdir",
+    ],
+    out = "s3306_make",
+    cmd = " ".join([
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s3306_make --timeout 300",
+        "run --cwd /build/source --env 26 --argv0 make --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 7 --",
+        "/nix/store/p5frwjlmkgj2987iy9plr7nav9l72xz4-gnumake-4.4.1/bin/make SHELL=/nix/store/10dxp0qxqxxsyiljrh2kp0xqhz6arhcx-bash-5.3p15/bin/bash prefix=/nix/store/s5w9gi7p8m7yx878yxkf8q8480i82qj7-cowsay-3.8.4 pkgconfigdir=/nix/store/s5w9gi7p8m7yx878yxkf8q8480i82qj7-cowsay-3.8.4/lib/pkgconfig m4datadir=/nix/store/s5w9gi7p8m7yx878yxkf8q8480i82qj7-cowsay-3.8.4/share/aclocal aclocaldir=/nix/store/s5w9gi7p8m7yx878yxkf8q8480i82qj7-cowsay-3.8.4/share/aclocal install",
+    ]),
     remote = False,
 )
 
 genrule(
     name = "s4039_mv",
-    srcs = [":literals/sandbox_716.layer",":plans/s4039_mv.json",":platform.layer",":s2443_chmod",":s3242_mkdir",":s3306_make"],
-    out = "s4039_mv.layer",
-    cmd = "'/nix/store/15q8hglpw6k5a6pdskha40d43imb8jnz-genrulify-0.1.0/bin/genrulify' replay \"$(location :plans/s4039_mv.json)\" \"$OUT\" \"$(location :literals/sandbox_716.layer)\" \"$(location :s2443_chmod)\" \"$(location :s3242_mkdir)\" \"$(location :s3306_make)\" \"$(location :platform.layer)\"",
+    srcs = [
+        "actions/s4039_mv.manifest",
+        "closure.txt",
+        "env/30.env",
+        "platform",
+        "sandbox.sh",
+        ":s2443_chmod",
+        ":s3242_mkdir",
+        ":s3306_make",
+    ],
+    out = "s4039_mv",
+    cmd = " ".join([
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s4039_mv --timeout 300",
+        "run --cwd /build/source --env 30 --argv0 mv --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 3 --",
+        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/mv /nix/store/s5w9gi7p8m7yx878yxkf8q8480i82qj7-cowsay-3.8.4/bin/cowsay /nix/store/s5w9gi7p8m7yx878yxkf8q8480i82qj7-cowsay-3.8.4/bin/.cowsay-wrapped",
+    ]),
     remote = False,
 )
 
 genrule(
     name = "s4110_chmod",
-    srcs = [":literals/glue_4110.layer",":literals/sandbox_716.layer",":plans/s4110_chmod.json",":platform.layer",":s2443_chmod",":s3242_mkdir",":s3306_make"],
-    out = "s4110_chmod.layer",
-    cmd = "'/nix/store/15q8hglpw6k5a6pdskha40d43imb8jnz-genrulify-0.1.0/bin/genrulify' replay \"$(location :plans/s4110_chmod.json)\" \"$OUT\" \"$(location :literals/glue_4110.layer)\" \"$(location :literals/sandbox_716.layer)\" \"$(location :s2443_chmod)\" \"$(location :s3242_mkdir)\" \"$(location :s3306_make)\" \"$(location :platform.layer)\"",
+    srcs = [
+        "actions/s4110_chmod.manifest",
+        "closure.txt",
+        "env/31.env",
+        "glue_4110",
+        "platform",
+        "sandbox.sh",
+        ":s2443_chmod",
+        ":s3242_mkdir",
+        ":s3306_make",
+    ],
+    out = "s4110_chmod",
+    cmd = " ".join([
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s4110_chmod --timeout 300",
+        "run --cwd /build/source --env 31 --argv0 chmod --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 3 --",
+        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/chmod +x /nix/store/s5w9gi7p8m7yx878yxkf8q8480i82qj7-cowsay-3.8.4/bin/cowsay",
+    ]),
     remote = False,
 )
 
 genrule(
     name = "s4156_cat",
-    srcs = [":literals/glue_4156.layer",":literals/sandbox_716.layer",":plans/s4156_cat.json",":platform.layer",":s2443_chmod",":s3242_mkdir",":s3306_make"],
-    out = "s4156_cat.layer",
-    cmd = "'/nix/store/15q8hglpw6k5a6pdskha40d43imb8jnz-genrulify-0.1.0/bin/genrulify' replay \"$(location :plans/s4156_cat.json)\" \"$OUT\" \"$(location :literals/glue_4156.layer)\" \"$(location :literals/sandbox_716.layer)\" \"$(location :s2443_chmod)\" \"$(location :s3242_mkdir)\" \"$(location :s3306_make)\" \"$(location :platform.layer)\"",
+    srcs = [
+        "actions/s4156_cat.manifest",
+        "actions/s4156_cat.pipe478.data",
+        "closure.txt",
+        "env/33.env",
+        "glue_4156",
+        "platform",
+        "sandbox.sh",
+        ":s2443_chmod",
+        ":s3242_mkdir",
+        ":s3306_make",
+    ],
+    out = "s4156_cat",
+    cmd = " ".join([
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s4156_cat --timeout 300",
+        "run --cwd /build/source --env 33 --argv0 cat --fd 0=data:actions/s4156_cat.pipe478.data --fd 1=file:w:/nix/store/s5w9gi7p8m7yx878yxkf8q8480i82qj7-cowsay-3.8.4/bin/cowthink --fd 2=err --status 0 --argc 1 --",
+        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/cat",
+    ]),
     remote = False,
 )
 
 genrule(
     name = "s4177_chmod",
-    srcs = [":literals/sandbox_716.layer",":plans/s4177_chmod.json",":platform.layer",":s2443_chmod",":s3242_mkdir",":s3306_make",":s4156_cat"],
-    out = "s4177_chmod.layer",
-    cmd = "'/nix/store/15q8hglpw6k5a6pdskha40d43imb8jnz-genrulify-0.1.0/bin/genrulify' replay \"$(location :plans/s4177_chmod.json)\" \"$OUT\" \"$(location :literals/sandbox_716.layer)\" \"$(location :s2443_chmod)\" \"$(location :s3242_mkdir)\" \"$(location :s3306_make)\" \"$(location :s4156_cat)\" \"$(location :platform.layer)\"",
+    srcs = [
+        "actions/s4177_chmod.manifest",
+        "closure.txt",
+        "env/31.env",
+        "platform",
+        "sandbox.sh",
+        ":s2443_chmod",
+        ":s3242_mkdir",
+        ":s3306_make",
+        ":s4156_cat",
+    ],
+    out = "s4177_chmod",
+    cmd = " ".join([
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s4177_chmod --timeout 300",
+        "run --cwd /build/source --env 31 --argv0 chmod --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 3 --",
+        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/chmod +x /nix/store/s5w9gi7p8m7yx878yxkf8q8480i82qj7-cowsay-3.8.4/bin/cowthink",
+    ]),
     remote = False,
 )
 
 genrule(
     name = "s4395_mkdir",
-    srcs = [":literals/sandbox_716.layer",":plans/s4395_mkdir.json",":platform.layer",":s2443_chmod"],
-    out = "s4395_mkdir.layer",
-    cmd = "'/nix/store/15q8hglpw6k5a6pdskha40d43imb8jnz-genrulify-0.1.0/bin/genrulify' replay \"$(location :plans/s4395_mkdir.json)\" \"$OUT\" \"$(location :literals/sandbox_716.layer)\" \"$(location :s2443_chmod)\" \"$(location :platform.layer)\"",
+    srcs = [
+        "actions/s4395_mkdir.manifest",
+        "closure.txt",
+        "env/27.env",
+        "platform",
+        "sandbox.sh",
+        ":s2443_chmod",
+    ],
+    out = "s4395_mkdir",
+    cmd = " ".join([
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s4395_mkdir --timeout 300",
+        "run --cwd /build/source --env 27 --argv0 mkdir --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 3 --",
+        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/mkdir -p /nix/store/b5r8bhcls3hn4748zf4ln16771nlkwa5-cowsay-3.8.4-man/share",
+    ]),
     remote = False,
 )
 
 genrule(
     name = "s4416_mv",
-    srcs = [":literals/sandbox_716.layer",":plans/s4416_mv.json",":platform.layer",":s2443_chmod",":s3242_mkdir",":s3306_make",":s4395_mkdir"],
-    out = "s4416_mv.layer",
-    cmd = "'/nix/store/15q8hglpw6k5a6pdskha40d43imb8jnz-genrulify-0.1.0/bin/genrulify' replay \"$(location :plans/s4416_mv.json)\" \"$OUT\" \"$(location :literals/sandbox_716.layer)\" \"$(location :s2443_chmod)\" \"$(location :s3242_mkdir)\" \"$(location :s3306_make)\" \"$(location :s4395_mkdir)\" \"$(location :platform.layer)\"",
+    srcs = [
+        "actions/s4416_mv.manifest",
+        "closure.txt",
+        "env/30.env",
+        "platform",
+        "sandbox.sh",
+        ":s2443_chmod",
+        ":s3242_mkdir",
+        ":s3306_make",
+        ":s4395_mkdir",
+    ],
+    out = "s4416_mv",
+    cmd = " ".join([
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s4416_mv --timeout 300",
+        "run --cwd /build/source --env 30 --argv0 mv --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 3 --",
+        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/mv /nix/store/s5w9gi7p8m7yx878yxkf8q8480i82qj7-cowsay-3.8.4/share/man /nix/store/b5r8bhcls3hn4748zf4ln16771nlkwa5-cowsay-3.8.4-man/share/man",
+    ]),
     remote = False,
 )
 
 genrule(
     name = "s4820_find_stat_mktemp_sed__10",
-    srcs = [":literals/sandbox_716.layer",":plans/s4820_find_stat_mktemp_sed__10.json",":platform.layer",":s2443_chmod",":s3242_mkdir",":s3306_make",":s4039_mv",":s4177_chmod"],
-    out = "s4820_find_stat_mktemp_sed__10.layer",
-    cmd = "'/nix/store/15q8hglpw6k5a6pdskha40d43imb8jnz-genrulify-0.1.0/bin/genrulify' replay \"$(location :plans/s4820_find_stat_mktemp_sed__10.json)\" \"$OUT\" \"$(location :literals/sandbox_716.layer)\" \"$(location :s2443_chmod)\" \"$(location :s3242_mkdir)\" \"$(location :s3306_make)\" \"$(location :s4039_mv)\" \"$(location :s4177_chmod)\" \"$(location :platform.layer)\"",
+    srcs = [
+        "actions/s4820_find_stat_mktemp_sed__10.manifest",
+        "closure.txt",
+        "env/36.env",
+        "env/37.env",
+        "env/41.env",
+        "env/42.env",
+        "env/43.env",
+        "env/44.env",
+        "env/45.env",
+        "env/46.env",
+        "platform",
+        "sandbox.sh",
+        ":s2443_chmod",
+        ":s3242_mkdir",
+        ":s3306_make",
+        ":s4039_mv",
+        ":s4177_chmod",
+    ],
+    out = "s4820_find_stat_mktemp_sed__10",
+    cmd = " ".join([
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s4820_find_stat_mktemp_sed__10 --timeout 300 --pipe 524:0:1,2,3,4,5,6,7,8,9,10,11,12,13:0",
+        "run --cwd /build/source --env 36 --argv0 find --fd 0=null --fd 1=pipe-w:524 --fd 2=err --status 0 --argc 7 --",
+        "/nix/store/ycrbcy9sg4knpnik6a01dk70l0m673x7-findutils-4.11.0/bin/find /nix/store/s5w9gi7p8m7yx878yxkf8q8480i82qj7-cowsay-3.8.4 -type f -perm -0100 -print0",
+        "run --cwd /build/source --env 42 --argv0 stat --fd 0=pipe-r:524 --fd 1=null --fd 2=err --fd 63=pipe-r:524 --after 0 --status 0 --argc 4 --",
+        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/stat --printf %y /nix/store/s5w9gi7p8m7yx878yxkf8q8480i82qj7-cowsay-3.8.4/bin/cowthink",
+        "run --cwd /build/source --env 37 --argv0 mktemp --fd 0=pipe-r:524 --fd 1=null --fd 2=err --fd 63=pipe-r:524 --after 0,1 --status 0 --argc 3 --",
+        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/mktemp -t patchShebangs.XXXXXXXXXX",
+        "run --cwd /build/source --env 43 --argv0 sed --fd 0=pipe-r:524 --fd 1=file:w:/build/patchShebangs.pyqzx43HY5 --fd 2=err --fd 63=pipe-r:524 --after 0,1,2 --status 0 --argc 4 --",
+        "/nix/store/1ggxndc1gd5061j5hqprhnhx9p30yilv-gnused-4.10/bin/sed -e '1 s|.*|#\\!/nix/store/8g4dmf7l8q1mf9w4wfmlcl8gvdgmhb8v-perl-5.42.3/bin/perl|' /nix/store/s5w9gi7p8m7yx878yxkf8q8480i82qj7-cowsay-3.8.4/bin/cowthink",
+        "run --cwd /build/source --env 44 --argv0 cat --fd 0=pipe-r:524 --fd 1=file:w:/nix/store/s5w9gi7p8m7yx878yxkf8q8480i82qj7-cowsay-3.8.4/bin/cowthink --fd 2=err --fd 63=pipe-r:524 --after 0,1,2,3 --status 0 --argc 2 --",
+        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/cat /build/patchShebangs.pyqzx43HY5",
+        "run --cwd /build/source --env 41 --argv0 rm --fd 0=pipe-r:524 --fd 1=err --fd 2=err --fd 63=pipe-r:524 --after 0,1,2,3,4 --status 0 --argc 2 --",
+        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/rm /build/patchShebangs.pyqzx43HY5",
+        "run --cwd /build/source --env 45 --argv0 touch --fd 0=pipe-r:524 --fd 1=err --fd 2=err --fd 63=pipe-r:524 --after 0,1,2,3,4,5 --status 0 --argc 4 --",
+        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/touch --date '2026-11-18 00:00:00.085513318 +0000' /nix/store/s5w9gi7p8m7yx878yxkf8q8480i82qj7-cowsay-3.8.4/bin/cowthink",
+        "run --cwd /build/source --env 46 --argv0 basename --fd 0=pipe-r:524 --fd 1=null --fd 2=err --fd 63=pipe-r:524 --after 0,1,2,3,4,5,6 --status 0 --argc 2 --",
+        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/basename /nix/store/10dxp0qxqxxsyiljrh2kp0xqhz6arhcx-bash-5.3p15/bin/bash",
+        "run --cwd /build/source --env 42 --argv0 stat --fd 0=pipe-r:524 --fd 1=null --fd 2=err --fd 63=pipe-r:524 --after 0,1,2,3,4,5,6,7 --status 0 --argc 4 --",
+        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/stat --printf %y /nix/store/s5w9gi7p8m7yx878yxkf8q8480i82qj7-cowsay-3.8.4/bin/.cowsay-wrapped",
+        "run --cwd /build/source --env 37 --argv0 mktemp --fd 0=pipe-r:524 --fd 1=null --fd 2=err --fd 63=pipe-r:524 --after 0,1,2,3,4,5,6,7,8 --status 0 --argc 3 --",
+        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/mktemp -t patchShebangs.XXXXXXXXXX",
+        "run --cwd /build/source --env 43 --argv0 sed --fd 0=pipe-r:524 --fd 1=file:w:/build/patchShebangs.TymD3DY7An --fd 2=err --fd 63=pipe-r:524 --after 0,1,2,3,4,5,6,7,8,9 --status 0 --argc 4 --",
+        "/nix/store/1ggxndc1gd5061j5hqprhnhx9p30yilv-gnused-4.10/bin/sed -e '1 s|.*|#\\!/nix/store/8g4dmf7l8q1mf9w4wfmlcl8gvdgmhb8v-perl-5.42.3/bin/perl|' /nix/store/s5w9gi7p8m7yx878yxkf8q8480i82qj7-cowsay-3.8.4/bin/.cowsay-wrapped",
+        "run --cwd /build/source --env 44 --argv0 cat --fd 0=pipe-r:524 --fd 1=file:w:/nix/store/s5w9gi7p8m7yx878yxkf8q8480i82qj7-cowsay-3.8.4/bin/.cowsay-wrapped --fd 2=err --fd 63=pipe-r:524 --after 0,1,2,3,4,5,6,7,8,9,10 --status 0 --argc 2 --",
+        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/cat /build/patchShebangs.TymD3DY7An",
+        "run --cwd /build/source --env 41 --argv0 rm --fd 0=pipe-r:524 --fd 1=err --fd 2=err --fd 63=pipe-r:524 --after 0,1,2,3,4,5,6,7,8,9,10,11 --status 0 --argc 2 --",
+        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/rm /build/patchShebangs.TymD3DY7An",
+        "run --cwd /build/source --env 45 --argv0 touch --fd 0=pipe-r:524 --fd 1=err --fd 2=err --fd 63=pipe-r:524 --after 0,1,2,3,4,5,6,7,8,9,10,11,12 --status 0 --argc 4 --",
+        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/touch --date '2026-11-18 00:00:00.077292525 +0000' /nix/store/s5w9gi7p8m7yx878yxkf8q8480i82qj7-cowsay-3.8.4/bin/.cowsay-wrapped",
+    ]),
     remote = False,
 )
 
 genrule(
     name = "s5657_find_xargs",
-    srcs = [":literals/sandbox_716.layer",":plans/s5657_find_xargs.json",":platform.layer",":s2443_chmod",":s4395_mkdir",":s4416_mv"],
-    out = "s5657_find_xargs.layer",
-    cmd = "'/nix/store/15q8hglpw6k5a6pdskha40d43imb8jnz-genrulify-0.1.0/bin/genrulify' replay \"$(location :plans/s5657_find_xargs.json)\" \"$OUT\" \"$(location :literals/sandbox_716.layer)\" \"$(location :s2443_chmod)\" \"$(location :s4395_mkdir)\" \"$(location :s4416_mv)\" \"$(location :platform.layer)\"",
+    srcs = [
+        "actions/s5657_find_xargs.manifest",
+        "closure.txt",
+        "env/54.env",
+        "env/56.env",
+        "platform",
+        "sandbox.sh",
+        ":s2443_chmod",
+        ":s4395_mkdir",
+        ":s4416_mv",
+    ],
+    out = "s5657_find_xargs",
+    cmd = " ".join([
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s5657_find_xargs --timeout 300 --pipe 569:0:1:0",
+        "run --cwd /build/source --env 54 --argv0 find --fd 0=null --fd 1=pipe-w:569 --fd 2=err --status 0 --argc 9 --",
+        "/nix/store/ycrbcy9sg4knpnik6a01dk70l0m673x7-findutils-4.11.0/bin/find /nix/store/b5r8bhcls3hn4748zf4ln16771nlkwa5-cowsay-3.8.4-man/share/man/ -type f -a '!' -regex '.*\\.\\(bz2\\|gz\\|xz\\)$' -print0",
+        "run --cwd /build/source --env 56 --argv0 xargs --fd 0=pipe-r:569 --fd 1=err --fd 2=err --after 0 --status 0 --argc 8 --",
+        "/nix/store/ycrbcy9sg4knpnik6a01dk70l0m673x7-findutils-4.11.0/bin/xargs -0 -n1 -P 1 gzip -n -f",
+    ]),
     remote = False,
 )
 
 genrule(
     name = "s5734_find_sort_readlink_ln__1",
-    srcs = [":literals/sandbox_716.layer",":plans/s5734_find_sort_readlink_ln__1.json",":platform.layer",":s2443_chmod",":s4395_mkdir",":s4416_mv"],
-    out = "s5734_find_sort_readlink_ln__1.layer",
-    cmd = "'/nix/store/15q8hglpw6k5a6pdskha40d43imb8jnz-genrulify-0.1.0/bin/genrulify' replay \"$(location :plans/s5734_find_sort_readlink_ln__1.json)\" \"$OUT\" \"$(location :literals/sandbox_716.layer)\" \"$(location :s2443_chmod)\" \"$(location :s4395_mkdir)\" \"$(location :s4416_mv)\" \"$(location :platform.layer)\"",
+    srcs = [
+        "actions/s5734_find_sort_readlink_ln__1.manifest",
+        "closure.txt",
+        "env/54.env",
+        "env/55.env",
+        "env/57.env",
+        "env/58.env",
+        "env/59.env",
+        "platform",
+        "sandbox.sh",
+        ":s2443_chmod",
+        ":s4395_mkdir",
+        ":s4416_mv",
+    ],
+    out = "s5734_find_sort_readlink_ln__1",
+    cmd = " ".join([
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s5734_find_sort_readlink_ln__1 --timeout 300 --pipe 577:0:1:0 --pipe 578:1:2,3,4:0",
+        "run --cwd /build/source --env 54 --argv0 find --fd 0=null --fd 1=pipe-w:577 --fd 2=err --status 0 --argc 9 --",
+        "/nix/store/ycrbcy9sg4knpnik6a01dk70l0m673x7-findutils-4.11.0/bin/find /nix/store/b5r8bhcls3hn4748zf4ln16771nlkwa5-cowsay-3.8.4-man/share/man/ -type l -a '!' -regex '.*\\.\\(bz2\\|gz\\|xz\\)$' -print0",
+        "run --cwd /build/source --env 57 --argv0 sort --fd 0=pipe-r:577 --fd 1=pipe-w:578 --fd 2=err --after 0 --status 0 --argc 2 --",
+        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/sort -z",
+        "run --cwd /build/source --env 58 --argv0 readlink --fd 0=pipe-r:578 --fd 1=null --fd 2=err --after 0,1 --status 0 --argc 3 --",
+        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/readlink -f /nix/store/b5r8bhcls3hn4748zf4ln16771nlkwa5-cowsay-3.8.4-man/share/man/man1/cowthink.1",
+        "run --cwd /build/source --env 59 --argv0 ln --fd 0=pipe-r:578 --fd 1=err --fd 2=err --after 0,1,2 --status 0 --argc 4 --",
+        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/ln -sf /nix/store/b5r8bhcls3hn4748zf4ln16771nlkwa5-cowsay-3.8.4-man/share/man/man1/cowsay.1.gz /nix/store/b5r8bhcls3hn4748zf4ln16771nlkwa5-cowsay-3.8.4-man/share/man/man1/cowthink.1.gz",
+        "run --cwd /build/source --env 55 --argv0 rm --fd 0=pipe-r:578 --fd 1=err --fd 2=err --after 0,1,2,3 --status 0 --argc 2 --",
+        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/rm /nix/store/b5r8bhcls3hn4748zf4ln16771nlkwa5-cowsay-3.8.4-man/share/man/man1/cowthink.1",
+    ]),
     remote = False,
 )
 
 genrule(
     name = "s6013_find_xargs",
-    srcs = [":literals/sandbox_716.layer",":plans/s6013_find_xargs.json",":platform.layer",":s2443_chmod",":s3242_mkdir",":s3306_make",":s4395_mkdir",":s4416_mv",":s5657_find_xargs",":s5734_find_sort_readlink_ln__1"],
-    out = "s6013_find_xargs.layer",
-    cmd = "'/nix/store/15q8hglpw6k5a6pdskha40d43imb8jnz-genrulify-0.1.0/bin/genrulify' replay \"$(location :plans/s6013_find_xargs.json)\" \"$OUT\" \"$(location :literals/sandbox_716.layer)\" \"$(location :s2443_chmod)\" \"$(location :s3242_mkdir)\" \"$(location :s3306_make)\" \"$(location :s4395_mkdir)\" \"$(location :s4416_mv)\" \"$(location :s5657_find_xargs)\" \"$(location :s5734_find_sort_readlink_ln__1)\" \"$(location :platform.layer)\"",
+    srcs = [
+        "actions/s6013_find_xargs.manifest",
+        "closure.txt",
+        "env/35.env",
+        "env/61.env",
+        "platform",
+        "sandbox.sh",
+        ":s2443_chmod",
+        ":s3242_mkdir",
+        ":s3306_make",
+        ":s4395_mkdir",
+        ":s4416_mv",
+        ":s5657_find_xargs",
+        ":s5734_find_sort_readlink_ln__1",
+    ],
+    out = "s6013_find_xargs",
+    cmd = " ".join([
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s6013_find_xargs --timeout 300 --pipe 589:0:1:0",
+        "run --cwd /build/source --env 35 --argv0 find --fd 0=null --fd 1=pipe-w:589 --fd 2=err --status 0 --argc 7 --",
+        "/nix/store/ycrbcy9sg4knpnik6a01dk70l0m673x7-findutils-4.11.0/bin/find /nix/store/s5w9gi7p8m7yx878yxkf8q8480i82qj7-cowsay-3.8.4 /nix/store/b5r8bhcls3hn4748zf4ln16771nlkwa5-cowsay-3.8.4-man -type l -printf '%H\\0%p\\0'",
+        "run --cwd /build/source --env 61 --argv0 xargs --fd 0=pipe-r:589 --fd 1=err --fd 2=err --after 0 --status 0 --argc 10 --",
+        "/nix/store/ycrbcy9sg4knpnik6a01dk70l0m673x7-findutils-4.11.0/bin/xargs -0 -n2 -r -P 1 sh -c '\n      output=\"$1\"\n      link=\"$2\"\n\n      linkTarget=\\$(readlink \"$link\")\n\n      # only touch links that point inside the same output tree\n      [[ $linkTarget == \"$output\"/* ]] || exit 0\n\n      if [ ! -e \"$linkTarget\" ]; then\n        echo \"the symlink $link is broken, it points to $linkTarget (which is missing)\"\n      fi\n\n      echo \"making symlink relative: $link\"\n      ln -snrf \"$linkTarget\" \"$link\"\n    ' _",
+    ]),
     remote = False,
 )
 
 genrule(
     name = "archive_man",
-    srcs = [":plans/archive_man.json",":s4395_mkdir",":s4416_mv",":s5657_find_xargs",":s6013_find_xargs"],
-    out = "man.nar",
-    cmd = "'/nix/store/15q8hglpw6k5a6pdskha40d43imb8jnz-genrulify-0.1.0/bin/genrulify' pack \"$(location :plans/archive_man.json)\" \"$OUT\" \"$(location :s4395_mkdir)\" \"$(location :s4416_mv)\" \"$(location :s5657_find_xargs)\" \"$(location :s6013_find_xargs)\"",
+    srcs = [
+        "actions/archive_man.manifest",
+        "sandbox.sh",
+        ":s4395_mkdir",
+        ":s4416_mv",
+        ":s5657_find_xargs",
+        ":s6013_find_xargs",
+    ],
+    out = "archive_man.nar",
+    cmd = " ".join([
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name archive_man pack /nix/store/b5r8bhcls3hn4748zf4ln16771nlkwa5-cowsay-3.8.4-man",
+    ]),
     remote = False,
 )
 
 genrule(
     name = "archive_out",
-    srcs = [":plans/archive_out.json",":s3242_mkdir",":s3306_make",":s4110_chmod",":s4820_find_stat_mktemp_sed__10"],
-    out = "out.nar",
-    cmd = "'/nix/store/15q8hglpw6k5a6pdskha40d43imb8jnz-genrulify-0.1.0/bin/genrulify' pack \"$(location :plans/archive_out.json)\" \"$OUT\" \"$(location :s3242_mkdir)\" \"$(location :s3306_make)\" \"$(location :s4110_chmod)\" \"$(location :s4820_find_stat_mktemp_sed__10)\"",
+    srcs = [
+        "actions/archive_out.manifest",
+        "sandbox.sh",
+        ":s3242_mkdir",
+        ":s3306_make",
+        ":s4110_chmod",
+        ":s4820_find_stat_mktemp_sed__10",
+    ],
+    out = "archive_out.nar",
+    cmd = " ".join([
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name archive_out pack /nix/store/s5w9gi7p8m7yx878yxkf8q8480i82qj7-cowsay-3.8.4",
+    ]),
     remote = False,
 )
 

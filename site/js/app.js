@@ -61,6 +61,11 @@ const GraphText = Object.freeze({
     caption:
       "One node per operation, and an edge wherever one operation consumes a file version another wrote. " +
       "The grey nodes are groups whose writes never reach an output. Run the elimination above to delete them.",
+
+    // For a build in which every operation reaches an output.
+    captionWithoutDead:
+      "One node per operation, and an edge wherever one operation consumes a file version another wrote. " +
+      "Every operation of this build reaches an output, so elimination has nothing to delete.",
   },
   OPTIMIZED: {
     title: "What is left",
@@ -332,7 +337,8 @@ async function renderLane() {
 function renderGraph() {
   const text = state.eliminated ? GraphText.OPTIMIZED : GraphText.RECORDED;
   $("graph-title").textContent = text.title;
-  $("graph-caption").textContent = text.caption;
+  const anyDead = state.graph.nodes.some((node) => node.dead);
+  $("graph-caption").textContent = anyDead || state.eliminated ? text.caption : text.captionWithoutDead;
   draw($("graph"), shownNodes(), { labelOf: nodeLabel, classOf: nodeClass, onSelect: select });
 }
 

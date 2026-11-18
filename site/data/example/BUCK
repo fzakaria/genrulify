@@ -1,39 +1,74 @@
-export_file(name = "literals/sandbox_717.layer", src = "literals/sandbox_717.layer")
-export_file(name = "plans/archive.json", src = "plans/archive.json")
-export_file(name = "plans/s735_dd.json", src = "plans/s735_dd.json")
-export_file(name = "plans/s764_dd.json", src = "plans/s764_dd.json")
-export_file(name = "plans/s782_dd.json", src = "plans/s782_dd.json")
-export_file(name = "platform.layer", src = "platform.layer")
-
 genrule(
     name = "s735_dd",
-    srcs = [":literals/sandbox_717.layer",":plans/s735_dd.json",":platform.layer"],
-    out = "s735_dd.layer",
-    cmd = "'/nix/store/15q8hglpw6k5a6pdskha40d43imb8jnz-genrulify-0.1.0/bin/genrulify' replay \"$(location :plans/s735_dd.json)\" \"$OUT\" \"$(location :literals/sandbox_717.layer)\" \"$(location :platform.layer)\"",
+    srcs = [
+        "actions/s735_dd.manifest",
+        "closure.txt",
+        "env/0.env",
+        "platform",
+        "sandbox.sh",
+    ],
+    out = "s735_dd",
+    cmd = " ".join([
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s735_dd --timeout 300",
+        "run --cwd /build --env 0 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 4 --",
+        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/dd if=/nix/store/xzgjbcyd85zn18pfyrjvl2ravhi5snlh-header.txt of=bundle status=none",
+    ]),
     remote = False,
 )
 
 genrule(
     name = "s764_dd",
-    srcs = [":literals/sandbox_717.layer",":plans/s764_dd.json",":platform.layer",":s735_dd"],
-    out = "s764_dd.layer",
-    cmd = "'/nix/store/15q8hglpw6k5a6pdskha40d43imb8jnz-genrulify-0.1.0/bin/genrulify' replay \"$(location :plans/s764_dd.json)\" \"$OUT\" \"$(location :literals/sandbox_717.layer)\" \"$(location :s735_dd)\" \"$(location :platform.layer)\"",
+    srcs = [
+        "actions/s764_dd.manifest",
+        "closure.txt",
+        "env/0.env",
+        "platform",
+        "sandbox.sh",
+        ":s735_dd",
+    ],
+    out = "s764_dd",
+    cmd = " ".join([
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s764_dd --timeout 300",
+        "run --cwd /build --env 0 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 6 --",
+        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/dd if=/nix/store/vr613az0762zqyzplvw8cdm1vk2f6bvc-body.txt of=bundle oflag=append conv=notrunc status=none",
+    ]),
     remote = False,
 )
 
 genrule(
     name = "s782_dd",
-    srcs = [":literals/sandbox_717.layer",":plans/s782_dd.json",":platform.layer",":s764_dd"],
-    out = "s782_dd.layer",
-    cmd = "'/nix/store/15q8hglpw6k5a6pdskha40d43imb8jnz-genrulify-0.1.0/bin/genrulify' replay \"$(location :plans/s782_dd.json)\" \"$OUT\" \"$(location :literals/sandbox_717.layer)\" \"$(location :s764_dd)\" \"$(location :platform.layer)\"",
+    srcs = [
+        "actions/s782_dd.manifest",
+        "closure.txt",
+        "env/1.env",
+        "platform",
+        "sandbox.sh",
+        ":s764_dd",
+    ],
+    out = "s782_dd",
+    cmd = " ".join([
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s782_dd --timeout 300",
+        "run --cwd /build --env 1 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 4 --",
+        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/dd if=bundle of=/nix/store/l1dx8g9mr73bdp8y6i2yp92xprmz8xzg-genrulify-example status=none",
+    ]),
     remote = False,
 )
 
 genrule(
     name = "archive",
-    srcs = [":plans/archive.json",":s782_dd"],
-    out = "out.nar",
-    cmd = "'/nix/store/15q8hglpw6k5a6pdskha40d43imb8jnz-genrulify-0.1.0/bin/genrulify' pack \"$(location :plans/archive.json)\" \"$OUT\" \"$(location :s782_dd)\"",
+    srcs = [
+        "actions/archive.manifest",
+        "sandbox.sh",
+        ":s782_dd",
+    ],
+    out = "archive.nar",
+    cmd = " ".join([
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name archive pack /nix/store/l1dx8g9mr73bdp8y6i2yp92xprmz8xzg-genrulify-example",
+    ]),
     remote = False,
 )
 

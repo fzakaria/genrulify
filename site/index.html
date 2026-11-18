@@ -130,10 +130,11 @@
         opened is replayed once under a system call tracer and then given exactly the files,
         directories and listings the trace shows it touching. A file that differs on every run,
         such as a log with a timestamp in it, is <em>pinned</em>: the group still runs, and that
-        one file is taken from the recording. A group that cannot be reproduced at all, such as
-        hello's <code>make check</code>, whose test log never matches, is kept as
-        <em>recorded bytes</em>. A group is <em>dead</em> when no output depends on anything it
-        wrote.
+        one file is taken from the recording. A group is kept as <em>recorded bytes</em> when
+        it cannot be reproduced at all, or when the only thing of it that a later step reads is
+        pinned. hello's <code>make check</code> is one: the install step looks at its test log
+        and at nothing else it wrote, so the tests do not run again. A group is <em>dead</em>
+        when no output depends on anything it wrote.
       </p>
       <p>
         A rule's <code>cmd</code> is the recorded command line, handed to
