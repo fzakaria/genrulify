@@ -62,17 +62,32 @@ def ExecOp : SpliceOp<"exec", [Pure]> {
   let hasVerifier = 1;
 }
 
-// Bytes taken from the recording. Three things have no execve to replay:
+// Entries taken from the recording. Four things have no execve to run:
 // what Nix put in the sandbox before the builder started ("sandbox"), what
-// the builder wrote in-process between process groups ("glue"), and a
-// process group that replay could not reproduce, which is marked `demoted`
-// and keeps the group's name.
+// the builder wrote in-process between process groups ("glue"), a process
+// group that replay could not reproduce, which is marked `demoted`, and
+// results of a process group that need no bytes computed, which are marked
+// `folded`. The last two keep the group's name.
 def LiteralOp : SpliceOp<"literal", [Pure]> {
   let summary = "Entry versions copied from the recording";
-  let arguments = (ins StrAttr:$name, I64Attr:$step, EntryArrayAttr:$writes, UnitAttr:$demoted);
+  let arguments = (ins StrAttr:$name, I64Attr:$step, EntryArrayAttr:$writes, UnitAttr:$demoted, UnitAttr:$folded);
   let results = (outs Variadic<Entry>:$outputs);
-  let assemblyFormat = "$name `at` $step (`demoted` $demoted^)? custom<Writes>($writes, type($outputs)) attr-dict";
+  let assemblyFormat = "$name `at` $step (`demoted` $demoted^)? (`folded` $folded^)? custom<Writes>($writes, type($outputs)) attr-dict";
   let hasVerifier = 1;
+}
+
+// A file with the bytes of another version: what `cp`, `install` and `mv`
+// leave behind, and what `chmod` leaves at the path it was given. The
+// result differs from the source in path, mode or mtime only, so no
+// process has to run to produce the bytes. `name` and `step` are those of
+// the process group the copy was raised from.
+def CopyOp : SpliceOp<"copy", [Pure]> {
+  let summary = "A file version with the content of another";
+  let arguments = (ins Entry:$source, StrAttr:$name, I64Attr:$step, EntryAttr:$entry);
+  let results = (outs Entry:$output);
+  let assemblyFormat = "$name `at` $step `(` $source `)` `->` $entry attr-dict";
+  let hasVerifier = 1;
+  let hasCanonicalizeMethod = 1;
 }
 
 // The root of the graph: the final version of every path below one

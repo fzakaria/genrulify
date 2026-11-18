@@ -321,12 +321,4 @@ mlir::OwningOpRef<mlir::ModuleOp> importRecording(mlir::MLIRContext &context,
   return module;
 }
 
-void optimize(mlir::ModuleOp module) {
-  // splice.exec and splice.literal are Pure, so the canonicalizer deletes
-  // the ones whose results nothing uses: processes that only looked at the
-  // filesystem, temporary files, and the builder's own bookkeeping.
-  mlir::PassManager passes(module.getContext());
-  passes.addPass(mlir::createCanonicalizerPass());
-  check(mlir::succeeded(passes.run(module)), "cannot optimize module");
-}
 } // namespace splice_ir

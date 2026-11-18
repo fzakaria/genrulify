@@ -46,7 +46,10 @@ std::string label(const Group &group);
 
 // The build target that carries out an operation: `glue_784` for a literal
 // of the builder's own writes, `lit_3614_mktemp` for a demoted group,
-// `s2607_c__` for a replayed one and `archive` for an output.
+// `const_3082_mkdir` for constants folded out of a group, `s2607_c__` for
+// a replayed group and `archive` for an output. The copies raised from a
+// group are named `copy_2016_cp`, which is not a target: a copy is read
+// under the name of the file it copies.
 std::string targetName(mlir::Operation *op, size_t outputCount);
 
 // The file that carries a regular file's bytes: the target that wrote the

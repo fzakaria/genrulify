@@ -2,10 +2,14 @@
 
 #include "mlir/IR/BuiltinOps.h"
 #include "recording.h"
+#include <array>
 #include <filesystem>
 #include <istream>
 #include <map>
+#include <optional>
 #include <set>
+#include <span>
+#include <string_view>
 
 namespace splice_ir {
 // How a process group's inputs are chosen, from least to most recorded
@@ -75,13 +79,61 @@ mlir::OwningOpRef<mlir::ModuleOp> importRecording(mlir::MLIRContext &context,
                                                   const Recording &recording,
                                                   const Verdicts &verdicts);
 
-// Removes every operation the outputs do not depend on.
-void optimize(mlir::ModuleOp module);
+// The rewrites of a module, in the order the pipeline runs them. Each one
+// leaves every value with the entry the recording gave the value, which is
+// all the composition proof in docs/theory.md asks of a graph.
+enum class Pass {
+  // Turns a file the driver wrote itself, with the bytes of a file that
+  // already exists, into a copy of that file. A driver that links or
+  // renames a compiled file in-process leaves one.
+  Link,
+
+  // Removes every operation the outputs do not depend on.
+  Eliminate,
+
+  // Takes results that need no bytes computed, which are directories,
+  // symlinks and empty files, out of their process group. A group left
+  // with no other result is no longer run.
+  Fold,
+
+  // Turns a result with the bytes of the operand at the same path into a
+  // copy of the operand: a chmod, or a rewrite that changed nothing.
+  Merge,
+
+  // Turns a result with the bytes of an operand at another path into a
+  // copy of the operand: cp, install, mv.
+  Raise,
+};
+inline constexpr std::array kAllPasses{Pass::Link, Pass::Eliminate, Pass::Fold,
+                                       Pass::Merge, Pass::Raise};
+
+// The file in a recording directory where `check` reports what became of
+// every process group, and with which passes.
+inline constexpr std::string_view kReportFile = "check.json";
+
+// What a report says of a group that is not replayed: its results in use
+// are copies of files it was given, or constants, or recorded bytes, or
+// nothing reads anything it wrote.
+inline constexpr std::string_view kCopyOutcome = "copy";
+inline constexpr std::string_view kFoldedOutcome = "folded";
+inline constexpr std::string_view kDeadOutcome = "dead";
+
+// The name a pass has on the command line and in reports.
+std::string_view passName(Pass pass);
+std::optional<Pass> passNamed(std::string_view name);
+
+// Runs the given passes in pipeline order. Whatever a pass other than
+// Link leaves without a use is removed after the pass.
+void optimize(mlir::ModuleOp module,
+              std::span<const Pass> passes = kAllPasses);
 
 // Replays each live process group alone against recorded inputs and widens
 // or demotes the groups that do not reproduce their recorded writes, until
 // every remaining splice.exec has been reproduced. Saves the verdicts.
-void checkRecording(const Recording &recording);
+// `passes` are the rewrites the graph will be lowered with: a group they
+// remove is not replayed, and one they leave must be.
+void checkRecording(const Recording &recording,
+                    std::span<const Pass> passes = kAllPasses);
 
 // Reads the output of a failed build of an emitted workspace and adjusts
 // the verdicts of the rules that did not reproduce the recording: results

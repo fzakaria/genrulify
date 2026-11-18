@@ -1,5 +1,6 @@
 #include "dialect.h"
 #include "mlir/IR/Builders.h"
+#include "mlir/IR/PatternMatch.h"
 #include "llvm/ADT/StringSet.h"
 #include "llvm/ADT/TypeSwitch.h"
 #include "llvm/Support/Format.h"
@@ -101,7 +102,7 @@ namespace splice_ir {
 void SpliceDialect::initialize() {
   addTypes<EntryType>();
   addAttributes<EntryAttr>();
-  addOperations<ExecOp, LiteralOp, OutputOp>();
+  addOperations<ExecOp, LiteralOp, CopyOp, OutputOp>();
 }
 
 // Syntax: <"/build/a.out" file 755 mtime 1 "sha256 or link target">. The
@@ -171,12 +172,57 @@ mlir::ArrayAttr toAttributes(mlir::MLIRContext *context,
 
 std::optional<Entry> entryOf(mlir::Value value) {
   auto *op = value.getDefiningOp();
-  if (op == nullptr || !llvm::isa<ExecOp, LiteralOp>(op)) {
+  if (op == nullptr) {
+    return std::nullopt;
+  }
+  if (auto copy = llvm::dyn_cast<CopyOp>(op)) {
+    return fromAttribute(copy.getEntry());
+  }
+  if (!llvm::isa<ExecOp, LiteralOp>(op)) {
     return std::nullopt;
   }
   const auto writes = op->getAttrOfType<mlir::ArrayAttr>("writes");
   const auto index = llvm::cast<mlir::OpResult>(value).getResultNumber();
   return fromAttribute(llvm::cast<EntryAttr>(writes[index]));
+}
+
+mlir::Value contentSource(mlir::Value value) {
+  while (auto copy = llvm::dyn_cast_or_null<CopyOp>(value.getDefiningOp())) {
+    value = copy.getSource();
+  }
+  return value;
+}
+
+bool isConstant(const Entry &entry) {
+  return entry.kind != EntryKind::File || entry.content == kEmptyDigest;
+}
+
+// A copy has the bytes of its source, and only a regular file has bytes.
+mlir::LogicalResult CopyOp::verify() {
+  const auto source = entryOf(getSource());
+  if (!source) {
+    return emitOpError("expected a source defined by a splice operation");
+  }
+  const auto entry = fromAttribute(getEntry());
+  if (source->kind != EntryKind::File || entry.kind != EntryKind::File) {
+    return emitOpError("copies something other than a regular file");
+  }
+  if (source->content != entry.content) {
+    return emitOpError("does not have the content of its source");
+  }
+  return mlir::success();
+}
+
+// A copy of a copy has the bytes of the original, so the copy names the
+// original and the copy in between can die if nothing else reads it.
+mlir::LogicalResult CopyOp::canonicalize(CopyOp op,
+                                         mlir::PatternRewriter &rewriter) {
+  const auto original = contentSource(op.getSource());
+  if (original == op.getSource()) {
+    return mlir::failure();
+  }
+  rewriter.modifyOpInPlace(op, [&] { op.getSourceMutable().assign(original); });
+  return mlir::success();
 }
 
 // A process group sees one filesystem, so the group cannot be given two

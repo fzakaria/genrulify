@@ -26,6 +26,38 @@ module {
 MLIR
 "$compiler" opt "$scratch/ok.mlir" | grep -q 'splice.exec "cc" at 2'
 
+# A constant folded out of a process group and a copy of a file both parse
+# and print.
+cat > "$scratch/raised.mlir" <<'MLIR'
+module {
+  %0 = splice.literal "sandbox" at 1 -> [#splice.entry<"/build/f" file 644 mtime 1 "aa">]
+  %1 = splice.literal "mkdir" at 2 folded -> [#splice.entry<"/out" dir 755 mtime 2>]
+  %2 = splice.copy "cp" at 3(%0) -> #splice.entry<"/out/f" file 755 mtime 3 "aa">
+  splice.output "out" "/out"(%1, %2)
+}
+MLIR
+"$compiler" opt "$scratch/raised.mlir" dce > "$scratch/raised.out"
+grep -q 'splice.literal "mkdir" at 2 folded' "$scratch/raised.out"
+grep -q 'splice.copy "cp" at 3(%0) -> <"/out/f" file 755 mtime 3 "aa">' "$scratch/raised.out"
+
+# What is printed parses again.
+"$compiler" opt "$scratch/raised.out" dce | grep -q 'splice.copy "cp" at 3(%0)'
+
+
+# A copy has the bytes of its source, and only a regular file has bytes.
+rejects 'content of its source' <<'MLIR'
+module {
+  %0 = splice.literal "sandbox" at 1 -> [#splice.entry<"/build/f" file 644 mtime 1 "aa">]
+  %1 = splice.copy "cp" at 2(%0) -> #splice.entry<"/build/g" file 644 mtime 2 "bb">
+}
+MLIR
+rejects 'regular file' <<'MLIR'
+module {
+  %0 = splice.literal "sandbox" at 1 -> [#splice.entry<"/build" dir 700 mtime 1>]
+  %1 = splice.copy "cp" at 2(%0) -> #splice.entry<"/out" dir 700 mtime 2>
+}
+MLIR
+
 # A process group sees one filesystem and cannot read two versions of a path.
 rejects 'two versions' <<'MLIR'
 module {

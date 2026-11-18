@@ -58,6 +58,31 @@ test -s env/0.env
 test -s platform/etc/hosts
 grep -q '50f55425c6b2fa76153714d7097567804eabbe75984a18b4534537973c24d9fa' actions/s764_dd.manifest
 
+# A copy is read under the name of the file it copies. With every pass
+# run, the last dd is a copy of the bundle, so two commands are left, and
+# the archive rule lists the appended bundle and stages it at the output
+# path.
+"$compiler" opt "$scratch/graph.mlir" > "$scratch/optimized.mlir"
+"$compiler" emit "$data/example" "$scratch/optimized.mlir" "$scratch/optimized"
+test "$(grep -c '^genrule(' "$scratch/optimized/BUILD.bazel")" = 3
+rule "$scratch/optimized/BUILD.bazel" archive | grep -q '":s764_dd/build/bundle"'
+grep -q "/nix/store/l1dx8g9mr73bdp8y6i2yp92xprmz8xzg-genrulify-example.*s764_dd/build/bundle" \
+    "$scratch/optimized/actions/archive.manifest"
+
+# A group that `check` did not replay must not become a rule. A report made
+# with every pass says the last dd is a copy, so lowering the graph with
+# that dd still in it is refused.
+cp -r "$data/example" "$scratch/reported"
+chmod -R u+w "$scratch/reported"
+cat > "$scratch/reported/check.json" <<'JSON'
+{"groups": [{"step": 782, "name": "dd", "processes": 1, "outcome": "copy", "inputs": 0, "pinned": []}]}
+JSON
+if "$compiler" emit "$scratch/reported" "$scratch/graph.mlir" "$scratch/unchecked" 2> "$scratch/error"; then
+    exit 1
+fi
+grep -q 'was not replayed' "$scratch/error"
+"$compiler" emit "$scratch/reported" "$scratch/optimized.mlir" "$scratch/checked-workspace"
+
 # A process substitution leaves a pipe on a high descriptor, and the bytes
 # the builder had written into it are part of the recording. The rule
 # wires that descriptor to a file of those bytes, named after the pipe so
@@ -89,12 +114,19 @@ cd "$scratch"
 sed 's|^  splice.output|  %9 = splice.exec "ls" at 749(%1) -> [\n      #splice.entry<"/build/listing" file 644 mtime 1 "00">\n  ]\n&|' \
     "$scratch/graph.mlir" > "$scratch/recorded.mlir"
 "$compiler" describe "$data/example" "$scratch/recorded.mlir" > "$scratch/description.json"
-grep -q '"dead":true,"id":"s749_ls"' "$scratch/description.json"
-grep -q '"dead":false,"id":"s764_dd"' "$scratch/description.json"
 grep -q '"id":"s764_dd"' "$scratch/description.json"
 grep -q '"node":"s735_dd"' "$scratch/description.json"
 grep -q '"op":"output"' "$scratch/description.json"
 grep -q 'oflag=append' "$scratch/description.json"
+
+# The description has the graph after each pass. The added ls is there as
+# recorded and after linking, which removes nothing, and is gone after
+# elimination. The last dd ends as a copy.
+for pass in recorded link dce fold merge raise; do
+    grep -q "\"pass\":\"$pass\"" "$scratch/description.json"
+done
+test "$(grep -o '"id":"s749_ls"' "$scratch/description.json" | wc -l)" = 2
+grep -q '"id":"copy_782_dd"' "$scratch/description.json"
 
 # A description carries what the checker reported for each group, so a page
 # can say how many entries a replayed group was given.

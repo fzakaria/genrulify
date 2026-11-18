@@ -199,6 +199,25 @@ std::string buildFile(Backend backend, const std::vector<Rule> &rules) {
   return text;
 }
 
+// The process groups a recording's report lists without a replay, or none
+// when the recording has not been checked.
+std::set<uint64_t> groupsNotReplayed(const Recording &recording) {
+  std::set<uint64_t> steps;
+  const auto report = recording.directory / kReportFile;
+  if (!fs::exists(report)) {
+    return steps;
+  }
+  static const std::set<std::string> replayed{
+      std::string(rungName(Rung::Narrow)), std::string(rungName(Rung::Near)),
+      std::string(rungName(Rung::Traced)), std::string(rungName(Rung::Wide))};
+  for (const auto &group : Json::parse(readBytes(report)).at("groups")) {
+    if (!replayed.contains(group.at("outcome").get<std::string>())) {
+      steps.insert(group.at("step").get<uint64_t>());
+    }
+  }
+  return steps;
+}
+
 // Copies a recorded file's bytes into the workspace under an artifact name.
 void writeArtifact(const Recording &recording, const Entry &entry,
                    const fs::path &file) {
@@ -231,15 +250,26 @@ void emitWorkspace(mlir::ModuleOp module, const Recording &recording,
     for (auto &op : module.getBody()->getOperations()) {
       outputCount += llvm::isa<OutputOp>(op) ? 1 : 0;
     }
+
+    // A rule is only as good as the replay that checked its group. When
+    // the recording has a report, a group the report says was not replayed
+    // must not become a rule: the report was made with other passes, which
+    // removed the group before the checker saw it.
+    const auto unchecked = groupsNotReplayed(recording);
+
+    // A file is read under the name of the version that first had its
+    // bytes. A copy has no file of its own: whoever reads the copy lists
+    // the original and stages it at the copy's path.
     const auto artifactOf = [&](mlir::Value value) {
-      return artifactName(targetName(value.getDefiningOp(), outputCount),
-                          entryOf(value)->path);
+      const auto original = contentSource(value);
+      return artifactName(targetName(original.getDefiningOp(), outputCount),
+                          entryOf(original)->path);
     };
 
     // Sorts a rule's operands into workspace files and other rules' files.
     const auto addOperands = [&](Rule &rule, mlir::OperandRange operands) {
       for (const auto value : operands) {
-        auto *producer = value.getDefiningOp();
+        auto *producer = contentSource(value).getDefiningOp();
         const auto target = targetName(producer, outputCount);
         const bool file = entryOf(value)->kind == EntryKind::File;
         if (llvm::isa<LiteralOp>(producer)) {
@@ -271,9 +301,19 @@ void emitWorkspace(mlir::ModuleOp module, const Recording &recording,
         continue;
       }
 
+
+      // A copy needs no rule.
+      if (llvm::isa<CopyOp>(op)) {
+        continue;
+      }
+
       Rule rule;
       Action action;
       if (auto exec = llvm::dyn_cast<ExecOp>(op)) {
+        check(!unchecked.contains(exec.getStep()),
+              absl::StrCat("the group at step ", exec.getStep(),
+                           " was not replayed by `check`: check the recording "
+                           "with the passes the graph was optimized with"));
         action = execAction(exec, recording, artifactOf, platformArtifact);
         rule.recorded.insert(platformFiles.begin(), platformFiles.end());
         addOperands(rule, exec.getInputs());

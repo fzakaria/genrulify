@@ -46,6 +46,7 @@ add_executable(genrulify
   src/record.cpp
   src/action.cpp
   src/import.cpp
+  src/passes.cpp
   src/check.cpp
   src/access.cpp
   src/emit.cpp

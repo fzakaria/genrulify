@@ -13,7 +13,6 @@ namespace fs = std::filesystem;
 namespace {
 using Json = nlohmann::json;
 
-constexpr std::string_view kReportFile = "check.json";
 
 // How many consecutive passes over every live group must reproduce the
 // recording without an adjustment before the verdicts are accepted.
@@ -126,7 +125,8 @@ bool learnFromBuild(const Recording &recording, std::istream &log) {
   return true;
 }
 
-void checkRecording(const Recording &recording) {
+void checkRecording(const Recording &recording,
+                    std::span<const Pass> passes) {
   auto verdicts = loadVerdicts(recording);
   std::set<std::pair<uint64_t, Verdict>> reproduced;
   std::map<uint64_t, std::string> failures;
@@ -142,7 +142,7 @@ void checkRecording(const Recording &recording) {
     mlir::MLIRContext context;
     context.getOrLoadDialect<SpliceDialect>();
     auto module = importRecording(context, recording, verdicts);
-    optimize(*module);
+    optimize(*module, passes);
     std::vector<Task> tasks;
     for (auto &op : module->getBody()->getOperations()) {
       auto exec = llvm::dyn_cast<ExecOp>(op);
@@ -273,9 +273,11 @@ void checkRecording(const Recording &recording) {
   mlir::MLIRContext context;
   context.getOrLoadDialect<SpliceDialect>();
   auto module = importRecording(context, recording, verdicts);
-  optimize(*module);
+  optimize(*module, passes);
   std::set<uint64_t> replayedSteps;
   std::set<uint64_t> demotedSteps;
+  std::set<uint64_t> copiedSteps;
+  std::set<uint64_t> foldedSteps;
 
   // How many entries each replayed group is given.
   std::map<uint64_t, size_t> inputCounts;
@@ -284,14 +286,23 @@ void checkRecording(const Recording &recording) {
       replayedSteps.insert(exec.getStep());
       inputCounts[exec.getStep()] = exec.getInputs().size();
     }
-    if (auto literal = llvm::dyn_cast<LiteralOp>(op);
-        literal && literal.getDemoted()) {
-      demotedSteps.insert(literal.getStep());
+    if (auto literal = llvm::dyn_cast<LiteralOp>(op)) {
+      if (literal.getDemoted()) {
+        demotedSteps.insert(literal.getStep());
+      }
+      if (literal.getFolded()) {
+        foldedSteps.insert(literal.getStep());
+      }
+    }
+    if (auto copy = llvm::dyn_cast<CopyOp>(op)) {
+      copiedSteps.insert(copy.getStep());
     }
   }
 
   Json groups = Json::array();
   size_t keptCount = 0;
+  size_t copiedCount = 0;
+  size_t foldedCount = 0;
   for (const auto &group : recording.groups) {
     Verdict verdict;
     if (const auto known = verdicts.find(group.start);
@@ -301,7 +312,7 @@ void checkRecording(const Recording &recording) {
 
     // A group the optimized graph does not contain is dead: no output
     // depends on anything the group wrote.
-    std::string outcome = "dead";
+    std::string outcome(kDeadOutcome);
     const bool replayed = replayedSteps.contains(group.start);
     const auto structural = unreplayable(group);
 
@@ -313,6 +324,16 @@ void checkRecording(const Recording &recording) {
       outcome = std::string(rungName(verdict.rung));
     } else if (kept) {
       outcome = std::string(rungName(Rung::Literal));
+    } else if (copiedSteps.contains(group.start)) {
+      // No process runs: every result in use has the bytes of a file the
+      // group was given.
+      outcome = std::string(kCopyOutcome);
+      ++copiedCount;
+    } else if (foldedSteps.contains(group.start)) {
+      // No process runs: every result in use is a directory, a symlink or
+      // an empty file.
+      outcome = std::string(kFoldedOutcome);
+      ++foldedCount;
     }
     Json item = {{"step", group.start},
                  {"name", label(group)},
@@ -326,13 +347,20 @@ void checkRecording(const Recording &recording) {
     }
     groups.push_back(std::move(item));
   }
+  Json names = Json::array();
+  for (const auto pass : passes) {
+    names.push_back(passName(pass));
+  }
   writeBytes(recording.directory / kReportFile,
-             Json{{"groups", groups}}.dump(kJsonIndent) + "\n");
-  llvm::errs() << recording.groups.size()
-               << " process groups: " << replayedSteps.size()
-               << " replayed and reproduced, " << keptCount
-               << " kept as recorded bytes, "
-               << recording.groups.size() - replayedSteps.size() - keptCount
+             Json{{"passes", names}, {"groups", groups}}.dump(kJsonIndent) +
+                 "\n");
+  const auto dead = recording.groups.size() - replayedSteps.size() -
+                    keptCount - copiedCount - foldedCount;
+  llvm::errs() << recording.groups.size() << " process groups: "
+               << replayedSteps.size() << " replayed and reproduced, "
+               << copiedCount << " raised to copies, " << foldedCount
+               << " folded to constants, "
+               << keptCount << " kept as recorded bytes, " << dead
                << " dead\n";
 }
 } // namespace splice_ir

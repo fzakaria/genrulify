@@ -21,9 +21,15 @@ test "$(grep '"/build/bundle" file' "$scratch/graph.mlir" | sort -u | wc -l)" = 
 # The append at step 764 reads the build directory and the first version.
 grep -q 'splice.exec "dd" at 764(%0, %1)' "$scratch/graph.mlir"
 
-# Every group feeds the output, so optimizing removes nothing.
-"$compiler" opt "$scratch/graph.mlir" > "$scratch/opt.mlir"
+# Every group feeds the output, so elimination removes nothing.
+"$compiler" opt "$scratch/graph.mlir" dce > "$scratch/opt.mlir"
 test "$(grep -c 'splice.exec' "$scratch/opt.mlir")" = 3
+
+# The last dd writes the bundle's bytes to the output path, which the whole
+# pipeline raises to a copy of the bundle.
+"$compiler" opt "$scratch/graph.mlir" > "$scratch/opt.mlir"
+test "$(grep -c 'splice.exec' "$scratch/opt.mlir")" = 2
+grep -q 'splice.copy "dd" at 782' "$scratch/opt.mlir"
 
 # A Literal verdict turns the group into a demoted literal with the same
 # written entry, and the later groups still consume that entry.

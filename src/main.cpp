@@ -14,14 +14,33 @@ constexpr std::string_view kUsage =
     "usage: genrulify record RUN DERIVATION.drv RECORDING [OPEN]\n"
     "       genrulify cuts EVENTS.jsonl TRACE.bin [OPEN]\n"
     "       genrulify accessed STRACE-DIRECTORY\n"
-    "       genrulify check RECORDING\n"
+    "       genrulify check RECORDING [PASS...]\n"
     "       genrulify learn RECORDING < BUILD.log\n"
     "       genrulify import RECORDING\n"
-    "       genrulify opt GRAPH.mlir\n"
+    "       genrulify opt GRAPH.mlir [PASS...]\n"
     "       genrulify emit RECORDING GRAPH.mlir WORKSPACE\n"
     "       genrulify describe RECORDING RECORDED.mlir\n"
     "       genrulify reference RECORDING OUTPUT ARCHIVE.nar\n"
-    "       genrulify verify REFERENCE.nar ARCHIVE.nar\n";
+    "       genrulify verify REFERENCE.nar ARCHIVE.nar\n"
+    "\n"
+    "PASS is one of link, dce, fold, merge and raise. With none named, all\n"
+    "run.\n";
+
+// The passes named on a command line, or every pass when none is named.
+std::vector<splice_ir::Pass> passesFrom(std::span<char *> names) {
+  if (names.empty()) {
+    return {splice_ir::kAllPasses.begin(), splice_ir::kAllPasses.end()};
+  }
+  std::vector<splice_ir::Pass> passes;
+  for (const std::string_view name : names) {
+    const auto pass = splice_ir::passNamed(name);
+    if (!pass) {
+      throw std::runtime_error("unknown pass " + std::string(name));
+    }
+    passes.push_back(*pass);
+  }
+  return passes;
+}
 
 mlir::OwningOpRef<mlir::ModuleOp> parse(mlir::MLIRContext &context,
                                         const char *file) {
@@ -74,8 +93,9 @@ void run(std::span<char *> args) {
     }
     return;
   }
-  if (args.size() == 2 && command == "check") {
-    splice_ir::checkRecording(splice_ir::Recording::load(args[1]));
+  if (args.size() >= 2 && command == "check") {
+    splice_ir::checkRecording(splice_ir::Recording::load(args[1]),
+                              passesFrom(args.subspan(2)));
     return;
   }
   if (args.size() == 2 && command == "learn") {
@@ -106,9 +126,9 @@ void run(std::span<char *> args) {
     print(*module);
     return;
   }
-  if (args.size() == 2 && command == "opt") {
+  if (args.size() >= 2 && command == "opt") {
     auto module = parse(context, args[1]);
-    splice_ir::optimize(*module);
+    splice_ir::optimize(*module, passesFrom(args.subspan(2)));
     print(*module);
     return;
   }

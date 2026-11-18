@@ -11,6 +11,10 @@ namespace splice_ir {
 // devices, sockets and FIFOs out of its archives, and a NAR cannot hold them.
 enum class EntryKind { File, Directory, Symlink };
 
+// The SHA-256 of no bytes, which is the content of every empty file.
+inline constexpr std::string_view kEmptyDigest =
+    "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855";
+
 // What one path held at one step of the recording.
 struct Entry {
   std::string path;

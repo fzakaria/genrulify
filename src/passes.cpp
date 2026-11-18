@@ -1,0 +1,299 @@
+#include "compiler.h"
+#include "dialect.h"
+#include "mlir/IR/Builders.h"
+#include "mlir/Pass/Pass.h"
+#include "mlir/Pass/PassManager.h"
+#include "mlir/Transforms/Passes.h"
+#include "process.h"
+#include <algorithm>
+#include <filesystem>
+#include <map>
+
+namespace splice_ir {
+namespace {
+// The names of the passes on the command line and in reports.
+constexpr std::string_view kLinkName = "link";
+constexpr std::string_view kEliminateName = "dce";
+constexpr std::string_view kFoldName = "fold";
+constexpr std::string_view kMergeName = "merge";
+constexpr std::string_view kRaiseName = "raise";
+
+// The process groups of a module, collected before any of them is
+// rewritten, so that a pass can add operations while it walks them.
+std::vector<ExecOp> processGroups(mlir::ModuleOp module) {
+  std::vector<ExecOp> groups;
+  for (auto &op : module.getBody()->getOperations()) {
+    if (auto exec = llvm::dyn_cast<ExecOp>(op)) {
+      groups.push_back(exec);
+    }
+  }
+  return groups;
+}
+
+// Constant folding. A directory, a symlink and an empty file are known in
+// full from their entry: there are no bytes for a process to compute. The
+// pass moves every such result that something reads into a splice.literal
+// marked `folded`, so that nothing depends on the process group for it. A
+// group left with no result in use, such as a mkdir or a touch, is then
+// dead.
+//
+// The rewrite is sound for the reason demotion is: a literal has the
+// recorded entry by definition, so every reader is given what it was
+// given before.
+struct FoldConstants
+    : mlir::PassWrapper<FoldConstants, mlir::OperationPass<mlir::ModuleOp>> {
+  llvm::StringRef getArgument() const final { return "splice-fold-constants"; }
+  llvm::StringRef getDescription() const final {
+    return "Take results that need no bytes computed out of process groups";
+  }
+
+  void runOnOperation() final {
+    auto *context = &getContext();
+    for (auto exec : processGroups(getOperation())) {
+      // Find the constant results that have a reader.
+      std::vector<mlir::Value> constants;
+      std::vector<Entry> entries;
+      for (const auto result : exec->getResults()) {
+        const auto entry = *entryOf(result);
+        if (result.use_empty() || !isConstant(entry)) {
+          continue;
+        }
+        constants.push_back(result);
+        entries.push_back(entry);
+      }
+      if (constants.empty()) {
+        continue;
+      }
+
+      // Define them once more as a literal, and point the readers there.
+      mlir::OpBuilder builder(exec);
+      const llvm::SmallVector<mlir::Type> types(entries.size(),
+                                                EntryType::get(context));
+      auto literal = LiteralOp::create(
+          builder, exec->getLoc(), types, exec.getName(), exec.getStep(),
+          toAttributes(context, entries), /*demoted=*/false, /*folded=*/true);
+      for (size_t index = 0; index < constants.size(); ++index) {
+        constants[index].replaceAllUsesWith(literal->getResult(index));
+      }
+    }
+  }
+};
+
+// Links the files the driver wrote itself to the files they came from. A
+// driver that renames or links a file in-process, as cargo does with the
+// binary it has just had compiled, leaves a literal with the bytes of a
+// file that already exists. The driver could see every file there was, so
+// the literal is a copy of the latest version with those bytes, wherever
+// that version is.
+//
+// The pass runs before elimination. Until the copy exists nothing reads
+// the compiled file, and elimination would delete the compiler and leave
+// the output as recorded bytes.
+struct LinkDriverWrites
+    : mlir::PassWrapper<LinkDriverWrites,
+                        mlir::OperationPass<mlir::ModuleOp>> {
+  llvm::StringRef getArgument() const final {
+    return "splice-link-driver-writes";
+  }
+  llvm::StringRef getDescription() const final {
+    return "Turn driver-written files with existing bytes into copies";
+  }
+
+  void runOnOperation() final {
+    auto *context = &getContext();
+
+    // The latest file version with each content, among the operations
+    // walked so far.
+    std::map<std::string, mlir::Value> latest;
+    const auto remember = [&](mlir::Operation &op) {
+      for (const auto result : op.getResults()) {
+        const auto entry = *entryOf(result);
+        if (entry.kind == EntryKind::File && !isConstant(entry)) {
+          latest[entry.content] = result;
+        }
+      }
+    };
+
+    // Collect the operations first: the walk adds copies to the block.
+    std::vector<mlir::Operation *> operations;
+    for (auto &op : getOperation().getBody()->getOperations()) {
+      operations.push_back(&op);
+    }
+    for (auto *op : operations) {
+      auto literal = llvm::dyn_cast<LiteralOp>(op);
+
+      // A demoted literal stands for a process group and a folded one has
+      // no bytes, so only what the builder wrote is looked at.
+      if (!literal || literal.getDemoted() || literal.getFolded()) {
+        remember(*op);
+        continue;
+      }
+      mlir::OpBuilder builder(literal);
+      for (mlir::Value result : literal->getResults()) {
+        const auto entry = *entryOf(result);
+        const auto original = latest.find(entry.content);
+        if (result.use_empty() || entry.kind != EntryKind::File ||
+            original == latest.end()) {
+          continue;
+        }
+        auto copy = CopyOp::create(builder, literal->getLoc(),
+                                   EntryType::get(context), original->second,
+                                   literal.getName(), literal.getStep(),
+                                   toAttribute(context, entry));
+        result.replaceAllUsesWith(copy.getOutput());
+      }
+      remember(*op);
+    }
+  }
+};
+
+// Which operand a result is compared with.
+enum class Source {
+  // The operand at the path the result was written to.
+  SamePath,
+
+  // An operand at any other path.
+  OtherPath,
+};
+
+// Turns results that have the bytes of an operand into copies of the
+// operand. A process group that was given a file and left the same bytes,
+// at that path or at another, computed nothing a later step can tell from
+// the file it was given: later steps see a path, a kind, a mode, an mtime
+// and content, and the copy has the recorded value of each.
+//
+// With Source::SamePath the pass merges a result into the version it
+// replaced, which is what a chmod or a rewrite that changed nothing leaves.
+// With Source::OtherPath the pass raises cp, install and mv. A group left
+// with no result in use is then dead.
+struct RaiseCopies
+    : mlir::PassWrapper<RaiseCopies, mlir::OperationPass<mlir::ModuleOp>> {
+  explicit RaiseCopies(Source source) : source(source) {}
+
+  llvm::StringRef getArgument() const final {
+    return source == Source::SamePath ? "splice-merge-same-outputs"
+                                      : "splice-raise-copies";
+  }
+  llvm::StringRef getDescription() const final {
+    return "Turn results with the bytes of an operand into copies";
+  }
+
+  void runOnOperation() final {
+    auto *context = &getContext();
+    for (auto exec : processGroups(getOperation())) {
+      mlir::OpBuilder builder(exec);
+      for (mlir::Value result : exec->getResults()) {
+        const auto entry = *entryOf(result);
+        if (result.use_empty() || entry.kind != EntryKind::File) {
+          continue;
+        }
+        const auto original = operandWithContent(exec, entry);
+        if (!original) {
+          continue;
+        }
+        auto copy = CopyOp::create(builder, exec->getLoc(),
+                                   EntryType::get(context), *original,
+                                   exec.getName(), exec.getStep(),
+                                   toAttribute(context, entry));
+        result.replaceAllUsesWith(copy.getOutput());
+      }
+    }
+  }
+
+private:
+  // The file operand of `exec` that has the content of `entry` and is at
+  // the path this pass looks at. Among operands at other paths, one with
+  // the result's file name is preferred, which is the file a person would
+  // say was copied.
+  std::optional<mlir::Value> operandWithContent(ExecOp exec,
+                                                const Entry &entry) const {
+    const auto name = std::filesystem::path(entry.path).filename();
+    std::optional<mlir::Value> found;
+    for (const auto input : exec.getInputs()) {
+      const auto operand = *entryOf(input);
+      if (operand.kind != EntryKind::File || operand.content != entry.content) {
+        continue;
+      }
+      const bool samePath = operand.path == entry.path;
+      if (source == Source::SamePath) {
+        if (samePath) {
+          return input;
+        }
+        continue;
+      }
+      if (samePath) {
+        continue;
+      }
+      if (std::filesystem::path(operand.path).filename() == name) {
+        return input;
+      }
+      if (!found) {
+        found = input;
+      }
+    }
+    return found;
+  }
+
+  Source source;
+};
+} // namespace
+
+std::string_view passName(Pass pass) {
+  switch (pass) {
+  case Pass::Link:
+    return kLinkName;
+  case Pass::Eliminate:
+    return kEliminateName;
+  case Pass::Fold:
+    return kFoldName;
+  case Pass::Merge:
+    return kMergeName;
+  case Pass::Raise:
+    return kRaiseName;
+  }
+  throw std::logic_error("unknown pass");
+}
+
+std::optional<Pass> passNamed(std::string_view name) {
+  for (const auto pass : kAllPasses) {
+    if (passName(pass) == name) {
+      return pass;
+    }
+  }
+  return std::nullopt;
+}
+
+void optimize(mlir::ModuleOp module, std::span<const Pass> passes) {
+  mlir::PassManager manager(module.getContext());
+  for (const auto pass : kAllPasses) {
+    if (std::ranges::find(passes, pass) == passes.end()) {
+      continue;
+    }
+    switch (pass) {
+    case Pass::Link:
+      // Nothing is removed after linking: the next pass does that.
+      manager.addPass(std::make_unique<LinkDriverWrites>());
+      continue;
+    case Pass::Eliminate:
+      break;
+    case Pass::Fold:
+      manager.addPass(std::make_unique<FoldConstants>());
+      break;
+    case Pass::Merge:
+      manager.addPass(std::make_unique<RaiseCopies>(Source::SamePath));
+      break;
+    case Pass::Raise:
+      manager.addPass(std::make_unique<RaiseCopies>(Source::OtherPath));
+      break;
+    }
+
+    // Every splice operation but the output is Pure, so the canonicalizer
+    // deletes the ones whose results nothing uses: processes that only
+    // looked at the filesystem, temporary files, the builder's own
+    // bookkeeping, and whatever the pass above took the last reader from.
+    // The canonicalizer also makes a copy of a copy name the original.
+    manager.addPass(mlir::createCanonicalizerPass());
+  }
+  check(mlir::succeeded(manager.run(module)), "cannot optimize module");
+}
+} // namespace splice_ir

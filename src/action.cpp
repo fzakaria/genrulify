@@ -352,7 +352,20 @@ std::string targetName(mlir::Operation *op, size_t outputCount) {
       return absl::StrCat("lit_", literal.getStep(), "_",
                           sanitize(literal.getName()));
     }
+
+    // The constants folded out of a group keep the group's step as well.
+    if (literal.getFolded()) {
+      return absl::StrCat("const_", literal.getStep(), "_",
+                          sanitize(literal.getName()));
+    }
     return absl::StrCat(sanitize(literal.getName()), "_", literal.getStep());
+  }
+
+  // Every copy raised from one group has the group's name. No rule is
+  // generated for a copy, so the name is only ever shown to people.
+  if (auto copy = llvm::dyn_cast<CopyOp>(op)) {
+    return absl::StrCat("copy_", copy.getStep(), "_",
+                        sanitize(copy.getName()));
   }
   auto output = llvm::cast<OutputOp>(op);
 
