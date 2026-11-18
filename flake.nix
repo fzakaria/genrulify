@@ -56,6 +56,7 @@
           SPLICE_NIX
           SPLICE_BWRAP
           SPLICE_TAR
+          SPLICE_STRACE
           ;
         inputsFrom = [ self.packages.${system}.default ];
       };

@@ -86,8 +86,11 @@ struct ReplayFailure : std::runtime_error {
 // Runs a replay plan in a sandbox and writes the results as a layer.
 // Throws a ReplayFailure with every difference when the processes did not
 // reproduce the plan's results.
+// A non-empty `trace` names a directory to fill with a system call trace of
+// every process, for readAccesses.
 void replayPlan(const Plan &plan, const std::vector<std::filesystem::path> &layers,
-                const std::filesystem::path &output);
+                const std::filesystem::path &output,
+                const std::filesystem::path &trace = {});
 
 // Assembles a pack plan's inputs and writes the output path's NAR.
 void packPlan(const Plan &plan, const std::vector<std::filesystem::path> &layers,

@@ -1,5 +1,6 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_join.h"
+#include "access.h"
 #include "layer.h"
 #include "plan.h"
 #include "tools.h"
@@ -14,8 +15,8 @@
 #include <ranges>
 #include <set>
 #include <sys/ioctl.h>
-#include <thread>
 #include <sys/wait.h>
+#include <thread>
 #include <unistd.h>
 
 namespace splice_ir {
@@ -144,8 +145,8 @@ Arguments sandbox(const Plan &plan, const Process &process,
                     backing(kStoreDirectory),
                     std::string(kStoreDirectory)};
   for (const std::string_view directory : kPlatformRoots) {
-    command.insert(command.end(), {"--ro-bind", backing(directory),
-                                   std::string(directory)});
+    command.insert(command.end(),
+                   {"--ro-bind", backing(directory), std::string(directory)});
   }
   for (const auto &path : plan.closure) {
     command.insert(command.end(), {"--ro-bind", path, path});
@@ -218,8 +219,8 @@ pid_t spawn(const Arguments &command,
 // loop consumed them.
 class Supervisor {
 public:
-  Supervisor(const Plan &plan, const fs::path &root)
-      : plan(plan), root(root), children(plan.processes.size()) {
+  Supervisor(const Plan &plan, const fs::path &root, const fs::path &trace)
+      : plan(plan), root(root), trace(trace), children(plan.processes.size()) {
     devNull = open("/dev/null", O_RDWR | O_CLOEXEC);
     check(devNull >= 0, "cannot open /dev/null");
 
@@ -320,7 +321,16 @@ private:
       for (const auto &descriptor : process.fds) {
         redirections.emplace_back(descriptor.fd, source(descriptor, opened));
       }
-      const pid_t pid = spawn(sandbox(plan, process, root), redirections);
+      auto command = sandbox(plan, process, root);
+
+      // A traced replay runs the same sandbox under strace, which follows
+      // it inside and exits with its status.
+      if (!trace.empty()) {
+        auto traced = traceCommand(trace / std::to_string(index));
+        traced.insert(traced.end(), command.begin(), command.end());
+        command = std::move(traced);
+      }
+      const pid_t pid = spawn(command, redirections);
       for (const int fd : opened) {
         close(fd);
       }
@@ -440,8 +450,8 @@ private:
 
     // A store path the build could only read is not staged. The sandbox
     // mounts the host's copy at the same path, so open that one.
-    const bool inClosure = std::ranges::any_of(
-        plan.closure, [&](const std::string &path) {
+    const bool inClosure =
+        std::ranges::any_of(plan.closure, [&](const std::string &path) {
           return isBelow(descriptor.target, path);
         });
     const auto host = inClosure ? fs::path(descriptor.target)
@@ -474,9 +484,8 @@ private:
     }
     const bool fits =
         bytes.size() <= static_cast<size_t>(fcntl(ends[1], F_GETPIPE_SZ));
-    const bool written =
-        fits && write(ends[1], bytes.data(), bytes.size()) ==
-                    static_cast<ssize_t>(bytes.size());
+    const bool written = fits && write(ends[1], bytes.data(), bytes.size()) ==
+                                     static_cast<ssize_t>(bytes.size());
     close(ends[1]);
     if (!written) {
       close(ends[0]);
@@ -502,9 +511,8 @@ private:
   // Holds a pipe's read end the way the builder did.
   void superviseReadEnd(Pipe &pipe) {
     const auto all = [&](auto member) {
-      return std::ranges::all_of(pipe.readers, [&](size_t index) {
-        return children[index].*member;
-      });
+      return std::ranges::all_of(
+          pipe.readers, [&](size_t index) { return children[index].*member; });
     };
     const auto anyRunning = [&] {
       return std::ranges::any_of(pipe.readers, [&](size_t index) {
@@ -559,6 +567,7 @@ private:
 
   const Plan &plan;
   fs::path root;
+  fs::path trace;
   int devNull = -1;
   std::map<std::string, Pipe> pipes;
 
@@ -599,7 +608,7 @@ void prepareRoot(const fs::path &root) {
 } // namespace
 
 void replayPlan(const Plan &plan, const std::vector<fs::path> &layerFiles,
-                const fs::path &output) {
+                const fs::path &output, const fs::path &trace) {
   const auto layers = openLayers(layerFiles);
   Scratch scratch;
   const auto root = scratch.path / "root";
@@ -615,7 +624,7 @@ void replayPlan(const Plan &plan, const std::vector<fs::path> &layerFiles,
   stage(layers, platformInputs, root);
   stage(layers, plan.inputs, root);
 
-  const auto statuses = Supervisor(plan, root).run();
+  const auto statuses = Supervisor(plan, root, trace).run();
 
   // A process must end the way the recording saw it end.
   Arguments problems;
@@ -646,9 +655,8 @@ void replayPlan(const Plan &plan, const std::vector<fs::path> &layerFiles,
     observed.mtime = expected.mtime;
     if (!sameVersion(observed, expected)) {
       problems.push_back(absl::StrCat(kDiffersPrefix, expected.path,
-                                      kDiffersSeparator,
-                                      describe(observed), ", recorded ",
-                                      describe(expected)));
+                                      kDiffersSeparator, describe(observed),
+                                      ", recorded ", describe(expected)));
       differing.push_back(expected.path);
       continue;
     }

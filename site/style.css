@@ -13,6 +13,7 @@
      accent, so the eye lands on what the build systems run. */
   --narrow: var(--accent);
   --near: #2f8f83;
+  --traced: #2f8f83;
   --wide: #8250df;
   --literal: #c7791a;
   --dead: #d2d2d2;
@@ -26,6 +27,7 @@
     --accent: #8fa3ff;
     --code-bg: #22252c;
     --near: #5fc2b5;
+    --traced: #5fc2b5;
     --wide: #c4a7f5;
     --literal: #e0a04a;
     --dead: #3d4048;
@@ -187,7 +189,8 @@ button[aria-pressed="true"] {
 .narrow {
   background: var(--narrow);
 }
-.near {
+.near,
+.traced {
   background: var(--near);
 }
 .wide {
@@ -248,7 +251,8 @@ button[aria-pressed="true"] {
 #graph .node.narrow rect {
   stroke: var(--narrow);
 }
-#graph .node.near rect {
+#graph .node.near rect,
+#graph .node.traced rect {
   stroke: var(--near);
 }
 #graph .node.wide rect {

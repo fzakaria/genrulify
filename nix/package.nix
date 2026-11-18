@@ -26,5 +26,6 @@ pkgs.stdenv.mkDerivation {
   SPLICE_BASH = pkgs.bash;
   SPLICE_COREUTILS = pkgs.coreutils;
   SPLICE_NIX = pkgs.nix;
+  SPLICE_STRACE = pkgs.strace;
   doCheck = true;
 }

@@ -1,3 +1,4 @@
+#include "access.h"
 #include "compiler.h"
 #include "dialect.h"
 #include "mlir/IR/Verifier.h"
@@ -12,6 +13,7 @@ namespace {
 constexpr std::string_view kUsage =
     "usage: nixsplice record RUN DERIVATION.drv RECORDING [OPEN]\n"
     "       nixsplice cuts EVENTS.jsonl TRACE.bin [OPEN]\n"
+    "       nixsplice accessed STRACE-DIRECTORY\n"
     "       nixsplice check RECORDING\n"
     "       nixsplice learn RECORDING < BUILD.log\n"
     "       nixsplice import RECORDING\n"
@@ -64,6 +66,20 @@ void run(std::span<char *> args) {
   if ((args.size() == 4 || args.size() == 5) && command == "record") {
     splice_ir::recordRun(args[1], args[2], args[3],
                          args.size() == 5 ? args[4] : "");
+    return;
+  }
+  if (args.size() == 2 && command == "accessed") {
+    // The paths a traced replay touched, with a trailing slash on the
+    // directories it listed.
+    const auto accessed = splice_ir::readAccesses(args[1]);
+    for (const auto &path : accessed.paths) {
+      if (!accessed.listed.contains(path)) {
+        llvm::outs() << path << "\n";
+      }
+    }
+    for (const auto &path : accessed.listed) {
+      llvm::outs() << path << "/\n";
+    }
     return;
   }
   if ((args.size() == 3 || args.size() == 4) && command == "cuts") {

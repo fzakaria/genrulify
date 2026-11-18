@@ -67,7 +67,7 @@
       <button id="eliminate" type="button" aria-pressed="false">Run dead-code elimination</button>
       <span class="legend">
         <span class="key narrow"></span> replayed
-        <span class="key near"></span> given its directories
+        <span class="key near"></span> given what a trace shows it touching
         <span class="key wide"></span> given the whole tree
         <span class="key literal"></span> recorded bytes
         <span class="key dead"></span> dead
@@ -114,8 +114,8 @@
       <p>
         A group is <em>replayed</em> when running it alone in a sandbox, given only its recorded
         inputs, leaves files with the recorded hashes. A group that needs more than the files it
-        opened is given everything in the directories it worked in, and failing that the whole
-        tree. A group that cannot be reproduced, such as
+        opened is replayed once under a system call tracer and then given exactly the files,
+        directories and listings the trace shows it touching. A group that cannot be reproduced, such as
         <code>mktemp</code>, is kept as <em>recorded bytes</em>. A group is <em>dead</em> when no
         output depends on anything it wrote.
       </p>

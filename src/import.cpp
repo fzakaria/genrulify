@@ -22,6 +22,7 @@ enum class Origin { Builder, DemotedGroup };
 constexpr std::string_view kVerdictsFile = "verdicts.json";
 constexpr std::string_view kNarrowName = "narrow";
 constexpr std::string_view kNearName = "near";
+constexpr std::string_view kTracedName = "traced";
 constexpr std::string_view kWideName = "wide";
 constexpr std::string_view kLiteralName = "literal";
 constexpr int kJsonIndent = 1;
@@ -112,11 +113,10 @@ public:
       apply(effect, mlir::ResultRange(nullptr, 0));
       return;
     }
-    auto op = LiteralOp::create(builder, builder.getUnknownLoc(),
-                                types(effect.changed.size()), name, step,
-                                toAttributes(builder.getContext(),
-                                             effect.changed),
-                                origin == Origin::DemotedGroup);
+    auto op = LiteralOp::create(
+        builder, builder.getUnknownLoc(), types(effect.changed.size()), name,
+        step, toAttributes(builder.getContext(), effect.changed),
+        origin == Origin::DemotedGroup);
     apply(effect, op->getResults());
   }
 
@@ -139,19 +139,18 @@ public:
       operands.push_back(current.at(path));
     }
     auto *context = builder.getContext();
-    auto exec = ExecOp::create(builder, builder.getUnknownLoc(),
-                               types(computed.changed.size()), operands,
-                               label(group), group.start,
-                               toAttributes(context, computed.changed));
+    auto exec =
+        ExecOp::create(builder, builder.getUnknownLoc(),
+                       types(computed.changed.size()), operands, label(group),
+                       group.start, toAttributes(context, computed.changed));
     apply(computed, exec->getResults());
     if (recorded.changed.empty()) {
       return;
     }
-    auto literal = LiteralOp::create(builder, builder.getUnknownLoc(),
-                                     types(recorded.changed.size()),
-                                     label(group), group.start,
-                                     toAttributes(context, recorded.changed),
-                                     /*demoted=*/true);
+    auto literal = LiteralOp::create(
+        builder, builder.getUnknownLoc(), types(recorded.changed.size()),
+        label(group), group.start, toAttributes(context, recorded.changed),
+        /*demoted=*/true);
     apply(recorded, literal->getResults());
   }
 
@@ -188,6 +187,8 @@ std::string_view rungName(Rung rung) {
     return kNarrowName;
   case Rung::Near:
     return kNearName;
+  case Rung::Traced:
+    return kTracedName;
   case Rung::Wide:
     return kWideName;
   case Rung::Literal:
@@ -195,6 +196,18 @@ std::string_view rungName(Rung rung) {
   }
   throw std::logic_error("unknown rung");
 }
+
+namespace {
+Rung rungFromName(const std::string &name) {
+  for (const auto rung :
+       {Rung::Narrow, Rung::Near, Rung::Traced, Rung::Wide, Rung::Literal}) {
+    if (name == rungName(rung)) {
+      return rung;
+    }
+  }
+  throw std::runtime_error("unknown rung " + name);
+}
+} // namespace
 
 Verdicts loadVerdicts(const Recording &recording) {
   Verdicts verdicts;
@@ -204,15 +217,12 @@ Verdicts loadVerdicts(const Recording &recording) {
   }
   for (const auto &[step, json] : Json::parse(readBytes(file)).items()) {
     Verdict verdict;
-    const std::string rung = json.at("rung");
-    check(rung == kNarrowName || rung == kNearName || rung == kWideName ||
-              rung == kLiteralName,
-          "unknown rung " + rung);
-    verdict.rung = rung == kNarrowName ? Rung::Narrow
-                   : rung == kNearName ? Rung::Near
-                   : rung == kWideName ? Rung::Wide
-                                       : Rung::Literal;
+    verdict.rung = rungFromName(json.at("rung"));
     verdict.pinned = json.value("pinned", std::set<std::string>{});
+    verdict.inputs = json.value("inputs", std::set<std::string>{});
+    verdict.traced = json.value("traced", false);
+    verdict.fallback =
+        rungFromName(json.value("fallback", std::string(kWideName)));
     verdicts[std::stoull(step)] = std::move(verdict);
   }
   return verdicts;
@@ -225,7 +235,10 @@ void saveVerdicts(const Recording &recording, const Verdicts &verdicts) {
       continue;
     }
     document[std::to_string(step)] = {{"rung", rungName(verdict.rung)},
-                                      {"pinned", verdict.pinned}};
+                                      {"pinned", verdict.pinned},
+                                      {"inputs", verdict.inputs},
+                                      {"traced", verdict.traced},
+                                      {"fallback", rungName(verdict.fallback)}};
   }
   writeBytes(recording.directory / kVerdictsFile,
              document.dump(kJsonIndent) + "\n");
@@ -253,7 +266,8 @@ mlir::OwningOpRef<mlir::ModuleOp> importRecording(mlir::MLIRContext &context,
 
     // A recording that dropped read records cannot know what a group read.
     Verdict verdict;
-    if (const auto known = verdicts.find(group.start); known != verdicts.end()) {
+    if (const auto known = verdicts.find(group.start);
+        known != verdicts.end()) {
       verdict = known->second;
     }
     if (recording.lost != 0 && verdict.rung == Rung::Narrow) {
@@ -276,10 +290,19 @@ mlir::OwningOpRef<mlir::ModuleOp> importRecording(mlir::MLIRContext &context,
       break;
     }
     case Rung::Near:
-      versions.exec(group,
-                    nearInputs(group, before, difference(before, after)),
+      versions.exec(group, nearInputs(group, before, difference(before, after)),
                     verdict.pinned, after);
       break;
+    case Rung::Traced: {
+      // What the replay touched, on top of what the recording says the
+      // group opened and changed.
+      auto inputs = narrowInputs(group, before, difference(before, after));
+      for (const auto &path : verdict.inputs) {
+        addWithParents(path, before, inputs);
+      }
+      versions.exec(group, inputs, verdict.pinned, after);
+      break;
+    }
     case Rung::Narrow:
       versions.exec(group,
                     narrowInputs(group, before, difference(before, after)),

@@ -20,6 +20,10 @@ enum class Rung {
   // the trace.
   Near,
 
+  // Give the group the entries a trace of its own replay showed it
+  // touching. A group reaches this rung from Near or Wide, never directly.
+  Traced,
+
   // Give the group every entry that existed when the group started. A
   // group that depends on a path it never opened, through a stat or a
   // directory listing, passes here.
@@ -38,6 +42,14 @@ struct Verdict {
   // timestamp. Their bytes come from the recording while the rest of the
   // group's writes are still computed.
   std::set<std::string> pinned;
+
+  // For the Traced rung, the paths the group's replay touched.
+  std::set<std::string> inputs;
+
+  // Whether narrowing by trace has been attempted, and the rung to return
+  // to if the traced inputs do not reproduce the recording.
+  bool traced = false;
+  Rung fallback = Rung::Wide;
 
   bool operator==(const Verdict &) const = default;
   auto operator<=>(const Verdict &) const = default;

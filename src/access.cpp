@@ -1,0 +1,114 @@
+#include "access.h"
+#include "tools.h"
+#include <fstream>
+#include <regex>
+#include <vector>
+
+namespace splice_ir {
+namespace fs = std::filesystem;
+namespace {
+// The longest string argument strace prints in full. Its default cuts a
+// path at 32 bytes.
+constexpr std::string_view kStringLimit = "4096";
+
+// The marker of a call that failed, and the open flag of a listing.
+constexpr std::string_view kFailed = ") = -1 ";
+constexpr std::string_view kDirectoryFlag = "O_DIRECTORY";
+
+constexpr int kOctalBase = 8;
+constexpr size_t kOctalDigits = 3;
+
+// Undoes the C escapes strace applies to a string argument.
+std::string unescape(std::string_view text) {
+  std::string plain;
+  for (size_t index = 0; index < text.size(); ++index) {
+    if (text[index] != '\\' || index + 1 == text.size()) {
+      plain.push_back(text[index]);
+      continue;
+    }
+    const char next = text[++index];
+    if (next >= '0' && next <= '7') {
+      // Up to three octal digits name one byte.
+      size_t length = 1;
+      while (length < kOctalDigits && index + length < text.size() &&
+             text[index + length] >= '0' && text[index + length] <= '7') {
+        ++length;
+      }
+      plain.push_back(static_cast<char>(std::stoi(
+          std::string(text.substr(index, length)), nullptr, kOctalBase)));
+      index += length - 1;
+      continue;
+    }
+    plain.push_back(next == 'n' ? '\n' : next == 't' ? '\t' : next);
+  }
+  return plain;
+}
+
+// The absolute, normalized path a call named, or empty when the line holds
+// none this reader can resolve.
+std::string namedPath(const std::string &line) {
+  // A call with a directory argument: strace -y prints the directory's
+  // path after the descriptor, and the working directory after AT_FDCWD.
+  static const std::regex relative(
+      R"re((?:AT_FDCWD|\d+)<([^>]*)>, "((?:[^"\\]|\\.)*)")re");
+
+  // A call whose first argument is the path. Without a directory argument
+  // only an absolute path can be resolved.
+  static const std::regex leading(R"re(^\w+\("((?:[^"\\]|\\.)*)")re");
+
+  std::smatch match;
+  fs::path path;
+  if (std::regex_search(line, match, relative)) {
+    const fs::path named = unescape(match[2].str());
+    path = named.is_absolute() ? named : fs::path(match[1].str()) / named;
+  } else if (std::regex_search(line, match, leading)) {
+    path = unescape(match[1].str());
+  }
+  if (!path.is_absolute()) {
+    return {};
+  }
+  auto normal = path.lexically_normal().string();
+  if (normal.size() > 1 && normal.ends_with('/')) {
+    normal.pop_back();
+  }
+  return normal;
+}
+} // namespace
+
+Accessed readAccesses(const fs::path &directory) {
+  Accessed accessed;
+  for (const auto &file : fs::directory_iterator(directory)) {
+    std::ifstream stream(file.path());
+    for (std::string line; std::getline(stream, line);) {
+      if (line.find(kFailed) != std::string::npos) {
+        continue;
+      }
+      const auto path = namedPath(line);
+      if (path.empty()) {
+        continue;
+      }
+      const bool listing = line.starts_with("open") &&
+                           line.find(kDirectoryFlag) != std::string::npos;
+      (listing ? accessed.listed : accessed.paths).insert(path);
+    }
+  }
+  return accessed;
+}
+
+std::vector<std::string> traceCommand(const fs::path &output) {
+  // Follow children, one output file per process so that lines are never
+  // interleaved, print descriptor paths, and trace the calls that take a
+  // path.
+  return {std::string(kStrace),
+          "-f",
+          "-ff",
+          "-y",
+          "-qq",
+          "-s",
+          std::string(kStringLimit),
+          "-e",
+          "trace=%file",
+          "-o",
+          output.string()};
+}
+} // namespace splice_ir

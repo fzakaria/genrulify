@@ -14,6 +14,7 @@ const STORE_PATH = "__STORE_PATH__";
 const Outcome = Object.freeze({
   NARROW: "narrow",
   NEAR: "near",
+  TRACED: "traced",
   WIDE: "wide",
   LITERAL: "literal",
   DEAD: "dead",
@@ -134,7 +135,7 @@ function renderStats(hash) {
   const rules = state.graph.nodes.filter((node) => node.op !== Op.LITERAL).length;
   const parts = [
     `${groups.length.toLocaleString()} process groups`,
-    `${count(Outcome.NARROW) + count(Outcome.NEAR) + count(Outcome.WIDE)} replayed`,
+    `${count(Outcome.NARROW) + count(Outcome.NEAR) + count(Outcome.TRACED) + count(Outcome.WIDE)} replayed`,
     `${pinned} files pinned`,
     `${count(Outcome.LITERAL)} kept as recorded bytes`,
     `${count(Outcome.DEAD)} dead`,
@@ -174,6 +175,11 @@ function describeOutcome(group) {
       return (
         "Replayed and reproduced, given the files it opened and everything else in their " +
         `directories. It looks at files it never opens, with stat or a directory listing.${pins}`
+      );
+    case Outcome.TRACED:
+      return (
+        `Replayed and reproduced, given the ${group.inputs} entries a trace of its own replay ` +
+        `shows it touching. It looks at files it never opens, with stat or a directory listing.${pins}`
       );
     case Outcome.WIDE:
       return (
