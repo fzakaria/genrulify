@@ -136,7 +136,9 @@ remaining group by itself in [bubblewrap](https://github.com/containers/bubblewr
   after every process that had exited before its `execve`.
 
 The group passes if every process ends with its recorded status and every
-result that something uses has the recorded kind, mode and SHA-256.
+result that something uses has the recorded kind, mode and SHA-256. The
+whole pass is repeated until two in a row change nothing, so each
+surviving group has reproduced the recording at least twice.
 
 A group that fails moves down a ladder:
 
@@ -202,6 +204,9 @@ or skip them, and the output is unchanged.
 What varies between packages is how much of the build is computed and
 how much is carried as recorded bytes. `check.json` reports it per group.
 
+[docs/theory.md](docs/theory.md) has the definitions, both proofs, and
+why dead-code elimination, opening and demotion each preserve the claim.
+
 ## Results
 
 Recorded with Rewind 0.16.0 on x86_64-linux, nixpkgs from `flake.lock`.
@@ -252,9 +257,10 @@ either checked or reported.
   recorded. Editing a source file is a different build, and the narrow
   operand sets say nothing about which unopened files would have
   mattered. Re-record after a change.
-- **A check is a sample.** A process that is nondeterministic but
-  happened to reproduce its output during `check` will be caught by its
-  own genrule on a later build, which fails. It is not caught earlier.
+- **A check is a sample.** `check` replays every group twice. A process
+  that is nondeterministic and still matched both times will be caught by
+  its own genrule on a later build, which fails. It is not caught
+  earlier.
 - **`stat` and directory listings are not in the trace.** Groups that
   depend on them fall to the wide rung, where they are correct and
   coarse. Recording lookups in Rewind would let them stay narrow.
@@ -270,6 +276,7 @@ either checked or reported.
 ## Layout
 
 ```
+docs/theory.md     what is assumed, what is checked, what follows
 src/Splice.td      the dialect: entry type, entry attribute, three operations
 src/trace.cpp      events and I/O log to cuts
 src/record.cpp     Rewind run to a recording: process details and snapshots
