@@ -102,23 +102,68 @@
     #splice.entry&lt;"/build/bundle" file 644 mtime 1 "50f55425…"&gt;
 ]</pre>
       <p>
-        In the explorer, select the <code>dd</code> at step 764 and switch between
-        Files, MLIR and BUILD.bazel to follow that edge into a rule.
+        The explorer prints the module of every recorded package this way. Point at
+        <code>%1</code> there and its definition and its use light up. Select the
+        <code>dd</code> at step 764 and switch between Files, MLIR and BUILD.bazel to
+        follow that edge into a rule.
         <a href="./?pkg=example">Open the example recording</a>.
       </p>
 
       <h2 id="rules">Inside a generated rule</h2>
       <p>
-        In the patchelf build, the rule named <code>s1274_tar</code> has
-        <code>genrulify replay</code> as its command. Its plan tells the runner to
-        start the following process in <code>/build</code>.
+        In the patchelf build, the rule named <code>s1274_tar</code> unpacks the source.
+        The last line of its <code>cmd</code> is the <code>execve</code> that was recorded,
+        and nothing in the rule calls genrulify.
       </p>
-      <pre aria-label="Recorded tar arguments">tar xf /nix/store/9bangizlrzva6iv0ldyk51dq0j95d1ix-patchelf-0.15.2.tar.bz2 --mode=+w --warning=no-timestamp</pre>
+      <pre aria-label="The tar rule of the patchelf build, shortened">genrule(
+    name = "s1274_tar",
+    srcs = [
+        ":actions/s1274_tar.manifest",
+        ":closure.txt",
+        ":env/12.env",
+        ":platform/etc/passwd",
+        ":sandbox.sh",
+        …
+    ],
+    outs = [
+        "s1274_tar/build/patchelf-0.15.2/COPYING",
+        "s1274_tar/build/patchelf-0.15.2/Makefile.am",
+        … 66 more files
+        "s1274_tar.ok",
+    ],
+    cmd = " ".join([
+        "./sandbox.sh --in . --in $(RULEDIR) --out $(RULEDIR)",
+        "--name s1274_tar --timeout 300",
+        "run --cwd /build --env 12 --argv0 tar --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 5 --",
+        "/nix/store/5ixf6i3k…-gnutar-static-1.35/bin/tar xf /nix/store/9bangizl…-patchelf-0.15.2.tar.bz2 --mode=+w --warning=no-timestamp",
+    ]),
+    tags = ["no-remote"],
+)</pre>
       <p>
-        The rule declares the plan and input layers in <code>srcs</code>.
-        The runner stages the selected entries, mounts the store closure containing the
-        tarball, restores the process environment and launches tar. It checks the used
-        results and writes them into the layer consumed by later rules.
+        Each file version is a real file in the build system's tree, named by the rule that
+        wrote it and its path in the build. A rule that reads
+        <code>/build/patchelf-0.15.2/Makefile.am</code> as tar left it lists
+        <code>:s1274_tar/build/patchelf-0.15.2/Makefile.am</code> in its <code>srcs</code>.
+        A rule that reads the version a later command wrote lists that command's file.
+        The SSA values of the module are the labels of the build file.
+      </p>
+      <p>
+        A recorded command only makes sense where it ran. It names <code>/build</code> and
+        the output path absolutely, and it expects its environment and its descriptors.
+        <code>sandbox.sh</code> is a shell script in the workspace that puts those back. It
+        copies the declared inputs to their recorded paths under a private root, mounts
+        that root and the store paths in <code>closure.txt</code> with bubblewrap, and starts
+        the command with the environment in <code>env/12.env</code>. The line above the
+        command is its wiring: working directory, <code>argv[0]</code>, what each
+        descriptor was, and the exit status the recording saw.
+      </p>
+      <p>
+        The manifest lists the kind, mode and SHA-256 of every result the rule declares.
+        The script compares what the command left with that list before copying anything to
+        <code>outs</code>, so a rule that drifts from the recording fails. A pipeline is one
+        rule with one <code>run</code> line per process and a <code>--pipe</code> for each
+        pipe between them. The tarball is a store path. The rule reads it from the host's
+        Nix store, which is why the rule is tagged <code>no-remote</code>.
         Select the tar group and compare its Processes and BUILD.bazel tabs.
         <a href="./?pkg=patchelf">Open the patchelf recording</a>.
       </p>
@@ -134,8 +179,8 @@
         Every topological ordering respects the same edges.
       </p>
       <p>
-        The checker runs surviving groups in isolation and checks their exit statuses
-        and used results. It can widen the inputs, pin individual results to recorded
+        The checker runs surviving groups in isolation, with the script and the
+        arguments their rules will have, and checks their exit statuses and used results. It can widen the inputs, pin individual results to recorded
         bytes, or replace a group with a literal. A group that needed wider inputs is
         replayed once under a system call tracer, and its inputs are cut back to what
         the trace shows it touching. MLIR's canonicalizer can remove
