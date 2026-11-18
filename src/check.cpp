@@ -3,7 +3,9 @@
 #include "layer.h"
 #include "lower.h"
 #include "llvm/Support/raw_ostream.h"
+#include "absl/strings/ascii.h"
 #include <optional>
+#include <regex>
 #include <set>
 
 namespace splice_ir {
@@ -82,6 +84,57 @@ void replayAlone(const Recording &recording, Task &task) {
   }
 }
 } // namespace
+
+bool learnFromBuild(const Recording &recording, std::istream &log) {
+  auto verdicts = loadVerdicts(recording);
+  const auto before = verdicts;
+
+  // A failure is a headline naming the rule, `s<step>_<label>`, followed by
+  // one indented line per problem. Build tools prefix and interleave their
+  // own output, so the headline is searched for anywhere in a line.
+  static const std::regex headline(
+      absl::StrCat("s([0-9]+)_\\S*", std::string(kNotReproduced)));
+  std::optional<uint64_t> step;
+  for (std::string line; std::getline(log, line);) {
+    std::smatch match;
+    if (std::regex_search(line, match, headline)) {
+      step = std::stoull(match[1].str());
+      continue;
+    }
+    if (!step) {
+      continue;
+    }
+    const std::string_view problem =
+        absl::StripLeadingAsciiWhitespace(line);
+    auto &verdict = verdicts[*step];
+    if (problem.starts_with(kDiffersPrefix)) {
+      const auto end = problem.find(kDiffersSeparator);
+      verdict.pinned.emplace(
+          problem.substr(kDiffersPrefix.size(), end - kDiffersPrefix.size()));
+      continue;
+    }
+    if (problem.starts_with(kMissingPrefix)) {
+      verdict.pinned.emplace(problem.substr(kMissingPrefix.size()));
+      continue;
+    }
+    if (problem.find(kExitedWith) != std::string_view::npos) {
+      verdict.rung = Rung::Literal;
+      continue;
+    }
+
+    // Anything else ends this failure's list of problems.
+    step.reset();
+  }
+
+  // A verdict created only by looking it up is still the default.
+  std::erase_if(verdicts,
+                [](const auto &entry) { return entry.second == Verdict{}; });
+  if (verdicts == before) {
+    return false;
+  }
+  saveVerdicts(recording, verdicts);
+  return true;
+}
 
 void checkRecording(const Recording &recording) {
   auto verdicts = loadVerdicts(recording);

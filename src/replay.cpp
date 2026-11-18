@@ -626,7 +626,7 @@ void replayPlan(const Plan &plan, const std::vector<fs::path> &layerFiles,
     const int actual = expectedExit(statuses[index]);
     const int expected = expectedExit(process.status);
     if (actual != expected) {
-      problems.push_back(absl::StrCat(process.name, " exited with ", actual,
+      problems.push_back(absl::StrCat(process.name, kExitedWith, actual,
                                       ", recorded ", expected));
       wrongStatus = true;
     }
@@ -638,14 +638,15 @@ void replayPlan(const Plan &plan, const std::vector<fs::path> &layerFiles,
   for (const auto &expected : plan.results) {
     const auto host = hostPath(root, expected.path);
     if (!fs::exists(fs::symlink_status(host))) {
-      problems.push_back("missing " + expected.path);
+      problems.push_back(absl::StrCat(kMissingPrefix, expected.path));
       differing.push_back(expected.path);
       continue;
     }
     auto observed = observe(host, expected.path);
     observed.mtime = expected.mtime;
     if (!sameVersion(observed, expected)) {
-      problems.push_back(absl::StrCat("differs ", expected.path, ": got ",
+      problems.push_back(absl::StrCat(kDiffersPrefix, expected.path,
+                                      kDiffersSeparator,
                                       describe(observed), ", recorded ",
                                       describe(expected)));
       differing.push_back(expected.path);
@@ -654,7 +655,7 @@ void replayPlan(const Plan &plan, const std::vector<fs::path> &layerFiles,
     sources.push_back({expected, host});
   }
   if (!problems.empty()) {
-    ReplayFailure failure(plan.name + " did not reproduce the recording:\n  " +
+    ReplayFailure failure(absl::StrCat(plan.name, kNotReproduced, "\n  ") +
                           absl::StrJoin(problems, "\n  "));
     failure.wrongStatus = wrongStatus;
     failure.differing = std::move(differing);

@@ -36,30 +36,60 @@ test "$(jq -er .ending "$work/run.json")" = exited:0
 # recording before trusting any of it.
 "$compiler" record "$run" "$drv" "$work/recording" ${open:+"$open"}
 "$compiler" check "$work/recording"
-"$compiler" import "$work/recording" > "$work/recorded.mlir"
-"$compiler" opt "$work/recorded.mlir" > "$work/graph.mlir"
-"$compiler" emit "$work/recording" "$work/graph.mlir" "$work/workspace"
 
 # One archive per derivation output. A single output is named `archive`.
 outputs=$(jq -r '.outputs | keys[]' "$work/recording/recording.json")
 count=$(wc -w <<< "$outputs")
-cd "$work/workspace"
-for output in $outputs; do
-    target=archive
-    if [ "$count" != 1 ]; then
-        target=archive_$output
-    fi
 
-    # The recording's own view of the output must be what Rewind hashed.
+# The recording's own view of each output must be what Rewind hashed.
+for output in $outputs; do
     path=$(jq -er --arg output "$output" '.outputs[$output]' "$work/recording/recording.json")
     recorded=$(jq -er --arg path "$path" '.outputs[] | select(.path == $path) | .hash' "$work/run.json")
     "$compiler" reference "$work/recording" "$output" "$work/$output.reference.nar"
     test "sha256:$(sha256sum "$work/$output.reference.nar" | cut -d' ' -f1)" = "$recorded"
-
-    "$bazel" --batch build --enable_bzlmod=false "//:$target"
-    "$compiler" verify "$work/$output.reference.nar" "bazel-bin/$output.nar"
-    "$buck" build "//:$target" --out "$work/$output.buck.nar"
-    "$compiler" verify "$work/$output.reference.nar" "$work/$output.buck.nar"
-    echo "$output: Nix, Bazel and Buck2 agree on $recorded"
 done
+
+# Emits the graph the current verdicts give into workspace.$1 and builds
+# every output with both systems. Everything the builds print goes to
+# build.$1.log, where a failed replay names its rule and what differed.
+build() {
+    local workspace=$work/workspace.$1
+    "$compiler" import "$work/recording" > "$work/recorded.mlir" || return 1
+    "$compiler" opt "$work/recorded.mlir" > "$work/graph.mlir" || return 1
+    "$compiler" emit "$work/recording" "$work/graph.mlir" "$workspace" || return 1
+    (
+        cd "$workspace"
+        for output in $outputs; do
+            target=archive
+            if [ "$count" != 1 ]; then
+                target=archive_$output
+            fi
+            "$bazel" --batch build --enable_bzlmod=false "//:$target" || exit 1
+            "$compiler" verify "$work/$output.reference.nar" "bazel-bin/$output.nar" || exit 1
+            "$buck" build "//:$target" --out "$work/$output.buck.nar" || exit 1
+            "$compiler" verify "$work/$output.reference.nar" "$work/$output.buck.nar" || exit 1
+        done
+    ) > "$work/build.$1.log" 2>&1
+}
+
+# `check` sampled every rule twice. A build samples each one again, inside
+# the build system's own sandbox and under its own load, and a rule whose
+# output varies can fail there after passing the checks. When that happens
+# the failed rule is pinned or demoted from the build log and the graph is
+# built again. Every round removes something replay had to reproduce, so
+# the loop ends, and it ends on a build where both systems agree.
+max_attempts=8
+attempt=1
+until build "$attempt"; do
+    tail -n 30 "$work/build.$attempt.log"
+    "$compiler" learn "$work/recording" < "$work/build.$attempt.log"
+    attempt=$((attempt + 1))
+    test "$attempt" -le "$max_attempts"
+done
+ln -s "workspace.$attempt" "$work/workspace"
 "$buck" kill > /dev/null 2>&1 || true
+
+for output in $outputs; do
+    echo "$output: Nix, Bazel and Buck2 agree on sha256:$(sha256sum "$work/$output.reference.nar" | cut -d' ' -f1)"
+done
+echo "Builds needed: $attempt"

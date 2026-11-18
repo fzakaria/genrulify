@@ -3,6 +3,7 @@
 #include "mlir/IR/BuiltinOps.h"
 #include "recording.h"
 #include <filesystem>
+#include <istream>
 #include <map>
 #include <set>
 
@@ -63,6 +64,13 @@ void optimize(mlir::ModuleOp module);
 // or demotes the groups that do not reproduce their recorded writes, until
 // every remaining splice.exec has been reproduced. Saves the verdicts.
 void checkRecording(const Recording &recording);
+
+// Reads the output of a failed build of an emitted workspace and adjusts
+// the verdicts of the rules that did not reproduce the recording: results
+// that differed are pinned, and a group whose process ended differently is
+// demoted. A build is a further sample of every rule, taken under the
+// build system's own conditions. Returns whether any verdict changed.
+bool learnFromBuild(const Recording &recording, std::istream &log);
 
 // Writes a Bazel and Buck2 workspace with one genrule per operation.
 void emitWorkspace(mlir::ModuleOp module, const Recording &recording,

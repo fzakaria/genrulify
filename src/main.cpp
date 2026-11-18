@@ -4,6 +4,7 @@
 #include "mlir/Parser/Parser.h"
 #include "plan.h"
 #include "trace.h"
+#include <iostream>
 #include <span>
 #include <stdexcept>
 
@@ -12,6 +13,7 @@ constexpr std::string_view kUsage =
     "usage: nixsplice record RUN DERIVATION.drv RECORDING [OPEN]\n"
     "       nixsplice cuts EVENTS.jsonl TRACE.bin [OPEN]\n"
     "       nixsplice check RECORDING\n"
+    "       nixsplice learn RECORDING < BUILD.log\n"
     "       nixsplice import RECORDING\n"
     "       nixsplice opt GRAPH.mlir\n"
     "       nixsplice emit RECORDING GRAPH.mlir WORKSPACE\n"
@@ -77,6 +79,14 @@ void run(std::span<char *> args) {
   }
   if (args.size() == 2 && command == "check") {
     splice_ir::checkRecording(splice_ir::Recording::load(args[1]));
+    return;
+  }
+  if (args.size() == 2 && command == "learn") {
+    // The exit status tells a script whether rebuilding can help.
+    if (!splice_ir::learnFromBuild(splice_ir::Recording::load(args[1]),
+                                   std::cin)) {
+      throw std::runtime_error("the build log names no rule to adjust");
+    }
     return;
   }
   if (args.size() == 4 && command == "reference") {

@@ -63,6 +63,15 @@ bool readable(const Descriptor &descriptor);
 bool writable(const Descriptor &descriptor);
 bool isPipe(const Descriptor &descriptor);
 
+// The text of a replay failure. A build log is the only channel a failed
+// genrule has back to the compiler, so `learn` parses these same phrases.
+inline constexpr std::string_view kNotReproduced =
+    " did not reproduce the recording:";
+inline constexpr std::string_view kDiffersPrefix = "differs ";
+inline constexpr std::string_view kDiffersSeparator = ": got ";
+inline constexpr std::string_view kMissingPrefix = "missing ";
+inline constexpr std::string_view kExitedWith = " exited with ";
+
 // Why a replay did not reproduce its plan.
 struct ReplayFailure : std::runtime_error {
   using std::runtime_error::runtime_error;
