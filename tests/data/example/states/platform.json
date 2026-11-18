@@ -1,0 +1,37 @@
+[
+ {
+  "content": "",
+  "kind": "dir",
+  "mode": 493,
+  "mtime": 1,
+  "path": "/bin"
+ },
+ {
+  "content": "",
+  "kind": "dir",
+  "mode": 493,
+  "mtime": 1,
+  "path": "/etc"
+ },
+ {
+  "content": "c67e838ca595c61623904e680694fa0519bc35591c91cc5b6085bf3442ad674b",
+  "kind": "file",
+  "mode": 420,
+  "mtime": 1,
+  "path": "/etc/group"
+ },
+ {
+  "content": "b69b2c741be48691edabe3771c644c70473ccd6aa8effd9f17cc07fa129917f9",
+  "kind": "file",
+  "mode": 420,
+  "mtime": 1,
+  "path": "/etc/hosts"
+ },
+ {
+  "content": "66104c4e2e2889edfe989bd68c9ff075f8a40e777769138fac905305f6d8aef9",
+  "kind": "file",
+  "mode": 420,
+  "mtime": 1,
+  "path": "/etc/passwd"
+ }
+]

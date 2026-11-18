@@ -1,220 +1,276 @@
-#include "absl/strings/str_cat.h"
-#include "absl/strings/str_split.h"
 #include "compiler.h"
 #include "dialect.h"
 #include "mlir/IR/Builders.h"
-#include "nlohmann/json.hpp"
-#include "tools.h"
-#include <fcntl.h>
-#include <fstream>
-#include <map>
-#include <regex>
+#include "mlir/Pass/PassManager.h"
+#include "mlir/Transforms/Passes.h"
+#include "plan.h"
 #include <set>
 
 namespace splice_ir {
+namespace fs = std::filesystem;
 namespace {
 using Json = nlohmann::json;
-using Args = std::vector<std::string>;
-constexpr std::string_view kOutput = R"("$out")";
-constexpr std::string_view kStore = "/nix/store/";
-constexpr std::string_view kBuild = "/build/";
-const std::regex scratchName("[A-Za-z0-9][A-Za-z0-9._+-]*");
 
-struct Command {
-  Args argv;
-  std::string source;
-  std::string path;
-  int flags;
-  uint64_t step = 0;
+// The names of the literals that hold what Nix put in the sandbox before
+// the builder started and what the builder wrote itself.
+constexpr std::string_view kSandboxName = "sandbox";
+constexpr std::string_view kGlueName = "glue";
+
+// Whether a literal stands for a process group that replay rejected.
+enum class Origin { Builder, DemotedGroup };
+
+constexpr std::string_view kVerdictsFile = "verdicts.json";
+constexpr std::string_view kNarrowName = "narrow";
+constexpr std::string_view kWideName = "wide";
+constexpr std::string_view kLiteralName = "literal";
+constexpr int kJsonIndent = 1;
+
+// Adds a path and every directory above it that existed in `state`.
+void addWithParents(const std::string &path, const State &state,
+                    std::set<std::string> &paths) {
+  for (fs::path current = path; current.has_relative_path();
+       current = current.parent_path()) {
+    if (state.contains(current.string())) {
+      paths.insert(current.string());
+    }
+  }
+}
+
+// The paths a group is given at Narrow: the files it opened or executed,
+// the prior version of everything it modified or removed, its working
+// directories, the files behind its inherited descriptors, and the
+// directories that lead to all of those and to what it created.
+std::set<std::string> narrowInputs(const Group &group, const State &before,
+                                   const Difference &effect) {
+  std::set<std::string> paths;
+  for (const auto &path : group.reads) {
+    addWithParents(path, before, paths);
+  }
+  for (const auto &entry : effect.changed) {
+    addWithParents(entry.path, before, paths);
+  }
+  for (const auto &path : effect.removed) {
+    addWithParents(path, before, paths);
+  }
+  for (const auto &process : group.processes) {
+    addWithParents(process.cwd, before, paths);
+    for (const auto &descriptor : process.fds) {
+      addWithParents(descriptor.target, before, paths);
+    }
+  }
+  return paths;
+}
+
+// Tracks the SSA value that holds the current version of every path while
+// the importer walks the recording in step order.
+class Versions {
+public:
+  Versions(mlir::OpBuilder &builder) : builder(builder) {}
+
+  // Installs an operation's results as the current versions of the paths
+  // the operation wrote, and forgets the paths that were removed.
+  void apply(const Difference &effect, mlir::ResultRange results) {
+    for (const auto &path : effect.removed) {
+      current.erase(path);
+    }
+    for (size_t index = 0; index < effect.changed.size(); ++index) {
+      current[effect.changed[index].path] = results[index];
+    }
+  }
+
+  // Emits a splice.literal for whatever changed between the last state the
+  // graph accounts for and `state`.
+  void literal(std::string_view name, uint64_t step, const State &state,
+               Origin origin = Origin::Builder) {
+    const auto effect = difference(accounted, state);
+    accounted = state;
+    if (effect.changed.empty()) {
+      apply(effect, mlir::ResultRange(nullptr, 0));
+      return;
+    }
+    auto op = LiteralOp::create(builder, builder.getUnknownLoc(),
+                                types(effect.changed.size()), name, step,
+                                toAttributes(builder.getContext(),
+                                             effect.changed),
+                                origin == Origin::DemotedGroup);
+    apply(effect, op->getResults());
+  }
+
+  // Emits a splice.exec for a group that took the listed paths and left
+  // `after`. The group's pinned writes come from a demoted literal instead,
+  // so nothing downstream depends on the replay reproducing them.
+  void exec(const Group &group, const std::set<std::string> &inputs,
+            const std::set<std::string> &pinned, const State &after) {
+    const auto effect = difference(accounted, after);
+    accounted = after;
+    Difference computed{{}, effect.removed};
+    Difference recorded;
+    for (const auto &entry : effect.changed) {
+      (pinned.contains(entry.path) ? recorded : computed)
+          .changed.push_back(entry);
+    }
+
+    llvm::SmallVector<mlir::Value> operands;
+    for (const auto &path : inputs) {
+      operands.push_back(current.at(path));
+    }
+    auto *context = builder.getContext();
+    auto exec = ExecOp::create(builder, builder.getUnknownLoc(),
+                               types(computed.changed.size()), operands,
+                               label(group), group.start,
+                               toAttributes(context, computed.changed));
+    apply(computed, exec->getResults());
+    if (recorded.changed.empty()) {
+      return;
+    }
+    auto literal = LiteralOp::create(builder, builder.getUnknownLoc(),
+                                     types(recorded.changed.size()),
+                                     label(group), group.start,
+                                     toAttributes(context, recorded.changed),
+                                     /*demoted=*/true);
+    apply(recorded, literal->getResults());
+  }
+
+  // The current version of every path at or below `root`.
+  llvm::SmallVector<mlir::Value> below(const std::string &root) const {
+    llvm::SmallVector<mlir::Value> values;
+    for (const auto &[path, value] : current) {
+      if (isBelow(path, root)) {
+        values.push_back(value);
+      }
+    }
+    return values;
+  }
+
+  const State &state() const { return accounted; }
+
+private:
+  llvm::SmallVector<mlir::Type> types(size_t count) {
+    return llvm::SmallVector<mlir::Type>(count,
+                                         EntryType::get(builder.getContext()));
+  }
+
+  mlir::OpBuilder &builder;
+  std::map<std::string, mlir::Value> current;
+
+  // The filesystem state the operations emitted so far add up to.
+  State accounted;
 };
-
-void require(bool condition, std::string_view reason) {
-  if (!condition) {
-    throw std::runtime_error(std::string(reason));
-  }
-}
-
-struct Script {
-  Args args;
-  std::set<std::string> sources;
-  std::vector<Command> commands;
-};
-
-Script readBuilder(const std::filesystem::path &path) {
-  std::ifstream file(path);
-  const auto document = Json::parse(file);
-  const auto &derivations = document.at("derivations");
-  require(document.at("version") == 4 && derivations.size() == 1,
-          "expected a single Nix format 4 derivation");
-  const auto &drv = *derivations.begin();
-  const auto &env = drv.at("env");
-  const std::string output = env.at("out");
-  const auto expectedEnv = Json{{"out", output},
-                                {"builder", kBash},
-                                {"system", "x86_64-linux"},
-                                {"name", drv.at("name")}};
-  require(env == expectedEnv && drv.at("builder") == kBash &&
-              drv.at("system") == "x86_64-linux",
-          "expected the pinned Bash builder and its standard environment");
-  require(
-      drv.at("outputs").size() == 1 &&
-          drv.at("outputs").at("out").size() == 1 &&
-          output ==
-              absl::StrCat(
-                  kStore,
-                  drv.at("outputs").at("out").at("path").get<std::string>()),
-      "expected one input-addressed out path");
-
-  Script script;
-  script.args = drv.at("args").get<Args>();
-  require(script.args.size() == 3 && script.args[0] == "-eu" &&
-              script.args[1] == "-c",
-          "expected bash -eu -c with an inline script");
-  for (const std::string source : drv.at("inputs").at("srcs")) {
-    script.sources.insert(absl::StrCat(kStore, source));
-  }
-
-  // Accept whole commands before interpreting any filesystem effects.
-  for (const std::string_view line :
-       absl::StrSplit(script.args.back(), '\n', absl::SkipEmpty())) {
-    Args argv = absl::StrSplit(line, ' ');
-    constexpr size_t copyArgs = 4;
-    constexpr size_t appendArgs = 6;
-    const bool append = argv.size() == appendArgs;
-    require((append || argv.size() == copyArgs) && argv.front() == kDd &&
-                argv[1].starts_with("if=") && argv[2].starts_with("of=") &&
-                argv.back() == "status=none",
-            "unsupported builder command");
-    require(!append || (argv[3] == "oflag=append" && argv[4] == "conv=notrunc"),
-            "unsupported dd flags");
-    const std::string src = argv[1].substr(3);
-    const std::string dst = argv[2].substr(3);
-    require(
-        (script.sources.contains(src) || std::regex_match(src, scratchName)) &&
-            (dst == kOutput || std::regex_match(dst, scratchName)) &&
-            src != dst,
-        "unsupported input or output path");
-    const auto target = dst == kOutput ? output : absl::StrCat(kBuild, dst);
-    if (dst == kOutput) {
-      argv[2] = absl::StrCat("of=", output);
-    }
-    script.commands.push_back(
-        {std::move(argv),
-         script.sources.contains(src) ? src : absl::StrCat(kBuild, src), target,
-         O_CREAT | O_WRONLY | (append ? O_APPEND : O_TRUNC)});
-  }
-  require(!script.commands.empty() && script.commands.back().path == output &&
-              std::ranges::count(script.commands, output, &Command::path) == 1,
-          "expected exactly one final write to $out");
-  return script;
-}
-
-enum class Expect { Builder, Command, Open, Exit, Done };
-
-void matchTrace(Script &script, const std::filesystem::path &path) {
-  std::ifstream file(path);
-  require(file.is_open(), "cannot open Rewind events");
-  Expect next = Expect::Builder;
-  size_t index = 0;
-  int pid = 0;
-  int builderPid = 0;
-  uint64_t previous = 0;
-  for (std::string line; std::getline(file, line);) {
-    const auto event = Json::parse(line);
-    const uint64_t step = event.at("step");
-    require(step >= previous, "out-of-order Rewind events");
-    previous = step;
-    const auto &kind = event.at("kind");
-    const auto &type = kind.at("type");
-    const int sender = event.at("pid");
-
-    // Boot and shutdown have their own execs and device opens.
-    if (sender == 1) {
-      require(type != "exec" ||
-                  (next == Expect::Builder && kind.at("filename") == "/init"),
-              "unexpected init exec");
-      continue;
-    }
-    if (type == "exec" && next == Expect::Builder) {
-      Args argv = script.args;
-      argv.insert(argv.begin(), "bash");
-      require(kind.at("filename") == kBash && kind.at("argv") == argv,
-              "builder exec differs from derivation (possibly truncated argv)");
-      next = Expect::Command;
-      builderPid = sender;
-      continue;
-    }
-    if (type == "exec") {
-      require(next == Expect::Command, "unexpected exec or missing child exit");
-      auto &cmd = script.commands.at(index);
-      require(kind.at("filename") == kDd && kind.at("argv") == cmd.argv,
-              "dd exec differs from script");
-      cmd.step = step;
-      pid = sender;
-      next = Expect::Open;
-      continue;
-    }
-    if (type == "open") {
-      require(next == Expect::Open && sender == pid, "unexpected write-open");
-      const auto &cmd = script.commands.at(index);
-      require(kind.at("path") == cmd.path && kind.at("flags") == cmd.flags,
-              "recorded write path or flags differ from dd command");
-      next = Expect::Exit;
-      continue;
-    }
-    if (type == "exit" && sender == pid) {
-      require(next == Expect::Exit && kind.at("status") == 0,
-              "missing write-open or failed child");
-      next = ++index == script.commands.size() ? Expect::Done : Expect::Command;
-      pid = 0;
-      continue;
-    }
-    if (type == "exit" && sender == builderPid) {
-      require(next == Expect::Done && kind.at("status") == 0,
-              "failed or incomplete builder");
-    }
-    require(type != "unlink" && type != "rename" && type != "unknown",
-            "unsupported filesystem event");
-  }
-  require(file.eof() && next == Expect::Done, "incomplete Rewind events");
-}
 } // namespace
 
-mlir::OwningOpRef<mlir::ModuleOp>
-importTrace(mlir::MLIRContext &context, const std::filesystem::path &drv,
-            const std::filesystem::path &events) {
-  auto script = readBuilder(drv);
-  matchTrace(script, events);
-  mlir::OpBuilder builder(&context);
-  auto loc = builder.getUnknownLoc();
-  mlir::OwningOpRef module(mlir::ModuleOp::create(loc));
-  builder.setInsertionPointToStart(module->getBody());
-  const auto file = FileType::get(&context);
+std::string_view rungName(Rung rung) {
+  switch (rung) {
+  case Rung::Narrow:
+    return kNarrowName;
+  case Rung::Wide:
+    return kWideName;
+  case Rung::Literal:
+    return kLiteralName;
+  }
+  throw std::logic_error("unknown rung");
+}
 
-  // Bind the reads before installing a new value at the destination.
-  std::map<std::string, mlir::Value> latest;
-  std::map<std::string, uint64_t> versions;
-  for (const auto &cmd : script.commands) {
-    if (!latest.contains(cmd.source) && script.sources.contains(cmd.source)) {
-      latest[cmd.source] =
-          SourceOp::create(builder, loc, file, cmd.source).getFile();
-    }
-    require(latest.contains(cmd.source),
-            "read of a scratch file before its first write");
-    auto input = latest.at(cmd.source);
-    auto version = ++versions[cmd.path];
-    if ((cmd.flags & O_APPEND) && latest.contains(cmd.path)) {
-      latest[cmd.path] =
-          AppendOp::create(builder, loc, file, latest.at(cmd.path), input,
-                           cmd.path, cmd.step, version)
-              .getFile();
+Verdicts loadVerdicts(const Recording &recording) {
+  Verdicts verdicts;
+  const auto file = recording.directory / kVerdictsFile;
+  if (!fs::exists(file)) {
+    return verdicts;
+  }
+  for (const auto &[step, json] : Json::parse(readBytes(file)).items()) {
+    Verdict verdict;
+    const std::string rung = json.at("rung");
+    check(rung == kNarrowName || rung == kWideName || rung == kLiteralName,
+          "unknown rung " + rung);
+    verdict.rung = rung == kNarrowName ? Rung::Narrow
+                   : rung == kWideName ? Rung::Wide
+                                       : Rung::Literal;
+    verdict.pinned = json.value("pinned", std::set<std::string>{});
+    verdicts[std::stoull(step)] = std::move(verdict);
+  }
+  return verdicts;
+}
+
+void saveVerdicts(const Recording &recording, const Verdicts &verdicts) {
+  Json document = Json::object();
+  for (const auto &[step, verdict] : verdicts) {
+    if (verdict == Verdict{}) {
       continue;
     }
-    latest[cmd.path] =
-        CopyOp::create(builder, loc, file, input, cmd.path, cmd.step, version)
-            .getFile();
+    document[std::to_string(step)] = {{"rung", rungName(verdict.rung)},
+                                      {"pinned", verdict.pinned}};
   }
-  PublishOp::create(builder, loc, latest.at(script.commands.back().path));
+  writeBytes(recording.directory / kVerdictsFile,
+             document.dump(kJsonIndent) + "\n");
+}
+
+mlir::OwningOpRef<mlir::ModuleOp> importRecording(mlir::MLIRContext &context,
+                                                  const Recording &recording,
+                                                  const Verdicts &verdicts) {
+  mlir::OpBuilder builder(&context);
+  mlir::OwningOpRef module(mlir::ModuleOp::create(builder.getUnknownLoc()));
+  builder.setInsertionPointToStart(module->getBody());
+  Versions versions(builder);
+
+  // Nix creates the build directory, and for some derivations files inside
+  // it, before the builder runs.
+  versions.literal(kSandboxName, recording.initialStep,
+                   recording.state(recording.initialStep));
+
+  for (const auto &group : recording.groups) {
+    // Whatever changed since the previous group ended was written by the
+    // builder itself. There is no execve to replay, so keep the bytes.
+    const auto before = recording.state(group.start);
+    versions.literal(kGlueName, group.start, before);
+    const auto after = recording.state(group.end);
+
+    // A recording that dropped read records cannot know what a group read.
+    Verdict verdict;
+    if (const auto known = verdicts.find(group.start); known != verdicts.end()) {
+      verdict = known->second;
+    }
+    if (recording.lost != 0 && verdict.rung == Rung::Narrow) {
+      verdict.rung = Rung::Wide;
+    }
+    if (unreplayable(group)) {
+      verdict.rung = Rung::Literal;
+    }
+
+    switch (verdict.rung) {
+    case Rung::Literal:
+      versions.literal(label(group), group.start, after, Origin::DemotedGroup);
+      break;
+    case Rung::Wide: {
+      std::set<std::string> everything;
+      for (const auto &[path, entry] : before) {
+        everything.insert(path);
+      }
+      versions.exec(group, everything, verdict.pinned, after);
+      break;
+    }
+    case Rung::Narrow:
+      versions.exec(group,
+                    narrowInputs(group, before, difference(before, after)),
+                    verdict.pinned, after);
+      break;
+    }
+  }
+
+  // The builder can write after its last child exits.
+  versions.literal(kGlueName, recording.finalStep,
+                   recording.state(recording.finalStep));
+  for (const auto &[name, path] : recording.outputs) {
+    OutputOp::create(builder, builder.getUnknownLoc(), versions.below(path),
+                     name, path);
+  }
   return module;
+}
+
+void optimize(mlir::ModuleOp module) {
+  // splice.exec and splice.literal are Pure, so the canonicalizer deletes
+  // the ones whose results nothing uses: processes that only looked at the
+  // filesystem, temporary files, and the builder's own bookkeeping.
+  mlir::PassManager passes(module.getContext());
+  passes.addPass(mlir::createCanonicalizerPass());
+  check(mlir::succeeded(passes.run(module)), "cannot optimize module");
 }
 } // namespace splice_ir

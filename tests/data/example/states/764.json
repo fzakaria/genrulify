@@ -1,0 +1,16 @@
+[
+ {
+  "content": "",
+  "kind": "dir",
+  "mode": 448,
+  "mtime": 1,
+  "path": "/build"
+ },
+ {
+  "content": "b08e44f9eb798c1413c3e066dc5ccfd2633b760feb1215a2e6b6c4e2001618a4",
+  "kind": "file",
+  "mode": 420,
+  "mtime": 1,
+  "path": "/build/bundle"
+ }
+]

@@ -1,0 +1,204 @@
+{"step":2,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.000000] Linux version 7.2.8 (rewind@rewind) (gcc (GCC) 16.2.0, GNU ld (GNU Binutils) 2.46) #1 PREEMPT 1970-01-01\n"}}
+{"step":3,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.000000] Command line: nolapic_timer lpj=1000000 panic=-1 rdinit=/init loglevel=7 mitigations=off rewind.cpus=1\n"}}
+{"step":4,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.000000] BIOS-provided physical RAM map:\n"}}
+{"step":5,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.000000] BIOS-e820: [mem 0x0000000000000000-0x000000000009fbff]  System RAM\n"}}
+{"step":6,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.000000] BIOS-e820: [mem 0x000000000009fc00-0x00000000000fffff]  device reserved\n"}}
+{"step":7,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.000000] BIOS-e820: [mem 0x0000000000100000-0x000000003fffffff]  System RAM\n"}}
+{"step":8,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.000000] BIOS-e820: [gap 0x0000000040000000-0x00000000ffffffff]\n"}}
+{"step":9,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.000000] BIOS-e820: [mem 0x0000000100000000-0x0000000103dfffff]  persistent RAM (type 12)\n"}}
+{"step":10,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.000000] BIOS-e820: [gap 0x0000000103e00000-0x0000003fffffffff]\n"}}
+{"step":11,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.000000] BIOS-e820: [mem 0x0000004000000000-0x0000004fffffffff]  persistent RAM (type 12)\n"}}
+{"step":12,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.000000] random: crng init done\n"}}
+{"step":13,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.000000] NX (Execute Disable) protection: active\n"}}
+{"step":14,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.000000] APIC: Static calls initialized\n"}}
+{"step":15,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.000000] DMI: not present or invalid.\n"}}
+{"step":16,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.000000] Hypervisor detected: Rewind\n"}}
+{"step":17,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.000005] printk: legacy console [rewind0] enabled\n"}}
+{"step":18,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.000085] last_pfn = 0x40000 max_arch_pfn = 0x400000000\n"}}
+{"step":19,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.000090] MTRR map: 0 entries (0 fixed + 0 variable; max 16), built from 8 variable MTRRs\n"}}
+{"step":20,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.000095] x86/PAT: Configuration [0-7]: WB  WC  UC- UC  WB  WP  UC- WT  \n"}}
+{"step":21,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.000100] Using GB pages for direct mapping\n"}}
+{"step":22,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.000105] RAMDISK: [mem 0x3fd39000-0x3fffffff]\n"}}
+{"step":23,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.000110] CPU topo: Max. logical packages:   1\n"}}
+{"step":24,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.000115] CPU topo: Max. logical nodes:      1\n"}}
+{"step":25,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.000120] CPU topo: Num. nodes per package:  1\n"}}
+{"step":26,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.000125] CPU topo: Max. logical dies:       1\n"}}
+{"step":27,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.000130] CPU topo: Max. dies per package:   1\n"}}
+{"step":28,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.000135] CPU topo: Max. threads per core:   1\n"}}
+{"step":29,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.000140] CPU topo: Num. cores per package:     1\n"}}
+{"step":30,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.000145] CPU topo: Num. threads per package:   1\n"}}
+{"step":31,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.000150] CPU topo: Allowing 1 present CPUs plus 0 hotplug CPUs\n"}}
+{"step":32,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.000155] [gap 0x40000000-0xffffffff] available for PCI devices\n"}}
+{"step":33,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.000160] clocksource: refined-jiffies: mask: 0xffffffff max_cycles: 0xffffffff, max_idle_ns: 19112604462750000 ns\n"}}
+{"step":34,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.000165] Zone ranges:\n"}}
+{"step":35,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.000170]   DMA      [mem 0x0000000000001000-0x0000000000ffffff]\n"}}
+{"step":36,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.000175]   DMA32    [mem 0x0000000001000000-0x000000003fffffff]\n"}}
+{"step":37,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.000180]   Normal   empty\n"}}
+{"step":38,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.000185] Movable zone start for each node\n"}}
+{"step":39,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.000190] Early memory node ranges\n"}}
+{"step":40,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.000195]   node   0: [mem 0x0000000000001000-0x000000000009efff]\n"}}
+{"step":41,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.000200]   node   0: [mem 0x0000000000100000-0x000000003fffffff]\n"}}
+{"step":42,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.000205] Initmem setup node 0 [mem 0x0000000000001000-0x000000003fffffff]\n"}}
+{"step":43,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.000210] On node 0, zone DMA: 1 pages in unavailable ranges\n"}}
+{"step":44,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.000215] On node 0, zone DMA: 97 pages in unavailable ranges\n"}}
+{"step":45,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.000220] Kernel command line: sysctl.vm.compaction_proactiveness=0 nolapic_timer lpj=1000000 panic=-1 rdinit=/init loglevel=7 mitigations=off rewind.cpus=1\n"}}
+{"step":46,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.000225] printk: log buffer data + meta data: 262144 + 917504 = 1179648 bytes\n"}}
+{"step":47,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.000230] Dentry cache hash table entries: 131072 (order: 8, 1048576 bytes, linear)\n"}}
+{"step":48,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.000235] Inode-cache hash table entries: 65536 (order: 7, 524288 bytes, linear)\n"}}
+{"step":49,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.000240] Built 1 zonelists, mobility grouping on.  Total pages: 262046\n"}}
+{"step":50,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.000245] mem auto-init: stack:all(zero), heap alloc:off, heap free:off\n"}}
+{"step":51,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.000250] SLUB: HWalign=64, Order=0-3, MinObjects=0, CPUs=1, Nodes=1\n"}}
+{"step":52,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.000255] RCU Tasks: Setting shift to 0 and lim to 1 rcu_task_cb_adjust=1 rcu_task_cpu_ids=1.\n"}}
+{"step":53,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.000260] NR_IRQS: 4352, nr_irqs: 8, preallocated irqs: 0\n"}}
+{"step":54,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.000265] clocksource: jiffies: mask: 0xffffffff max_cycles: 0xffffffff, max_idle_ns: 19112604462750000 ns\n"}}
+{"step":55,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.000270] Console: colour dummy device 80x25\n"}}
+{"step":56,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.000275] printk: legacy console [tty0] enabled\n"}}
+{"step":57,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.000280] clocksource: rewind: mask: 0xffffffffffffffff max_cycles: 0xffffffffffffffff, max_idle_ns: 9223372036854775807 ns\n"}}
+{"step":60,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.000295] APIC: Switch to symmetric I/O mode setup\n"}}
+{"step":61,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.000300] Calibrating delay loop (skipped) preset value.. 200.00 BogoMIPS (lpj=1000000)\n"}}
+{"step":62,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.000305] Last level iTLB entries: 4KB 0, 2MB 0, 4MB 0\n"}}
+{"step":63,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.000310] Last level dTLB entries: 4KB 0, 2MB 0, 4MB 0, 1GB 0\n"}}
+{"step":64,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.000315] CPU: AMD Rewind VM x86-64-v3 virtual CPU (family: 0x17, model: 0x31, stepping: 0x0)\n"}}
+{"step":65,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.000320] mitigations: Enabled attack vectors: SMT mitigations: off\n"}}
+{"step":66,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.000325] Speculative Store Bypass: Vulnerable\n"}}
+{"step":67,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.000330] Spectre V2 : Vulnerable\n"}}
+{"step":68,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.000335] RETBleed: Vulnerable\n"}}
+{"step":69,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.000340] Speculative Return Stack Overflow: Vulnerable\n"}}
+{"step":70,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.000345] Spectre V1 : Vulnerable: __user pointer sanitization and usercopy barriers only; no swapgs barriers\n"}}
+{"step":71,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.000350] x86/fpu: Supporting XSAVE feature 0x001: 'x87 floating point registers'\n"}}
+{"step":72,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.000355] x86/fpu: Supporting XSAVE feature 0x002: 'SSE registers'\n"}}
+{"step":73,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.000360] x86/fpu: Supporting XSAVE feature 0x004: 'AVX registers'\n"}}
+{"step":74,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.000365] x86/fpu: xstate_offset[2]:  576, xstate_sizes[2]:  256\n"}}
+{"step":75,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.000370] x86/fpu: Enabled xstate features 0x7, context size is 832 bytes, using 'standard' format.\n"}}
+{"step":76,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.000375] pid_max: default: 32768 minimum: 301\n"}}
+{"step":77,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.000380] Mount-cache hash table entries: 2048 (order: 2, 16384 bytes, linear)\n"}}
+{"step":78,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.000385] Mountpoint-cache hash table entries: 2048 (order: 2, 16384 bytes, linear)\n"}}
+{"step":79,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.000390] VFS: Finished mounting rootfs on nullfs\n"}}
+{"step":111,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.000550] Performance Events: PMU not available due to virtualization, using software events only.\n"}}
+{"step":112,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.000555] signal: max sigframe size: 1776\n"}}
+{"step":123,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.000610] Disabling APIC timer\n"}}
+{"step":124,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.000615] Memory: 992852K/1048184K available (14848K kernel code, 2776K rwdata, 4228K rodata, 1900K init, 1544K bss, 53508K reserved, 0K cma-reserved)\n"}}
+{"step":133,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.000660] devtmpfs: initialized\n"}}
+{"step":141,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.000700] posixtimers hash table entries: 512 (order: 0, 4096 bytes, linear)\n"}}
+{"step":142,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.000705] futex hash table entries: 256 (6144 bytes on 1 NUMA nodes, total 6 KiB, linear).\n"}}
+{"step":143,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.000710] NET: Registered PF_NETLINK/PF_ROUTE protocol family\n"}}
+{"step":144,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.000715] thermal_sys: Registered thermal governor 'step_wise'\n"}}
+{"step":145,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.000715] e820: register RAM buffer resource [mem 0x0009fc00-0x0009ffff]\n"}}
+{"step":146,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.000725] kprobes: kprobe jump-optimization is enabled. All kprobes are optimized if possible.\n"}}
+{"step":159,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.000790] HugeTLB: registered 2.00 MiB page size, pre-allocated 0 pages\n"}}
+{"step":160,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.000795] HugeTLB: 28 KiB vmemmap can be freed for a 2.00 MiB page\n"}}
+{"step":165,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.000820] iommu: Default domain type: Translated\n"}}
+{"step":166,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.000825] iommu: DMA domain TLB invalidation policy: lazy mode\n"}}
+{"step":167,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.000830] SCSI subsystem initialized\n"}}
+{"step":172,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.000855] pps_core: LinuxPPS API ver. 1 registered\n"}}
+{"step":173,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.000860] pps_core: Software ver. 5.3.6 - Copyright 2005-2007 Rodolfo Giometti <giometti@linux.it>\n"}}
+{"step":174,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.000865] PTP clock support registered\n"}}
+{"step":179,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.000890] NetLabel: Initializing\n"}}
+{"step":180,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.000895] NetLabel:  domain hash size = 128\n"}}
+{"step":181,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.000900] NetLabel:  protocols = UNLABELED CIPSOv4 CALIPSO\n"}}
+{"step":182,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.000905] NetLabel:  unlabeled traffic allowed by default\n"}}
+{"step":187,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.000930] clocksource: Switched to clocksource rewind\n"}}
+{"step":188,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.000935] VFS: Disk quotas dquot_6.6.0\n"}}
+{"step":189,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.000940] VFS: Dquot-cache hash table entries: 512 (4096 bytes)\n"}}
+{"step":390,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.001945] NET: Registered PF_INET protocol family\n"}}
+{"step":391,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.001950] IP idents hash table entries: 16384 (order: 5, 131072 bytes, linear)\n"}}
+{"step":392,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.001955] tcp_listen_portaddr_hash hash table entries: 512 (order: 0, 4096 bytes, linear)\n"}}
+{"step":393,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.001960] Table-perturb hash table entries: 65536 (order: 6, 262144 bytes, linear)\n"}}
+{"step":394,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.001965] TCP established hash table entries: 8192 (order: 4, 65536 bytes, linear)\n"}}
+{"step":395,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.001970] TCP bind hash table entries: 8192 (order: 5, 131072 bytes, linear)\n"}}
+{"step":396,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.001975] TCP: Hash tables configured (established 8192 bind 8192)\n"}}
+{"step":397,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.001980] UDP hash table entries: 512 (order: 3, 32768 bytes, linear)\n"}}
+{"step":398,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.001985] NET: Registered PF_UNIX/PF_LOCAL protocol family\n"}}
+{"step":414,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.002065] RPC: Registered named UNIX socket transport module.\n"}}
+{"step":415,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.002070] RPC: Registered udp transport module.\n"}}
+{"step":416,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.002075] RPC: Registered tcp transport module.\n"}}
+{"step":417,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.002080] RPC: Registered tcp-with-tls transport module.\n"}}
+{"step":418,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.002085] RPC: Registered tcp NFSv4.1 backchannel transport module.\n"}}
+{"step":427,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.002130] no MSR PMU driver.\n"}}
+{"step":433,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.002160] Unpacking initramfs...\n"}}
+{"step":434,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.002165] Freeing initrd memory: 2844K\n"}}
+{"step":459,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.002290] Initialise system trusted keyrings\n"}}
+{"step":463,"pid":2,"tid":2,"kind":{"type":"fork","child":27,"thread":false}}
+{"step":467,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.002330] workingset: timestamp_bits=62 (anon: 57) max_order=18 bucket_order=0 (anon: 0)\n"}}
+{"step":474,"pid":2,"tid":2,"kind":{"type":"fork","child":28,"thread":false}}
+{"step":477,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.002380] NFS: Registering the id_resolver key type\n"}}
+{"step":478,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.002385] Key type id_resolver registered\n"}}
+{"step":479,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.002390] Key type id_legacy registered\n"}}
+{"step":480,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.002395] nfs4filelayout_init: NFSv4 File Layout Driver Registering...\n"}}
+{"step":481,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.002400] nfs4flexfilelayout_init: NFSv4 Flexfile Layout Driver Registering...\n"}}
+{"step":487,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.002430] 9p: Installing v9fs 9p2000 file system support\n"}}
+{"step":491,"pid":2,"tid":2,"kind":{"type":"fork","child":29,"thread":false}}
+{"step":494,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.002465] Key type asymmetric registered\n"}}
+{"step":495,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.002470] Asymmetric key parser 'x509' registered\n"}}
+{"step":496,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.002475] Block layer SCSI generic (bsg) driver version 0.4 loaded (major 247)\n"}}
+{"step":497,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.002480] io scheduler mq-deadline registered\n"}}
+{"step":498,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.002485] io scheduler kyber registered\n"}}
+{"step":503,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.002510] Serial: 8250/16550 driver, 4 ports, IRQ sharing enabled\n"}}
+{"step":568,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.002835] Non-volatile memory driver v1.3\n"}}
+{"step":589,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.002940] loop: module loaded\n"}}
+{"step":598,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.002985] nd_pmem namespace0.0: unable to guarantee persistence of writes\n"}}
+{"step":607,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.003030] nd_pmem namespace1.0: unable to guarantee persistence of writes\n"}}
+{"step":612,"pid":2,"tid":2,"kind":{"type":"fork","child":30,"thread":false}}
+{"step":616,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.003075] device-mapper: ioctl: 4.50.0-ioctl (2025-04-28) initialised: dm-devel@lists.linux.dev\n"}}
+{"step":617,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.003080] hid: raw HID events driver (C) Jiri Kosina\n"}}
+{"step":618,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.003085] nf_conntrack_irc: The irc conntrack helper is scheduled for removal.\n[    0.003085] Please contact the netfilter-devel mailing list if you still need this.\n"}}
+{"step":619,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.003090] Initializing XFRM netlink socket\n"}}
+{"step":620,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.003095] NET: Registered PF_INET6 protocol family\n"}}
+{"step":632,"pid":2,"tid":2,"kind":{"type":"fork","child":31,"thread":false}}
+{"step":646,"pid":2,"tid":2,"kind":{"type":"fork","child":32,"thread":false}}
+{"step":649,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.003240] Segment Routing with IPv6\n"}}
+{"step":650,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.003245] In-situ OAM (IOAM) with IPv6\n"}}
+{"step":651,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.003250] sit: IPv6, IPv4 and MPLS over IPv4 tunneling driver\n"}}
+{"step":652,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.003255] NET: Registered PF_PACKET protocol family\n"}}
+{"step":653,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.003260] 9pnet: Installing 9P2000 support\n"}}
+{"step":654,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.003265] Key type dns_resolver registered\n"}}
+{"step":656,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.003275] sched_clock: Marking stable (265000, 35000)->(300000, 0)\n"}}
+{"step":657,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.003280] registered taskstats version 1\n"}}
+{"step":658,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.003285] Loading compiled-in X.509 certificates\n"}}
+{"step":668,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.003335] netconsole: network logging started\n"}}
+{"step":669,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.003340] cfg80211: Loading compiled-in X.509 certificates for regulatory database\n"}}
+{"step":673,"pid":2,"tid":2,"kind":{"type":"fork","child":33,"thread":false}}
+{"step":677,"pid":33,"tid":33,"kind":{"type":"exit","status":0,"comm":"cryptomgr_probe","thread":false}}
+{"step":678,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.003385] cryptomgr_probe (33) used greatest stack depth: 15648 bytes left\n"}}
+{"step":681,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.003400] Loaded X.509 cert 'sforshee: 00b28ddf47aef9cea7'\n"}}
+{"step":682,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.003405] Loaded X.509 cert 'wens: 61c038651aabdcf94bd0ac7ff06c7248db18c600'\n"}}
+{"step":685,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.003420] Freeing unused kernel image (initmem) memory: 1900K\n"}}
+{"step":686,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.003425] Write protecting the kernel read-only data: 22528k\n"}}
+{"step":687,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.003430] Freeing unused kernel image (text/rodata gap) memory: 1532K\n"}}
+{"step":688,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.003435] Freeing unused kernel image (rodata/data gap) memory: 1916K\n"}}
+{"step":689,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.003440] Run /init as init process\n"}}
+{"step":690,"pid":1,"tid":1,"kind":{"type":"exec","filename":"/init","argv":["/init"],"old_pid":1}}
+{"step":693,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.003460] faux_driver regulatory: Direct firmware load for regulatory.db failed with error -2\n"}}
+{"step":694,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.003465] cfg80211: failed to load regulatory.db\n"}}
+{"step":699,"pid":1,"tid":1,"kind":{"type":"open","path":"/dev/rewind-stdout","flags":557057}}
+{"step":700,"pid":1,"tid":1,"kind":{"type":"open","path":"/dev/rewind-stderr","flags":557057}}
+{"step":704,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.003515] erofs (device pmem0): mounted with root inode @ nid 36.\n"}}
+{"step":709,"pid":1,"tid":1,"kind":{"type":"open","path":"/dev/rewind","flags":557057}}
+{"step":710,"pid":1,"tid":1,"kind":{"type":"mark","text":"rewind-start"}}
+{"step":711,"pid":1,"tid":1,"kind":{"type":"open","path":"/dev/rewind-tty0","flags":557314}}
+{"step":712,"pid":1,"tid":1,"kind":{"type":"open","path":"/dev/rewind-tty1","flags":557314}}
+{"step":715,"pid":1,"tid":1,"kind":{"type":"fork","child":34,"thread":false}}
+{"step":717,"pid":34,"tid":34,"kind":{"type":"exec","filename":"/nix/store/1mv3qz005gkbalxfghk4y3s8ayv4d2dl-bash-interactive-5.3p15/bin/bash","argv":["bash","-eu","-c","/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/dd if=/nix/store/7pij9wliy782d14cp535xhj7y8h286ji-header.txt of=bundle status=none\n/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/dd if=/nix/store/vr613az0762zqyzplvw8cdm1vk2f6bvc-body.txt of=bundle oflag=append conv=notrunc status=none\n/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/dd if=bundle of=\"$out\" status=none\n"],"old_pid":34}}
+{"step":733,"pid":34,"tid":34,"kind":{"type":"fork","child":35,"thread":false}}
+{"step":735,"pid":35,"tid":35,"kind":{"type":"exec","filename":"/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/dd","argv":["/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/dd","if=/nix/store/7pij9wliy782d14cp535xhj7y8h286ji-header.txt","of=bundle","status=none"],"old_pid":35}}
+{"step":746,"pid":35,"tid":35,"kind":{"type":"open","path":"/build/bundle","flags":577}}
+{"step":748,"pid":35,"tid":35,"kind":{"type":"close","path":"/build/bundle"}}
+{"step":749,"pid":35,"tid":35,"kind":{"type":"exit","status":0,"comm":"/nix/store/2gfx","thread":false}}
+{"step":750,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.003745] /nix/store/2gfx (35) used greatest stack depth: 12904 bytes left\n"}}
+{"step":757,"pid":34,"tid":34,"kind":{"type":"signal","signo":17,"code":1,"addr":0}}
+{"step":760,"pid":34,"tid":34,"kind":{"type":"fork","child":36,"thread":false}}
+{"step":764,"pid":36,"tid":36,"kind":{"type":"exec","filename":"/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/dd","argv":["/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/dd","if=/nix/store/vr613az0762zqyzplvw8cdm1vk2f6bvc-body.txt","of=bundle","oflag=append","conv=notrunc","status=none"],"old_pid":36}}
+{"step":775,"pid":36,"tid":36,"kind":{"type":"open","path":"/build/bundle","flags":1089}}
+{"step":777,"pid":36,"tid":36,"kind":{"type":"close","path":"/build/bundle"}}
+{"step":778,"pid":36,"tid":36,"kind":{"type":"exit","status":0,"comm":"/nix/store/2gfx","thread":false}}
+{"step":781,"pid":34,"tid":34,"kind":{"type":"signal","signo":17,"code":1,"addr":0}}
+{"step":782,"pid":34,"tid":34,"kind":{"type":"exec","filename":"/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/dd","argv":["/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/dd","if=bundle","of=/nix/store/r8mgc2hqpzggmvmscm94dynii1wk1ygm-nixsplice-example","status=none"],"old_pid":34}}
+{"step":793,"pid":34,"tid":34,"kind":{"type":"open","path":"/nix/store/r8mgc2hqpzggmvmscm94dynii1wk1ygm-nixsplice-example","flags":577}}
+{"step":795,"pid":34,"tid":34,"kind":{"type":"close","path":"/nix/store/r8mgc2hqpzggmvmscm94dynii1wk1ygm-nixsplice-example"}}
+{"step":796,"pid":34,"tid":34,"kind":{"type":"exit","status":0,"comm":"/nix/store/2gfx","thread":false}}
+{"step":797,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.003980] /nix/store/2gfx (34) used greatest stack depth: 12648 bytes left\n"}}
+{"step":800,"pid":1,"tid":1,"kind":{"type":"open","path":"/dev/rewind","flags":557057}}
+{"step":801,"pid":1,"tid":1,"kind":{"type":"mark","text":"rewind-output /nix/store/r8mgc2hqpzggmvmscm94dynii1wk1ygm-nixsplice-example sha256:1c763cb553edd9c4e7632da40b6b2466b54b89b818844c85ed2033df7cf9eab9"}}
+{"step":802,"pid":1,"tid":1,"kind":{"type":"open","path":"/dev/rewind","flags":557057}}
+{"step":803,"pid":1,"tid":1,"kind":{"type":"mark","text":"rewind-exit 0"}}
+{"step":806,"pid":0,"tid":0,"kind":{"type":"console","text":"[    0.004025] reboot: Power down\n"}}

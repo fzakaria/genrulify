@@ -1,12 +1,8 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_join.h"
 #include "compiler.h"
-#include "dialect.h"
-#include "nlohmann/json.hpp"
-#include "process.h"
-#include "tools.h"
-#include <fstream>
-#include <regex>
+#include "layer.h"
+#include "lower.h"
 #include <set>
 
 namespace splice_ir {
@@ -15,7 +11,14 @@ namespace {
 using Json = nlohmann::json;
 enum class Backend { Bazel, Buck2 };
 
-constexpr std::string_view buckConfig = R"([cells]
+// Workspace-relative directories for the files the genrules read.
+constexpr std::string_view kPlansDirectory = "plans";
+constexpr std::string_view kLiteralsDirectory = "literals";
+
+// The file a single-output derivation's archive rule writes.
+constexpr std::string_view kNarExtension = ".nar";
+
+constexpr std::string_view kBuckConfig = R"([cells]
 root = .
 prelude = prelude
 toolchains = toolchains
@@ -31,182 +34,198 @@ buck = none
 target_platform_detector_spec = target:root//...->prelude//platforms:default
 )";
 
-void writeFile(const fs::path &path, std::string_view contents) {
-  std::ofstream file;
-  file.exceptions(std::ios::failbit | std::ios::badbit);
-  file.open(path);
-  file << contents;
-  file.close();
-}
+constexpr std::string_view kBuckToolchains =
+    "load(\"@prelude//toolchains:demo.bzl\", \"system_demo_toolchains\")\n"
+    "system_demo_toolchains()\n";
 
+// One genrule: the labels it consumes, the file it writes and the
+// nixsplice subcommand that turns one into the other.
 struct Action {
   std::string name;
-  std::vector<std::string> inputs;
-  std::string manifest;
-};
-
-struct Graph {
-  std::map<std::string, fs::path> sources;
-  std::vector<Action> actions;
   std::string output;
-  bool archive = false;
+  std::string verb;
+
+  // The plan file first, then every layer the plan names.
+  std::string plan;
+  std::vector<std::string> layers;
 };
 
-Graph readGraph(mlir::ModuleOp module, const fs::path &assets) {
-  Graph graph;
-  llvm::DenseMap<mlir::Value, std::string> labels;
-  const std::regex storeFile(
-      "/nix/store/[0-9a-z]{32}-[A-Za-z0-9][A-Za-z0-9._+-]*");
-  for (auto &op : module.getBody()->getOperations()) {
-    if (!graph.output.empty()) {
-      throw std::runtime_error("publish must end the module");
-    }
-    if (auto seed = llvm::dyn_cast<SeedOp>(op)) {
-      check(seed.getAsset() == "source.nar", "unknown source archive");
-      graph.sources.emplace("inputs/source.nar", assets / "source.nar");
-      labels[seed.getTree()] = ":inputs/source.nar";
-      continue;
-    }
-    if (auto exec = llvm::dyn_cast<ExecOp>(op)) {
-      const auto name = exec.getAction().str();
-      static const std::set<std::string> supported{"compile", "install",
-                                                   "patchelf", "strip"};
-      check(supported.contains(name), "unknown package action");
-      const auto filename = name + ".json";
-      const auto label = "inputs/" + filename;
-      check(graph.sources.emplace(label, assets / filename).second,
-            "duplicate package action");
-      const auto manifest = Json::parse(readBytes(assets / filename));
-      check(manifest.at("action") == name &&
-                manifest.at("step") == exec.getStep(),
-            "action manifest differs from IR");
-      graph.actions.push_back(
-          {name, {labels.lookup(exec.getInput()), ":" + label}, ":" + label});
-      labels[exec.getTree()] = ":" + name;
-      continue;
-    }
-    if (auto package = llvm::dyn_cast<PackageOp>(op)) {
-      graph.output = labels.lookup(package.getTree());
-      graph.archive = true;
-      continue;
-    }
-    if (auto source = llvm::dyn_cast<SourceOp>(op)) {
-      fs::path path(source.getPath().str());
-      if (!std::regex_match(path.native(), storeFile) ||
-          !fs::is_regular_file(fs::symlink_status(path))) {
-        throw std::runtime_error("expected a regular store file: " +
-                                 path.string());
-      }
-      auto label = "inputs/" + path.filename().string();
-      labels[source.getFile()] = ":" + label;
-      graph.sources.emplace(label, path);
-      continue;
-    }
-    if (auto publish = llvm::dyn_cast<PublishOp>(op)) {
-      graph.output = labels.lookup(publish.getFile());
-      continue;
-    }
-    if (!llvm::isa<CopyOp, AppendOp>(op)) {
-      throw std::runtime_error("unsupported operation: " +
-                               op.getName().getStringRef().str());
-    }
-    Action action{absl::StrCat("a", graph.actions.size() + 1), {}};
-    for (auto input : op.getOperands()) {
-      action.inputs.push_back(labels.lookup(input));
-    }
-    labels[op.getResult(0)] = ":" + action.name;
-    graph.actions.push_back(std::move(action));
-  }
-  if (graph.output.empty()) {
-    throw std::runtime_error("missing splice.publish");
-  }
-  return graph;
-}
+struct Workspace {
+  // Files that exist in the workspace, by path relative to its root.
+  std::set<std::string> sources;
+  std::vector<Action> actions;
+};
 
-std::string rule(Backend backend, const Action &action,
-                 std::string_view filename, std::string_view command) {
-  const auto quote = [](std::string_view value) { return Json(value).dump(); };
-  const std::set<std::string> deps(action.inputs.begin(), action.inputs.end());
+std::string quote(std::string_view value) { return Json(value).dump(); }
+
+// The label of a source file or of a rule in the workspace's one package.
+// Both build systems accept the same spelling.
+std::string label(std::string_view name) { return absl::StrCat(":", name); }
+
+std::string rule(Backend backend, const Action &action) {
+  // Both systems expand $(location label) to the path of a source file or
+  // of another rule's output.
+  const auto location = [](const std::string &label) {
+    return absl::StrCat("\"$(location ", label, ")\"");
+  };
+  std::vector<std::string> arguments;
+  for (const auto &layer : action.layers) {
+    arguments.push_back(location(layer));
+  }
+  const auto runner = fs::canonical("/proc/self/exe").string();
+  const auto target = backend == Backend::Bazel ? "$@" : "$OUT";
+  const auto command =
+      absl::StrCat("'", runner, "' ", action.verb, " ", location(action.plan),
+                   " \"", target, "\" ", absl::StrJoin(arguments, " "));
+
+  std::set<std::string> sources(action.layers.begin(), action.layers.end());
+  sources.insert(action.plan);
   const auto output = backend == Backend::Bazel
-                          ? absl::StrCat("outs = [", quote(filename), "]")
-                          : absl::StrCat("out = ", quote(filename));
+                          ? absl::StrCat("outs = [", quote(action.output), "]")
+                          : absl::StrCat("out = ", quote(action.output));
+
+  // The actions read the host's Nix store, which a remote worker may not
+  // have.
   const auto policy =
       backend == Backend::Bazel ? "tags = [\"no-remote\"]" : "remote = False";
   return absl::StrCat("genrule(\n    name = ", quote(action.name),
-                      ",\n    srcs = ", Json(deps).dump(), ",\n    ", output,
+                      ",\n    srcs = ", Json(sources).dump(), ",\n    ", output,
                       ",\n    cmd = ", quote(command), ",\n    ", policy,
                       ",\n)\n\n");
 }
 
-std::string buildFile(Backend backend, const Graph &graph) {
+std::string buildFile(Backend backend, const Workspace &workspace) {
   std::string text;
+
+  // Buck2 needs a target for every source file a rule names. Bazel takes
+  // the file's path as a label.
   if (backend == Backend::Buck2) {
-    for (const auto &[label, path] : graph.sources) {
-      absl::StrAppend(&text, "export_file(name = \"", label, "\", src = \"",
-                      label, "\")\n");
+    for (const auto &source : workspace.sources) {
+      absl::StrAppend(&text, "export_file(name = ", quote(source),
+                      ", src = ", quote(source), ")\n");
     }
     text += "\n";
   }
-  const auto output = backend == Backend::Bazel ? "$@" : "$OUT";
-  for (const auto &action : graph.actions) {
-    if (!action.manifest.empty()) {
-      const auto runner = fs::canonical("/proc/self/exe").string();
-      const auto cmd = absl::StrCat(
-          "'", runner, "' replay-action \"$(location ", action.manifest,
-          ")\" \"$(location ", action.inputs.front(), ")\" \"", output, "\"");
-      const auto filename =
-          graph.output == ":" + action.name ? "out.nar" : action.name + ".nar";
-      text += rule(backend, action, filename, cmd);
-      continue;
-    }
-    std::vector<std::string> locations;
-    for (const auto &input : action.inputs) {
-      locations.push_back(absl::StrCat("\"$(location ", input, ")\""));
-    }
-    const auto cmd = absl::StrCat(kCat, " ", absl::StrJoin(locations, " "),
-                                  " > \"", output, "\"");
-    text += rule(backend, action, action.name + ".bin", cmd);
+  for (const auto &action : workspace.actions) {
+    text += rule(backend, action);
   }
-
-  if (graph.archive) {
-    return text + absl::StrCat("alias(name = \"archive\", actual = \"",
-                               graph.output, "\")\n");
-  }
-
-  // Backend artifacts have backend-defined modes. Pack the regular Nix file
-  // from a private copy whose mode is part of the !splice.file contract.
-  const auto tmp = absl::StrCat("\"", output, ".regular\"");
-  const auto pack =
-      absl::StrCat(kCat, " \"$(location ", graph.output, ")\" > ", tmp, " && ",
-                   kChmod, " 644 ", tmp, " && ", kNixStore, " --dump ", tmp,
-                   " > \"", output, "\" && ", kRm, " ", tmp);
-  return text + rule(backend, {"archive", {graph.output}}, "out.nar", pack);
+  return text;
 }
 } // namespace
 
-void emitWorkspace(mlir::ModuleOp module, const fs::path &assets,
+void emitWorkspace(mlir::ModuleOp module, const Recording &recording,
                    const fs::path &destination) {
-  auto graph = readGraph(module, assets);
-  if (!fs::create_directory(destination)) {
-    throw std::runtime_error("destination already exists");
-  }
+  check(fs::create_directory(destination), "destination already exists");
   try {
-    fs::create_directory(destination / "inputs");
-    for (const auto &[label, path] : graph.sources) {
-      fs::copy_file(path, destination / label);
+    fs::create_directory(destination / kPlansDirectory);
+    fs::create_directory(destination / kLiteralsDirectory);
+    const auto extension = std::string(kLayerExtension);
+    Workspace workspace;
+
+    // Every replay needs the guest's /bin and /etc.
+    const auto platform = std::string(kPlatformLayer) + extension;
+    std::vector<Entry> platformEntries;
+    for (const auto &[path, entry] : recording.platform()) {
+      platformEntries.push_back(entry);
     }
-    writeFile(destination / "BUILD.bazel", buildFile(Backend::Bazel, graph));
-    writeFile(destination / "BUCK", buildFile(Backend::Buck2, graph));
-    writeFile(destination / "WORKSPACE", "");
-    writeFile(destination / "MODULE.bazel", "");
-    writeFile(destination / ".buckconfig", buckConfig);
+    writeRecordedLayer(recording, platformEntries, destination / platform);
+    workspace.sources.insert(platform);
+    const auto platformLabel = label(platform);
+
+    size_t outputCount = 0;
+    for (auto &op : module.getBody()->getOperations()) {
+      outputCount += llvm::isa<OutputOp>(op) ? 1 : 0;
+    }
+
+    // The label of the layer that holds a value: a source file for a
+    // literal, another rule for an exec.
+    llvm::DenseMap<mlir::Operation *, std::string> labels;
+    const LayerOf layerOf = [&](mlir::Value value) {
+      return targetName(value.getDefiningOp(), outputCount);
+    };
+    const auto layerLabels = [&](mlir::OperandRange values) {
+      std::set<std::string> unique;
+      for (const auto value : values) {
+        unique.insert(labels.lookup(value.getDefiningOp()));
+      }
+      return std::vector<std::string>(unique.begin(), unique.end());
+    };
+    const auto addPlan = [&](const Plan &plan, const std::string &name) {
+      const auto file = absl::StrCat(kPlansDirectory, "/", name, ".json");
+      savePlan(plan, destination / file);
+      workspace.sources.insert(file);
+      return label(file);
+    };
+
+    for (auto &op : module.getBody()->getOperations()) {
+      const auto name = targetName(&op, outputCount);
+      if (auto literal = llvm::dyn_cast<LiteralOp>(op)) {
+        const auto file =
+            absl::StrCat(kLiteralsDirectory, "/", name, extension);
+        std::vector<Entry> entries;
+        for (const auto entry : literal.getWrites().getAsRange<EntryAttr>()) {
+          entries.push_back(fromAttribute(entry));
+        }
+        writeRecordedLayer(recording, entries, destination / file);
+        workspace.sources.insert(file);
+        labels[&op] = label(file);
+        continue;
+      }
+      if (auto exec = llvm::dyn_cast<ExecOp>(op)) {
+        Action action{name, name + extension, "replay",
+                      addPlan(execPlan(exec, recording, layerOf), name),
+                      layerLabels(exec.getInputs())};
+        action.layers.push_back(platformLabel);
+        workspace.actions.push_back(std::move(action));
+        labels[&op] = label(name);
+        continue;
+      }
+      if (auto output = llvm::dyn_cast<OutputOp>(op)) {
+        workspace.actions.push_back(
+            {name, absl::StrCat(output.getName().str(), kNarExtension), "pack",
+             addPlan(outputPlan(output, layerOf), name),
+             layerLabels(output.getEntries())});
+        continue;
+      }
+      throw std::runtime_error("unsupported operation: " +
+                               op.getName().getStringRef().str());
+    }
+
+    writeBytes(destination / "BUILD.bazel",
+               buildFile(Backend::Bazel, workspace));
+    writeBytes(destination / "BUCK", buildFile(Backend::Buck2, workspace));
+    writeBytes(destination / "WORKSPACE", "");
+    writeBytes(destination / "MODULE.bazel", "");
+    writeBytes(destination / ".buckconfig", kBuckConfig);
     fs::create_directory(destination / "toolchains");
-    writeFile(destination / "toolchains/BUCK",
-              "load(\"@prelude//toolchains:demo.bzl\", "
-              "\"system_demo_toolchains\")\nsystem_demo_toolchains()\n");
+    writeBytes(destination / "toolchains/BUCK", kBuckToolchains);
   } catch (...) {
-    fs::remove_all(destination);
+    removeTree(destination);
     throw;
   }
+}
+
+void writeReference(const Recording &recording, const std::string &output,
+                    const fs::path &archive) {
+  const auto path = recording.outputs.find(output);
+  check(path != recording.outputs.end(), "the derivation has no output " + output);
+
+  // Pack the entries below the output path as the builder left them.
+  constexpr std::string_view kFinalLayer = "final";
+  Scratch scratch;
+  const auto layer =
+      scratch.path / (std::string(kFinalLayer) + std::string(kLayerExtension));
+  Plan plan;
+  plan.name = output;
+  plan.output = path->second;
+  std::vector<Entry> entries;
+  for (const auto &[entryPath, entry] : recording.state(recording.finalStep)) {
+    if (isBelow(entryPath, path->second)) {
+      entries.push_back(entry);
+      plan.inputs.push_back({std::string(kFinalLayer), entryPath});
+    }
+  }
+  writeRecordedLayer(recording, entries, layer);
+  packPlan(plan, {layer}, archive);
 }
 } // namespace splice_ir

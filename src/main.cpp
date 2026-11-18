@@ -2,61 +2,113 @@
 #include "dialect.h"
 #include "mlir/IR/Verifier.h"
 #include "mlir/Parser/Parser.h"
-#include "mlir/Pass/PassManager.h"
-#include "mlir/Transforms/Passes.h"
-#include "package.h"
+#include "plan.h"
+#include "trace.h"
 #include <span>
 #include <stdexcept>
 
 namespace {
-constexpr std::string_view usage =
-    "usage: nixsplice import derivation.json events.jsonl\n"
-    "       nixsplice replay-action action.json input.nar output.nar\n"
-    "       nixsplice capture run.json derivation.drv bundle\n"
-    "       nixsplice opt graph.mlir\n"
-    "       nixsplice emit graph.mlir directory\n"
-    "       nixsplice verify run.json reference.nar backend.nar\n";
-void run(std::span<char *> args) {
-  if (args.size() == 4 && std::string_view(args[0]) == "replay-action") {
-    splice_ir::replayAction(args[1], args[2], args[3]);
-    return;
+constexpr std::string_view kUsage =
+    "usage: nixsplice record RUN DERIVATION.drv RECORDING\n"
+    "       nixsplice cuts EVENTS.jsonl TRACE.bin\n"
+    "       nixsplice check RECORDING\n"
+    "       nixsplice import RECORDING\n"
+    "       nixsplice opt GRAPH.mlir\n"
+    "       nixsplice emit RECORDING GRAPH.mlir WORKSPACE\n"
+    "       nixsplice reference RECORDING OUTPUT ARCHIVE.nar\n"
+    "       nixsplice verify REFERENCE.nar ARCHIVE.nar\n"
+    "       nixsplice replay PLAN.json RESULT.layer LAYER...\n"
+    "       nixsplice pack PLAN.json ARCHIVE.nar LAYER...\n";
+
+// The number of arguments before the layer list of `replay` and `pack`:
+// the command, the plan and the output.
+constexpr size_t kPlanArguments = 3;
+
+mlir::OwningOpRef<mlir::ModuleOp> parse(mlir::MLIRContext &context,
+                                        const char *file) {
+  auto module = mlir::parseSourceFile<mlir::ModuleOp>(file, &context);
+  if (!module) {
+    throw std::runtime_error("cannot parse module");
   }
-  if (args.size() == 4 && std::string_view(args[0]) == "capture") {
-    splice_ir::capturePackage(args[1], args[2], args[3]);
-    return;
-  }
-  if (args.size() == 4 && std::string_view(args[0]) == "verify") {
-    splice_ir::verifyArchives(args[1], args[2], args[3]);
-    return;
-  }
-  mlir::MLIRContext context;
-  context.getOrLoadDialect<splice_ir::SpliceDialect>();
-  mlir::OwningOpRef<mlir::ModuleOp> module;
-  if (args.size() == 3 && std::string_view(args[0]) == "import") {
-    module = splice_ir::importTrace(context, args[1], args[2]);
-  } else if (args.size() == 2 && std::string_view(args[0]) == "opt") {
-    module = mlir::parseSourceFile<mlir::ModuleOp>(args[1], &context);
-    mlir::PassManager passes(&context);
-    passes.addPass(mlir::createCanonicalizerPass());
-    if (!module || mlir::failed(passes.run(*module))) {
-      throw std::runtime_error("cannot optimize module");
-    }
-  } else if (args.size() == 3 && std::string_view(args[0]) == "emit") {
-    module = mlir::parseSourceFile<mlir::ModuleOp>(args[1], &context);
-    if (!module) {
-      throw std::runtime_error("cannot parse module");
-    }
-    splice_ir::emitWorkspace(
-        *module, std::filesystem::absolute(args[1]).parent_path(), args[2]);
-    return;
-  } else {
-    throw std::runtime_error(std::string(usage));
-  }
-  if (mlir::failed(mlir::verify(*module))) {
+  return module;
+}
+
+void print(mlir::ModuleOp module) {
+  if (mlir::failed(mlir::verify(module))) {
     throw std::runtime_error("invalid module");
   }
-  module->print(llvm::outs());
+  module.print(llvm::outs());
   llvm::outs() << "\n";
+}
+
+void run(std::span<char *> args) {
+  const std::string_view command = args.empty() ? "" : args[0];
+
+  // The two commands a generated genrule runs.
+  if (args.size() >= kPlanArguments && (command == "replay" || command == "pack")) {
+    const auto plan = splice_ir::loadPlan(args[1]);
+    const std::vector<std::filesystem::path> layers(
+        args.begin() + kPlanArguments, args.end());
+    if (command == "replay") {
+      splice_ir::replayPlan(plan, layers, args[2]);
+      return;
+    }
+    splice_ir::packPlan(plan, layers, args[2]);
+    return;
+  }
+
+  // Commands that only need a recording.
+  if (args.size() == 4 && command == "record") {
+    splice_ir::recordRun(args[1], args[2], args[3]);
+    return;
+  }
+  if (args.size() == 3 && command == "cuts") {
+    // One JSON object per cut, for inspecting a run before recording it.
+    for (const auto &cut : splice_ir::analyze(args[1], args[2]).cuts) {
+      const nlohmann::json line = {{"pid", cut.pid},     {"step", cut.step},
+                                   {"end", cut.end},     {"status", cut.status},
+                                   {"name", cut.name},   {"reads", cut.reads}};
+      llvm::outs() << line.dump() << "\n";
+    }
+    return;
+  }
+  if (args.size() == 2 && command == "check") {
+    splice_ir::checkRecording(splice_ir::Recording::load(args[1]));
+    return;
+  }
+  if (args.size() == 4 && command == "reference") {
+    splice_ir::writeReference(splice_ir::Recording::load(args[1]), args[2],
+                              args[3]);
+    return;
+  }
+  if (args.size() == 3 && command == "verify") {
+    splice_ir::verifyArchives(args[1], args[2]);
+    return;
+  }
+
+  // Commands that read or write the IR.
+  mlir::MLIRContext context;
+  context.getOrLoadDialect<splice_ir::SpliceDialect>();
+  if (args.size() == 2 && command == "import") {
+    const auto recording = splice_ir::Recording::load(args[1]);
+    auto module = splice_ir::importRecording(context, recording,
+                                             splice_ir::loadVerdicts(recording));
+    print(*module);
+    return;
+  }
+  if (args.size() == 2 && command == "opt") {
+    auto module = parse(context, args[1]);
+    splice_ir::optimize(*module);
+    print(*module);
+    return;
+  }
+  if (args.size() == 4 && command == "emit") {
+    auto module = parse(context, args[2]);
+    splice_ir::emitWorkspace(*module, splice_ir::Recording::load(args[1]),
+                             args[3]);
+    return;
+  }
+  throw std::runtime_error(std::string(kUsage));
 }
 } // namespace
 
