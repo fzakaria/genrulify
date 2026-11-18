@@ -61,10 +61,16 @@ def ExecOp : SpliceOp<"exec", [Pure, NamedResults]> {
     group in the recording, which holds every argv, environment, working
     directory and descriptor table. `name` is a label for people. Result `i`
     is the version of `writes[i].path` the group left behind.
+
+    `rule` is the kind of build rule the group stands for, such as
+    `cc_object` for a compile, when the group has been raised to one. The
+    kind decides what the generated rule is called and how its inputs are
+    named. The kind never decides what the rule runs, which is the
+    recorded command either way.
   }];
-  let arguments = (ins Variadic<Entry>:$inputs, StrAttr:$name, I64Attr:$step, EntryArrayAttr:$writes);
+  let arguments = (ins Variadic<Entry>:$inputs, StrAttr:$name, I64Attr:$step, EntryArrayAttr:$writes, OptionalAttr<StrAttr>:$rule);
   let results = (outs Variadic<Entry>:$outputs);
-  let assemblyFormat = "$name `at` $step `(` $inputs `)` custom<Writes>($writes, type($outputs)) attr-dict";
+  let assemblyFormat = "$name `at` $step (`as` $rule^)? `(` $inputs `)` custom<Writes>($writes, type($outputs)) attr-dict";
   let hasVerifier = 1;
 }
 

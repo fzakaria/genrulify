@@ -1,0 +1,191 @@
+#include "rules.h"
+#include <algorithm>
+#include <filesystem>
+#include <regex>
+#include <set>
+#include <span>
+
+namespace splice_ir {
+namespace fs = std::filesystem;
+namespace {
+// The names a C or C++ compiler driver goes by: an optional target prefix,
+// as in `x86_64-unknown-linux-gnu-gcc`, and an optional version, as in
+// `gcc-13`.
+constexpr std::string_view kCompilerDrivers =
+    R"((.*-)?(gcc|g\+\+|cc|c\+\+|clang|clang\+\+)(-[0-9.]+)?)";
+constexpr std::string_view kArchiver = "ar";
+constexpr std::string_view kRustCompiler = "rustc";
+
+// The options that make a compiler driver stop before linking, and the
+// one that makes it stop after compiling.
+constexpr std::string_view kCompileOnly = "-c";
+constexpr std::string_view kStopsEarly[] = {"-E", "-S", "-M", "-MM"};
+
+// How a driver is told where to write and to link a shared library.
+constexpr std::string_view kOutputOption = "-o";
+constexpr std::string_view kSharedOption = "-shared";
+
+// The name of a shared library: `libx.so`, `libx.so.1.2`.
+constexpr std::string_view kSharedLibraryName = R"(.*\.so(\.[0-9]+)*)";
+
+// The extensions of the files a C or C++ compiler takes as sources.
+constexpr std::string_view kSourceExtensions[] = {
+    ".c", ".cc", ".cpp", ".cxx", ".c++", ".C", ".m",
+    ".mm", ".S", ".s",  ".sx",  ".i",   ".ii"};
+
+// The letters of ar's first argument that add members to an archive, and
+// the ones that only read one or take members out.
+constexpr std::string_view kArchiveAdds = "rq";
+constexpr std::string_view kArchiveReads = "txpdm";
+
+// How rustc is told what to build, and what each answer is raised to.
+constexpr std::string_view kCrateType = "--crate-type";
+constexpr std::string_view kBinaryCrate = "bin";
+constexpr std::string_view kProcMacroCrate = "proc-macro";
+constexpr std::string_view kLibraryCrates[] = {"lib", "rlib", "dylib", "cdylib",
+                                               "staticlib"};
+
+bool matches(const std::string &text, std::string_view pattern) {
+  return std::regex_match(text, std::regex(std::string(pattern)));
+}
+
+// The program a process ran, by the last name of the path given to
+// execve. A recording made before that path was kept has argv[0].
+std::string programName(const Process &process) {
+  const auto &path = process.filename.empty() ? process.argv.front()
+                                              : process.filename;
+  return fs::path(path).filename().string();
+}
+
+// The arguments the command was given. For a script the kernel puts the
+// interpreter, and then the script's path, in front of them.
+std::span<const std::string> arguments(const Process &process) {
+  const std::span all(process.argv);
+  const auto script = std::ranges::find(all.subspan(1), process.filename);
+  if (!process.filename.empty() && script != all.end()) {
+    return all.subspan(script - all.begin() + 1);
+  }
+  return all.subspan(1);
+}
+
+bool has(std::span<const std::string> arguments, std::string_view option) {
+  return std::ranges::find(arguments, option) != arguments.end();
+}
+
+// The value of an option written `-o VALUE` or `-oVALUE`, or of one
+// written `--name VALUE` or `--name=VALUE` when `joiner` is `=`.
+std::optional<std::string> valueOf(std::span<const std::string> arguments,
+                                   std::string_view option,
+                                   std::string_view joiner = "") {
+  for (size_t index = 0; index < arguments.size(); ++index) {
+    const std::string_view argument = arguments[index];
+    if (argument == option && index + 1 < arguments.size()) {
+      return arguments[index + 1];
+    }
+    const auto joined = std::string(option) + std::string(joiner);
+    if (argument.size() > joined.size() && argument.starts_with(joined)) {
+      return std::string(argument.substr(joined.size()));
+    }
+  }
+  return std::nullopt;
+}
+
+// What a compiler driver's command line builds.
+std::optional<std::string_view> driverKind(
+    std::span<const std::string> arguments) {
+  if (has(arguments, kCompileOnly)) {
+    return kCcObject;
+  }
+  for (const auto option : kStopsEarly) {
+    if (has(arguments, option)) {
+      return std::nullopt;
+    }
+  }
+
+  // A driver that links says where to. One that was only asked for its
+  // version, or left to write a.out, is not worth a name.
+  const auto output = valueOf(arguments, kOutputOption);
+  if (!output) {
+    return std::nullopt;
+  }
+  const bool shared =
+      has(arguments, kSharedOption) ||
+      matches(fs::path(*output).filename().string(), kSharedLibraryName);
+  return shared ? kCcSharedLibrary : kCcBinary;
+}
+
+// What ar's command line builds: a library, when its operation adds
+// members.
+std::optional<std::string_view> archiverKind(
+    std::span<const std::string> arguments) {
+  if (arguments.empty()) {
+    return std::nullopt;
+  }
+  const std::string_view operation = arguments.front();
+  const bool adds = operation.find_first_of(kArchiveAdds) != std::string::npos;
+  const bool reads = operation.find_first_of(kArchiveReads) != std::string::npos;
+  if (adds && !reads) {
+    return kCcLibrary;
+  }
+  return std::nullopt;
+}
+
+// What rustc's command line builds, by the first crate type it names.
+std::optional<std::string_view> rustKind(
+    std::span<const std::string> arguments) {
+  const auto types = valueOf(arguments, kCrateType, "=");
+  if (!types) {
+    return std::nullopt;
+  }
+  const auto type = types->substr(0, types->find(','));
+  if (type == kBinaryCrate) {
+    return kRustBinary;
+  }
+  if (type == kProcMacroCrate) {
+    return kRustProcMacro;
+  }
+  if (std::ranges::find(kLibraryCrates, type) != std::end(kLibraryCrates)) {
+    return kRustLibrary;
+  }
+  return std::nullopt;
+}
+} // namespace
+
+std::optional<std::string_view> ruleKind(const Process &process) {
+  if (process.argv.empty()) {
+    return std::nullopt;
+  }
+  const auto program = programName(process);
+  const auto given = arguments(process);
+  if (matches(program, kCompilerDrivers)) {
+    return driverKind(given);
+  }
+  if (program == kArchiver) {
+    return archiverKind(given);
+  }
+  if (program == kRustCompiler) {
+    return rustKind(given);
+  }
+  return std::nullopt;
+}
+
+std::vector<std::string> sourcePaths(const Process &process) {
+  std::vector<std::string> paths;
+  if (process.argv.empty()) {
+    return paths;
+  }
+  for (const auto &argument : arguments(process)) {
+    if (argument.starts_with("-")) {
+      continue;
+    }
+    const auto extension = fs::path(argument).extension().string();
+    if (std::ranges::find(kSourceExtensions, extension) ==
+        std::end(kSourceExtensions)) {
+      continue;
+    }
+    paths.push_back(
+        (fs::path(process.cwd) / argument).lexically_normal().string());
+  }
+  return paths;
+}
+} // namespace splice_ir

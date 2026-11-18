@@ -36,6 +36,14 @@ configure_file(src/tools.h.in tools.h @ONLY)
 configure_file(src/sandbox.sh.in sandbox.sh @ONLY)
 file(READ ${CMAKE_CURRENT_BINARY_DIR}/sandbox.sh SANDBOX_SCRIPT)
 configure_file(src/sandbox_script.h.in sandbox_script.h @ONLY)
+
+# The rule definitions are embedded the same way. A change to either file
+# has to configure again, which reading a file does not arrange by itself.
+file(READ ${CMAKE_SOURCE_DIR}/src/genrulify.bzl BAZEL_RULES)
+file(READ ${CMAKE_SOURCE_DIR}/src/genrulify.buck.bzl BUCK_RULES)
+set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
+  src/genrulify.bzl src/genrulify.buck.bzl)
+configure_file(src/rules_text.h.in rules_text.h @ONLY)
 add_executable(genrulify
   src/main.cpp
   src/dialect.cpp
@@ -47,6 +55,7 @@ add_executable(genrulify
   src/action.cpp
   src/import.cpp
   src/passes.cpp
+  src/rules.cpp
   src/check.cpp
   src/access.cpp
   src/emit.cpp
@@ -57,6 +66,6 @@ target_link_libraries(genrulify PRIVATE MLIR LLVM absl::strings nlohmann_json::n
 target_compile_options(genrulify PRIVATE -Wall -Wextra -Wno-unused-parameter)
 install(TARGETS genrulify)
 enable_testing()
-foreach(test check-ir cuts import opt emit reference sandbox learn access)
+foreach(test check-ir cuts import opt emit rules reference sandbox learn access)
   add_test(NAME ${test} COMMAND bash ${CMAKE_SOURCE_DIR}/tests/${test}.sh $<TARGET_FILE:genrulify> ${CMAKE_SOURCE_DIR}/tests/data)
 endforeach()

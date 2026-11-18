@@ -1,0 +1,9 @@
+#pragma once
+#include <string_view>
+
+namespace splice_ir {
+// The rule definitions every emitted workspace carries, one file for each
+// build system. The text is src/genrulify.bzl and src/genrulify.buck.bzl.
+inline constexpr std::string_view kBazelRules = R"GENRULIFY(@BAZEL_RULES@)GENRULIFY";
+inline constexpr std::string_view kBuckRules = R"GENRULIFY(@BUCK_RULES@)GENRULIFY";
+} // namespace splice_ir

@@ -5,6 +5,7 @@
 #include "mlir/Pass/PassManager.h"
 #include "mlir/Transforms/Passes.h"
 #include "process.h"
+#include "rules.h"
 #include <algorithm>
 #include <filesystem>
 #include <map>
@@ -18,6 +19,7 @@ constexpr std::string_view kEliminateName = "dce";
 constexpr std::string_view kFoldName = "fold";
 constexpr std::string_view kMergeName = "merge";
 constexpr std::string_view kRaiseName = "raise";
+constexpr std::string_view kRulesName = "rules";
 
 // The process groups of a module, collected before any of them is
 // rewritten, so that a pass can add operations while it walks them.
@@ -250,6 +252,54 @@ private:
 
   Source source;
 };
+
+// Raises a process group to the kind of build rule it stands for. A group
+// that is one command is looked up in the recording, and the command's
+// program and arguments say whether it compiles, links or archives. The
+// kind is written on the splice.exec as `rule`.
+//
+// Nothing about the graph changes: the operation keeps its operands, its
+// results and its step, and is replayed and checked as before. The kind
+// only chooses the name of the rule the operation is lowered to and how
+// that rule names its inputs. Tool names are used here and nowhere else in
+// the compiler, and a name that is misread gives a correct rule a wrong
+// label.
+struct RaiseToRules
+    : mlir::PassWrapper<RaiseToRules, mlir::OperationPass<mlir::ModuleOp>> {
+  explicit RaiseToRules(const Recording &recording) : recording(recording) {}
+
+  llvm::StringRef getArgument() const final { return "splice-raise-to-rules"; }
+  llvm::StringRef getDescription() const final {
+    return "Name the kind of build rule each command stands for";
+  }
+
+  void runOnOperation() final {
+    // The recorded groups by the step they started at.
+    std::map<uint64_t, const Group *> groups;
+    for (const auto &group : recording.groups) {
+      groups[group.start] = &group;
+    }
+
+    mlir::Builder builder(&getContext());
+    for (auto exec : processGroups(getOperation())) {
+      // An operation written by hand has no group to read a command
+      // from. A pipeline is several commands, and no one of them is the
+      // rule.
+      const auto group = groups.find(exec.getStep());
+      if (group == groups.end() || group->second->processes.size() != 1) {
+        continue;
+      }
+      const auto kind = ruleKind(group->second->processes.front());
+      if (!kind) {
+        continue;
+      }
+      exec.setRuleAttr(builder.getStringAttr(std::string(*kind)));
+    }
+  }
+
+private:
+  const Recording &recording;
+};
 } // namespace
 
 std::string_view passName(Pass pass) {
@@ -264,6 +314,8 @@ std::string_view passName(Pass pass) {
     return kMergeName;
   case Pass::Raise:
     return kRaiseName;
+  case Pass::Rules:
+    return kRulesName;
   }
   throw std::logic_error("unknown pass");
 }
@@ -277,7 +329,8 @@ std::optional<Pass> passNamed(std::string_view name) {
   return std::nullopt;
 }
 
-void optimize(mlir::ModuleOp module, std::span<const Pass> passes) {
+void optimize(mlir::ModuleOp module, std::span<const Pass> passes,
+              const Recording *recording) {
   const auto chosen = [&](Pass pass) {
     return std::ranges::find(passes, pass) != passes.end();
   };
@@ -300,6 +353,11 @@ void optimize(mlir::ModuleOp module, std::span<const Pass> passes) {
       break;
     case Pass::Raise:
       manager.addPass(std::make_unique<RaiseCopies>(Source::OtherPath));
+      break;
+    case Pass::Rules:
+      if (recording != nullptr) {
+        manager.addPass(std::make_unique<RaiseToRules>(*recording));
+      }
       break;
     }
 

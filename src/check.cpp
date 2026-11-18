@@ -142,7 +142,7 @@ void checkRecording(const Recording &recording,
     mlir::MLIRContext context;
     context.getOrLoadDialect<SpliceDialect>();
     auto module = importRecording(context, recording, verdicts);
-    optimize(*module, passes);
+    optimize(*module, passes, &recording);
     std::vector<Task> tasks;
     for (auto &op : module->getBody()->getOperations()) {
       auto exec = llvm::dyn_cast<ExecOp>(op);
@@ -273,7 +273,7 @@ void checkRecording(const Recording &recording,
   mlir::MLIRContext context;
   context.getOrLoadDialect<SpliceDialect>();
   auto module = importRecording(context, recording, verdicts);
-  optimize(*module, passes);
+  optimize(*module, passes, &recording);
   std::set<uint64_t> replayedSteps;
   std::set<uint64_t> demotedSteps;
   std::set<uint64_t> copiedSteps;

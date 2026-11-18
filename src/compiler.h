@@ -106,9 +106,16 @@ enum class Pass {
   // Turns a result with the bytes of an operand at another path into a
   // copy of the operand: cp, install, mv.
   Raise,
+
+  // Gives a process group that is one command the kind of build rule the
+  // command stands for: a compile, a link, an archive. The kind names the
+  // rule the group is lowered to. The rule runs the recorded command
+  // whatever its kind is.
+  Rules,
 };
-inline constexpr std::array kAllPasses{Pass::Link, Pass::Eliminate, Pass::Fold,
-                                       Pass::Merge, Pass::Raise};
+inline constexpr std::array kAllPasses{Pass::Link,  Pass::Eliminate,
+                                       Pass::Fold,  Pass::Merge,
+                                       Pass::Raise, Pass::Rules};
 
 // The file in a recording directory where `check` reports what became of
 // every process group, and with which passes.
@@ -129,8 +136,11 @@ std::optional<Pass> passNamed(std::string_view name);
 // whatever a later pass leaves without a use is removed after that pass.
 // Without it nothing is removed, and the operations a pass has taken the
 // readers from stay in the module.
-void optimize(mlir::ModuleOp module,
-              std::span<const Pass> passes = kAllPasses);
+//
+// Rules reads command lines, which are in the recording and not in the
+// module. Without a recording that pass does nothing.
+void optimize(mlir::ModuleOp module, std::span<const Pass> passes = kAllPasses,
+              const Recording *recording = nullptr);
 
 // Replays each live process group alone against recorded inputs and widens
 // or demotes the groups that do not reproduce their recorded writes, until

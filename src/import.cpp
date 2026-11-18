@@ -142,7 +142,8 @@ public:
     auto exec =
         ExecOp::create(builder, builder.getUnknownLoc(),
                        types(computed.changed.size()), operands, label(group),
-                       group.start, toAttributes(context, computed.changed));
+                       group.start, toAttributes(context, computed.changed),
+                       /*rule=*/mlir::StringAttr());
     apply(computed, exec->getResults());
     if (recorded.changed.empty()) {
       return;

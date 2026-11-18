@@ -259,6 +259,11 @@ mlir::LogicalResult ExecOp::verify() {
   if (mlir::failed(verifyWrites(getOperation(), getWrites()))) {
     return mlir::failure();
   }
+
+  // A kind names a rule in the files a workspace ships, so it has a name.
+  if (const auto kind = getRule(); kind && kind->empty()) {
+    return emitOpError("has an empty rule kind");
+  }
   llvm::StringSet<> paths;
   for (const auto input : getInputs()) {
     const auto entry = entryOf(input);

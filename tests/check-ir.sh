@@ -37,6 +37,18 @@ grep -q 'splice.output "out" "/build"(%sandbox_1, %cc_2)' "$scratch/ok.out"
 sed 's/"cc"/"find|sort"/' "$scratch/ok.mlir" > "$scratch/pipeline.mlir"
 "$compiler" opt "$scratch/pipeline.mlir" dce | grep -q '%find_sort_2 = splice.exec "find|sort" at 2'
 
+# A process group can carry the kind of build rule it stands for, and the
+# kind is printed where it was written.
+sed 's/splice.exec "cc" at 2(/splice.exec "cc" at 2 as "cc_object"(/' "$scratch/ok.mlir" > "$scratch/kind.mlir"
+"$compiler" opt "$scratch/kind.mlir" dce | grep -q '%cc_2 = splice.exec "cc" at 2 as "cc_object"(%sandbox_1)'
+
+# A kind is a name, so an empty one is rejected.
+sed 's/ as "cc_object"/ as ""/' "$scratch/kind.mlir" > "$scratch/empty.mlir"
+if "$compiler" opt "$scratch/empty.mlir" dce > /dev/null 2> "$scratch/error"; then
+    exit 1
+fi
+grep -q 'empty rule kind' "$scratch/error"
+
 # A constant folded out of a process group and a copy of a file both parse
 # and print.
 cat > "$scratch/raised.mlir" <<'MLIR'

@@ -191,6 +191,11 @@ Json describeNode(const Node &node, size_t outputCount, Detail detail,
     json.update({{"op", kExecKind},
                  {"name", exec.getName()},
                  {"step", exec.getStep()}});
+
+    // The kind of build rule the group was raised to, when it was.
+    if (const auto kind = exec.getRule()) {
+      json["rule"] = *kind;
+    }
   } else if (auto literal = llvm::dyn_cast<LiteralOp>(first)) {
     json.update({{"op", kLiteralKind},
                  {"name", literal.getName()},
@@ -228,7 +233,7 @@ void describeGraph(mlir::ModuleOp module, const Recording &recording) {
   std::vector<mlir::OwningOpRef<mlir::ModuleOp>> modules;
   for (size_t mask = 0; mask < choices; ++mask) {
     modules.emplace_back(module.clone());
-    optimize(*modules.back(), chosen(mask));
+    optimize(*modules.back(), chosen(mask), &recording);
   }
 
   // Which bit elimination has, to find the same choice with it added.

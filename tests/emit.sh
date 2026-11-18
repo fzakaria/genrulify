@@ -1,4 +1,4 @@
-# Lowering writes one genrule per operation for both build systems. The
+# Lowering writes one rule per operation for both build systems. The
 # test emits the example recording and checks that each rule names the real
 # files it reads and writes and shows the recorded command, that the
 # workspace holds everything the commands refer to, and that emit will not
@@ -14,7 +14,7 @@ cd "$scratch/workspace"
 
 # Three replay rules and the archive rule, in both files.
 for file in BUILD.bazel BUCK; do
-    test "$(grep -c '^genrule(' "$file")" = 4
+    test "$(grep -c '^[a-z_]*($' "$file")" = 4
     grep -q 'name = "s764_dd"' "$file"
     grep -q 'name = "archive"' "$file"
 
@@ -64,7 +64,7 @@ grep -q '50f55425c6b2fa76153714d7097567804eabbe75984a18b4534537973c24d9fa' actio
 # path.
 "$compiler" opt "$scratch/graph.mlir" > "$scratch/optimized.mlir"
 "$compiler" emit "$data/example" "$scratch/optimized.mlir" "$scratch/optimized"
-test "$(grep -c '^genrule(' "$scratch/optimized/BUILD.bazel")" = 3
+test "$(grep -c '^[a-z_]*($' "$scratch/optimized/BUILD.bazel")" = 3
 rule "$scratch/optimized/BUILD.bazel" archive | grep -q '":s764_dd/build/bundle"'
 grep -q "/nix/store/l1dx8g9mr73bdp8y6i2yp92xprmz8xzg-genrulify-example.*s764_dd/build/bundle" \
     "$scratch/optimized/actions/archive.manifest"
@@ -120,11 +120,11 @@ grep -q '"op":"output"' "$scratch/description.json"
 grep -q 'oflag=append' "$scratch/description.json"
 
 # The description has the graph under every choice of passes, so that a
-# page can switch any of them on and off. It names the five passes, lists
+# page can switch any of them on and off. It names the six passes, lists
 # each distinct node once, and gives one list of nodes per choice: two to
-# the power of five.
-grep -q '"passes":\["link","dce","fold","merge","raise"\]' "$scratch/description.json"
-test "$(grep -o '"variants":\[.*\]\]' "$scratch/description.json" | grep -o '\],\[' | wc -l)" = 31
+# the power of six.
+grep -q '"passes":\["link","dce","fold","merge","raise","rules"\]' "$scratch/description.json"
+test "$(grep -o '"variants":\[.*\]\]' "$scratch/description.json" | grep -o '\],\[' | wc -l)" = 63
 
 # The added ls is one node however many choices keep it, and the last dd
 # ends as a copy. A node says which values it defines, by name.
