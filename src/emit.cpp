@@ -32,20 +32,26 @@ constexpr std::string_view kBuckToolchains =
     "load(\"@prelude//toolchains:demo.bzl\", \"system_demo_toolchains\")\n"
     "system_demo_toolchains()\n";
 
-// The names Buck2 gives a rule's stamp and its archive among its outputs.
-constexpr std::string_view kBuckStampName = "ok";
-constexpr std::string_view kBuckArchiveName = "nar";
+// How a rule calls the sandbox script. Bazel runs a command in the
+// workspace's root with other rules' outputs under RULEDIR. Buck2 links
+// every source under SRCDIR and expects the output at OUT, which is named
+// after the rule, so the script is pointed at the directory OUT is in.
+constexpr std::string_view kBazelInvocation =
+    "./sandbox.sh --in . --in $(RULEDIR) --out $(RULEDIR)";
+constexpr std::string_view kBuckInvocation =
+    "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}";
 
 // The indent of a rule's attributes, and of the items of an attribute
 // that spans several lines.
 constexpr std::string_view kAttributeIndent = "    ";
 constexpr std::string_view kItemIndent = "        ";
 
-// A file a rule reads that another rule wrote.
-struct Generated {
+// A file a rule reads, and the target the file belongs to: the rule that
+// wrote the file, or the name recorded bytes are stored under.
+struct Input {
   std::string target;
   std::string artifact;
-  auto operator<=>(const Generated &) const = default;
+  auto operator<=>(const Input &) const = default;
 };
 
 // One genrule: the files it reads, the files it writes, and the recorded
@@ -53,13 +59,16 @@ struct Generated {
 struct Rule {
   std::string name;
 
-  // Files that exist in the workspace: the sandbox script and its shared
-  // inputs, the rule's manifest, and bytes taken from the recording.
+  // Files the compiler wrote for the rule: the sandbox script and what it
+  // shares between rules, and the rule's manifest.
   std::set<std::string> sources;
+
+  // Bytes taken from the recording, which are files in the workspace.
+  std::set<Input> recorded;
 
   // File versions written by other rules, and the rules whose stamp this
   // rule waits for because it uses a directory or a symlink they made.
-  std::set<Generated> generated;
+  std::set<Input> generated;
   std::set<std::string> stamps;
 
   // The files this rule writes, and whether its last output is a NAR.
@@ -114,57 +123,58 @@ std::string stampFile(std::string_view target) {
 std::string renderRule(Backend backend, const Rule &rule) {
   const bool bazel = backend == Backend::Bazel;
 
-  // Inputs. Both systems find a workspace file by its path. A file from
-  // another rule is that rule's output in Bazel and a named output of the
-  // rule in Buck2.
-  Arguments sources;
+  // Inputs. Bazel is given each file: a workspace file by its path, and
+  // a file from another rule as that rule's output. Buck2 hands a command
+  // all of its sources in one environment variable, which the kernel caps
+  // at 128 KiB, and a rule that reads a few thousand files does not fit.
+  // So a Buck2 rule depends on whole directories: the one each rule
+  // writes, and the one each set of recorded bytes is stored in. The
+  // manifest names the files either way.
+  std::set<std::string> listed;
   for (const auto &file : rule.sources) {
-    sources.push_back(bazel ? absl::StrCat(":", file) : file);
+    listed.insert(bazel ? absl::StrCat(":", file) : file);
   }
-  for (const auto &input : rule.generated) {
-    sources.push_back(
-        bazel ? absl::StrCat(":", input.artifact)
-              : absl::StrCat(":", input.target, "[",
-                             buckOutputName(input.target, input.artifact),
-                             "]"));
+  for (const auto &input : rule.recorded) {
+    listed.insert(bazel ? absl::StrCat(":", input.artifact) : input.target);
   }
-  for (const auto &target : rule.stamps) {
-    sources.push_back(bazel ? absl::StrCat(":", stampFile(target))
-                            : absl::StrCat(":", target, "[", kBuckStampName,
-                                           "]"));
+  Arguments sources(listed.begin(), listed.end());
+
+  // What other rules produce comes after the workspace's own files: for
+  // Bazel each file and then each stamp, for Buck2 each rule once.
+  if (bazel) {
+    for (const auto &input : rule.generated) {
+      sources.push_back(absl::StrCat(":", input.artifact));
+    }
+    for (const auto &target : rule.stamps) {
+      sources.push_back(absl::StrCat(":", stampFile(target)));
+    }
+  } else {
+    for (const auto &target : rule.stamps) {
+      sources.push_back(absl::StrCat(":", target));
+    }
   }
 
-  // Outputs. A replay rule ends with its stamp and an archive rule with
-  // its NAR.
-  const auto last = rule.archive ? absl::StrCat(rule.name, kArchiveExtension)
-                                 : stampFile(rule.name);
+  // Outputs. In Bazel a replay rule writes its files and its stamp. In
+  // Buck2 it writes the directory that holds its files. An archive rule
+  // writes its NAR.
   std::vector<std::string> attributes{
       absl::StrCat("name = ", quote(rule.name)),
       absl::StrCat("srcs = ", list(sources))};
   if (bazel) {
     Arguments files = rule.outputs;
-    files.push_back(last);
+    files.push_back(rule.archive ? absl::StrCat(rule.name, kArchiveExtension)
+                                 : stampFile(rule.name));
     attributes.push_back(absl::StrCat("outs = ", list(files)));
   } else {
-    // Buck2 names every output, and builds the default one when a rule is
-    // asked for without a name.
-    std::string named = "{\n";
-    for (const auto &artifact : rule.outputs) {
-      absl::StrAppend(&named, kItemIndent,
-                      quote(buckOutputName(rule.name, artifact)), ": [",
-                      quote(artifact), "],\n");
-    }
-    absl::StrAppend(&named, kItemIndent,
-                    quote(rule.archive ? kBuckArchiveName : kBuckStampName),
-                    ": [", quote(last), "],\n", kAttributeIndent, "}");
-    attributes.push_back(absl::StrCat("outs = ", named));
-    attributes.push_back(absl::StrCat("default_outs = [", quote(last), "]"));
+    attributes.push_back(absl::StrCat(
+        "out = ", quote(rule.archive
+                            ? absl::StrCat(rule.name, kArchiveExtension)
+                            : rule.name)));
   }
 
   // The command: where the sandbox script finds its inputs and puts its
   // outputs, then the recorded command lines, one per line.
-  Arguments lines{bazel ? "./sandbox.sh --in . --in $(RULEDIR) --out $(RULEDIR)"
-                        : "$SRCDIR/sandbox.sh --in $SRCDIR --out $OUT"};
+  Arguments lines{std::string(bazel ? kBazelInvocation : kBuckInvocation)};
   for (const auto &arguments : rule.arguments) {
     lines.push_back(commandLine(backend, arguments));
   }
@@ -208,12 +218,12 @@ void emitWorkspace(mlir::ModuleOp module, const Recording &recording,
     const ArtifactOf platformArtifact = [](const Entry &entry) {
       return artifactName(kPlatformTarget, entry.path);
     };
-    std::set<std::string> platformFiles;
+    std::set<Input> platformFiles;
     for (const auto &[path, entry] : recording.platform()) {
       if (entry.kind == EntryKind::File) {
         const auto artifact = platformArtifact(entry);
         writeArtifact(recording, entry, destination / artifact);
-        platformFiles.insert(artifact);
+        platformFiles.insert({std::string(kPlatformTarget), artifact});
       }
     }
 
@@ -234,7 +244,7 @@ void emitWorkspace(mlir::ModuleOp module, const Recording &recording,
         const bool file = entryOf(value)->kind == EntryKind::File;
         if (llvm::isa<LiteralOp>(producer)) {
           if (file) {
-            rule.sources.insert(artifactOf(value));
+            rule.recorded.insert({target, artifactOf(value)});
           }
           continue;
         }
@@ -265,7 +275,7 @@ void emitWorkspace(mlir::ModuleOp module, const Recording &recording,
       Action action;
       if (auto exec = llvm::dyn_cast<ExecOp>(op)) {
         action = execAction(exec, recording, artifactOf, platformArtifact);
-        rule.sources.insert(platformFiles.begin(), platformFiles.end());
+        rule.recorded.insert(platformFiles.begin(), platformFiles.end());
         addOperands(rule, exec.getInputs());
         for (const auto &result : action.results) {
           if (!result.artifact.empty()) {
@@ -327,18 +337,9 @@ void writeReference(const Recording &recording, const std::string &output,
   Scratch scratch;
   writeSharedFiles(recording, scratch.path);
   writeActionFiles(action, scratch.path);
-  Arguments command{(scratch.path / kSandboxFile).string(),
-                    "--in",
-                    scratch.path.string(),
-                    "--in",
-                    recording.directory.string(),
-                    "--out",
-                    (scratch.path / "out").string()};
-  for (const auto &line : actionArguments(action, recording)) {
-    command.insert(command.end(), line.begin(), line.end());
-  }
-  execute(command);
-  fs::copy_file(scratch.path / "out" / absl::StrCat(output, kArchiveExtension),
+  execute(sandboxCommand(action, recording, scratch.path, scratch.path));
+  fs::copy_file(outputDirectory(scratch.path) /
+                    absl::StrCat(output, kArchiveExtension),
                 archive, fs::copy_options::overwrite_existing);
 }
 } // namespace splice_ir

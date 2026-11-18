@@ -441,6 +441,7 @@ if [ ${#problems[@]} -gt 0 ]; then
 fi
 
 # Every rule writes a stamp, so a step whose results are all directories
-# still has a file for the build system to track.
-"$C/mkdir" -p "$out"
+# still has a file for the build system to track. Buck2 tracks the
+# directory of the step's files instead, so that directory always exists.
+"$C/mkdir" -p "$out/$name"
 : > "$out/$name.ok"

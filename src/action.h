@@ -54,10 +54,6 @@ std::string targetName(mlir::Operation *op, size_t outputCount);
 // Bazel label or a file name written as `=XX`.
 std::string artifactName(std::string_view target, std::string_view guestPath);
 
-// The name Buck2 knows an artifact by inside its rule. Buck2 allows fewer
-// characters in an output's name than in its path, so dots are escaped too.
-std::string buckOutputName(std::string_view target, std::string_view artifact);
-
 // Names the artifact that holds a regular file's bytes.
 using ArtifactOf = std::function<std::string(const Entry &)>;
 
@@ -94,6 +90,15 @@ void writeSharedFiles(const Recording &recording,
 // The shared files one step reads: the script, the closure and the
 // environments of its processes.
 Arguments sharedFiles(const Action &action);
+
+// The command that carries out a step outside a build system: the
+// sandbox.sh in `shared`, reading the step's own files from `scratch` and
+// its artifacts from the recording, and writing below
+// outputDirectory(scratch).
+Arguments sandboxCommand(const Action &action, const Recording &recording,
+                         const std::filesystem::path &shared,
+                         const std::filesystem::path &scratch);
+std::filesystem::path outputDirectory(const std::filesystem::path &scratch);
 
 // The text of a failed step. A build log is the only channel a failed
 // genrule has back to the compiler, so the sandbox script prints these

@@ -38,6 +38,15 @@ step same
 test "$(sha256sum < "$scratch/out/same/build/bundle" | cut -d' ' -f1)" = "$bundle"
 test -e "$scratch/out/same.ok"
 
+# A step whose results are all directories still leaves a directory named
+# after itself, which is the one output a Buck2 rule declares.
+{
+    line in dir 700 1 /build '' ''
+    line out dir 700 1 /build '' ''
+} > "$scratch/actions/bare.manifest"
+step bare
+test -d "$scratch/out/bare"
+
 # A result with other bytes, another mode or no file at all fails the step,
 # and the report names each one the way `learn` reads it.
 {

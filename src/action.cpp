@@ -39,6 +39,61 @@ constexpr char kFieldSeparator = '\x1f';
 
 constexpr int kStandardInput = 0;
 
+// The tags of a manifest line: an entry to stage and a result to expect.
+constexpr std::string_view kStageTag = "in";
+constexpr std::string_view kExpectTag = "out";
+
+// What sandbox.sh can put at a descriptor, as its --fd option spells them.
+constexpr std::string_view kNullSpec = "null";
+constexpr std::string_view kStandardErrorSpec = "err";
+constexpr std::string_view kPipeReadSpec = "pipe-r:";
+constexpr std::string_view kPipeWriteSpec = "pipe-w:";
+constexpr std::string_view kDataSpec = "data:";
+constexpr std::string_view kStoreSpec = "store:";
+constexpr std::string_view kFileReadSpec = "file:r:";
+constexpr std::string_view kFileReadAtSpec = "file:r@";
+constexpr std::string_view kFileWriteSpec = "file:w:";
+constexpr std::string_view kFileAppendSpec = "file:a:";
+
+// The options and commands of sandbox.sh.
+constexpr std::string_view kNameOption = "--name";
+constexpr std::string_view kInputOption = "--in";
+constexpr std::string_view kOutputOption = "--out";
+constexpr std::string_view kTimeoutOption = "--timeout";
+constexpr std::string_view kPipeOption = "--pipe";
+constexpr std::string_view kRunCommand = "run";
+constexpr std::string_view kPackCommand = "pack";
+constexpr std::string_view kDirectoryOption = "--cwd";
+constexpr std::string_view kEnvironmentOption = "--env";
+constexpr std::string_view kNameZeroOption = "--argv0";
+constexpr std::string_view kDescriptorOption = "--fd";
+constexpr std::string_view kAfterOption = "--after";
+constexpr std::string_view kStatusOption = "--status";
+constexpr std::string_view kCountOption = "--argc";
+constexpr std::string_view kEndOfOptions = "--";
+
+// Where a step run outside a build system leaves its outputs, below its
+// scratch directory.
+constexpr std::string_view kOutputDirectory = "out";
+
+// The environment variables that make sandbox.sh trace a step: where the
+// trace goes and which tracer writes it.
+constexpr std::string_view kTraceVariable = "GENRULIFY_TRACE=";
+constexpr std::string_view kTracerVariable = "GENRULIFY_STRACE=";
+
+// The file a step's standard error is kept in, below its scratch directory.
+constexpr std::string_view kReportFile = "report";
+
+// A list of strings from views, for building argument lists.
+Arguments words(std::initializer_list<std::string_view> items) {
+  return Arguments(items.begin(), items.end());
+}
+
+// Appends to an argument list.
+void append(Arguments &arguments, std::initializer_list<std::string_view> items) {
+  arguments.insert(arguments.end(), items.begin(), items.end());
+}
+
 // The characters an artifact name keeps. Everything else becomes `=XX`,
 // which is safe in a Bazel label, a Buck2 path and a file name.
 bool keptInArtifact(char c) {
@@ -130,7 +185,8 @@ std::string descriptorSpec(const Action &action, const Recording &recording,
   if (isPipe(descriptor)) {
     const auto id = pipeId(descriptor);
     if (pipes.contains(id)) {
-      return absl::StrCat(readable(descriptor) ? "pipe-r:" : "pipe-w:", id);
+      return absl::StrCat(readable(descriptor) ? kPipeReadSpec : kPipeWriteSpec,
+                          id);
     }
 
     // The other end was the builder's. What the builder wrote into the
@@ -138,15 +194,16 @@ std::string descriptorSpec(const Action &action, const Recording &recording,
     // read out of it, as for a command substitution, goes nowhere, because
     // nothing replays the builder.
     if (readable(descriptor) && descriptor.input) {
-      return "data:" + dataFile(action, descriptor);
+      return absl::StrCat(kDataSpec, dataFile(action, descriptor));
     }
-    return "null";
+    return std::string(kNullSpec);
   }
 
   // The guest's console devices do not exist outside the VM, and no build
   // output depends on what was written to them.
   if (descriptor.target.starts_with(kDevicePrefix)) {
-    return descriptor.fd == kStandardInput ? "null" : "err";
+    return std::string(descriptor.fd == kStandardInput ? kNullSpec
+                                                       : kStandardErrorSpec);
   }
 
   // A store path the build could only read is not staged. The sandbox
@@ -156,7 +213,7 @@ std::string descriptorSpec(const Action &action, const Recording &recording,
         return isBelow(descriptor.target, path);
       });
   if (inClosure) {
-    return "store:" + descriptor.target;
+    return absl::StrCat(kStoreSpec, descriptor.target);
   }
 
   // A file the shell opened for the process. An offset or the append flag
@@ -166,13 +223,14 @@ std::string descriptorSpec(const Action &action, const Recording &recording,
     // A shell loop that reads a file line by line hands its commands the
     // file already read up to some offset.
     if (descriptor.position != 0) {
-      return absl::StrCat("file:r@", descriptor.position, ":",
+      return absl::StrCat(kFileReadAtSpec, descriptor.position, ":",
                           descriptor.target);
     }
-    return "file:r:" + descriptor.target;
+    return absl::StrCat(kFileReadSpec, descriptor.target);
   }
   const bool adds = (descriptor.flags & O_APPEND) != 0 || descriptor.position != 0;
-  return absl::StrCat(adds ? "file:a:" : "file:w:", descriptor.target);
+  return absl::StrCat(adds ? kFileAppendSpec : kFileWriteSpec,
+                      descriptor.target);
 }
 
 std::string manifestLine(std::string_view tag, const ActionEntry &item) {
@@ -313,15 +371,6 @@ std::string artifactName(std::string_view target, std::string_view guestPath) {
   return name;
 }
 
-std::string buckOutputName(std::string_view target, std::string_view artifact) {
-  // Drop the target and its separator: the name is used inside the rule.
-  std::string name;
-  for (const char c : artifact.substr(target.size() + 1)) {
-    name += c == '.' ? escaped(c) : std::string(1, c);
-  }
-  return name;
-}
-
 Action execAction(ExecOp op, const Recording &recording,
                   const std::function<std::string(mlir::Value)> &operandArtifact,
                   const ArtifactOf &platformArtifact) {
@@ -372,29 +421,30 @@ std::vector<Arguments> actionArguments(const Action &action,
                                        const Recording &recording) {
   std::vector<Arguments> lines;
   if (!action.output.empty()) {
-    lines.push_back({"--name", action.name, "pack", action.output});
+    lines.push_back(
+        words({kNameOption, action.name, kPackCommand, action.output}));
     return lines;
   }
 
   // The step's own options: its name, its deadline and the pipes between
   // its processes.
-  Arguments options{"--name", action.name, "--timeout",
-                    std::to_string(action.timeoutSeconds)};
+  auto options = words({kNameOption, action.name, kTimeoutOption,
+                        std::to_string(action.timeoutSeconds)});
   const auto pipes = sharedPipes(action);
   for (const auto &[id, pipe] : pipes) {
-    options.insert(options.end(),
-                   {"--pipe",
-                    absl::StrCat(id, ":", *pipe.writers.rbegin(), ":",
-                                 absl::StrJoin(pipe.readers, ","), ":",
-                                 pipe.broke ? 1 : 0)});
+    append(options, {kPipeOption,
+                     absl::StrCat(id, ":", *pipe.writers.rbegin(), ":",
+                                  absl::StrJoin(pipe.readers, ","), ":",
+                                  pipe.broke ? 1 : 0)});
   }
   lines.push_back(std::move(options));
 
   for (size_t index = 0; index < action.processes.size(); ++index) {
     const auto &process = action.processes[index];
     check(!process.argv.empty(), "missing executable arguments");
-    Arguments wiring{"run", "--cwd", process.cwd, "--env",
-                     std::to_string(process.environment)};
+    auto wiring = words({kRunCommand, kDirectoryOption, process.cwd,
+                         kEnvironmentOption,
+                         std::to_string(process.environment)});
 
     // The kernel loads `exe`. For a script that is the interpreter, and
     // argv already names the script. When the path given to execve, or
@@ -411,13 +461,13 @@ std::vector<Arguments> actionArguments(const Action &action,
                           : names(process.argv.front()) ? process.argv.front()
                                                         : process.exe;
     if (process.argv.front() != program) {
-      wiring.insert(wiring.end(), {"--argv0", process.argv.front()});
+      append(wiring, {kNameZeroOption, process.argv.front()});
     }
     for (const auto &descriptor : process.fds) {
-      wiring.insert(wiring.end(),
-                    {"--fd", absl::StrCat(descriptor.fd, "=",
-                                          descriptorSpec(action, recording,
-                                                         pipes, descriptor))});
+      append(wiring, {kDescriptorOption,
+                      absl::StrCat(descriptor.fd, "=",
+                                   descriptorSpec(action, recording, pipes,
+                                                  descriptor))});
     }
 
     // Keep the recorded order: wait for every process that had already
@@ -429,11 +479,11 @@ std::vector<Arguments> actionArguments(const Action &action,
       }
     }
     if (!earlier.empty()) {
-      wiring.insert(wiring.end(), {"--after", absl::StrJoin(earlier, ",")});
+      append(wiring, {kAfterOption, absl::StrJoin(earlier, ",")});
     }
-    wiring.insert(wiring.end(),
-                  {"--status", std::to_string(expectedExit(process.status)),
-                   "--argc", std::to_string(process.argv.size()), "--"});
+    append(wiring, {kStatusOption, std::to_string(expectedExit(process.status)),
+                    kCountOption, std::to_string(process.argv.size()),
+                    kEndOfOptions});
     lines.push_back(std::move(wiring));
 
     Arguments command{program};
@@ -450,10 +500,10 @@ Arguments writeActionFiles(const Action &action, const fs::path &directory) {
   // The manifest: everything to stage, then everything to expect.
   std::string manifest;
   for (const auto &input : action.inputs) {
-    manifest += manifestLine("in", input);
+    manifest += manifestLine(kStageTag, input);
   }
   for (const auto &result : action.results) {
-    manifest += manifestLine("out", result);
+    manifest += manifestLine(kExpectTag, result);
   }
   const auto name =
       absl::StrCat(kActionsDirectory, "/", action.name, ".manifest");
@@ -517,6 +567,23 @@ Arguments sharedFiles(const Action &action) {
   return Arguments(files.begin(), files.end());
 }
 
+Arguments sandboxCommand(const Action &action, const Recording &recording,
+                         const fs::path &shared, const fs::path &scratch) {
+  auto command =
+      words({(shared / kSandboxFile).string(), kInputOption, shared.string(),
+             kInputOption, scratch.string(), kInputOption,
+             recording.directory.string(), kOutputOption,
+             outputDirectory(scratch).string()});
+  for (const auto &line : actionArguments(action, recording)) {
+    command.insert(command.end(), line.begin(), line.end());
+  }
+  return command;
+}
+
+fs::path outputDirectory(const fs::path &scratch) {
+  return scratch / kOutputDirectory;
+}
+
 std::optional<ReplayFailure> runAction(const Action &action,
                                        const Recording &recording,
                                        const fs::path &shared,
@@ -527,21 +594,15 @@ std::optional<ReplayFailure> runAction(const Action &action,
   // A traced run tells the script where to write and which tracer to use.
   Arguments command;
   if (!trace.empty()) {
-    command = {std::string(kEnv), "GENRULIFY_TRACE=" + trace.string(),
-               absl::StrCat("GENRULIFY_STRACE=", kStrace)};
+    command = {std::string(kEnv), absl::StrCat(kTraceVariable, trace.string()),
+               absl::StrCat(kTracerVariable, kStrace)};
   }
-  command.insert(command.end(),
-                 {(shared / kSandboxFile).string(), "--in", shared.string(),
-                  "--in", scratch.path.string(), "--in",
-                  recording.directory.string(), "--out",
-                  (scratch.path / "out").string()});
-  for (const auto &line : actionArguments(action, recording)) {
-    command.insert(command.end(), line.begin(), line.end());
-  }
+  const auto step = sandboxCommand(action, recording, shared, scratch.path);
+  command.insert(command.end(), step.begin(), step.end());
 
   // The script reports on standard error, after whatever the step's
   // processes printed there. Its standard output carries nothing.
-  const auto output = scratch.path / "output";
+  const auto output = scratch.path / kReportFile;
   const int status = run(command, "/dev/null", "/dev/null", output);
   if (status == 0) {
     return std::nullopt;
