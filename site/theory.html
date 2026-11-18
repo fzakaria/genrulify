@@ -28,6 +28,7 @@
       <nav class="site" aria-label="On this page">
         <a href="#groups">Process groups</a>
         <a href="#dialect">The MLIR dialect</a>
+        <a href="#rules">Inside a genrule</a>
         <a href="#composition">Why replay composes</a>
       </nav>
       <h2 id="groups">Where does an action start?</h2>
@@ -78,6 +79,22 @@
         In the explorer, select the <code>dd</code> at step 764 and switch between
         Files, MLIR and BUILD.bazel to follow that edge into a rule.
         <a href="./?pkg=example">Open the example recording</a>.
+      </p>
+
+      <h2 id="rules">Inside a generated rule</h2>
+      <p>
+        In the patchelf build, the rule named <code>s1274_tar</code> has
+        <code>genrulify replay</code> as its command. Its plan tells the runner to
+        start the following process in <code>/build</code>.
+      </p>
+      <pre aria-label="Recorded tar arguments">tar xf /nix/store/9bangizlrzva6iv0ldyk51dq0j95d1ix-patchelf-0.15.2.tar.bz2 --mode=+w --warning=no-timestamp</pre>
+      <p>
+        The rule declares the plan and input layers in <code>srcs</code>.
+        The runner stages the selected entries, mounts the store closure containing the
+        tarball, restores the process environment and launches tar. It checks the used
+        results and writes them into the layer consumed by later rules.
+        Select the tar group and compare its Processes and BUILD.bazel tabs.
+        <a href="./?pkg=patchelf">Open the patchelf recording</a>.
       </p>
 
       <h2 id="composition">Why replay composes</h2>
