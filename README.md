@@ -428,6 +428,12 @@ $ cd workspace && bazel build //:archive
 
 ## Credits
 
+The model of tasks, a store, schedulers and rebuilders is from
+[Build Systems à la Carte](https://doi.org/10.1145/3236774) by Mokhov,
+Mitchell and Peyton Jones. In its terms a recording turns a build's
+monadic tasks into applicative ones and is itself a constructive trace;
+[docs/theory.md](docs/theory.md) spells out the correspondence.
+
 [Riker](https://www.usenix.org/conference/atc22/presentation/curtsinger)
 (Curtsinger and Barowy, USENIX ATC 2022) builds from a trace of commands
 and their filesystem effects, and its TraceIR is the closest relative of

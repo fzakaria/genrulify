@@ -5,6 +5,43 @@ what follows. The claim is narrow and exact: the emitted graph recomputes
 the recorded build, under any scheduler, and the conversion exists for
 every recording.
 
+## In the terms of Build Systems à la Carte
+
+[Build Systems à la Carte](https://doi.org/10.1145/3236774) (Mokhov,
+Mitchell and Peyton Jones, ICFP 2018) describes a build system as a
+*scheduler* and a *rebuilder* over a set of *tasks* that read and write a
+*store* of keys and values. This note uses the same model, and the
+correspondence is direct.
+
+| The paper | Here |
+| --- | --- |
+| key | one version of one path, an SSA value |
+| value | an entry: a file's bytes and mode, a directory, a symlink |
+| store | the filesystem state *σ* |
+| task | a process group, `splice.exec` |
+| input key | a `splice.literal` |
+| constructive trace | the recording: every key's dependencies and its value |
+
+The paper separates tasks by how they find their dependencies.
+*Applicative* tasks have static dependencies, known before the task
+runs. *Monadic* tasks have dynamic ones, each learned from the value of
+the last. A real build's tasks are monadic: a compiler learns which
+headers it needs by reading its source.
+
+A recording is one run of those monadic tasks with every choice already
+made. For that run the dependencies of each task are a fixed set, so the
+graph genrulify builds has only applicative tasks. That is the reason
+its dependencies can be written down as a rule's `srcs`, and the reason
+any scheduler will do.
+
+The paper calls a build correct when every key's value in the final
+store equals the result of running its task against that store. The
+check below establishes that for one task at a time, against the
+recorded store, and Theorem 1 composes the checks. In the paper's
+classification Nix pairs a suspending scheduler with deep constructive
+traces and Bazel a restarting scheduler with constructive traces.
+genrulify keeps Nix's tasks and changes the other two.
+
 ## What a reliable trace provides
 
 Fix one run of one derivation's builder. Number its observable moments
