@@ -82,6 +82,16 @@ Any partition is admissible. The coarsest useful one has a handful of
 groups per build phase. The finest has one group per leaf `execve`.
 Choosing a partition decides granularity. It never decides correctness.
 
+What a partition does decide is how much is computed. Everything the
+driver writes is a literal, so a process moved into the driver takes its
+own writes out of what the graph recomputes. genrulify therefore moves a
+process into the driver only when the event stream shows that the
+process ran other commands and neither opened a file for writing nor
+renamed one. Such a process wrote nothing to lose: `make`, a recipe
+shell that runs one command, `xargs`. A process that writes, such as
+`configure`, stays a group. A program can still be named to be opened
+regardless, which is how `cargo` and `ninja` are taken apart.
+
 ## The graph
 
 For a group *G* with interval *[a, b]*:
@@ -99,6 +109,8 @@ The graph has one value for every entry in every effect. Its nodes are:
   *σ_a(p)* for *p ∈ R(G)*, results are the values of *W(G)*;
 - `splice.literal` for a driver effect, or for a group that is not
   replayed: no operands, results are the recorded entries themselves;
+- `splice.copy` for a file entry whose content is the content of a value
+  that already exists: one operand, that value, and one result;
 - `splice.output` for an output path: operands are the values that hold
   *σₙ(p)* for every *p* under the path.
 
@@ -134,7 +146,11 @@ values, at the recorded paths, so they see *σ_b(p)* at *p* either way.
 > entry. In particular each output's NAR is the recorded NAR.
 
 *Proof.* Induct along a topological order. A `splice.literal` yields
-recorded entries by definition. For a `splice.exec` of *G*, every operand
+recorded entries by definition. A `splice.copy` of a value *u* is built
+only when its recorded entry and *u*'s have the same content. By the
+induction hypothesis *u* holds its recorded entry, so the copy has the
+recorded content, and its path, mode and mtime are the recorded ones by
+construction. For a `splice.exec` of *G*, every operand
 is a used value defined earlier in the order, so by the induction
 hypothesis it holds *σ_a(p)*. The filesystem staged for *G* is therefore
 *σ_a* restricted to *R(G)*, the filesystem the check ran on. *run* is a
@@ -172,17 +188,39 @@ the output is computed and how much is carried as recorded bytes, and
 > Theorem 1's hypothesis compute the same outputs.
 
 Both compute the recorded outputs. A transformation is therefore sound
-exactly when the graph it produces still passes its checks, and three are
-in use:
+exactly when the graph it produces still satisfies the hypothesis: every
+`splice.exec` passes its check, and every `splice.copy` has the content
+of its operand. These are in use:
 
 - *Dead-code elimination.* Deleting a node with no used result changes no
   other node's operands, so every remaining check still holds as it
-  stood. This is why `splice.exec` may carry MLIR's `Pure` trait and be
+  stood. This is why the operations may carry MLIR's `Pure` trait and be
   cleaned up by the stock canonicalizer.
 - *Opening.* Moving a program from the groups into the driver refines the
   partition. The new, smaller groups are checked like any others.
 - *Demotion.* Replacing a `splice.exec`, or some of its results, with a
   `splice.literal` removes an obligation and adds none.
+- *Constant folding.* A directory, a symlink and an empty file are given
+  in full by their entry: there are no bytes for a process to produce.
+  Moving such results of a group into a literal is a demotion of those
+  results. A group left with no used result, such as a `mkdir`, is then
+  dead.
+- *Merging and raising.* Let a used result of *G* be a file with content
+  *c*, and let an operand *u* of *G* be a file with content *c*. Replacing
+  the result with `splice.copy(u)` is sound by the copy case of
+  Theorem 1, and the result leaves *W(G)*, so *G* has less to reproduce.
+  Merging takes *u* at the result's own path, which is what a `chmod`
+  leaves. Raising takes *u* at another path: `cp`, `install`, `mv`. A
+  copy of a copy is a copy of the original.
+- *Linking.* The same rewrite for a file the driver wrote, where *u* is
+  the latest existing value with content *c*. The driver could see every
+  file there was. This must run before elimination: until the copy
+  exists nothing uses *u*, and elimination would delete the group that
+  computed it.
+
+Folding and copying are decided from the recorded entries alone. No
+replay is needed to justify them, and none is run for a group they
+leave with nothing to do.
 
 ## The mapping to build rules
 
@@ -192,6 +230,7 @@ in use:
 | directory or symlink value | a line in the manifest of each rule that uses it, plus a dependency on the stamp of the rule that made it |
 | `splice.exec` | `genrule` whose `srcs` are its operand files, whose `outs` are its used result files and whose `cmd` is the recorded command line |
 | `splice.literal` | files checked into the workspace |
+| `splice.copy` | no rule: a reader lists the file the copy came from and its manifest stages that file at the copy's path |
 | `splice.output` | `genrule` that writes a NAR |
 
 No rule knows what it is building. A rule's command is the recorded
