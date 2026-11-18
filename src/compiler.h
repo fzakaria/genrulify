@@ -150,6 +150,15 @@ void optimize(mlir::ModuleOp module, std::span<const Pass> passes = kAllPasses,
 void checkRecording(const Recording &recording,
                     std::span<const Pass> passes = kAllPasses);
 
+// The whole pipeline for one derivation: builds a flake installable or a
+// .drv in Rewind, records the run, replays every command, and writes into
+// `directory` the recording, the optimized graph and the workspace. Prints
+// the NAR hash Rewind recorded for each output, which is what a build of
+// the workspace has to reproduce.
+void convert(const std::string &installable,
+             const std::filesystem::path &directory, const std::string &open,
+             Granularity granularity);
+
 // Reads the output of a failed build of an emitted workspace and adjusts
 // the verdicts of the rules that did not reproduce the recording: results
 // that differed are pinned, and a group whose process ended differently is

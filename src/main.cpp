@@ -13,7 +13,8 @@
 
 namespace {
 constexpr std::string_view kUsage =
-    "usage: genrulify record [--coarse] RUN DERIVATION.drv RECORDING [OPEN]\n"
+    "usage: genrulify convert [--coarse] [--open PROGRAMS] INSTALLABLE DIRECTORY\n"
+    "       genrulify record [--coarse] RUN DERIVATION.drv RECORDING [OPEN]\n"
     "       genrulify cuts [--coarse] [--close PID@STEP]... EVENTS.jsonl TRACE.bin [OPEN]\n"
     "       genrulify accessed STRACE-DIRECTORY\n"
     "       genrulify check RECORDING [PASS...]\n"
@@ -37,6 +38,9 @@ constexpr std::string_view kUsage =
 // option that keeps one image from being opened.
 constexpr std::string_view kCoarseOption = "--coarse";
 constexpr std::string_view kCloseOption = "--close";
+
+// The option of `convert` that names programs to treat as driver code.
+constexpr std::string_view kOpenOption = "--open";
 
 // The option of `opt` that names the recording a graph was imported from.
 constexpr std::string_view kRecordingOption = "--recording";
@@ -102,6 +106,21 @@ void run(std::span<char *> args) {
                    std::stoull(image.substr(separator + 1))});
     rest.erase(rest.begin() + 1, rest.begin() + 3);
     args = rest;
+  }
+
+  // The whole pipeline, from a derivation to a workspace.
+  if (command == "convert") {
+    std::string open;
+    if (rest.size() > 2 && rest[1] == kOpenOption) {
+      open = rest[2];
+      rest.erase(rest.begin() + 1, rest.begin() + 3);
+      args = rest;
+    }
+    if (args.size() != 3) {
+      throw std::runtime_error(std::string(kUsage));
+    }
+    splice_ir::convert(args[1], args[2], open, granularity);
+    return;
   }
 
   // Commands that only need a recording.
