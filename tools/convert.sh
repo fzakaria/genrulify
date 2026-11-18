@@ -12,6 +12,9 @@
 # reuse its recording. Recording is the slow part and Rewind makes it
 # repeatable, so a change to the compiler can be tried on the recording
 # that already exists.
+#
+# Set GENRULIFY_PASSES to the passes to optimize with, for example `dce`
+# for one rule per live process group. Every pass runs by default.
 set -euo pipefail
 installable=${1:?usage: tools/convert.sh INSTALLABLE [OPEN]}
 open=${2:-}
@@ -44,7 +47,8 @@ fi
 
 # Derive the graph and replay every live process group against the
 # recording before trusting any of it.
-"$compiler" check "$work/recording"
+# shellcheck disable=SC2086
+"$compiler" check "$work/recording" ${GENRULIFY_PASSES:-}
 
 # One archive per derivation output. A single output is named `archive`.
 outputs=$(jq -r '.outputs | keys[]' "$work/recording/recording.json")
@@ -64,7 +68,8 @@ done
 build() {
     local workspace=$work/workspace.$1
     "$compiler" import "$work/recording" > "$work/recorded.mlir" || return 1
-    "$compiler" opt "$work/recorded.mlir" > "$work/graph.mlir" || return 1
+    # shellcheck disable=SC2086
+    "$compiler" opt "$work/recorded.mlir" ${GENRULIFY_PASSES:-} > "$work/graph.mlir" || return 1
     "$compiler" emit "$work/recording" "$work/graph.mlir" "$workspace" || return 1
     (
         cd "$workspace"
@@ -79,6 +84,11 @@ build() {
             "$compiler" verify "$work/$output.reference.nar" "$work/$output.buck.nar" || exit 1
         done
     ) > "$work/build.$1.log" 2>&1
+    local status=$?
+
+    # Buck2 leaves a daemon behind for every workspace it builds.
+    (cd "$workspace" && "$buck" kill) > /dev/null 2>&1 || true
+    return "$status"
 }
 
 # `check` sampled every rule twice. A build samples each one again, inside
@@ -96,7 +106,6 @@ until build "$attempt"; do
     test "$attempt" -le "$max_attempts"
 done
 ln -s "workspace.$attempt" "$work/workspace"
-"$buck" kill > /dev/null 2>&1 || true
 
 for output in $outputs; do
     echo "$output: Nix, Bazel and Buck2 agree on sha256:$(sha256sum "$work/$output.reference.nar" | cut -d' ' -f1)"
