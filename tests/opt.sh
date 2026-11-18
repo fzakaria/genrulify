@@ -110,6 +110,13 @@ grep -q 'splice.literal "glue" at 3' "$scratch/opt.mlir"
 "$compiler" opt "$scratch/linked.mlir" dce > "$scratch/opt.mlir"
 gone rustc
 
+# A second link of the same bytes is also a copy of the compiler's file,
+# and not of the first link, which is itself only a name for that file.
+sed 's|^  splice.output|  %4 = splice.literal "glue" at 4 -> [#splice.entry<"/out/again" file 755 mtime 4 "dd">]\n&|; s|(%2#0, %2#1)|(%2#0, %2#1, %4)|' \
+    "$scratch/linked.mlir" > "$scratch/twice.mlir"
+"$compiler" opt "$scratch/twice.mlir" link > "$scratch/opt.mlir"
+grep -q 'splice.copy "glue" at 4(%rustc_2) -> <"/out/again"' "$scratch/opt.mlir"
+
 # An unknown pass is an error.
 if "$compiler" opt "$scratch/build.mlir" inline 2> /dev/null; then
     exit 1

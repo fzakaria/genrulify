@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <filesystem>
 #include <map>
+#include <set>
 
 namespace splice_ir {
 namespace {
@@ -109,7 +110,7 @@ struct LinkDriverWrites
       for (const auto result : op.getResults()) {
         const auto entry = *entryOf(result);
         if (entry.kind == EntryKind::File && !isConstant(entry)) {
-          latest[entry.content] = result;
+          latest[entry.content] = contentSource(result);
         }
       }
     };
@@ -129,6 +130,7 @@ struct LinkDriverWrites
         continue;
       }
       mlir::OpBuilder builder(literal);
+      std::set<std::string> linked;
       for (mlir::Value result : literal->getResults()) {
         const auto entry = *entryOf(result);
         const auto original = latest.find(entry.content);
@@ -141,8 +143,20 @@ struct LinkDriverWrites
                                    literal.getName(), literal.getStep(),
                                    toAttribute(context, entry));
         result.replaceAllUsesWith(copy.getOutput());
+        linked.insert(entry.content);
       }
-      remember(*op);
+
+      // What the literal still defines is the latest version of its bytes.
+      // A file that was linked is not: the version it copies stays the one
+      // to link to, so that a second link of the same bytes also names
+      // the file a process computed.
+      for (const auto result : literal->getResults()) {
+        const auto entry = *entryOf(result);
+        if (entry.kind == EntryKind::File && !isConstant(entry) &&
+            !linked.contains(entry.content)) {
+          latest[entry.content] = result;
+        }
+      }
     }
   }
 };

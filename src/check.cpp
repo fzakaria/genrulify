@@ -294,8 +294,18 @@ void checkRecording(const Recording &recording,
         foldedSteps.insert(literal.getStep());
       }
     }
+    // A copy made by linking carries the step of the builder's literal,
+    // which is also the step the next group starts at. Only a copy raised
+    // from a group, which has the group's label, counts for the group.
     if (auto copy = llvm::dyn_cast<CopyOp>(op)) {
-      copiedSteps.insert(copy.getStep());
+      const bool raised = std::ranges::any_of(
+          recording.groups, [&](const Group &group) {
+            return group.start == copy.getStep() &&
+                   label(group) == copy.getName();
+          });
+      if (raised) {
+        copiedSteps.insert(copy.getStep());
+      }
     }
   }
 
