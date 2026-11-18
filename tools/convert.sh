@@ -75,7 +75,7 @@ build() {
     local workspace=$work/workspace.$1
     "$compiler" import "$work/recording" > "$work/recorded.mlir" || return 1
     # shellcheck disable=SC2086
-    "$compiler" opt "$work/recorded.mlir" ${GENRULIFY_PASSES:-} > "$work/graph.mlir" || return 1
+    "$compiler" opt --recording "$work/recording" "$work/recorded.mlir" ${GENRULIFY_PASSES:-} > "$work/graph.mlir" || return 1
     "$compiler" emit "$work/recording" "$work/graph.mlir" "$workspace" || return 1
     (
         cd "$workspace"

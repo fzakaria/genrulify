@@ -20,7 +20,7 @@ trap 'chmod -R u+w "$work" && rm -rf "$work"' EXIT
 compiler=${GENRULIFY_COMPILER:-$(nix build --no-link --print-out-paths "$root")/bin/genrulify}
 
 "$compiler" import "$recording" > "$work/recorded.mlir"
-"$compiler" opt "$work/recorded.mlir" > "$work/graph.mlir"
+"$compiler" opt --recording "$recording" "$work/recorded.mlir" > "$work/graph.mlir"
 "$compiler" emit "$recording" "$work/graph.mlir" "$work/workspace"
 rm -rf "$out"
 mkdir -p "$out"
