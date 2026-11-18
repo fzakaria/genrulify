@@ -11,6 +11,7 @@
     {
       packages.${system} = rec {
         example = import ./nix/example.nix { inherit pkgs system; };
+        flaky = import ./nix/flaky.nix { inherit pkgs system; };
         default = import ./nix/package.nix { inherit pkgs; };
 
         # the tree GitHub Pages deploys and `nix run .#serve` tests locally
