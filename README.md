@@ -20,10 +20,6 @@
   <a href="https://nixbot.decio.us/repos/github/fzakaria/genrulify"><img src="https://nixbot.decio.us/badge/3b4d3f0d-de80-420b-8aa6-d99459a79380.svg" alt="nixbot" /></a>
 </p>
 
-<p align="center">
-  <img src="site/img/explorer.png" alt="The genrulify explorer on GNU hello: one cell per command the build ran, a switch for each optimizer pass, and the graph of what is left, in which the compiles are cc_object nodes." />
-</p>
-
 genrulify takes a build that [Rewind](https://rewindvm.dev) recorded and
 writes a `BUILD.bazel` and a `BUCK` file for it. It has no knowledge of
 C, Rust or autotools that a build depends on, and it never reads the
