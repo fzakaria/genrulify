@@ -1,8 +1,7 @@
 { pkgs, system }:
 let
   dd = "${pkgs.coreutils}/bin/dd";
-  header = builtins.toFile "header.txt" "Nixsplice\n";
-  body = builtins.toFile "body.txt" "one file, two versions\n";
+  inherit (import ./sources.nix) header body;
 in
 builtins.derivation {
   inherit system;

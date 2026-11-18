@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Nixsplice · Nix to Bazel and Buck2</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <header>
+      <a class="brand" href="#top"
+        ><svg width="34" height="31" viewBox="0 0 38 32" aria-hidden="true">
+          <path
+            d="M2 7h10l13 18h11M2 25h10l6-8m3-4 4-6h11"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="5"
+          /></svg
+        >Nixsplice</a
+      >
+      <nav>
+        <a href="#explorer">Explorer</a><a href="#verification">Verification</a>
+      </nav>
+    </header>
+    <main id="top">
+      <section class="intro">
+        <div>
+          <h1>Nix builds in<br /><span>Bazel and Buck2.</span></h1>
+        </div>
+        <div class="introcopy">
+          <p>
+            Nixsplice takes a recorded Nix derivation, turns its file operations
+            into genrules, and checks the rebuilt output against Nix.
+          </p>
+          <a class="textlink" href="#explorer">Explore a conversion ↓</a>
+        </div>
+      </section>
+      <section class="board" id="explorer" aria-labelledby="explore-title">
+        <div class="boardhead">
+          <div>
+            <p class="kicker">
+              Rewind run <a href="artifacts/run.json">16b4e3d79a715325</a>
+            </p>
+            <h2 id="explore-title">Conversion explorer</h2>
+          </div>
+          <code>nixsplice-example.drv</code>
+        </div>
+        <fieldset class="stages">
+          <legend class="sr">Conversion stage</legend>
+          <label
+            ><input type="radio" name="stage" value="drv" />Nix
+            derivation</label
+          ><i aria-hidden="true">→</i>
+          <label
+            ><input type="radio" name="stage" value="trace" />Rewind
+            trace</label
+          ><i aria-hidden="true">→</i>
+          <label><input type="radio" name="stage" value="ir" />MLIR</label
+          ><i aria-hidden="true">→</i>
+          <label
+            ><input type="radio" name="stage" value="rules" checked />Build
+            rules</label
+          >
+        </fieldset>
+        <section class="view drv">
+          <div class="viewhead">
+            <div>
+              <h3>The input derivation</h3>
+              <p>
+                The fixture runs three GNU dd commands in Bash. Two write to the
+                same path. The third publishes the result.
+              </p>
+            </div>
+          </div>
+          <pre><code>dd if=header.txt of=bundle
+dd if=body.txt of=bundle oflag=append conv=notrunc
+dd if=bundle of="$out"</code></pre>
+          <a href="artifacts/example.nix">Read the Nix expression ↗</a>
+        </section>
+        <section class="view trace">
+          <div class="viewhead">
+            <div>
+              <h3>Match commands to writes</h3>
+              <p>
+                The importer checks each recorded exec against the builder
+                script, then checks the output path, write flags and exit
+                status.
+              </p>
+            </div>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Exec step</th>
+                <th>Write-open step</th>
+                <th>Destination</th>
+                <th>Operation</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>735</td>
+                <td>746</td>
+                <td>/build/bundle</td>
+                <td>Truncate</td>
+              </tr>
+              <tr>
+                <td>764</td>
+                <td>775</td>
+                <td>/build/bundle</td>
+                <td>Append</td>
+              </tr>
+              <tr>
+                <td>782</td>
+                <td>793</td>
+                <td>$out</td>
+                <td>Truncate</td>
+              </tr>
+            </tbody>
+          </table>
+          <a href="artifacts/events.jsonl"
+            >Inspect the recorded exec, open and exit events ↗</a
+          >
+        </section>
+        <section class="view ir">
+          <div class="viewhead">
+            <div>
+              <h3>Give each write an SSA value</h3>
+              <p>
+                The append takes the previous bytes of <code>bundle</code> and
+                the contents of <code>body.txt</code>. Folding a copy redirects
+                its users to the original value.
+              </p>
+            </div>
+            <fieldset class="switch">
+              <legend class="sr">MLIR transformation</legend>
+              <label
+                ><input
+                  type="radio"
+                  name="shape"
+                  value="original"
+                  checked
+                />Recorded</label
+              ><label
+                ><input type="radio" name="shape" value="fold" />Fold
+                copies</label
+              >
+            </fieldset>
+          </div>
+          <div class="original">
+            <pre><code>
+@@recorded.mlir@@
+</code></pre>
+            <a href="artifacts/recorded.mlir">Open recorded MLIR ↗</a>
+          </div>
+          <div class="fold">
+            <pre><code>
+@@folded.mlir@@
+</code></pre>
+            <a href="artifacts/folded.mlir">Open folded MLIR ↗</a>
+          </div>
+        </section>
+        <section class="view rules">
+          <div class="viewhead">
+            <div>
+              <h3>Generate the build rules</h3>
+              <p>
+                After MLIR folds the copies, one genrule joins the two inputs. A
+                second rule packs the output as a Nix archive.
+              </p>
+            </div>
+            <fieldset class="switch">
+              <legend class="sr">Build system</legend>
+              <label
+                ><input
+                  type="radio"
+                  name="backend"
+                  value="bazel"
+                  checked
+                />Bazel</label
+              ><label
+                ><input type="radio" name="backend" value="buck" />Buck2</label
+              >
+            </fieldset>
+          </div>
+          <div class="bazel">
+            <pre><code>
+@@bazel.rule@@
+</code></pre>
+            <a href="artifacts/folded.BUILD">Open BUILD.bazel ↗</a>
+            <a href="artifacts/recorded.BUILD">Before folding ↗</a>
+          </div>
+          <div class="buck">
+            <pre><code>
+@@buck.rule@@
+</code></pre>
+            <a href="artifacts/folded.BUCK">Open BUCK ↗</a>
+            <a href="artifacts/recorded.BUCK">Before folding ↗</a>
+          </div>
+        </section>
+      </section>
+      <section id="verification" class="receipt">
+        <div>
+          <p class="kicker">Output verification</p>
+          <h2>Did the build match?</h2>
+          <p>
+            Bazel and Buck2 rebuilt this fixture before and after copy folding.
+            All four archives matched the original Nix output and Rewind's
+            recorded hash.
+          </p>
+        </div>
+        <div class="digest">
+          <span>SHA-256 · NIX ARCHIVE</span
+          ><code
+            >1c763cb553edd9c4e7632da40b6b2466b54b89b818844c85ed2033df7cf9eab9</code
+          ><a href="artifacts/run.json">Inspect Rewind's reference hash ↗</a>
+        </div>
+      </section>
+      <details class="limits">
+        <summary>What can Nixsplice convert today?</summary>
+        <p>
+          The importer accepts a pinned Bash builder running a straight-line
+          sequence of GNU dd copies and appends. Shell builtins, general
+          compiler invocations and directory outputs need additional semantics.
+          The archive comparison checks the recorded inputs and outputs.
+        </p>
+      </details>
+    </main>
+    <footer>Nixsplice <span>MIT license</span></footer>
+  </body>
+</html>
