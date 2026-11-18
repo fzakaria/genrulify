@@ -22,7 +22,13 @@
 
       };
       devShells.${system}.default = pkgs.mkShell {
-        inherit (self.packages.${system}.default) SPLICE_BASH SPLICE_COREUTILS SPLICE_NIX;
+        inherit (self.packages.${system}.default)
+          SPLICE_BASH
+          SPLICE_COREUTILS
+          SPLICE_NIX
+          SPLICE_BWRAP
+          SPLICE_TAR
+          ;
         inputsFrom = [ self.packages.${system}.default ];
       };
       checks.${system} = { inherit (self.packages.${system}) default site; };

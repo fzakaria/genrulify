@@ -35,3 +35,23 @@ def PublishOp : SpliceOp<"publish"> {
   let arguments = (ins File:$file);
   let assemblyFormat = "$file attr-dict";
 }
+
+// A NAR carries the tree shape, symlinks and executable bits across actions.
+def Nar : TypeDef<SpliceDialect, "Nar"> {
+  let mnemonic = "nar";
+  let assemblyFormat = "";
+}
+def SeedOp : SpliceOp<"seed", [Pure]> {
+  let arguments = (ins StrAttr:$asset);
+  let results = (outs Nar:$tree);
+  let assemblyFormat = "$asset attr-dict";
+}
+def ExecOp : SpliceOp<"exec"> {
+  let arguments = (ins Nar:$input, StrAttr:$action, I64Attr:$step);
+  let results = (outs Nar:$tree);
+  let assemblyFormat = "$input $action attr-dict";
+}
+def PackageOp : SpliceOp<"package"> {
+  let arguments = (ins Nar:$tree);
+  let assemblyFormat = "$tree attr-dict";
+}

@@ -1,12 +1,13 @@
 #include "compiler.h"
 #include "nlohmann/json.hpp"
+#include "process.h"
 #include "llvm/ADT/StringExtras.h"
 #include "llvm/Support/SHA256.h"
 #include <fstream>
 
 namespace splice_ir {
-namespace {
-std::string hashArchive(const std::filesystem::path &path) {
+
+std::string fileHash(const std::filesystem::path &path) {
   std::ifstream file(path, std::ios::binary);
   if (!file.is_open()) {
     throw std::runtime_error("cannot open " + path.string());
@@ -22,7 +23,6 @@ std::string hashArchive(const std::filesystem::path &path) {
   }
   return "sha256:" + llvm::toHex(hash.final(), /*LowerCase=*/true);
 }
-} // namespace
 
 void verifyArchives(const std::filesystem::path &reportPath,
                     const std::filesystem::path &reference,
@@ -34,8 +34,8 @@ void verifyArchives(const std::filesystem::path &reportPath,
         "expected a successful Rewind run with one output");
   }
   const std::string recorded = report.at("outputs").at(0).at("hash");
-  const auto nix = hashArchive(reference);
-  const auto build = hashArchive(archive);
+  const auto nix = fileHash(reference);
+  const auto build = fileHash(archive);
   if (recorded != nix || nix != build) {
     throw std::runtime_error("NAR mismatch\nRewind " + recorded + "\nNix    " +
                              nix + "\nbuild  " + build);

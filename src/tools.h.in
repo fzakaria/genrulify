@@ -2,6 +2,9 @@
 #include <string_view>
 
 namespace splice_ir {
+inline constexpr std::string_view kBwrap = "@SPLICE_BWRAP@/bin/bwrap";
+inline constexpr std::string_view kTar = "@SPLICE_TAR@/bin/tar";
+inline constexpr std::string_view kNix = "@SPLICE_NIX@/bin/nix";
 inline constexpr std::string_view kBash = "@SPLICE_BASH@/bin/bash";
 inline constexpr std::string_view kDd = "@SPLICE_COREUTILS@/bin/dd";
 inline constexpr std::string_view kCat = "@SPLICE_COREUTILS@/bin/cat";

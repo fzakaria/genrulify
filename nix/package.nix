@@ -21,6 +21,8 @@ pkgs.stdenv.mkDerivation {
     pkgs.abseil-cpp
     pkgs.nlohmann_json
   ];
+  SPLICE_BWRAP = pkgs.bubblewrap;
+  SPLICE_TAR = pkgs.gnutar;
   SPLICE_BASH = pkgs.bash;
   SPLICE_COREUTILS = pkgs.coreutils;
   SPLICE_NIX = pkgs.nix;

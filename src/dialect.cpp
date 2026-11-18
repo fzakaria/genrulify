@@ -9,8 +9,9 @@
 #include "Ops.cpp.inc"
 
 void splice_ir::SpliceDialect::initialize() {
-  addTypes<FileType>();
-  addOperations<SourceOp, CopyOp, AppendOp, PublishOp>();
+  addTypes<FileType, NarType>();
+  addOperations<SourceOp, CopyOp, AppendOp, PublishOp, SeedOp, ExecOp,
+                PackageOp>();
 }
 
 // A copy preserves all bytes represented by !splice.file. Path and step
