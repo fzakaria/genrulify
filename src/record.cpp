@@ -332,7 +332,7 @@ std::vector<Group> group(std::vector<Process> processes,
 } // namespace
 
 void recordRun(const std::string &run, const fs::path &drvPath,
-               const fs::path &directory) {
+               const fs::path &directory, const std::string &open) {
   const Rewind rewind(run);
   check(fs::create_directory(directory), "destination already exists");
   try {
@@ -360,7 +360,9 @@ void recordRun(const std::string &run, const fs::path &drvPath,
     Scratch scratch;
     const auto events = scratch.path / "events.jsonl";
     writeBytes(events, rewind.events());
-    const auto analysis = analyze(events, rewind.directory() / "trace.bin");
+    const auto analysis =
+        analyze(events, rewind.directory() / "trace.bin", open);
+    recording.open = open;
     check(analysis.builder == drv.at("builder").get<std::string>(),
           "the run's builder is not the derivation's");
     recording.initialStep = analysis.initialStep;

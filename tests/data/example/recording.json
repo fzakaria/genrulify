@@ -214,5 +214,6 @@
   "/build",
   "/nix/store/r8mgc2hqpzggmvmscm94dynii1wk1ygm-nixsplice-example"
  ],
- "run": "16b4e3d79a715325"
+ "run": "16b4e3d79a715325",
+ "open": ""
 }

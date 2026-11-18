@@ -109,6 +109,7 @@ void Recording::save() const {
                          {"outputs", outputs},
                          {"closure", closure},
                          {"roots", roots},
+                         {"open", open},
                          {"initialStep", initialStep},
                          {"finalStep", finalStep},
                          {"lost", lost},
@@ -127,6 +128,9 @@ Recording Recording::load(const fs::path &directory) {
   recording.outputs = document.at("outputs");
   recording.closure = document.at("closure").get<Arguments>();
   recording.roots = document.at("roots").get<Arguments>();
+
+  // Recordings made before programs could be opened have no pattern.
+  recording.open = document.value("open", std::string());
   recording.initialStep = document.at("initialStep");
   recording.finalStep = document.at("finalStep");
   recording.lost = document.at("lost");

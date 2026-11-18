@@ -52,6 +52,14 @@ struct Analysis {
 // a driver process calls execve, which covers a child running a command, a
 // subshell that ends in `exec`, and a shell that replaces itself with its
 // last command.
+//
+// `open` is a regular expression over program names, or empty. A driver
+// process that execs a matching program stays a driver, and so does one
+// that execs a shell which later becomes, or has below it, a matching
+// process. The
+// cuts fall on the first programs with nothing opened beneath them.
+// Opening `make` turns one cut for a whole build phase into one cut per
+// recipe, through any depth of recursive make.
 Analysis analyze(const std::filesystem::path &events,
-                 const std::filesystem::path &trace);
+                 const std::filesystem::path &trace, const std::string &open);
 } // namespace splice_ir

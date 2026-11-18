@@ -9,8 +9,8 @@
 
 namespace {
 constexpr std::string_view kUsage =
-    "usage: nixsplice record RUN DERIVATION.drv RECORDING\n"
-    "       nixsplice cuts EVENTS.jsonl TRACE.bin\n"
+    "usage: nixsplice record RUN DERIVATION.drv RECORDING [OPEN]\n"
+    "       nixsplice cuts EVENTS.jsonl TRACE.bin [OPEN]\n"
     "       nixsplice check RECORDING\n"
     "       nixsplice import RECORDING\n"
     "       nixsplice opt GRAPH.mlir\n"
@@ -58,13 +58,15 @@ void run(std::span<char *> args) {
   }
 
   // Commands that only need a recording.
-  if (args.size() == 4 && command == "record") {
-    splice_ir::recordRun(args[1], args[2], args[3]);
+  if ((args.size() == 4 || args.size() == 5) && command == "record") {
+    splice_ir::recordRun(args[1], args[2], args[3],
+                         args.size() == 5 ? args[4] : "");
     return;
   }
-  if (args.size() == 3 && command == "cuts") {
+  if ((args.size() == 3 || args.size() == 4) && command == "cuts") {
     // One JSON object per cut, for inspecting a run before recording it.
-    for (const auto &cut : splice_ir::analyze(args[1], args[2]).cuts) {
+    const std::string open = args.size() == 4 ? args[3] : "";
+    for (const auto &cut : splice_ir::analyze(args[1], args[2], open).cuts) {
       const nlohmann::json line = {{"pid", cut.pid},     {"step", cut.step},
                                    {"end", cut.end},     {"status", cut.status},
                                    {"name", cut.name},   {"reads", cut.reads}};

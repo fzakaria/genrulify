@@ -84,6 +84,9 @@ struct Recording {
   // Directories whose contents the build may change.
   Arguments roots;
 
+  // The pattern of program names that were treated as driver code.
+  std::string open;
+
   // The step the builder started at, and the step after the builder exited.
   uint64_t initialStep = 0;
   uint64_t finalStep = 0;
