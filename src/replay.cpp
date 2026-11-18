@@ -594,6 +594,51 @@ std::string describe(const Entry &entry) {
                      entry.content);
 }
 
+// Finds an entry that can stand in for a result the replay did not leave
+// at its recorded path: something in the same directory that the plan
+// neither staged nor expects, with the recorded kind, mode and content. An
+// entry is what later steps can observe of a path, and a name the plan
+// does not know is not observable to them, so any such entry is the
+// recorded one under another name. Returns its host path, or nothing.
+// `claimed` holds the stand-ins already used, so two results never share.
+fs::path renamedResult(const Plan &plan, const fs::path &root,
+                       const Entry &expected, std::set<fs::path> &claimed) {
+  const auto directory = hostPath(root, expected.path).parent_path();
+  std::error_code error;
+  if (!fs::is_directory(directory, error)) {
+    return {};
+  }
+
+  // The paths the plan accounts for: what it staged and what it expects.
+  std::set<std::string> known;
+  for (const auto &input : plan.inputs) {
+    known.insert(input.path);
+  }
+  for (const auto &result : plan.results) {
+    known.insert(result.path);
+  }
+
+  const auto guestDirectory = fs::path(expected.path).parent_path();
+  for (const auto &candidate : fs::directory_iterator(directory, error)) {
+    const auto guest = (guestDirectory / candidate.path().filename()).string();
+    if (known.contains(guest) || claimed.contains(candidate.path())) {
+      continue;
+    }
+    const auto status = candidate.symlink_status(error);
+    if (!fs::is_regular_file(status) && !fs::is_directory(status) &&
+        !fs::is_symlink(status)) {
+      continue;
+    }
+    auto observed = observe(candidate.path(), expected.path);
+    observed.mtime = expected.mtime;
+    if (sameVersion(observed, expected)) {
+      claimed.insert(candidate.path());
+      return candidate.path();
+    }
+  }
+  return {};
+}
+
 // Creates the directories every sandbox mounts, whether or not an input
 // entry populates them.
 void prepareRoot(const fs::path &root) {
@@ -644,12 +689,20 @@ void replayPlan(const Plan &plan, const std::vector<fs::path> &layerFiles,
   // Every result must be the version the recording saw. The recorded mtime
   // is stamped on rather than compared: the replay ran on another clock.
   std::vector<LayerSource> sources;
+  std::set<fs::path> claimed;
   for (const auto &expected : plan.results) {
-    const auto host = hostPath(root, expected.path);
+    auto host = hostPath(root, expected.path);
     if (!fs::exists(fs::symlink_status(host))) {
-      problems.push_back(absl::StrCat(kMissingPrefix, expected.path));
-      differing.push_back(expected.path);
-      continue;
+      // A process that picks a random name, as mktemp does, wrote the
+      // recorded entry under another one. Later steps were recorded using
+      // the old name, so the entry is passed on as the recorded path.
+      const auto standIn = renamedResult(plan, root, expected, claimed);
+      if (standIn.empty()) {
+        problems.push_back(absl::StrCat(kMissingPrefix, expected.path));
+        differing.push_back(expected.path);
+        continue;
+      }
+      host = standIn;
     }
     auto observed = observe(host, expected.path);
     observed.mtime = expected.mtime;

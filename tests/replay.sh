@@ -63,3 +63,38 @@ if grep -q 'cannot open' "$scratch/error"; then
     exit 1
 fi
 grep -q 'exited with' "$scratch/error"
+
+# A process that names its output at random, as mktemp does, still writes
+# the recorded entry: the same kind, mode and bytes under another name. A
+# replay accepts such an entry for a result that is missing and passes it
+# on under the recorded name. The plan here runs nothing and expects
+# /etc/renamed with the bytes of the platform's /etc/hosts, which the plan
+# does not otherwise know about. Packing /etc afterwards shows the result
+# under its recorded name.
+hosts=$(grep -B4 '"/etc/hosts"' "$data/example/states/platform.json" | grep content | cut -d'"' -f4)
+cat > "$scratch/rename-plan.json" <<JSON
+{
+ "name": "renamer", "closure": [], "platform": "platform", "environments": [],
+ "inputs": [], "processes": [], "output": "", "timeoutSeconds": 300,
+ "results": [{"path": "/etc/renamed", "kind": "file", "mode": 420, "mtime": 1, "content": "$hosts"}]
+}
+JSON
+"$compiler" replay "$scratch/rename-plan.json" "$scratch/renamer.layer" \
+    "$scratch/workspace/platform.layer"
+cat > "$scratch/pack-plan.json" <<'JSON'
+{
+ "name": "etc", "closure": [], "platform": "platform", "environments": [],
+ "inputs": [{"layer": "renamer", "path": "/etc/renamed"}], "processes": [],
+ "results": [], "output": "/etc/renamed", "timeoutSeconds": 300
+}
+JSON
+"$compiler" pack "$scratch/pack-plan.json" "$scratch/renamed.nar" "$scratch/renamer.layer"
+grep -q localhost "$scratch/renamed.nar"
+
+# An entry with other bytes is not a stand-in, and the result stays missing.
+sed 's/"content": "[0-9a-f]*"/"content": "0000"/' "$scratch/rename-plan.json" > "$scratch/other-plan.json"
+if "$compiler" replay "$scratch/other-plan.json" "$scratch/other.layer" \
+    "$scratch/workspace/platform.layer" 2> "$scratch/error"; then
+    exit 1
+fi
+grep -q 'missing /etc/renamed' "$scratch/error"
