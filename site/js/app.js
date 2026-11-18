@@ -326,8 +326,9 @@ async function load(id) {
   renderStats(hash);
   renderTimeline();
   draw($("graph"), state.graph.nodes, { labelOf: nodeLabel, classOf: nodeClass, onSelect: select });
+  const sourceRoot = $("package-files").dataset.sourceRoot;
   for (const [link, file] of [["mlir", "graph.mlir.gz"], ["bazel", "BUILD.bazel"], ["buck", "BUCK"], ["json", "graph.json"]]) {
-    $(`download-${link}`).href = `data/${id}/${file}`;
+    $(`download-${link}`).href = `${sourceRoot}/${id}/${file}`;
   }
 }
 

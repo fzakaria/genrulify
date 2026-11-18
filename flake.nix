@@ -15,7 +15,10 @@
         default = import ./nix/package.nix { inherit pkgs; };
 
         # the tree GitHub Pages deploys and `nix run .#serve` tests locally
-        site = import ./nix/site.nix { inherit pkgs; };
+        site = import ./nix/site.nix {
+          inherit pkgs;
+          revision = self.rev or null;
+        };
       };
 
       # Serve the built site, exactly the tree pages deploys.

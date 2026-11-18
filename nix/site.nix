@@ -4,13 +4,21 @@
 #   index.html, style.css, js.<hash>/   the explorer
 #   data/                               one directory per recorded package,
 #                                       written by tools/site-data.sh
-{ pkgs }:
+{ pkgs, revision }:
 pkgs.runCommand "genrulify-site" { } ''
   mkdir -p $out
   # The site directory alone, so a change to the compiler or a test does
   # not rebuild the site.
   cp -r ${../site}/. $out/
   chmod -R u+w $out
+
+  # A clean flake can link to its exact source tree. Local edits keep the
+  # relative links so the files match what the explorer is displaying.
+  ${pkgs.lib.optionalString (revision != null) ''
+    substituteInPlace $out/index.html \
+      --replace-fail 'data-source-root="data"' \
+        'data-source-root="https://github.com/fzakaria/genrulify/blob/${revision}/site/data"'
+  ''}
 
   # The footer names the store path serving the page.
   substituteInPlace $out/js/app.js --replace-fail "__STORE_PATH__" "$out"
