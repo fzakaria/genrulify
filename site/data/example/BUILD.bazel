@@ -2,7 +2,7 @@ genrule(
     name = "s735_dd",
     srcs = [":literals/sandbox_717.layer",":plans/s735_dd.json",":platform.layer"],
     outs = ["s735_dd.layer"],
-    cmd = "'/nix/store/hds6836shab1y8p65c7biiqs89x5rz5z-genrulify-0.1.0/bin/genrulify' replay \"$(location :plans/s735_dd.json)\" \"$@\" \"$(location :literals/sandbox_717.layer)\" \"$(location :platform.layer)\"",
+    cmd = "'/nix/store/15q8hglpw6k5a6pdskha40d43imb8jnz-genrulify-0.1.0/bin/genrulify' replay \"$(location :plans/s735_dd.json)\" \"$@\" \"$(location :literals/sandbox_717.layer)\" \"$(location :platform.layer)\"",
     tags = ["no-remote"],
 )
 
@@ -10,7 +10,7 @@ genrule(
     name = "s764_dd",
     srcs = [":literals/sandbox_717.layer",":plans/s764_dd.json",":platform.layer",":s735_dd"],
     outs = ["s764_dd.layer"],
-    cmd = "'/nix/store/hds6836shab1y8p65c7biiqs89x5rz5z-genrulify-0.1.0/bin/genrulify' replay \"$(location :plans/s764_dd.json)\" \"$@\" \"$(location :literals/sandbox_717.layer)\" \"$(location :s735_dd)\" \"$(location :platform.layer)\"",
+    cmd = "'/nix/store/15q8hglpw6k5a6pdskha40d43imb8jnz-genrulify-0.1.0/bin/genrulify' replay \"$(location :plans/s764_dd.json)\" \"$@\" \"$(location :literals/sandbox_717.layer)\" \"$(location :s735_dd)\" \"$(location :platform.layer)\"",
     tags = ["no-remote"],
 )
 
@@ -18,7 +18,7 @@ genrule(
     name = "s782_dd",
     srcs = [":literals/sandbox_717.layer",":plans/s782_dd.json",":platform.layer",":s764_dd"],
     outs = ["s782_dd.layer"],
-    cmd = "'/nix/store/hds6836shab1y8p65c7biiqs89x5rz5z-genrulify-0.1.0/bin/genrulify' replay \"$(location :plans/s782_dd.json)\" \"$@\" \"$(location :literals/sandbox_717.layer)\" \"$(location :s764_dd)\" \"$(location :platform.layer)\"",
+    cmd = "'/nix/store/15q8hglpw6k5a6pdskha40d43imb8jnz-genrulify-0.1.0/bin/genrulify' replay \"$(location :plans/s782_dd.json)\" \"$@\" \"$(location :literals/sandbox_717.layer)\" \"$(location :s764_dd)\" \"$(location :platform.layer)\"",
     tags = ["no-remote"],
 )
 
@@ -26,7 +26,7 @@ genrule(
     name = "archive",
     srcs = [":plans/archive.json",":s782_dd"],
     outs = ["out.nar"],
-    cmd = "'/nix/store/hds6836shab1y8p65c7biiqs89x5rz5z-genrulify-0.1.0/bin/genrulify' pack \"$(location :plans/archive.json)\" \"$@\" \"$(location :s782_dd)\"",
+    cmd = "'/nix/store/15q8hglpw6k5a6pdskha40d43imb8jnz-genrulify-0.1.0/bin/genrulify' pack \"$(location :plans/archive.json)\" \"$@\" \"$(location :s782_dd)\"",
     tags = ["no-remote"],
 )
 

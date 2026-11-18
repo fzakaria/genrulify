@@ -136,7 +136,7 @@ function renderStats(hash) {
   const parts = [
     `${groups.length.toLocaleString()} process groups`,
     `${count(Outcome.NARROW) + count(Outcome.NEAR) + count(Outcome.TRACED) + count(Outcome.WIDE)} replayed`,
-    `${pinned} files pinned`,
+    `${pinned} ${pinned === 1 ? "file" : "files"} pinned`,
     `${count(Outcome.LITERAL)} kept as recorded bytes`,
     `${count(Outcome.DEAD)} dead`,
     `${rules} genrules`,
@@ -165,7 +165,8 @@ function renderTimeline() {
 function describeOutcome(group) {
   const pinned = group.pinned ?? [];
   const pins = pinned.length
-    ? ` ${pinned.length} of its files differ on every run and are taken from the recording: ` +
+    ? ` ${pinned.length} of its files ${pinned.length === 1 ? "differs" : "differ"} on every run and ` +
+      `${pinned.length === 1 ? "is" : "are"} taken from the recording: ` +
       `${pinned.map((path) => path.split("/").pop()).join(", ")}.`
     : "";
   switch (outcomeOf(group)) {

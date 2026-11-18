@@ -134,6 +134,7 @@ void describeGraph(mlir::ModuleOp module, const Recording &recording) {
         verdict != verdicts.end()) {
       item["outcome"] = verdict->second.at("outcome");
       item["pinned"] = verdict->second.at("pinned");
+      item["inputs"] = verdict->second.value("inputs", 0);
       item["reason"] = verdict->second.value("reason", "");
     }
     groups.push_back(std::move(item));

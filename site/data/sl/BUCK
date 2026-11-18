@@ -15,7 +15,7 @@ genrule(
     name = "s2098_cp",
     srcs = [":literals/sandbox_716.layer",":plans/s2098_cp.json",":platform.layer"],
     out = "s2098_cp.layer",
-    cmd = "'/nix/store/hds6836shab1y8p65c7biiqs89x5rz5z-genrulify-0.1.0/bin/genrulify' replay \"$(location :plans/s2098_cp.json)\" \"$OUT\" \"$(location :literals/sandbox_716.layer)\" \"$(location :platform.layer)\"",
+    cmd = "'/nix/store/15q8hglpw6k5a6pdskha40d43imb8jnz-genrulify-0.1.0/bin/genrulify' replay \"$(location :plans/s2098_cp.json)\" \"$OUT\" \"$(location :literals/sandbox_716.layer)\" \"$(location :platform.layer)\"",
     remote = False,
 )
 
@@ -23,7 +23,7 @@ genrule(
     name = "s2140_chmod",
     srcs = [":literals/sandbox_716.layer",":plans/s2140_chmod.json",":platform.layer",":s2098_cp"],
     out = "s2140_chmod.layer",
-    cmd = "'/nix/store/hds6836shab1y8p65c7biiqs89x5rz5z-genrulify-0.1.0/bin/genrulify' replay \"$(location :plans/s2140_chmod.json)\" \"$OUT\" \"$(location :literals/sandbox_716.layer)\" \"$(location :s2098_cp)\" \"$(location :platform.layer)\"",
+    cmd = "'/nix/store/15q8hglpw6k5a6pdskha40d43imb8jnz-genrulify-0.1.0/bin/genrulify' replay \"$(location :plans/s2140_chmod.json)\" \"$OUT\" \"$(location :literals/sandbox_716.layer)\" \"$(location :s2098_cp)\" \"$(location :platform.layer)\"",
     remote = False,
 )
 
@@ -31,7 +31,7 @@ genrule(
     name = "s2762_make",
     srcs = [":literals/sandbox_716.layer",":plans/s2762_make.json",":platform.layer",":s2140_chmod"],
     out = "s2762_make.layer",
-    cmd = "'/nix/store/hds6836shab1y8p65c7biiqs89x5rz5z-genrulify-0.1.0/bin/genrulify' replay \"$(location :plans/s2762_make.json)\" \"$OUT\" \"$(location :literals/sandbox_716.layer)\" \"$(location :s2140_chmod)\" \"$(location :platform.layer)\"",
+    cmd = "'/nix/store/15q8hglpw6k5a6pdskha40d43imb8jnz-genrulify-0.1.0/bin/genrulify' replay \"$(location :plans/s2762_make.json)\" \"$OUT\" \"$(location :literals/sandbox_716.layer)\" \"$(location :s2140_chmod)\" \"$(location :platform.layer)\"",
     remote = False,
 )
 
@@ -39,7 +39,7 @@ genrule(
     name = "s3345_install",
     srcs = [":literals/sandbox_716.layer",":plans/s3345_install.json",":platform.layer",":s2140_chmod",":s2762_make"],
     out = "s3345_install.layer",
-    cmd = "'/nix/store/hds6836shab1y8p65c7biiqs89x5rz5z-genrulify-0.1.0/bin/genrulify' replay \"$(location :plans/s3345_install.json)\" \"$OUT\" \"$(location :literals/sandbox_716.layer)\" \"$(location :s2140_chmod)\" \"$(location :s2762_make)\" \"$(location :platform.layer)\"",
+    cmd = "'/nix/store/15q8hglpw6k5a6pdskha40d43imb8jnz-genrulify-0.1.0/bin/genrulify' replay \"$(location :plans/s3345_install.json)\" \"$OUT\" \"$(location :literals/sandbox_716.layer)\" \"$(location :s2140_chmod)\" \"$(location :s2762_make)\" \"$(location :platform.layer)\"",
     remote = False,
 )
 
@@ -47,7 +47,7 @@ genrule(
     name = "s3372_install",
     srcs = [":literals/sandbox_716.layer",":plans/s3372_install.json",":platform.layer",":s2140_chmod",":s3345_install"],
     out = "s3372_install.layer",
-    cmd = "'/nix/store/hds6836shab1y8p65c7biiqs89x5rz5z-genrulify-0.1.0/bin/genrulify' replay \"$(location :plans/s3372_install.json)\" \"$OUT\" \"$(location :literals/sandbox_716.layer)\" \"$(location :s2140_chmod)\" \"$(location :s3345_install)\" \"$(location :platform.layer)\"",
+    cmd = "'/nix/store/15q8hglpw6k5a6pdskha40d43imb8jnz-genrulify-0.1.0/bin/genrulify' replay \"$(location :plans/s3372_install.json)\" \"$OUT\" \"$(location :literals/sandbox_716.layer)\" \"$(location :s2140_chmod)\" \"$(location :s3345_install)\" \"$(location :platform.layer)\"",
     remote = False,
 )
 
@@ -55,7 +55,7 @@ genrule(
     name = "s3607_find_patchelf",
     srcs = [":literals/sandbox_716.layer",":plans/s3607_find_patchelf.json",":platform.layer",":s2140_chmod",":s3345_install"],
     out = "s3607_find_patchelf.layer",
-    cmd = "'/nix/store/hds6836shab1y8p65c7biiqs89x5rz5z-genrulify-0.1.0/bin/genrulify' replay \"$(location :plans/s3607_find_patchelf.json)\" \"$OUT\" \"$(location :literals/sandbox_716.layer)\" \"$(location :s2140_chmod)\" \"$(location :s3345_install)\" \"$(location :platform.layer)\"",
+    cmd = "'/nix/store/15q8hglpw6k5a6pdskha40d43imb8jnz-genrulify-0.1.0/bin/genrulify' replay \"$(location :plans/s3607_find_patchelf.json)\" \"$OUT\" \"$(location :literals/sandbox_716.layer)\" \"$(location :s2140_chmod)\" \"$(location :s3345_install)\" \"$(location :platform.layer)\"",
     remote = False,
 )
 
@@ -63,7 +63,7 @@ genrule(
     name = "s3901_find_xargs",
     srcs = [":literals/sandbox_716.layer",":plans/s3901_find_xargs.json",":platform.layer",":s2140_chmod",":s3345_install",":s3372_install"],
     out = "s3901_find_xargs.layer",
-    cmd = "'/nix/store/hds6836shab1y8p65c7biiqs89x5rz5z-genrulify-0.1.0/bin/genrulify' replay \"$(location :plans/s3901_find_xargs.json)\" \"$OUT\" \"$(location :literals/sandbox_716.layer)\" \"$(location :s2140_chmod)\" \"$(location :s3345_install)\" \"$(location :s3372_install)\" \"$(location :platform.layer)\"",
+    cmd = "'/nix/store/15q8hglpw6k5a6pdskha40d43imb8jnz-genrulify-0.1.0/bin/genrulify' replay \"$(location :plans/s3901_find_xargs.json)\" \"$OUT\" \"$(location :literals/sandbox_716.layer)\" \"$(location :s2140_chmod)\" \"$(location :s3345_install)\" \"$(location :s3372_install)\" \"$(location :platform.layer)\"",
     remote = False,
 )
 
@@ -71,7 +71,7 @@ genrule(
     name = "s4121_find_sort_cut_xargs",
     srcs = [":literals/lit_4090_mktemp.layer",":literals/sandbox_716.layer",":plans/s4121_find_sort_cut_xargs.json",":platform.layer",":s2140_chmod",":s3345_install",":s3607_find_patchelf"],
     out = "s4121_find_sort_cut_xargs.layer",
-    cmd = "'/nix/store/hds6836shab1y8p65c7biiqs89x5rz5z-genrulify-0.1.0/bin/genrulify' replay \"$(location :plans/s4121_find_sort_cut_xargs.json)\" \"$OUT\" \"$(location :literals/lit_4090_mktemp.layer)\" \"$(location :literals/sandbox_716.layer)\" \"$(location :s2140_chmod)\" \"$(location :s3345_install)\" \"$(location :s3607_find_patchelf)\" \"$(location :platform.layer)\"",
+    cmd = "'/nix/store/15q8hglpw6k5a6pdskha40d43imb8jnz-genrulify-0.1.0/bin/genrulify' replay \"$(location :plans/s4121_find_sort_cut_xargs.json)\" \"$OUT\" \"$(location :literals/lit_4090_mktemp.layer)\" \"$(location :literals/sandbox_716.layer)\" \"$(location :s2140_chmod)\" \"$(location :s3345_install)\" \"$(location :s3607_find_patchelf)\" \"$(location :platform.layer)\"",
     remote = False,
 )
 
@@ -79,7 +79,7 @@ genrule(
     name = "archive",
     srcs = [":plans/archive.json",":s3345_install",":s3372_install",":s3901_find_xargs",":s4121_find_sort_cut_xargs"],
     out = "out.nar",
-    cmd = "'/nix/store/hds6836shab1y8p65c7biiqs89x5rz5z-genrulify-0.1.0/bin/genrulify' pack \"$(location :plans/archive.json)\" \"$OUT\" \"$(location :s3345_install)\" \"$(location :s3372_install)\" \"$(location :s3901_find_xargs)\" \"$(location :s4121_find_sort_cut_xargs)\"",
+    cmd = "'/nix/store/15q8hglpw6k5a6pdskha40d43imb8jnz-genrulify-0.1.0/bin/genrulify' pack \"$(location :plans/archive.json)\" \"$OUT\" \"$(location :s3345_install)\" \"$(location :s3372_install)\" \"$(location :s3901_find_xargs)\" \"$(location :s4121_find_sort_cut_xargs)\"",
     remote = False,
 )
 

@@ -45,3 +45,14 @@ grep -q '"id":"s764_dd"' "$scratch/description.json"
 grep -q '"node":"s735_dd"' "$scratch/description.json"
 grep -q '"op":"output"' "$scratch/description.json"
 grep -q 'oflag=append' "$scratch/description.json"
+
+# A description carries what the checker reported for each group, so a page
+# can say how many entries a replayed group was given.
+cp -r "$data/example" "$scratch/checked"
+chmod -R u+w "$scratch/checked"
+cat > "$scratch/checked/check.json" <<'JSON'
+{"groups": [{"step": 764, "name": "dd", "processes": 1, "outcome": "traced", "inputs": 2, "pinned": []}]}
+JSON
+"$compiler" describe "$scratch/checked" "$scratch/graph.mlir" > "$scratch/checked.json"
+grep -q '"inputs":2' "$scratch/checked.json"
+grep -q '"outcome":"traced"' "$scratch/checked.json"
