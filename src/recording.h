@@ -4,6 +4,7 @@
 #include "process.h"
 #include <filesystem>
 #include <map>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -27,9 +28,10 @@ struct Descriptor {
   // For the read end of a pipe that nothing replayable writes: the bytes
   // that were waiting in the pipe at the execve, in hex. A shell writes a
   // here-string or a short here-document into a pipe before it starts the
-  // command, so these bytes are the command's whole input. Empty when the
-  // recording did not capture them.
-  std::string input;
+  // command, so these bytes are the command's whole input. Unset when the
+  // recording did not capture them, which is not the same as a pipe that
+  // was captured and held nothing: that one is at end of file.
+  std::optional<std::string> input;
 };
 
 // One process the builder started, at the step of the execve that turned

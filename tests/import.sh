@@ -60,6 +60,16 @@ with_pipe ', "input": "68690a"' "$scratch/fed"
 "$compiler" import "$scratch/fed" > "$scratch/fed.mlir"
 grep -q 'splice.exec "dd" at 764' "$scratch/fed.mlir"
 
+# A pipe that was captured and held nothing is different from one that was
+# not captured. make hands a parallel job a standard input that is already
+# at end of file, and such a job can be replayed.
+with_pipe ', "input": ""' "$scratch/empty"
+"$compiler" import "$scratch/empty" > "$scratch/empty.mlir"
+grep -q 'splice.exec "dd" at 764' "$scratch/empty.mlir"
+with_pipe ', "input": null' "$scratch/uncaptured"
+"$compiler" import "$scratch/uncaptured" > "$scratch/uncaptured.mlir"
+grep -q 'splice.literal "dd" at 764 demoted' "$scratch/uncaptured.mlir"
+
 # The rung between the files a group opened and the whole tree gives the
 # group the other entries of the directories it worked in, which is what a
 # stat or a directory listing can see. The example has a file the append

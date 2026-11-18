@@ -9,6 +9,7 @@
 #include "trace.h"
 #include <map>
 #include <mutex>
+#include <optional>
 #include <set>
 
 namespace splice_ir {
@@ -77,12 +78,13 @@ public:
   }
 
   // The bytes waiting in a pipe that a process holds, read without
-  // disturbing the run. Empty when Rewind could not produce them in time:
+  // disturbing the run. Unset when Rewind could not produce them in time:
   // a pipe whose writer is still running has no end to read up to.
-  std::string pipeContents(uint64_t step, const std::string &path) const {
+  std::optional<std::string> pipeContents(uint64_t step,
+                                          const std::string &path) const {
     llvm::SmallString<128> file;
     if (llvm::sys::fs::createTemporaryFile("nixsplice", "pipe", file)) {
-      return {};
+      return std::nullopt;
     }
     const fs::path output = file.str().str();
     Arguments args{std::string(kTimeout), std::string(kPipeReadSeconds)};
@@ -92,7 +94,10 @@ public:
     }
     const int status =
         splice_ir::run(args, {}, output, fs::path("/dev/null"));
-    auto bytes = status == 0 ? readBytes(output) : std::string();
+    std::optional<std::string> bytes;
+    if (status == 0) {
+      bytes = readBytes(output);
+    }
     fs::remove(output);
     return bytes;
   }
@@ -390,7 +395,9 @@ void captureBuilderPipes(const Rewind &rewind, std::vector<Group> &groups) {
     const auto &[process, descriptor] = wanted[index];
     const auto path = "/proc/" + std::to_string(process->pid) + "/fd/" +
                       std::to_string(descriptor->fd);
-    descriptor->input = toHex(rewind.pipeContents(process->step, path));
+    if (const auto bytes = rewind.pipeContents(process->step, path)) {
+      descriptor->input = toHex(*bytes);
+    }
   });
 }
 } // namespace

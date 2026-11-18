@@ -413,7 +413,7 @@ private:
       // read out of it, as for a command substitution, goes nowhere,
       // because nothing replays the builder.
       if (pipe == pipes.end()) {
-        if (readable(descriptor) && !descriptor.input.empty()) {
+        if (readable(descriptor) && descriptor.input) {
           return feed(descriptor);
         }
         return devNull;
@@ -463,7 +463,7 @@ private:
     if (const auto known = fed.find(descriptor.target); known != fed.end()) {
       return known->second;
     }
-    const auto bytes = fromHex(descriptor.input);
+    const auto bytes = fromHex(*descriptor.input);
     std::array<int, 2> ends{};
     check(pipe2(ends.data(), O_CLOEXEC) == 0, "cannot create a pipe");
 

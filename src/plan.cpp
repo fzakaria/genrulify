@@ -107,7 +107,7 @@ std::optional<std::string> unreplayable(const Group &group) {
       // recording caught them waiting in the pipe.
       if (isPipe(descriptor)) {
         if (readable(descriptor) && !written.contains(descriptor.target) &&
-            descriptor.input.empty()) {
+            !descriptor.input) {
           return absl::StrCat(process.name, " reads descriptor ",
                               descriptor.fd, " from a pipe the builder wrote");
         }

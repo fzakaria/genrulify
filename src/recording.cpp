@@ -25,13 +25,17 @@ Json toJson(const Descriptor &descriptor) {
           {"mode", descriptor.mode},
           {"flags", descriptor.flags},
           {"position", descriptor.position},
-          {"input", descriptor.input}};
+          {"input", descriptor.input ? Json(*descriptor.input) : Json()}};
 }
 
 Descriptor descriptorFromJson(const Json &json) {
-  return {json.at("fd"),       json.at("target"),
-          json.at("mode"),     json.at("flags"),
-          json.at("position"), json.value("input", std::string())};
+  Descriptor descriptor{json.at("fd"), json.at("target"), json.at("mode"),
+                        json.at("flags"), json.at("position"), std::nullopt};
+  if (const auto input = json.find("input");
+      input != json.end() && input->is_string()) {
+    descriptor.input = input->get<std::string>();
+  }
+  return descriptor;
 }
 
 } // namespace
