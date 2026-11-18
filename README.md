@@ -17,6 +17,10 @@
 </p>
 
 <p align="center">
+  <a href="https://nixbot.decio.us/repos/github/fzakaria/genrulify"><img src="https://nixbot.decio.us/badge/3b4d3f0d-de80-420b-8aa6-d99459a79380.svg" alt="nixbot" /></a>
+</p>
+
+<p align="center">
   <img src="site/img/explorer.png" alt="The genrulify explorer on GNU hello: one cell per command the build ran, a switch for each optimizer pass, and the graph of what is left, in which the compiles are cc_object nodes." />
 </p>
 
@@ -182,6 +186,9 @@ merge.
 
 Recording needs [Rewind](https://rewindvm.dev) on the `PATH` and KVM.
 Building the result needs Bazel or Buck2, bubblewrap and the Nix store.
+CI pushes the compiler to `genrulify.cachix.org`, and the flake names
+that cache, so `nix run` downloads it when you accept the flake's
+configuration.
 
 ```console
 $ nix run github:fzakaria/genrulify -- convert nixpkgs#hello hello

@@ -1,9 +1,30 @@
 {
   description = "Compile a recorded Nix build into Bazel and Buck2 genrules";
-  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+  inputs = {
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+
+    # nixbot's effects library, for the Cachix effect (nix/effects.nix)
+    nixbot.url = "github:Mic92/nixbot";
+    nixbot.inputs.nixpkgs.follows = "nixpkgs";
+  };
+
+  # CI pushes every build of main to this cache, so
+  # `nix run github:fzakaria/genrulify` downloads the compiler instead of
+  # building it against MLIR. Nix asks before using a flake's substituter
+  # unless the user is trusted.
+  nixConfig = {
+    extra-substituters = [ "https://genrulify.cachix.org" ];
+    extra-trusted-public-keys = [
+      "genrulify.cachix.org-1:Evm/4piGJrTklr4dacIeXtT2VKdcZOQUeGW35zq8Cgk="
+    ];
+  };
 
   outputs =
-    { self, nixpkgs }:
+    {
+      self,
+      nixpkgs,
+      nixbot,
+    }:
     let
       system = "x86_64-linux";
       pkgs = nixpkgs.legacyPackages.${system};
@@ -65,5 +86,12 @@
       };
       checks.${system} = { inherit (self.packages.${system}) default site; };
       formatter.${system} = pkgs.nixfmt-tree;
+
+      # nixbot's effects (nix/effects.nix)
+      herculesCI = import ./nix/effects.nix {
+        inherit pkgs;
+        effects = nixbot.lib.effects { inherit pkgs; };
+        packages = self.packages.${system};
+      };
     };
 }
