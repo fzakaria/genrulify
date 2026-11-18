@@ -112,6 +112,36 @@ test "$(wc -l < "$scratch/closed")" = 1
 grep -q '"pid":5' "$scratch/closed"
 grep -q '"opener":{"pid":4,"step":5}' "$scratch/closed"
 
+# A redirection stays open across the execve. A file that a child opened
+# and closed again before its execve was written by a shell builtin, as in
+# `(echo x > f; exec cmd)`, and that is the driver's own work: make is the
+# cut again.
+{
+    cat "$scratch/events"
+    event 6 5 "$written"
+    event 6 5 '{"type":"close","path":"/build/x"}'
+} > "$scratch/builtin"
+"$compiler" cuts "$scratch/builtin" "$scratch/trace" > "$scratch/built"
+test "$(wc -l < "$scratch/built")" = 1
+grep -q '"pid":4' "$scratch/built"
+
+# Closing a driver holds when programs are opened by name as well. Naming
+# a program that the run never starts changes nothing.
+"$compiler" cuts --close 5@7 "$scratch/events" "$scratch/trace" ninja > "$scratch/closed-named"
+test "$(wc -l < "$scratch/closed-named")" = 1
+grep -q '"pid":5' "$scratch/closed-named"
+
+# A process id that is used twice would make two processes one. The
+# analysis refuses such a run and says which id.
+{
+    cat "$scratch/events"
+    event 20 2 '{"type":"fork","child":6,"thread":false}'
+} > "$scratch/reused"
+if "$compiler" cuts "$scratch/reused" "$scratch/trace" > /dev/null 2> "$scratch/error"; then
+    exit 1
+fi
+grep -q 'process id 6 is used twice' "$scratch/error"
+
 # With coarse cuts and make opened, the recipe shell is the only cut and it
 # spans the compiler.
 "$compiler" cuts --coarse "$scratch/events" "$scratch/trace" make > "$scratch/recipe"

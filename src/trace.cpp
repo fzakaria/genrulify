@@ -234,6 +234,12 @@ struct Events {
   // the step they happened, which the batched records of trace.bin do not.
   std::map<int, std::vector<uint64_t>> writes;
 
+  // The processes that, before their first execve, opened a file of the
+  // build for writing and closed it again. A redirection set up for a
+  // command stays open across the execve, so such a file was written by a
+  // shell builtin.
+  std::set<int> wroteBeforeExec;
+
   // Thread id to the process the thread belongs to.
   std::map<int, int> threads;
   std::optional<int> builder;
@@ -251,8 +257,11 @@ Events readEvents(const fs::path &file) {
   check(stream.is_open(), "cannot open " + file.string());
   Events events;
 
-  // The step and thread of each write, kept until every thread is known.
+  // The step and thread of each write, kept until every thread is known,
+  // and for each thread the files it has open for writing.
   std::vector<std::pair<uint64_t, int>> writers;
+  std::map<int, std::set<std::string>> openFiles;
+  std::vector<std::pair<uint64_t, int>> closedWrites;
   for (std::string line; std::getline(stream, line);) {
     const auto event = Json::parse(line);
     const auto &kind = event.at("kind");
@@ -265,9 +274,14 @@ Events readEvents(const fs::path &file) {
         events.threads[child] = pid;
         continue;
       }
-      auto &process = events.processes[child];
-      process.parent = pid;
-      process.forked = step;
+      // Everything below takes a process id for one process. The guest
+      // would have to start more processes than it has ids for one to
+      // come round again, and a run that does is refused.
+      const auto [created, fresh] = events.processes.try_emplace(child);
+      check(fresh, "process id " + std::to_string(child) +
+                       " is used twice, which the analysis does not handle");
+      created->second.parent = pid;
+      created->second.forked = step;
       continue;
     }
     if (type == "exec") {
@@ -282,7 +296,20 @@ Events readEvents(const fs::path &file) {
       // or the kernel's view of a process changes no file of the build.
       const std::string path = kind.value("path", kind.value("to", ""));
       if (!path.starts_with(kDevices) && !path.starts_with(kProcesses)) {
-        writers.emplace_back(step, event.at("tid").get<int>());
+        const int tid = event.at("tid");
+        writers.emplace_back(step, tid);
+        if (type == "open") {
+          openFiles[tid].insert(path);
+        }
+      }
+      continue;
+    }
+    if (type == "close") {
+      // Rewind reports a close when a file is let go of for good, which
+      // for a redirection is when the command exits.
+      const int tid = event.at("tid");
+      if (openFiles[tid].erase(kind.value("path", "")) != 0) {
+        closedWrites.emplace_back(step, tid);
       }
       continue;
     }
@@ -294,6 +321,14 @@ Events readEvents(const fs::path &file) {
   }
   for (const auto &[step, tid] : writers) {
     events.writes[events.processOf(tid)].push_back(step);
+  }
+  for (const auto &[step, tid] : closedWrites) {
+    const int pid = events.processOf(tid);
+    const auto process = events.processes.find(pid);
+    if (process != events.processes.end() && !process->second.execs.empty() &&
+        step < process->second.execs.front().step) {
+      events.wroteBeforeExec.insert(pid);
+    }
   }
   return events;
 }
@@ -332,40 +367,20 @@ public:
     }
   }
 
-  // Whether the process's execve number `index` is opened.
+  // Whether the process's execve number `index` is opened: by name, or
+  // on the evidence of the trace unless the image has been closed.
   bool exec(int pid, size_t index) {
     const auto key = std::make_pair(pid, index);
     if (const auto known = execs.find(key); known != execs.end()) {
       return known->second;
     }
+    bool opened = named(pid, index);
     const auto &process = events.processes.at(pid);
-    const auto name = programName(process.execs[index]);
-    bool opened = events.open && std::regex_match(name, *events.open);
     if (!opened && events.granularity == Granularity::Fine &&
         !events.closed.contains({pid, process.execs[index].step}) &&
         onlyRunsCommands(pid, index)) {
       opened = true;
       evident.insert(key);
-    }
-
-    // Remember the answer for anything that is not a shell before looking
-    // further, since only a shell can be opened by what it runs.
-    static const std::regex shells{std::string(kShellNames)};
-    if (opened || !events.open || !std::regex_match(name, shells)) {
-      return execs[key] = opened;
-    }
-
-    // Look below the image this execve started: the children forked before
-    // the process's next execve.
-    const uint64_t from = process.execs[index].step;
-    const uint64_t until = index + 1 < process.execs.size()
-                               ? process.execs[index + 1].step
-                               : std::numeric_limits<uint64_t>::max();
-    opened = anyChildBetween(pid, from, until);
-
-    // A shell that execs its last command becomes that command.
-    if (!opened && index + 1 < process.execs.size()) {
-      opened = exec(pid, index + 1);
     }
     return execs[key] = opened;
   }
@@ -417,6 +432,38 @@ public:
   }
 
 private:
+  // Whether the process's execve number `index` is opened by name: the
+  // program matches the pattern, or is a shell that goes on to become a
+  // matching program or has one below it. What the trace shows of the
+  // image plays no part, so closing an image cannot be undone here.
+  bool named(int pid, size_t index) {
+    const auto key = std::make_pair(pid, index);
+    if (const auto known = names.find(key); known != names.end()) {
+      return known->second;
+    }
+    const auto &process = events.processes.at(pid);
+    const auto name = programName(process.execs[index]);
+    bool opened = events.open && std::regex_match(name, *events.open);
+
+    // Remember the answer for anything that is not a shell before looking
+    // further, since only a shell can be opened by what it runs.
+    static const std::regex shells{std::string(kShellNames)};
+    if (opened || !events.open || !std::regex_match(name, shells)) {
+      return names[key] = opened;
+    }
+
+    // Look below the image this execve started: the children forked before
+    // the process's next execve.
+    const auto [from, until] = span(pid, index);
+    opened = anyChildBetween(pid, from, until);
+
+    // A shell that execs its last command becomes that command.
+    if (!opened && index + 1 < process.execs.size()) {
+      opened = named(pid, index + 1);
+    }
+    return names[key] = opened;
+  }
+
   // The steps between which the image a process's execve number `index`
   // started was running.
   std::pair<uint64_t, uint64_t> span(int pid, size_t index) const {
@@ -457,7 +504,8 @@ private:
 
   // Whether a process, between two steps, opened a file for writing, or a
   // subshell of it did. What a child opens before the child's own execve
-  // is a redirection set up for that command and belongs to the command.
+  // and keeps open is a redirection set up for that command and belongs
+  // to the command.
   bool wroteBetween(int pid, uint64_t from, uint64_t until) const {
     if (const auto steps = events.writes.find(pid);
         steps != events.writes.end()) {
@@ -472,8 +520,16 @@ private:
     }
     for (const int child : known->second) {
       const auto &process = events.processes.at(child);
-      const bool subshell = process.execs.empty();
-      if (process.forked < from || process.forked >= until || !subshell) {
+      if (process.forked < from || process.forked >= until) {
+        continue;
+      }
+
+      // A child that became a command counts only for what a builtin of
+      // it wrote before that.
+      if (!process.execs.empty()) {
+        if (events.wroteBeforeExec.contains(child)) {
+          return true;
+        }
         continue;
       }
       if (wroteBetween(child, 0, std::numeric_limits<uint64_t>::max())) {
@@ -483,11 +539,11 @@ private:
     return false;
   }
 
-  // Whether an opened execve happens in the process or below it.
+  // Whether an execve opened by name happens in the process or below it.
   bool contains(int pid) {
     const auto &process = events.processes.at(pid);
     for (size_t index = 0; index < process.execs.size(); ++index) {
-      if (exec(pid, index)) {
+      if (named(pid, index)) {
         return true;
       }
     }
@@ -512,6 +568,7 @@ private:
   const Events &events;
   std::map<int, std::vector<int>> children;
   std::map<std::pair<int, size_t>, bool> execs;
+  std::map<std::pair<int, size_t>, bool> names;
 
   // The execve calls opened on the evidence of the trace alone.
   std::set<std::pair<int, size_t>> evident;
