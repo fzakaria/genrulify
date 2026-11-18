@@ -130,8 +130,14 @@ private:
 };
 
 // /proc carries NUL-delimited argv and envp, including empty arguments.
-Arguments fields(std::string data) {
-  check(!data.empty() && data.back() == '\0', "incomplete process record");
+// `source` names the file and step for the message when the data is cut
+// short. A process started with no environment has an empty envp, which
+// is no fields and not a short read.
+Arguments fields(std::string data, const std::string &source) {
+  if (data.empty()) {
+    return {};
+  }
+  check(data.back() == '\0', "incomplete process record in " + source);
   data.pop_back();
   return absl::StrSplit(data, '\0');
 }
@@ -298,8 +304,12 @@ Process inspect(const Rewind &rewind, const Cut &cut, const Arguments &roots,
   process.status = cut.status;
   process.name = cut.name;
   process.filename = cut.filename;
-  process.argv = fields(rewind.cat(cut.step, proc + "/cmdline"));
-  environment = fields(rewind.cat(cut.step, proc + "/environ"));
+  const auto at = " at step " + std::to_string(cut.step);
+  process.argv = fields(rewind.cat(cut.step, proc + "/cmdline"),
+                        proc + "/cmdline" + at);
+  check(!process.argv.empty(), "no arguments in " + proc + "/cmdline" + at);
+  environment = fields(rewind.cat(cut.step, proc + "/environ"),
+                       proc + "/environ" + at);
 
   // The exe link names the interpreter when execve was given a script.
   const auto links = rewind.files(cut.step, proc);
@@ -437,7 +447,8 @@ void captureBuilderPipes(const Rewind &rewind, std::vector<Group> &groups) {
 } // namespace
 
 void recordRun(const std::string &run, const fs::path &drvPath,
-               const fs::path &directory, const std::string &open) {
+               const fs::path &directory, const std::string &open,
+               Granularity granularity) {
   const Rewind rewind(run);
   check(fs::create_directory(directory), "destination already exists");
   try {
@@ -466,7 +477,8 @@ void recordRun(const std::string &run, const fs::path &drvPath,
     const auto events = scratch.path / "events.jsonl";
     writeBytes(events, rewind.events());
     const auto runDirectory = rewind.directory();
-    const auto analysis = analyze(events, runDirectory / "trace.bin", open);
+    const auto analysis =
+        analyze(events, runDirectory / "trace.bin", open, granularity);
 
     // Rewind's manifest holds how long the run took, which bounds how long
     // a replay of any part of it may take.
@@ -475,6 +487,7 @@ void recordRun(const std::string &run, const fs::path &drvPath,
             .at("outcome")
             .at("wall_ms");
     recording.open = open;
+    recording.fine = granularity == Granularity::Fine;
     check(analysis.builder == drv.at("builder").get<std::string>(),
           "the run's builder is not the derivation's");
     recording.initialStep = analysis.initialStep;

@@ -98,6 +98,10 @@ struct Recording {
   // The pattern of program names that were treated as driver code.
   std::string open;
 
+  // Whether programs that only run other commands were opened as well.
+  // False in a recording made before there was a choice.
+  bool fine = false;
+
   // The step the builder started at, and the step after the builder exited.
   uint64_t initialStep = 0;
   uint64_t finalStep = 0;

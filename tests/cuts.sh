@@ -59,13 +59,51 @@ event() {
 } > "$scratch/events"
 printf 'rwtrace\0\1\0\0\0' > "$scratch/trace"
 
-# Unopened, the outer shell is the only cut.
-"$compiler" cuts "$scratch/events" "$scratch/trace" > "$scratch/whole"
+# With coarse cuts and nothing opened, the outer shell is the only cut.
+"$compiler" cuts --coarse "$scratch/events" "$scratch/trace" > "$scratch/whole"
 test "$(wc -l < "$scratch/whole")" = 1
 grep -q '"pid":3' "$scratch/whole"
 
-# Opened, the recipe shell is the only cut and it spans the compiler.
-"$compiler" cuts "$scratch/events" "$scratch/trace" make > "$scratch/recipe"
+# By default the cuts are fine: a process that runs commands and writes no
+# file itself is a driver. Nothing here writes, so both shells and make are
+# drivers and the compiler is the only cut.
+"$compiler" cuts "$scratch/events" "$scratch/trace" > "$scratch/fine"
+test "$(wc -l < "$scratch/fine")" = 1
+grep -q '"pid":6' "$scratch/fine"
+grep -q '"name":"cc"' "$scratch/fine"
+
+# The event of a process opening /build/x for writing: O_WRONLY, O_CREAT
+# and O_TRUNC.
+written='{"type":"open","path":"/build/x","flags":577}'
+
+# A process that writes a file itself did work of its own, so the process
+# is a cut. Here make opens a file at step 6, after it started.
+{ cat "$scratch/events"; event 6 4 "$written"; } > "$scratch/writer"
+"$compiler" cuts "$scratch/writer" "$scratch/trace" > "$scratch/wrote"
+test "$(wc -l < "$scratch/wrote")" = 1
+grep -q '"pid":4' "$scratch/wrote"
+
+# The same goes for a process that renames a file.
+{ cat "$scratch/events"; event 6 4 '{"type":"rename","from":"/build/x","to":"/build/y"}'; } > "$scratch/renamer"
+"$compiler" cuts "$scratch/renamer" "$scratch/trace" > "$scratch/renamed"
+grep -q '"pid":4' "$scratch/renamed"
+
+# Opening a device changes no file of the build.
+{ cat "$scratch/events"; event 6 4 '{"type":"open","path":"/dev/null","flags":577}'; } > "$scratch/device"
+"$compiler" cuts "$scratch/device" "$scratch/trace" > "$scratch/discarded"
+grep -q '"pid":6' "$scratch/discarded"
+
+# What a child opens between its fork and its execve is the shell setting
+# up a redirection for the command, and counts against neither the parent
+# nor the command. The recipe shell is forked at step 6 and execs at 7.
+{ cat "$scratch/events"; event 6 5 "$written"; } > "$scratch/redirect"
+"$compiler" cuts "$scratch/redirect" "$scratch/trace" > "$scratch/redirected"
+test "$(wc -l < "$scratch/redirected")" = 1
+grep -q '"pid":6' "$scratch/redirected"
+
+# With coarse cuts and make opened, the recipe shell is the only cut and it
+# spans the compiler.
+"$compiler" cuts --coarse "$scratch/events" "$scratch/trace" make > "$scratch/recipe"
 test "$(wc -l < "$scratch/recipe")" = 1
 grep -q '"pid":5' "$scratch/recipe"
 grep -q '"/bin/cc"' "$scratch/recipe"
@@ -84,14 +122,14 @@ grep -q '"/bin/cc"' "$scratch/recipe"
         event $((12 - pid)) "$pid" '{"type":"exit","status":0,"thread":false}'
     done
 } > "$scratch/events"
-"$compiler" cuts "$scratch/events" "$scratch/trace" make > "$scratch/replaced"
+"$compiler" cuts --coarse "$scratch/events" "$scratch/trace" make > "$scratch/replaced"
 test "$(wc -l < "$scratch/replaced")" = 1
 grep -q '"pid":4' "$scratch/replaced"
 
 # Only shells are opened on account of what they run. A configure script
 # also runs make, to test it, and must stay one cut.
 sed 's|/bin/sh|/build/configure|' "$scratch/events" > "$scratch/configure-events"
-"$compiler" cuts "$scratch/configure-events" "$scratch/trace" make > "$scratch/script"
+"$compiler" cuts --coarse "$scratch/configure-events" "$scratch/trace" make > "$scratch/script"
 test "$(wc -l < "$scratch/script")" = 1
 grep -q '"pid":3' "$scratch/script"
 grep -q '"name":"configure"' "$scratch/script"

@@ -45,6 +45,18 @@ struct Analysis {
   std::vector<Cut> cuts;
 };
 
+// How far down the process tree the cuts go.
+enum class Granularity {
+  // Stop at the commands the builder itself runs, and at what is below
+  // the programs `open` names.
+  Coarse,
+
+  // Also treat as driver code every process that runs other commands and
+  // opens no file for writing itself: make, a recipe shell, xargs, a
+  // wrapper script. All that such a process did is what its children did.
+  Fine,
+};
+
 // Reads `rewind events --json` output and a run's trace.bin.
 //
 // The builder is the first process after init to call execve. The builder
@@ -57,10 +69,15 @@ struct Analysis {
 // `open` is a regular expression over program names, or empty. A driver
 // process that execs a matching program stays a driver, and so does one
 // that execs a shell which later becomes, or has below it, a matching
-// process. The
-// cuts fall on the first programs with nothing opened beneath them.
-// Opening `make` turns one cut for a whole build phase into one cut per
-// recipe, through any depth of recursive make.
+// process. The cuts fall on the first programs with nothing opened beneath
+// them. Opening `ninja` turns one cut for a whole build phase into one cut
+// per command.
+//
+// With Granularity::Fine a program needs no naming when the trace shows
+// that the program only ran other commands. A program that also writes
+// files of its own, as ninja does its log and cargo its fingerprints, is
+// still opened by name alone.
 Analysis analyze(const std::filesystem::path &events,
-                 const std::filesystem::path &trace, const std::string &open);
+                 const std::filesystem::path &trace, const std::string &open,
+                 Granularity granularity = Granularity::Fine);
 } // namespace splice_ir

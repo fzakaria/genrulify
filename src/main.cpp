@@ -11,8 +11,8 @@
 
 namespace {
 constexpr std::string_view kUsage =
-    "usage: genrulify record RUN DERIVATION.drv RECORDING [OPEN]\n"
-    "       genrulify cuts EVENTS.jsonl TRACE.bin [OPEN]\n"
+    "usage: genrulify record [--coarse] RUN DERIVATION.drv RECORDING [OPEN]\n"
+    "       genrulify cuts [--coarse] EVENTS.jsonl TRACE.bin [OPEN]\n"
     "       genrulify accessed STRACE-DIRECTORY\n"
     "       genrulify check RECORDING [PASS...]\n"
     "       genrulify learn RECORDING < BUILD.log\n"
@@ -24,7 +24,13 @@ constexpr std::string_view kUsage =
     "       genrulify verify REFERENCE.nar ARCHIVE.nar\n"
     "\n"
     "PASS is one of link, dce, fold, merge and raise. With none named, all\n"
-    "run.\n";
+    "run.\n"
+    "OPEN is a regular expression over the names of programs to treat as\n"
+    "driver code. Programs that only run other commands are found without\n"
+    "being named, unless --coarse is given.\n";
+
+// The option that stops the cuts at the commands the builder runs.
+constexpr std::string_view kCoarseOption = "--coarse";
 
 // The passes named on a command line, or every pass when none is named.
 std::vector<splice_ir::Pass> passesFrom(std::span<char *> names) {
@@ -62,10 +68,20 @@ void print(mlir::ModuleOp module) {
 void run(std::span<char *> args) {
   const std::string_view command = args.empty() ? "" : args[0];
 
+  // Take the granularity option out of the arguments of the two commands
+  // that cut a run.
+  auto granularity = splice_ir::Granularity::Fine;
+  std::vector<char *> rest(args.begin(), args.end());
+  if (rest.size() > 1 && rest[1] == kCoarseOption) {
+    granularity = splice_ir::Granularity::Coarse;
+    rest.erase(rest.begin() + 1);
+    args = rest;
+  }
+
   // Commands that only need a recording.
   if ((args.size() == 4 || args.size() == 5) && command == "record") {
     splice_ir::recordRun(args[1], args[2], args[3],
-                         args.size() == 5 ? args[4] : "");
+                         args.size() == 5 ? args[4] : "", granularity);
     return;
   }
   if (args.size() == 2 && command == "accessed") {
@@ -85,7 +101,8 @@ void run(std::span<char *> args) {
   if ((args.size() == 3 || args.size() == 4) && command == "cuts") {
     // One JSON object per cut, for inspecting a run before recording it.
     const std::string open = args.size() == 4 ? args[3] : "";
-    for (const auto &cut : splice_ir::analyze(args[1], args[2], open).cuts) {
+    for (const auto &cut :
+         splice_ir::analyze(args[1], args[2], open, granularity).cuts) {
       const nlohmann::json line = {{"pid", cut.pid},     {"step", cut.step},
                                    {"end", cut.end},     {"status", cut.status},
                                    {"name", cut.name},   {"reads", cut.reads}};

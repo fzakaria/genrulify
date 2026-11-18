@@ -61,6 +61,11 @@ struct IoLog {
   uint64_t lost = 0;
 };
 
+// Where the kernel keeps devices and its own view of processes. Opening
+// one of those for writing changes no file of the build.
+constexpr std::string_view kDevices = "/dev/";
+constexpr std::string_view kProcesses = "/proc/";
+
 template <typename Integer> Integer littleEndian(std::string_view bytes) {
   check(bytes.size() >= sizeof(Integer), "truncated trace");
   Integer value = 0;
@@ -219,15 +224,33 @@ struct Events {
   // Matches the names of programs whose processes are driver code.
   std::optional<std::regex> open;
 
+  // Whether a process is driver code on the evidence of what it did.
+  Granularity granularity = Granularity::Fine;
+
+  // The steps at which each process opened a file of the build for
+  // writing or renamed one, in order. The event stream reports both at
+  // the step they happened, which the batched records of trace.bin do not.
+  std::map<int, std::vector<uint64_t>> writes;
+
   // Thread id to the process the thread belongs to.
   std::map<int, int> threads;
   std::optional<int> builder;
+
+  // The process a thread belongs to, which is the thread's own id for the
+  // first thread of a process.
+  int processOf(int tid) const {
+    const auto thread = threads.find(tid);
+    return thread == threads.end() ? tid : thread->second;
+  }
 };
 
 Events readEvents(const fs::path &file) {
   std::ifstream stream(file);
   check(stream.is_open(), "cannot open " + file.string());
   Events events;
+
+  // The step and thread of each write, kept until every thread is known.
+  std::vector<std::pair<uint64_t, int>> writers;
   for (std::string line; std::getline(stream, line);) {
     const auto event = Json::parse(line);
     const auto &kind = event.at("kind");
@@ -252,11 +275,23 @@ Events readEvents(const fs::path &file) {
       }
       continue;
     }
+    if (type == "open" || type == "rename") {
+      // Rewind reports the opens that can change a file. Opening a device
+      // or the kernel's view of a process changes no file of the build.
+      const std::string path = kind.value("path", kind.value("to", ""));
+      if (!path.starts_with(kDevices) && !path.starts_with(kProcesses)) {
+        writers.emplace_back(step, event.at("tid").get<int>());
+      }
+      continue;
+    }
     if (type == "exit" && !kind.value("thread", false)) {
       auto &process = events.processes[pid];
       process.exited = step;
       process.status = kind.at("status");
     }
+  }
+  for (const auto &[step, tid] : writers) {
+    events.writes[events.processOf(tid)].push_back(step);
   }
   return events;
 }
@@ -276,6 +311,15 @@ std::string programName(const Exec &exec) {
 // nothing opened after or below it and stays a single, replayable cut.
 // Programs other than shells are never opened this way: a configure
 // script runs make to test it and is still one unit of work.
+//
+// With fine cuts an execve is also opened when the image it started only
+// ran other commands. The evidence is in the trace: the image went on to
+// fork a command or to become one, and neither the image nor a subshell of
+// it opened a file of the build for writing. Such a process has no effect
+// of its own to lose. What it did is what its children did, and each child
+// is replayed with the arguments, environment and descriptors the process
+// gave it. A process that does write, as configure and cargo do, stays a
+// cut, because whatever it wrote would otherwise be recorded bytes.
 class Opened {
 public:
   explicit Opened(const Events &events) : events(events) {
@@ -295,6 +339,9 @@ public:
     const auto &process = events.processes.at(pid);
     const auto name = programName(process.execs[index]);
     bool opened = events.open && std::regex_match(name, *events.open);
+    if (!opened && events.granularity == Granularity::Fine) {
+      opened = onlyRunsCommands(pid, index);
+    }
 
     // Remember the answer for anything that is not a shell before looking
     // further, since only a shell can be opened by what it runs.
@@ -319,6 +366,72 @@ public:
   }
 
 private:
+  // The steps between which the image a process's execve number `index`
+  // started was running.
+  std::pair<uint64_t, uint64_t> span(int pid, size_t index) const {
+    const auto &execs = events.processes.at(pid).execs;
+    return {execs[index].step, index + 1 < execs.size()
+                                   ? execs[index + 1].step
+                                   : std::numeric_limits<uint64_t>::max()};
+  }
+
+  // Whether the image ran other commands and wrote no file itself.
+  bool onlyRunsCommands(int pid, size_t index) const {
+    const auto [from, until] = span(pid, index);
+    const bool becomesCommand =
+        index + 1 < events.processes.at(pid).execs.size();
+    return (becomesCommand || startsCommand(pid, from, until)) &&
+           !wroteBetween(pid, from, until);
+  }
+
+  // Whether a process, between two steps, forked a child that called
+  // execve, directly or through subshells.
+  bool startsCommand(int pid, uint64_t from, uint64_t until) const {
+    const auto known = children.find(pid);
+    if (known == children.end()) {
+      return false;
+    }
+    for (const int child : known->second) {
+      const auto &process = events.processes.at(child);
+      if (process.forked < from || process.forked >= until) {
+        continue;
+      }
+      if (!process.execs.empty() ||
+          startsCommand(child, 0, std::numeric_limits<uint64_t>::max())) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  // Whether a process, between two steps, opened a file for writing, or a
+  // subshell of it did. What a child opens before the child's own execve
+  // is a redirection set up for that command and belongs to the command.
+  bool wroteBetween(int pid, uint64_t from, uint64_t until) const {
+    if (const auto steps = events.writes.find(pid);
+        steps != events.writes.end()) {
+      const auto first = std::ranges::lower_bound(steps->second, from);
+      if (first != steps->second.end() && *first < until) {
+        return true;
+      }
+    }
+    const auto known = children.find(pid);
+    if (known == children.end()) {
+      return false;
+    }
+    for (const int child : known->second) {
+      const auto &process = events.processes.at(child);
+      const bool subshell = process.execs.empty();
+      if (process.forked < from || process.forked >= until || !subshell) {
+        continue;
+      }
+      if (wroteBetween(child, 0, std::numeric_limits<uint64_t>::max())) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   // Whether an opened execve happens in the process or below it.
   bool contains(int pid) {
     const auto &process = events.processes.at(pid);
@@ -399,11 +512,13 @@ std::optional<int> owner(const Events &events, Opened &opened, int pid,
 } // namespace
 
 Analysis analyze(const fs::path &eventFile, const fs::path &traceFile,
-                 const std::string &open) {
+                 const std::string &open, Granularity granularity) {
   auto events = readEvents(eventFile);
+  events.granularity = granularity;
   if (!open.empty()) {
     events.open = std::regex(open);
   }
+
   check(events.builder.has_value(), "the run has no builder process");
   const auto &builder = events.processes.at(*events.builder);
   check(builder.exited.has_value(), "the builder did not exit");
@@ -455,8 +570,7 @@ Analysis analyze(const fs::path &eventFile, const fs::path &traceFile,
   const auto log = readIoLog(traceFile);
   analysis.lost = log.lost;
   for (const auto &read : log.reads) {
-    const auto thread = events.threads.find(read.tid);
-    const int pid = thread == events.threads.end() ? read.tid : thread->second;
+    const int pid = events.processOf(read.tid);
     if (!events.processes.contains(pid)) {
       continue;
     }

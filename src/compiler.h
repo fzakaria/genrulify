@@ -2,6 +2,7 @@
 
 #include "mlir/IR/BuiltinOps.h"
 #include "recording.h"
+#include "trace.h"
 #include <array>
 #include <filesystem>
 #include <istream>
@@ -67,9 +68,11 @@ void saveVerdicts(const Recording &recording, const Verdicts &verdicts);
 std::string_view rungName(Rung rung);
 
 // Pulls everything the compiler needs about a Rewind run into a directory.
-// `open` names the programs to treat as driver code, as trace.h describes.
+// `open` names the programs to treat as driver code and `granularity`
+// says whether to find more of them, as trace.h describes.
 void recordRun(const std::string &run, const std::filesystem::path &drv,
-               const std::filesystem::path &directory, const std::string &open);
+               const std::filesystem::path &directory, const std::string &open,
+               Granularity granularity = Granularity::Fine);
 
 // Builds the splice module for a recording: one splice.exec per process
 // group, splice.literal for what the builder wrote itself and for whatever

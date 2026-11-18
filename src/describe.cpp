@@ -277,6 +277,7 @@ void describeGraph(mlir::ModuleOp module, const Recording &recording) {
   const Json document = {{"name", recording.name},
                          {"run", recording.run},
                          {"open", recording.open},
+                         {"fine", recording.fine},
                          {"outputs", recording.outputs},
                          {"steps", {recording.initialStep, recording.finalStep}},
                          {"closure", recording.closure.size()},
