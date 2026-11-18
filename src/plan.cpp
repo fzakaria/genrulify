@@ -44,7 +44,8 @@ void savePlan(const Plan &plan, const std::filesystem::path &file) {
                          {"environments", plan.environments},
                          {"inputs", inputs},
                          {"results", plan.results},
-                         {"output", plan.output}};
+                         {"output", plan.output},
+                         {"timeoutSeconds", plan.timeoutSeconds}};
   writeBytes(file, document.dump(kJsonIndent) + "\n");
 }
 
@@ -64,10 +65,16 @@ Plan loadPlan(const std::filesystem::path &file) {
   }
   plan.results = document.at("results").get<std::vector<Entry>>();
   plan.output = document.at("output");
+  plan.timeoutSeconds = document.at("timeoutSeconds");
   return plan;
 }
 
 void addProcesses(Plan &plan, const Recording &recording, const Group &group) {
+  constexpr uint64_t kMillisecondsPerSecond = 1000;
+  plan.timeoutSeconds =
+      std::max(kMinimumTimeoutSeconds, kTimeoutFactor * recording.wallMilliseconds /
+                                           kMillisecondsPerSecond);
+
   // Renumber the environments the group uses from zero.
   std::map<size_t, size_t> renumbered;
   for (auto process : group.processes) {

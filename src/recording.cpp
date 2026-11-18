@@ -113,6 +113,7 @@ void Recording::save() const {
                          {"initialStep", initialStep},
                          {"finalStep", finalStep},
                          {"lost", lost},
+                         {"wallMilliseconds", wallMilliseconds},
                          {"environments", environments},
                          {"groups", groupList}};
   writeBytes(directory / kRecordingFile, document.dump(kJsonIndent) + "\n");
@@ -134,6 +135,7 @@ Recording Recording::load(const fs::path &directory) {
   recording.initialStep = document.at("initialStep");
   recording.finalStep = document.at("finalStep");
   recording.lost = document.at("lost");
+  recording.wallMilliseconds = document.value("wallMilliseconds", uint64_t{0});
   recording.environments =
       document.at("environments").get<std::vector<Arguments>>();
   for (const auto &json : document.at("groups")) {

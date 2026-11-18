@@ -260,7 +260,30 @@ public:
     for (auto &[target, pipe] : pipes) {
       threads.emplace_back([this, &pipe] { superviseReadEnd(pipe); });
     }
+    threads.emplace_back([this] { enforceDeadline(); });
 
+    // A failure to start a process must not leave the other threads
+    // waiting for processes that will now never run.
+    try {
+      launch(threads);
+    } catch (...) {
+      abort();
+      threads.clear();
+      throw;
+    }
+
+    // Joining waits for every child and for every pipe to be released.
+    threads.clear();
+    std::vector<int> statuses;
+    for (const auto &child : children) {
+      statuses.push_back(child.status);
+    }
+    return statuses;
+  }
+
+private:
+  // Starts each process in recorded order and a thread that reaps it.
+  void launch(std::vector<std::jthread> &threads) {
     for (size_t index = 0; index < plan.processes.size(); ++index) {
       const auto &process = plan.processes[index];
 
@@ -269,6 +292,9 @@ public:
       {
         std::unique_lock lock(mutex);
         changed.wait(lock, [&] {
+          if (aborted) {
+            return true;
+          }
           for (size_t other = 0; other < index; ++other) {
             if (plan.processes[other].exit < process.step &&
                 !children[other].exited) {
@@ -277,6 +303,9 @@ public:
           }
           return true;
         });
+        if (aborted) {
+          return;
+        }
       }
 
       // Open the process's descriptors now, after its predecessors wrote
@@ -292,6 +321,7 @@ public:
       }
       {
         std::scoped_lock lock(mutex);
+        children[index].pid = pid;
         children[index].started = true;
         closeSpawnedWriteEnds(index);
       }
@@ -308,18 +338,47 @@ public:
         changed.notify_all();
       });
     }
-
-    // Joining waits for every child and for every pipe to be released.
-    threads.clear();
-    std::vector<int> statuses;
-    for (const auto &child : children) {
-      statuses.push_back(child.status);
-    }
-    return statuses;
   }
 
-private:
+  // Gives up on the plan: kills what is running and releases every pipe,
+  // so that each thread of the supervisor can finish.
+  void abort() {
+    {
+      std::scoped_lock lock(mutex);
+      aborted = true;
+      for (const auto &child : children) {
+        if (child.started && !child.exited) {
+          kill(child.pid, SIGKILL);
+        }
+      }
+      for (auto &[target, pipe] : pipes) {
+        if (pipe.writeEnd >= 0) {
+          close(pipe.writeEnd);
+          pipe.writeEnd = -1;
+        }
+      }
+    }
+    changed.notify_all();
+  }
+
+  // A process that waits for input the recording had and the replay does
+  // not would otherwise wait forever. Abort the plan when it has run for
+  // longer than the plan allows.
+  void enforceDeadline() {
+    const auto deadline = std::chrono::steady_clock::now() +
+                          std::chrono::seconds(plan.timeoutSeconds);
+    std::unique_lock lock(mutex);
+    const bool finished = changed.wait_until(lock, deadline, [&] {
+      return aborted || std::ranges::all_of(children, &Child::exited);
+    });
+    lock.unlock();
+    if (!finished) {
+      abort();
+    }
+  }
+
   struct Child {
+    pid_t pid = -1;
     bool started = false;
     bool exited = false;
     int status = 0;
@@ -405,9 +464,10 @@ private:
       });
     };
 
+    bool release = false;
     {
       std::unique_lock lock(mutex);
-      while (!all(&Child::exited)) {
+      while (!aborted && !all(&Child::exited)) {
         // A writer that fills the pipe while no reader runs was unblocked
         // by the builder in the recording. Discard what the pipe holds.
         if (!anyRunning() && full(pipe.readEnd)) {
@@ -418,11 +478,12 @@ private:
         }
         changed.wait_for(lock, kPipePoll);
       }
+      release = aborted;
     }
 
     // Every reader is gone. Close the read end if the recording saw a
     // writer killed for writing on, and otherwise let the writers finish.
-    if (!pipe.broke) {
+    if (!release && !pipe.broke) {
       while (discard(pipe.readEnd, kCopyBuffer) > 0) {
       }
     }
@@ -453,8 +514,9 @@ private:
   int devNull = -1;
   std::map<std::string, Pipe> pipes;
 
-  // Guards `children` and the pipes' write ends.
+  // Guards `children`, `aborted` and the pipes' write ends.
   std::mutex mutex;
+  bool aborted = false;
   std::condition_variable changed;
   std::vector<Child> children;
 };

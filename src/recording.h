@@ -91,6 +91,9 @@ struct Recording {
   uint64_t initialStep = 0;
   uint64_t finalStep = 0;
 
+  // How long the recorded build took on the wall clock.
+  uint64_t wallMilliseconds = 0;
+
   // Read and write records the guest kernel dropped. A recording that lost
   // records does not know every file a group read.
   uint64_t lost = 0;

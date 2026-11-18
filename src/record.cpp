@@ -360,8 +360,15 @@ void recordRun(const std::string &run, const fs::path &drvPath,
     Scratch scratch;
     const auto events = scratch.path / "events.jsonl";
     writeBytes(events, rewind.events());
-    const auto analysis =
-        analyze(events, rewind.directory() / "trace.bin", open);
+    const auto runDirectory = rewind.directory();
+    const auto analysis = analyze(events, runDirectory / "trace.bin", open);
+
+    // Rewind's manifest holds how long the run took, which bounds how long
+    // a replay of any part of it may take.
+    recording.wallMilliseconds =
+        Json::parse(readBytes(runDirectory / "manifest.json"))
+            .at("outcome")
+            .at("wall_ms");
     recording.open = open;
     check(analysis.builder == drv.at("builder").get<std::string>(),
           "the run's builder is not the derivation's");

@@ -5,6 +5,12 @@
 #include <stdexcept>
 
 namespace splice_ir {
+// A replay runs natively and the recording ran in a VM, so a group that
+// needs many times the whole build's recorded wall time is stuck. The
+// floor covers recordings too short to scale from.
+inline constexpr uint64_t kTimeoutFactor = 10;
+inline constexpr uint64_t kMinimumTimeoutSeconds = 300;
+
 // One entry an action is given, and the layer that holds the entry.
 struct PlanInput {
   std::string layer;
@@ -33,6 +39,9 @@ struct Plan {
 
   // For a pack plan, the store path to serialize as a NAR.
   std::string output;
+
+  // How long the processes may run before the replay is abandoned.
+  uint64_t timeoutSeconds = kMinimumTimeoutSeconds;
 };
 
 void savePlan(const Plan &plan, const std::filesystem::path &file);
