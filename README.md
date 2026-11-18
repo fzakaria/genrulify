@@ -11,7 +11,7 @@ and what each one left behind.
 
 ```console
 $ tools/convert.sh nixpkgs#hello
-70 process groups: 12 replayed and reproduced, 1 kept as recorded bytes, 57 dead
+70 process groups: 11 replayed and reproduced, 2 kept as recorded bytes, 57 dead
 …
 out: Nix, Bazel and Buck2 agree on sha256:cca3804d340495150db44b1e762655d8a0b4fe6d37b8350f1a0d8fa33c27c8cc
 ```
@@ -219,40 +219,44 @@ why dead-code elimination, opening and demotion each preserve the claim.
 
 `tools/convert.sh` was run on 20 packages from the nixpkgs revision in
 `flake.lock`, recorded with Rewind 0.16.0 on x86_64-linux. They have 45
-outputs between them. For every output, the NAR Bazel built and the NAR
-Buck2 built are the NAR Rewind recorded.
+outputs between them. Every conversion needed one build, and for every
+output the NAR Bazel built and the NAR Buck2 built are the NAR Rewind
+recorded.
 
-| Package | Build | `execve` | Groups | Replayed | Near | Wide | Pinned files | Literal | Genrules |
-| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| `colstr-1.0.0` | stdenv, one `c++` | 83 | 52 | 6 | 0 | 0 | 0 | 1 | 7 |
-| `sl-5.05` | Makefile | 94 | 55 | 8 | 0 | 0 | 0 | 1 | 9 |
-| `tree-2.3.2` | Makefile | 183 | 73 | 12 | 1 | 0 | 0 | 1 | 14 |
-| `cowsay-3.8.4` | Makefile, Perl | 147 | 79 | 14 | 1 | 0 | 0 | 0 | 16 |
-| `hello-go` | `go build` | 192 | 53 | 6 | 0 | 0 | 0 | 1 | 7 |
-| `python3.14-six-1.17.0` | `pyproject-build` | 137 | 99 | 7 | 0 | 0 | 0 | 0 | 9 |
-| `hexyl-0.17.0` | Rust, `cargo` | 612 | 79 | 17 | 2 | 1 | 2 | 1 | 18 |
-| `ninja-1.13.2` | Python bootstrap, Ninja | 493 | 79 | 16 | 1 | 1 | 2 | 1 | 17 |
-| `tinyxml2-11.0.0` | CMake | 275 | 54 | 9 | 1 | 2 | 2 | 1 | 10 |
-| `jsoncpp-1.9.8` | CMake | 602 | 81 | 14 | 0 | 3 | 3 | 1 | 16 |
-| `lz4-1.10.0` | patch, CMake | 806 | 105 | 18 | 0 | 3 | 2 | 2 | 22 |
-| `zlib-1.3.2` | patches, `configure` | 700 | 87 | 13 | 1 | 1 | 1 | 2 | 16 |
-| `patchelf-0.15.2` | autotools | 503 | 59 | 11 | 0 | 3 | 1 | 1 | 12 |
-| `which-2.25` | patch, autotools | 1,137 | 82 | 12 | 2 | 1 | 1 | 1 | 15 |
-| `hello-2.12.3` | autotools | 4,605 | 70 | 12 | 0 | 4 | 2 | 1 | 13 |
-| `gawk-5.4.1` | autotools | 6,857 | 85 | 15 | 2 | 3 | 4 | 1 | 18 |
-| `gnused-4.10` | autotools | 8,848 | 77 | 13 | 0 | 3 | 1 | 1 | 15 |
-| `bash-interactive-5.3p15` | autotools, 6 outputs | 11,847 | 160 | 34 | 1 | 3 | 1 | 2 | 40 |
-| `sqlite-3.53.3`, tests off | `configure`, 6 outputs | 1,121 | 149 | 25 | 1 | 2 | 1 | 3 | 31 |
-| `lua-5.2.4`, `make` opened | Makefile | 386 | 130 | 68 | 2 | 0 | 0 | 1 | 70 |
-| `hello-2.12.3`, `make` opened | autotools | 4,605 | 445 | 164 | 0 | 1 | 1 | 1 | 165 |
-| `hello-2.12.3`, `make` opened, 4 jobs | autotools | 4,605 | 233 | 17 | 1 | 1 | 1 | 1 | 18 |
+| Package | Build | `execve` | Groups | Replayed | Narrow | Traced | Wider | Pinned files | Recorded | Genrules |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| `colstr-1.0.0` | stdenv, one `c++` | 83 | 52 | 6 | 6 | 0 | 0 | 0 | 1 | 7 |
+| `sl-5.05` | Makefile | 94 | 55 | 8 | 8 | 0 | 0 | 0 | 1 | 9 |
+| `tree-2.3.2` | Makefile | 183 | 73 | 12 | 11 | 1 | 0 | 0 | 1 | 14 |
+| `cowsay-3.8.4` | Makefile, Perl | 147 | 79 | 14 | 13 | 1 | 0 | 0 | 0 | 16 |
+| `hello-go` | `go build` | 192 | 53 | 6 | 6 | 0 | 0 | 0 | 1 | 7 |
+| `python3.14-six-1.17.0` | `pyproject-build` | 137 | 99 | 7 | 7 | 0 | 0 | 0 | 0 | 9 |
+| `hexyl-0.17.0` | Rust, `cargo` | 612 | 79 | 17 | 14 | 3 | 0 | 1 | 1 | 18 |
+| `ninja-1.13.2` | Python bootstrap, Ninja | 493 | 79 | 16 | 14 | 2 | 0 | 2 | 1 | 17 |
+| `tinyxml2-11.0.0` | CMake | 275 | 54 | 9 | 6 | 3 | 0 | 2 | 1 | 10 |
+| `jsoncpp-1.9.8` | CMake | 602 | 81 | 14 | 11 | 3 | 0 | 3 | 1 | 16 |
+| `lz4-1.10.0` | patch, CMake | 806 | 105 | 18 | 15 | 3 | 0 | 2 | 2 | 22 |
+| `zlib-1.3.2` | patches, `configure` | 700 | 87 | 13 | 11 | 1 | 1 | 1 | 2 | 16 |
+| `patchelf-0.15.2` | autotools | 503 | 59 | 11 | 8 | 3 | 0 | 1 | 1 | 12 |
+| `which-2.25` | patch, autotools | 1,137 | 82 | 12 | 9 | 3 | 0 | 1 | 1 | 15 |
+| `hello-2.12.3` | autotools | 4,605 | 70 | 11 | 8 | 3 | 0 | 1 | 2 | 12 |
+| `gawk-5.4.1` | autotools | 6,857 | 85 | 15 | 10 | 4 | 1 | 4 | 1 | 18 |
+| `gnused-4.10` | autotools | 8,848 | 77 | 13 | 10 | 3 | 0 | 1 | 1 | 15 |
+| `bash-interactive-5.3p15` | autotools, 6 outputs | 11,847 | 160 | 34 | 30 | 4 | 0 | 1 | 2 | 40 |
+| `sqlite-3.53.3`, tests off | `configure`, 6 outputs | 1,121 | 149 | 25 | 22 | 3 | 0 | 1 | 3 | 31 |
+| `lua-5.2.4`, `make` opened | Makefile | 386 | 130 | 66 | 64 | 2 | 0 | 0 | 1 | 68 |
+| `hello-2.12.3`, `make` opened | autotools | 4,605 | 445 | 164 | 163 | 1 | 0 | 1 | 1 | 165 |
+| `hello-2.12.3`, `make` opened, 4 jobs | autotools | 4,605 | 233 | 17 | 15 | 2 | 0 | 1 | 1 | 18 |
 
 *Replayed* groups reproduced their recorded writes in two consecutive
-passes. *Near* and *Wide* count the replayed groups that needed more
-than the files they opened: their directories, or the whole tree. The
-whole tree is still needed by `configure`, `cmake`, `cargo` and a
-top-level `make` that recurses. Everything not replayed or literal is
-dead.
+passes. *Narrow* groups did so with the files Rewind saw them open.
+*Traced* groups needed more and were cut back to what a trace of their
+replay shows them touching: `configure` in `hello` takes 143 of the 555
+entries in its tree, in `patchelf` 23 of 108, in `gnused` 143 of 1,364.
+*Wider* groups kept their directories or the whole tree because the
+traced set did not reproduce the recording. There are two, `make
+install` in `gawk` and one group in `zlib`. Everything not replayed or
+recorded is dead.
 
 *Pinned files* are what a replayed group wrote differently from the
 recording. Most are logs (`config.log`, `CMakeConfigureLog.yaml`,
@@ -261,9 +265,15 @@ the kernel version and cargo's `.rustc_info.json` the host. A pinned file
 comes from the recording, so the steps after it see what they saw when
 the build was recorded.
 
-The literals are `mktemp`, whose random name later commands carry in
-their `argv`, and in `bash` and `sqlite` one `find` that writes a
-checksum file differently each time.
+*Recorded* counts the groups that are not replayed but still have a file
+in the graph. They are `mktemp`, whose random name later commands carry
+in their `argv`, one `find` in `bash` and `sqlite` that writes a
+checksum file differently each time, and in `hello` the `make check`
+whose `test-suite.log` the install step looks at.
+
+With precise inputs, `make check` itself is dead in `hello`: nothing in
+the output depends on the tests having run, so Bazel and Buck2 do not
+run them.
 
 A literal does not mean the output came from the recording. Across the
 45 outputs, 2,375 files, directories and symlinks were written by
@@ -331,13 +341,14 @@ its pipelines and builtins. Programs that are not shells are never opened
 on account of what they run: `configure` runs `make` to test it and is
 still one group.
 
-The 13 genrules become 165. 155 of them are individual `make` recipes,
+The 12 genrules become 165. 155 of them are individual `make` recipes,
 84 of which run `gcc`, and every group except `configure` passes on the
 narrow rung: a compile is given its source, the headers it opened, and
 nothing else. Nix ran this build with `make -j1`. Bazel and Buck2 run the
 compiles in parallel, because the graph says they are independent. Three
-clean Bazel builds of each workspace averaged 17.3 s with 13 rules and
-14.9 s with 165, with critical paths of 15.9 s and 12.7 s.
+clean Bazel builds of each workspace, measured before inputs were
+narrowed by tracing, averaged 17.3 s with 13 rules and 14.9 s with 165,
+with critical paths of 15.9 s and 12.7 s.
 
 ## Limits
 
