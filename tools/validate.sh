@@ -68,15 +68,32 @@ for output in $outputs; do
     test "sha256:$(sha256sum "$work/$output.reference.nar" | cut -d' ' -f1)" = "$recorded"
 done
 
+# An earlier validation in the same directory left its workspaces and its
+# build logs. This validation makes its own from the recording, which is
+# all that is reused.
+for old in "$work"/workspace.*; do
+    if [ ! -d "$old" ]; then
+        continue
+    fi
+    (cd "$old" && "$buck" kill) > /dev/null 2>&1 || true
+    chmod -R u+w "$old"
+    rm -rf "$old"
+done
+rm -f "$work/workspace" "$work"/build.*.log
+
+# What build returns when the graph could not be made or emitted, so that
+# no build system ran.
+GRAPH_FAILED=2
+
 # Emits the graph the current verdicts give into workspace.$1 and builds
 # every output with both systems. Everything the builds print goes to
 # build.$1.log, where a failed replay names its rule and what differed.
 build() {
     local workspace=$work/workspace.$1
-    "$compiler" import "$work/recording" > "$work/recorded.mlir" || return 1
+    "$compiler" import "$work/recording" > "$work/recorded.mlir" || return "$GRAPH_FAILED"
     # shellcheck disable=SC2086
-    "$compiler" opt --recording "$work/recording" "$work/recorded.mlir" ${GENRULIFY_PASSES:-} > "$work/graph.mlir" || return 1
-    "$compiler" emit "$work/recording" "$work/graph.mlir" "$workspace" || return 1
+    "$compiler" opt --recording "$work/recording" "$work/recorded.mlir" ${GENRULIFY_PASSES:-} > "$work/graph.mlir" || return "$GRAPH_FAILED"
+    "$compiler" emit "$work/recording" "$work/graph.mlir" "$workspace" || return "$GRAPH_FAILED"
     (
         cd "$workspace"
         for output in $outputs; do
@@ -94,7 +111,11 @@ build() {
 
     # Buck2 leaves a daemon behind for every workspace it builds.
     (cd "$workspace" && "$buck" kill) > /dev/null 2>&1 || true
-    return "$status"
+
+    # Any failure of a build system counts as one failed build.
+    if [ "$status" != 0 ]; then
+        return 1
+    fi
 }
 
 # `check` sampled every rule twice. A build samples each one again, inside
@@ -105,7 +126,18 @@ build() {
 # the loop ends, and it ends on a build where both systems agree.
 max_attempts=8
 attempt=1
-until build "$attempt"; do
+while true; do
+    status=0
+    build "$attempt" || status=$?
+    if [ "$status" = 0 ]; then
+        break
+    fi
+
+    # Only a rule that failed in a build can be learned from. A graph that
+    # could not be emitted has already said why.
+    if [ "$status" = "$GRAPH_FAILED" ]; then
+        exit 1
+    fi
     tail -n 30 "$work/build.$attempt.log"
     "$compiler" learn "$work/recording" < "$work/build.$attempt.log"
     attempt=$((attempt + 1))
