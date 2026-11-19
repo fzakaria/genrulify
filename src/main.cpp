@@ -264,9 +264,11 @@ void run(std::span<char *> args) {
   if (args.size() == 3 && command == "origins") {
     // Where the files of each output come from in a graph.
     auto module = parse(context, args[2]);
-    llvm::outs() << splice_ir::originsText(splice_ir::outputOrigins(
-                        *module, splice_ir::Recording::load(args[1])))
-                 << splice_ir::frozenText(splice_ir::frozenFiles(*module));
+    const auto recording = splice_ir::Recording::load(args[1]);
+    llvm::outs() << splice_ir::originsText(
+                        splice_ir::outputOrigins(*module, recording))
+                 << splice_ir::frozenText(
+                        splice_ir::frozenFiles(*module, recording));
     return;
   }
   if (args.size() == 3 && command == "describe") {

@@ -145,8 +145,9 @@ struct FrozenFile {
 };
 
 // The recorded files in use in a project's graph, in the order they were
-// written. Empty for a graph without a source tree.
-std::vector<FrozenFile> frozenFiles(mlir::ModuleOp module);
+// written. Empty for the graph of a build that is not a project's.
+std::vector<FrozenFile> frozenFiles(mlir::ModuleOp module,
+                                    const Recording &recording);
 
 // The list as text under a heading, or nothing when the list is empty.
 std::string frozenText(const std::vector<FrozenFile> &frozen);

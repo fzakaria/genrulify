@@ -382,7 +382,7 @@ void checkRecording(const Recording &recording,
                        {"withoutBytes", output.withoutBytes}});
   }
   // What an edit to a project will not change.
-  const auto frozen = frozenFiles(*module);
+  const auto frozen = frozenFiles(*module, recording);
   Json frozenList = Json::array();
   for (const auto &file : frozen) {
     frozenList.push_back({{"path", file.path},

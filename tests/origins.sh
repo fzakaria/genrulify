@@ -82,3 +82,24 @@ recorded bytes that an edit to the project will not change:
   /out/log: pinned to the recording while its command runs, in output out
 TEXT
 diff "$scratch/expected" "$scratch/origins"
+
+# A project's graph need not hold its source tree: when no command that
+# matters read a source, the tree is dead and gone from the graph. The
+# recording still says the build is a project's, and the recorded bytes
+# are still listed. Here the builder wrote the whole output.
+cp -r "$data/example" "$scratch/recording"
+chmod -R u+w "$scratch/recording"
+sed -i 's|^ "run":| "source": "/nix/store/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa-source",\n "run":|' "$scratch/recording/recording.json"
+cat > "$scratch/constant.mlir" <<MLIR
+module {
+  %0 = splice.literal "glue" at 2 -> [#splice.entry<"/out" file 644 mtime 2 "$bytes">]
+  splice.output "out" "/out"(%0)
+}
+MLIR
+"$compiler" origins "$scratch/recording" "$scratch/constant.mlir" > "$scratch/origins"
+grep -q '^recorded bytes that an edit to the project will not change:$' "$scratch/origins"
+grep -q '^  /out: written by the builder, in output out$' "$scratch/origins"
+"$compiler" origins "$data/example" "$scratch/constant.mlir" > "$scratch/origins"
+if grep -q 'an edit to the project' "$scratch/origins"; then
+    exit 1
+fi

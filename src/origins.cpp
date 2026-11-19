@@ -128,9 +128,13 @@ std::vector<OutputOrigins> outputOrigins(mlir::ModuleOp module,
   return outputs;
 }
 
-std::vector<FrozenFile> frozenFiles(mlir::ModuleOp module) {
-  // Only a project is built again after its sources change.
-  bool project = false;
+std::vector<FrozenFile> frozenFiles(mlir::ModuleOp module,
+                                    const Recording &recording) {
+  // Only a project is built again after its sources change. The recording
+  // says whether the build is one, and so does a source tree in the
+  // graph. The tree alone would not do: elimination removes it when no
+  // command that matters read a source.
+  bool project = !recording.source.empty();
   for (auto &op : module.getBody()->getOperations()) {
     auto literal = llvm::dyn_cast<LiteralOp>(op);
     project = project || (literal && isSourceTree(literal));
