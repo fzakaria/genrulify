@@ -49,7 +49,7 @@ fi
 
 # Runs every rule of BUILD.bazel in the order the rules are written, with
 # the directory $1 for all their outputs. A rule's command is the lines of
-# its `cmd`, joined, and a project's rules take what a command leaves.
+# its `cmd`, joined.
 build() {
     awk '
         /^    cmd = \[$/ { collecting = 1; command = ""; next }
@@ -62,10 +62,6 @@ build() {
     ' BUILD.bazel > "$scratch/commands"
     while IFS= read -r command; do
         command=${command//'$(RULEDIR)'/$1}
-        case $command in
-            *' pack '*) ;;
-            *) command=${command/ --name / --trust --name } ;;
-        esac
         bash -c "$command"
     done < "$scratch/commands"
 }

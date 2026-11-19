@@ -2,8 +2,10 @@
 
 Every rule in this file runs one recorded command, or one recorded
 pipeline, through sandbox.sh, and fails unless each output has the hash
-the recording saw. The rules differ in the names of their attributes and
-in nothing else. `cc_object` says which input is the source and which are
+the recording saw. In a project converted in place, a command that reads
+the project's sources is run with --trust and its outputs are taken as
+they come. The rules differ in the names of their attributes and in
+nothing else. `cc_object` says which input is the source and which are
 headers, then runs the same command a plain `recorded` rule would.
 
 A command was given its kind by reading its recorded command line: a
@@ -26,23 +28,13 @@ _STAMP = ".ok"
 # have.
 _TAGS = ["no-remote"]
 
-# Whether a rule takes what its command leaves without comparing it with
-# the recording. False for a recorded build, whose rules must reproduce
-# it. True for a project converted in place, where the sources are the
-# project's own files and an edit is supposed to change the outputs.
-_TRUST = False
-
-def _command(cmd):
-    """The command of a rule: where sandbox.sh works, how, and the recorded lines."""
-    return " ".join(cmd[:1] + (["--trust"] if _TRUST else []) + cmd[1:])
-
 def _run(name, srcs, outs, cmd):
     """Runs the recorded command lines of one step."""
     native.genrule(
         name = name,
         srcs = srcs,
         outs = outs + [name + _STAMP],
-        cmd = _command(cmd),
+        cmd = " ".join(cmd),
         tags = _TAGS,
     )
 
