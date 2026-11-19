@@ -25,7 +25,10 @@ the guest filesystem. genrulify uses the following information from that run.
 
 A *group* is a unit we can replay, such as a compile or a whole pipeline.
 Commands that overlap have to share a group because the snapshots show
-their combined changes. A program like `make` that only starts commands
+their combined changes. Commands joined by a pipe share a group as well,
+since no snapshot shows what passed through the pipe. A job server's
+pipe, where every command holds both ends, joins only the commands that
+ran at the same time. A program like `make` that only starts commands
 can be opened up so its children get separate rules. The builder and
 other processes outside the groups form the *driver*. The graph takes
 their writes from the recording.
