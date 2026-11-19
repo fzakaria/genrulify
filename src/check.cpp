@@ -137,8 +137,15 @@ void checkRecording(const Recording &recording,
   writeSharedFiles(recording, shared.path);
 
   // The live splice.exec operations under the current verdicts, each as a
-  // task that can be replayed without the module.
+  // task that can be replayed without the module. Importing a recording
+  // reads every snapshot, and most rounds change no verdict, so the tasks
+  // are kept for as long as the verdicts they were made from stand.
+  std::optional<Verdicts> importedWith;
+  std::vector<Task> imported;
   const auto liveTasks = [&] {
+    if (importedWith == verdicts) {
+      return imported;
+    }
     mlir::MLIRContext context;
     context.getOrLoadDialect<SpliceDialect>();
     auto module = importRecording(context, recording, verdicts);
@@ -169,6 +176,8 @@ void checkRecording(const Recording &recording,
           [&](mlir::Value value) { return blob(*entryOf(value)); }, blob);
       tasks.push_back(std::move(task));
     }
+    importedWith = verdicts;
+    imported = tasks;
     return tasks;
   };
 
