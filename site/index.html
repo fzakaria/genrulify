@@ -6,7 +6,7 @@
     <title>genrulify</title>
     <meta
       name="description"
-      content="Compile a recorded Nix build into Bazel and Buck2 genrules, one per process group, and get the same NAR out of all three."
+      content="Explore the commands in a recorded Nix build and the Bazel and Buck2 rules that reproduce its output."
     />
     <link
       rel="icon"
@@ -20,7 +20,7 @@
     <meta property="og:title" content="genrulify — any Nix build, as genrules" />
     <meta
       property="og:description"
-      content="A recorded Nix build, cut at every execve, versioned as SSA over files, and lowered to one Bazel or Buck2 genrule per process group."
+      content="See which commands run again, which files they use, and how the generated rules reproduce a Nix package."
     />
 
     <link rel="stylesheet" href="style.css" />
@@ -49,35 +49,34 @@
     </header>
 
     <p class="intro">
-      <strong class="lede">Any Nix build, as genrules.</strong> A build recorded by
-      <a href="https://rewindvm.dev">Rewind</a> is cut at every command it ran. Each command
-      becomes one build rule that runs the command line that was recorded, on the files the
-      command read. A compile reads as <code>cc_object</code> and a link as
-      <code>cc_binary</code>, but nothing here knows how to build C: the rules come from what
-      happened.
-      <span class="claim">Nix, Bazel and Buck2 produce the same NAR.</span>
+      genrulify turns a Nix build recorded by <a href="https://rewindvm.dev">Rewind</a>
+      into Bazel and Buck2 rules. Pick a package to see which commands ran and which
+      files each command used. All three build systems produced the same Nix archive
+      (NAR) for the packages below.
     </p>
-    <p class="examples muted">Try: <span id="packages"></span></p>
+    <p class="examples muted">Packages · <span id="packages"></span></p>
 
     <p class="muted" id="stats" aria-live="polite">Loading the recording.</p>
 
-    <h2>Every command, in the order it ran</h2>
+    <h2>Build timeline</h2>
     <p class="muted caption">
-      One cell per command or pipeline. The build is a graph in an
-      <a href="https://mlir.llvm.org">MLIR</a> dialect, and each switch below is a pass over
-      it. Switch them on in any combination and watch what is left to run.
+      Each square is a command or a group of commands that ran together. Select one to
+      inspect its command line, files and generated rule. Toggle an optimization to see
+      which commands still need to run.
     </p>
     <div id="passes" class="controls" role="group" aria-label="Optimizer passes"></div>
     <p class="muted caption" id="pass-text" aria-live="polite"></p>
     <p class="legend">
       <span class="key narrow"></span> replayed
-      <span class="key near"></span> given what a trace shows it touching
-      <span class="key wide"></span> given the whole tree
-      <span class="key copy"></span> raised to copies
-      <span class="key folded"></span> folded to constants
+      <span class="key near"></span> replayed with extra inputs
+      <span class="key wide"></span> replayed with the whole tree
+      <span class="key copy"></span> copied
+      <span class="key folded"></span> constant
       <span class="key literal"></span> recorded bytes
-      <span class="key dead"></span> dead
+      <span class="key dead"></span> unused
+      <span class="key pinned"></span> includes a pinned file
     </p>
+    <p class="muted caption">A pinned file comes from the recording even when its command runs again.</p>
     <div id="timeline" role="list" aria-label="Process groups"></div>
 
     <h2>The graph</h2>
@@ -86,9 +85,9 @@
 
     <h2>The same graph as MLIR</h2>
     <p class="muted caption">
-      The module in the <code>splice</code> dialect, one operation per line. Point at a value to
-      see every place it appears. Select a value to jump to the operation that defines it, or a
-      line to read more of the operation. <span id="module-caption"></span>
+      Each line is one operation in <a href="https://mlir.llvm.org">MLIR</a>, the format
+      genrulify uses for the graph. Select a line to expand it. Hover over a value to
+      see its uses, or select the value to jump to its definition. <span id="module-caption"></span>
     </p>
     <ol id="module" aria-label="The operations of the module"></ol>
 
@@ -112,51 +111,6 @@
       <a id="download-buck" href="#">BUCK</a> ·
       <a id="download-json" href="#">graph.json.gz</a>
     </p>
-
-    <details id="help">
-      <summary class="muted">Reading this page</summary>
-      <p>
-        A <em>cut</em> starts where the builder, or a subshell it forked, calls
-        <code>execve</code>. Cuts that share a pipe or ran at the same time form a
-        <em>group</em>. The filesystem is snapshotted before and after each group, and the
-        difference is what the group wrote.
-      </p>
-      <p>
-        A group is <em>replayed</em> when running it alone in a sandbox, given only its recorded
-        inputs, leaves files with the recorded hashes. A group that needs more than the files it
-        opened is replayed once under a system call tracer and then given exactly the files,
-        directories and listings the trace shows it touching. A file that differs on every run,
-        such as a log with a timestamp in it, is <em>pinned</em>: the group still runs, and that
-        one file is taken from the recording. A group is kept as <em>recorded bytes</em> when
-        it cannot be reproduced at all, or when the only thing of it that a later step reads is
-        pinned. hello's <code>make check</code> is one: the install step looks at its test log
-        and at nothing else it wrote, so the tests do not run again. A group is <em>dead</em>
-        when no output depends on anything it wrote.
-      </p>
-      <p>
-        Three passes then remove work that computes nothing. A group is <em>folded to
-        constants</em> when all a later step reads of it is directories, symlinks or empty
-        files, and <em>raised to copies</em> when every file a later step reads of it has the
-        bytes of a file it was given. Neither runs in the generated build. Each rewrite leaves
-        every file version with its recorded bytes, which is all the proof needs.
-      </p>
-      <p>
-        A rule's <code>cmd</code> is the recorded command line, handed to
-        <code>sandbox.sh</code>, a shell script that ships in the generated workspace. The
-        script puts the rule's inputs back at the paths the command saw, runs the command, and
-        fails the rule unless every output has the recorded hash. The BUILD.bazel and BUCK tabs
-        show the rule for whichever node is selected.
-      </p>
-      <p>
-        The graph recomputes the build that was recorded. It is not an incremental build for
-        edited sources: change an input and the recording no longer describes the build.
-      </p>
-      <p>
-        Why a graph in which every node passed its replay check has to produce the recorded
-        output, under any scheduler, is written up in
-        <a href="theory.html#composition">the theory behind the genrules</a>.
-      </p>
-    </details>
 
     <footer class="muted">
       Made with ❤️ by

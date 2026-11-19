@@ -100,14 +100,6 @@ code {
   border-radius: 3px;
   padding: 0.1rem 0.3rem;
 }
-.lede {
-  font-weight: 600;
-}
-.claim {
-  text-decoration: underline var(--muted);
-  text-decoration-thickness: 1px;
-  text-underline-offset: 3px;
-}
 .intro,
 .examples,
 .caption {
@@ -215,6 +207,10 @@ button[aria-pressed="true"] {
 
 /* A replayed group with files pinned to the recording keeps its color and
    gains a corner of the literal color. */
+.key.pinned {
+  background-color: var(--narrow);
+}
+.key.pinned,
 .cell.pinned {
   background-image: linear-gradient(135deg, transparent 55%, var(--literal) 55%);
 }
@@ -506,12 +502,6 @@ td code {
 .downloads {
   margin-top: 1.4rem;
   font-size: 14px;
-}
-#help {
-  margin-top: 1rem;
-}
-#help summary {
-  cursor: pointer;
 }
 footer {
   margin-top: 2rem;

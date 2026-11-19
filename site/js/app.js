@@ -46,51 +46,37 @@ const ELIMINATE = "dce";
 
 // What the page says when no pass has been touched yet.
 const NO_PASS_TEXT =
-  "With every pass off, the graph is the build as recorded: one operation per command or pipeline, " +
-  "and one for each thing the builder wrote itself. Switch a pass on to see what it does.";
+  "The graph shows the recorded commands and the files the builder supplied.";
 
 // What the page says when every pass is on and none was switched by hand.
 const EVERY_PASS_TEXT =
-  "Every pass is on. What is left is what a build system has to run: a rule for each solid box, and no rule for a copy or a constant.";
+  "The build files below use all optimizations. Each solid box is a rule.";
 
 // What the page says about each pass, by the name the compiler gives it.
 const Passes = Object.freeze({
   link: {
     label: "Link driver writes",
-    text:
-      "A file the builder or an opened program wrote itself, with the bytes of a file that already exists, " +
-      "becomes a copy of that file. cargo and ninja put finished files in place this way. Most builds have none.",
+    text: "If the build driver writes a file whose bytes match an earlier file, use a copy of that file.",
   },
   dce: {
     label: "Eliminate dead code",
-    text:
-      "Every operation is Pure, so MLIR's stock canonicalizer deletes the ones whose results nothing uses: " +
-      "commands that only looked, temporary files, the builder's bookkeeping.",
+    text: "Remove operations whose results never reach the package output.",
   },
   fold: {
     label: "Fold constants",
-    text:
-      "A directory, a symlink and an empty file need no bytes computed, so they move out of the group that made them " +
-      "into a constant. A group with nothing else to offer, like mkdir or touch, is no longer run.",
+    text: "Use the recorded entries for directories, symlinks and empty files. This can replace an entire command, such as mkdir.",
   },
   merge: {
     label: "Merge same outputs",
-    text:
-      "A result with the bytes of the operand at the same path becomes a second name for that operand. " +
-      "That is what a chmod leaves, or a rewrite that changed nothing.",
+    text: "Reuse the input bytes when a file changes in place but its contents stay the same, as with chmod.",
   },
   raise: {
     label: "Raise copies",
-    text:
-      "A result with the bytes of an operand at another path becomes splice.copy, which is what cp, install and mv leave. " +
-      "A copy needs no rule: whoever reads it lists the original file and stages it at the new path.",
+    text: "If a command copies an input to another path, use the original bytes at the new path. This can replace cp or install.",
   },
   rules: {
     label: "Raise to rules",
-    text:
-      "A command the compiler recognises from its recorded arguments is given a rule of its kind: gcc -c becomes cc_object, " +
-      "ar becomes cc_library, a link becomes cc_binary. The rule is defined in a file that ships with the workspace and still " +
-      "runs the recorded command, so a wrong guess can only mislabel it.",
+    text: "Name rules after the work they do. For example, gcc -c becomes cc_object. The rule still runs the recorded command.",
   },
 });
 
@@ -294,12 +280,12 @@ function renderStats(hash) {
   const parts = [
     `${groups.length.toLocaleString()} process groups`,
     `${groups.filter((group) => REPLAYED.has(outcomeOf(group))).length} replayed`,
-    `${count(Outcome.COPY)} raised to copies`,
-    `${count(Outcome.FOLDED)} folded to constants`,
+    `${count(Outcome.COPY)} copied`,
+    `${count(Outcome.FOLDED)} constant`,
     `${pinned} ${pinned === 1 ? "file" : "files"} pinned`,
     `${count(Outcome.LITERAL)} kept as recorded bytes`,
-    `${count(Outcome.DEAD)} dead`,
-    `${ruleCount(nodesUnder(state.graph.variants.length - 1))} rules`,
+    `${count(Outcome.DEAD)} unused`,
+    `${ruleCount(nodesUnder(state.graph.variants.length - 1))} rules after optimization`,
   ];
   const digest = hash.trim().slice(0, "sha256:".length + SHOWN_HASH_DIGITS);
   $("stats").replaceChildren(
@@ -394,39 +380,25 @@ function renderTimeline() {
 function describeOutcome(group) {
   const pinned = group.pinned ?? [];
   const pins = pinned.length
-    ? ` ${pinned.length} of its files ${pinned.length === 1 ? "differs" : "differ"} on every run and ` +
-      `${pinned.length === 1 ? "is" : "are"} taken from the recording: ` +
-      `${pinned.map((path) => path.split("/").pop()).join(", ")}.`
+    ? ` Pinned to the recording: ${pinned.map((path) => path.split("/").pop()).join(", ")}.`
     : "";
   switch (outcomeOf(group)) {
     case Outcome.NARROW:
-      return `Replayed and reproduced, given only the files it opened.${pins}`;
+      return `Replayed with the files it opened.${pins}`;
     case Outcome.NEAR:
-      return (
-        "Replayed and reproduced, given the files it opened and everything else in their " +
-        `directories. It looks at files it never opens, with stat or a directory listing.${pins}`
-      );
+      return `Replayed with the files it opened and the other entries in those directories.${pins}`;
     case Outcome.TRACED:
-      return (
-        `Replayed and reproduced, given the ${group.inputs} entries a trace of its own replay ` +
-        `shows it touching. It looks at files it never opens, with stat or a directory listing.${pins}`
-      );
+      return `Replayed with the ${group.inputs} entries seen during tracing, including directory lookups.${pins}`;
     case Outcome.WIDE:
-      return (
-        "Replayed and reproduced, given every entry in the tree. " +
-        `It failed with only the directories it worked in, so it looks further afield.${pins}`
-      );
+      return `Replayed with the whole recorded tree after a smaller set of inputs failed the check.${pins}`;
     case Outcome.LITERAL:
       return `Kept as recorded bytes. ${group.reason.split("\n").slice(0, 2).join(" ")}`;
     case Outcome.COPY:
-      return (
-        "Not run. Every file of it that a later step reads has the bytes of a file it was given, " +
-        "so later steps read those files under another path."
-      );
+      return "Every file used later matches an input file. The build stages those bytes where the next command expects them.";
     case Outcome.FOLDED:
-      return "Not run. All that a later step reads of it is directories, symlinks or empty files, which are constants.";
+      return "Later steps use only directories, symlinks or empty files from this command. The build supplies those entries directly.";
     default:
-      return "Dead. No output depends on anything this group wrote.";
+      return "Unused. The final output depends on none of the files this group wrote.";
   }
 }
 
@@ -497,8 +469,8 @@ function ruleText(buildFile, node) {
   const start = buildFile.search(new RegExp(`^[a-z_]+\\(\\n    name = "${name}",`, "m"));
   if (start < 0) {
     return node.op === Op.EXEC
-      ? "With every pass on, no rule is generated for this group. The build files are of the graph with every pass on."
-      : "This node is not a rule. Its files are checked into the workspace, or read under the name of the file they copy.";
+      ? "The generated build files use all optimizations, which remove this group."
+      : "The workspace supplies these entries directly or copies them from another file.";
   }
   return buildFile.slice(start, buildFile.indexOf("\n)\n", start) + 2);
 }
@@ -508,7 +480,7 @@ async function renderLane() {
     tab.classList.toggle("active", tab.dataset.lane === state.lane);
   }
   const { node, group } = selected();
-  const absent = [create("p", { className: "muted", textContent: "This group has no operation under the passes that are on, so there is nothing to show." })];
+  const absent = [create("p", { className: "muted", textContent: "The selected optimizations remove this group from the graph." })];
   let content;
   if (state.lane === Lane.PROCESS) {
     content = renderProcesses(group);
@@ -528,7 +500,7 @@ async function renderLane() {
 /** Draws the graph under the current choice and says what the grey nodes are. */
 function renderGraph() {
   const doomed = state.doomed.size;
-  let caption = "One node per operation, and an edge wherever one operation consumes a file version another wrote. ";
+  let caption = "Each box is a build step. A line connects the step that produced a file version to a step that uses it. ";
   if (doomed > 0) {
     caption +=
       `Nothing reads what the ${doomed.toLocaleString()} grey ${doomed === 1 ? "node" : "nodes"} wrote. ` +
@@ -634,7 +606,7 @@ function renderModule() {
   if (row && (row.offsetTop < listing.scrollTop || row.offsetTop > listing.scrollTop + listing.clientHeight - row.clientHeight)) {
     listing.scrollTop = row.offsetTop - listing.clientHeight / 3;
   }
-  $("module-caption").textContent = `${rows.length.toLocaleString()} operations with the passes that are on.`;
+  $("module-caption").textContent = `${rows.length.toLocaleString()} operations shown.`;
 }
 
 /** Makes the module listing respond to the pointer. Called once. */
