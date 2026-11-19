@@ -147,7 +147,9 @@ that needs missing state may have to use recorded bytes.
 The proof covers the inputs from one run. With `convert --source`, rules
 read files from the checkout and allow output bytes to change. An edit to
 `greet.c` can reuse the recorded commands. Adding a dependency or changing
-a command calls for a new recording. [Try the C project](../examples/project/README.md).
+a command calls for a new recording. In such a graph the passes keep
+every command that read a source, because a result with the bytes of an
+input, or with no bytes, was computed from the source as it was that day. [Try the C project](../examples/project/README.md).
 
 ## In the terms of Build Systems à la Carte
 

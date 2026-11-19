@@ -41,6 +41,7 @@ digest as the output that Rewind recorded.
 ```console
 $ nix run github:fzakaria/genrulify -- convert nixpkgs#hello hello
 650 process groups: 132 replayed and reproduced, 75 raised to copies, 50 folded to constants, 0 kept as recorded bytes, 393 dead
+out: 49 files (253442 bytes) from commands that run, 0 files (0 bytes) from the recording, 99 entries without bytes
 cca3804d340495150db44b1e762655d8a0b4fe6d37b8350f1a0d8fa33c27c8cc  /nix/store/5z2yp3ysx8476c8g5w25b0smlgkjvaq3-hello-2.12.3
 
 $ cd hello/workspace && bazel build //:archive
@@ -119,7 +120,7 @@ If each group produces the same result on the same inputs and platform,
 any build order that respects the dependencies reproduces the recorded
 archive. The checker samples this with two clean replay passes. In a
 recorded workspace each command rule checks its outputs again when it
-runs. [Why this works](https://fzakaria.github.io/genrulify/theory.html)
+runs, and the archive rule fails unless the NAR has the recorded digest. [Why this works](https://fzakaria.github.io/genrulify/theory.html)
 gives the proof.
 
 ## Results
@@ -211,6 +212,7 @@ src/import.cpp     a recording to file SSA
 src/passes.cpp     link, fold, merge, raise, and the pipeline
 src/rules.cpp      which kind of rule a command line is
 src/check.cpp      the replay ladder
+src/origins.cpp    where the files of each output came from
 src/action.cpp     one operation as a step: inputs, command lines, results
 src/sandbox.sh.in  the script a rule runs, shipped in every workspace
 src/emit.cpp       the graph to BUILD.bazel and BUCK
