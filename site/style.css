@@ -555,7 +555,7 @@ footer {
   padding-bottom: 0.4rem;
 }
 
-/* Color operation names, file versions and paths in the theory examples. */
+/* Highlight commands, names and strings in the documentation examples. */
 .theory pre code {
   padding: 0;
   font: inherit;

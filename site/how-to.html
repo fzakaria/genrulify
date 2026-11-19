@@ -66,19 +66,19 @@
         file. If a step cannot reproduce a file the build needs, the generated workspace
         can supply that file from the recording.
       </p>
-      <pre>nix run github:fzakaria/genrulify -- convert nixpkgs#hello hello
-cd hello/workspace</pre>
+      <pre><code class="language-bash"><span class="syntax-op">nix</span> run <span class="syntax-string">github:fzakaria/genrulify</span> <span class="syntax-name">--</span> convert <span class="syntax-string">nixpkgs#hello</span> <span class="syntax-string">hello</span>
+<span class="syntax-op">cd</span> <span class="syntax-string">hello/workspace</span></code></pre>
       <p>
         A successful <code>//:archive</code> build with Bazel or Buck2 reproduces the recorded Nix archive
         (NAR) byte for byte. The <code>sha256sum</code> command below prints the same digest
         that <code>convert</code> printed for the Nix output.
       </p>
       <h3>Bazel</h3>
-      <pre>bazel build //:archive
-sha256sum bazel-bin/archive.nar</pre>
+      <pre><code class="language-bash"><span class="syntax-op">bazel</span> build <span class="syntax-string">//:archive</span>
+<span class="syntax-op">sha256sum</span> <span class="syntax-string">bazel-bin/archive.nar</span></code></pre>
       <h3>Buck2</h3>
-      <pre>buck2 build //:archive --out hello.nar
-sha256sum hello.nar</pre>
+      <pre><code class="language-bash"><span class="syntax-op">buck2</span> build <span class="syntax-string">//:archive</span> <span class="syntax-name">--out</span> <span class="syntax-string">hello.nar</span>
+<span class="syntax-op">sha256sum</span> <span class="syntax-string">hello.nar</span></code></pre>
       <p><a href="./?pkg=hello">Explore the recorded hello build</a>.</p>
 
       <h2 id="project">Build from sources you can edit</h2>
@@ -88,9 +88,9 @@ sha256sum hello.nar</pre>
         two objects. The <code>.#project</code> derivation uses <code>examples/project</code>
         as its source directory. Run these commands from the root of a genrulify checkout.
       </p>
-      <pre>nix run . -- convert --source examples/project .#project /tmp/project-recording
-cd examples/project
-bazel build //:archive</pre>
+      <pre><code class="language-bash"><span class="syntax-op">nix</span> run <span class="syntax-string">.</span> <span class="syntax-name">--</span> convert <span class="syntax-name">--source</span> <span class="syntax-string">examples/project</span> <span class="syntax-string">.#project</span> <span class="syntax-string">/tmp/project-recording</span>
+<span class="syntax-op">cd</span> <span class="syntax-string">examples/project</span>
+<span class="syntax-op">bazel</span> build <span class="syntax-string">//:archive</span></code></pre>
       <p>
         <code>--source</code> tells genrulify where the working sources live. It checks
         that they match the derivation's source, then writes <code>BUILD.bazel</code> and
