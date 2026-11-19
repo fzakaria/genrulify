@@ -118,12 +118,15 @@ code {
 .caption {
   margin: 0.4rem 0;
 }
+/* The package links are underlined as the example links of the sibling
+   sites are. The package being shown is plain bold text. */
 .examples a {
-  text-decoration: none;
+  white-space: nowrap;
 }
 .examples a.active {
   color: var(--fg);
   font-weight: 600;
+  text-decoration: none;
 }
 #stats {
   margin: 0.8rem 0 0;
