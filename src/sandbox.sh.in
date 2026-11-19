@@ -53,6 +53,10 @@ BUILD_HOST=localhost
 # out of a build log.
 NOT_REPRODUCED=" did not reproduce the recording:"
 
+# The same for a rule of a project, which is not held to the recorded
+# bytes: its results are missing or are another kind of thing.
+NOT_LEFT=" did not leave what the recorded build left:"
+
 # The field separator of a manifest line. A tab would do, except that the
 # shell merges adjacent tabs and so loses an empty field.
 FS=$'\x1f'
@@ -489,7 +493,11 @@ if [ ${#results[@]} -gt 0 ]; then
 fi
 
 if [ ${#problems[@]} -gt 0 ]; then
-    echo "$name$NOT_REPRODUCED" >&2
+    if [ -z "$trust" ]; then
+        echo "$name$NOT_REPRODUCED" >&2
+    else
+        echo "$name$NOT_LEFT" >&2
+    fi
     printf '  %s\n' "${problems[@]}" >&2
 
     # In a project the usual cause is an edit that changed what a command

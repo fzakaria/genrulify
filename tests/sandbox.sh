@@ -86,6 +86,13 @@ if "$script" --name gone --trust --in "$scratch" --in "$data/example" --out "$sc
 fi
 grep -q '^  missing /build/absent$' "$scratch/error"
 grep -q 'convert the project again' "$scratch/error"
+
+# A project's rule is not held to the recording, so the report must not
+# say that the rule failed to reproduce it.
+grep -q '^gone did not leave what the recorded build left:$' "$scratch/error"
+if grep -q 'did not reproduce the recording' "$scratch/error"; then
+    exit 1
+fi
 if grep -q 'differs /build:' "$scratch/error"; then
     exit 1
 fi
