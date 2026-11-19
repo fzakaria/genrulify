@@ -19,6 +19,12 @@ script=$scratch/workspace/sandbox.sh
 line() {
     printf '%s\x1f%s\x1f%s\x1f%s\x1f%s\x1f%s\x1f%s\n' "$@"
 }
+
+# The same with an eighth field, the origin of an entry to stage: the rule
+# whose stamp says what the entry is, or @checkout for a project's file.
+origin_line() {
+    printf '%s\x1f%s\x1f%s\x1f%s\x1f%s\x1f%s\x1f%s\x1f%s\n' "$@"
+}
 bundle=cb94740ad765d0c3cb3742959e2f7556d4c7adb712660bfbacb1ba2c6f50e671
 step() {
     # Runs the step named $1 with the recording's blobs as its inputs.
@@ -38,14 +44,15 @@ step same
 test "$(sha256sum < "$scratch/out/same/build/bundle" | cut -d' ' -f1)" = "$bundle"
 test -e "$scratch/out/same.ok"
 
-# A step whose results are all directories still leaves a directory named
-# after itself, which is the one output a Buck2 rule declares.
+# A step whose results are all directories still writes its stamp, which
+# is then the one file the build system has of it.
 {
     line in dir 700 1 /build '' ''
     line out dir 700 1 /build '' ''
 } > "$scratch/actions/bare.manifest"
+rm -rf "$scratch/out"
 step bare
-test -d "$scratch/out/bare"
+test -e "$scratch/out/bare.ok"
 
 # A result with other bytes, another mode or no file at all fails the step,
 # and the report names each one the way `learn` reads it.
@@ -96,6 +103,93 @@ fi
 if grep -q 'differs /build:' "$scratch/error"; then
     exit 1
 fi
+
+# A trusted step says in its stamp what it left: the mode of each file
+# and directory and the target of each symlink, and no digest, so that an
+# edit to a file's text does not change the stamp. Here the step is given
+# a file with mode 644 and a symlink to `bundle`, where the recording had
+# mode 600 and a symlink to `elsewhere`.
+{
+    line in dir 700 1 /build '' ''
+    line in file 644 1 /build/bundle "$bundle" "blobs/$bundle"
+    line in link 0 1 /build/link bundle ''
+    line out file 600 1 /build/bundle 0000 seen/build/bundle
+    line out link 0 1 /build/link elsewhere ''
+    line out dir 755 1 /build '' ''
+} > "$scratch/actions/seen.manifest"
+"$script" --name seen --trust --in "$scratch" --in "$data/example" --out "$scratch/out"
+printf 'file\x1f644\x1f/build/bundle\x1f\nlink\x1f0\x1f/build/link\x1fbundle\ndir\x1f700\x1f/build\x1f\n' > "$scratch/expected.ok"
+cmp "$scratch/out/seen.ok" "$scratch/expected.ok"
+
+# A step given an entry a trusted rule made stages what that rule's stamp
+# says and not what was recorded. The recording had a file nobody can
+# execute and a symlink to `old`. The stamp of the rule `maker` says the
+# file is executable and the symlink points to `new`, and the archive
+# packed from them has both. An entry the stamp does not mention, and an
+# entry of a rule that has no stamp here, are staged as recorded.
+printf 'file\x1f755\x1f/out/tool\x1f\nlink\x1f0\x1f/out/link\x1fnew\n' > "$scratch/maker.ok"
+{
+    line in dir 755 1 /out '' ''
+    origin_line in file 644 1 /out/tool "$bundle" "blobs/$bundle" maker
+    origin_line in link 0 1 /out/link old '' maker
+    origin_line in file 644 1 /out/plain "$bundle" "blobs/$bundle" maker
+    origin_line in file 644 1 /out/other "$bundle" "blobs/$bundle" absent
+} > "$scratch/actions/handed.manifest"
+"$script" --name handed --in "$scratch" --in "$data/example" --out "$scratch/out" pack /out
+test "$(grep -a -o executable "$scratch/out/handed.nar" | wc -l)" = 1
+grep -a -q new "$scratch/out/handed.nar"
+if grep -a -q old "$scratch/out/handed.nar"; then
+    exit 1
+fi
+
+# A file of the project keeps the executable bit the project's file has
+# now, whatever the recording had: a recorded 444 becomes 555 for a file
+# that is executable, and a recorded 755 becomes 644 for one that is not.
+mkdir "$scratch/checkout"
+cp "$data/example/blobs/$bundle" "$scratch/checkout/runs"
+cp "$data/example/blobs/$bundle" "$scratch/checkout/rests"
+chmod 755 "$scratch/checkout/runs"
+chmod 644 "$scratch/checkout/rests"
+{
+    line in dir 755 1 /build '' ''
+    origin_line in file 444 1 /build/runs "$bundle" checkout/runs @checkout
+    origin_line in file 755 1 /build/rests "$bundle" checkout/rests @checkout
+    line out file 444 1 /build/runs "$bundle" modes/build/runs
+    line out file 755 1 /build/rests "$bundle" modes/build/rests
+} > "$scratch/actions/modes.manifest"
+"$script" --name modes --trust --in "$scratch" --out "$scratch/out"
+grep -q "^file.555./build/runs.\$" "$scratch/out/modes.ok"
+grep -q "^file.644./build/rests.\$" "$scratch/out/modes.ok"
+
+# A trusted step that leaves an entry under an output path which the
+# recorded command did not write fails and names the entry: no rule would
+# carry it into the package. Staging a file makes the directories above
+# it, and here those have no line of their own, which stands for a
+# command that made them. An entry the recorded command wrote and nothing
+# reads is `unused`, and is no problem. Outside the output paths nothing
+# is looked at.
+mkdir "$scratch/project-files"
+printf '/out\n' > "$scratch/project-files/outputs.txt"
+{
+    line in dir 755 1 /out '' ''
+    line in file 644 1 /out/extra/file "$bundle" "blobs/$bundle"
+    line in file 644 1 /build/extra/file "$bundle" "blobs/$bundle"
+    line out dir 755 1 /out '' ''
+} > "$scratch/actions/more.manifest"
+more() {
+    "$script" --name more --trust --in "$scratch/project-files" --in "$scratch" --in "$data/example" --out "$scratch/out"
+}
+if more 2> "$scratch/error"; then
+    exit 1
+fi
+grep -q '^more did not leave what the recorded build left:$' "$scratch/error"
+grep -q '^  unrecorded /out/extra$' "$scratch/error"
+grep -q 'convert the project again' "$scratch/error"
+if grep -q 'unrecorded /build' "$scratch/error"; then
+    exit 1
+fi
+line unused dir 755 1 /out/extra '' '' >> "$scratch/actions/more.manifest"
+more
 
 # A symlink is staged from its entry alone and packed as a symlink.
 {
