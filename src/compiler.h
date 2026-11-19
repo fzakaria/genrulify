@@ -298,12 +298,16 @@ void convert(const std::string &installable,
 // build system's own conditions. Returns whether any verdict changed.
 bool learnFromBuild(const Recording &recording, std::istream &log);
 
-// Checks that build files can be written into a project: the directory
-// exists and has no BUILD.bazel or BUCK that somebody else wrote. Throws
-// naming the file that is in the way.
+// Checks that a project can take a conversion: the directory exists, and
+// a genrulify/ directory in it is one genrulify wrote. Throws naming the
+// directory that is in the way. A BUILD.bazel or BUCK somebody else wrote
+// is no obstacle, because the rules do not go into those files.
 void checkProjectDirectory(const std::filesystem::path &project);
 
-// Writes a Bazel and Buck2 workspace with one genrule per operation.
+// Writes a Bazel and Buck2 workspace with one rule per operation. A
+// recorded build gets a new directory. A project gets its rules in its
+// genrulify/ directory and, where it has none of its own, build files
+// that load them.
 void emitWorkspace(mlir::ModuleOp module, const Recording &recording,
                    const std::filesystem::path &destination);
 

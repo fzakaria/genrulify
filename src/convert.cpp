@@ -97,9 +97,9 @@ void convert(const std::string &installable, const fs::path &directory,
     const auto recording = Recording::load(recorded);
 
     // Nothing is written for a build system until the recording is known
-    // to hold the build Rewind hashed. A project's build files replace the
-    // ones of its last conversion, and a conversion that is then rejected
-    // must not have touched them.
+    // to hold the build Rewind hashed. A project's rules replace the ones
+    // of its last conversion, and a conversion that is then rejected must
+    // not have touched them.
     const auto built = builtOutputs(recording, run);
     checkRecording(recording);
 
@@ -114,7 +114,7 @@ void convert(const std::string &installable, const fs::path &directory,
     module->print(stream);
     writeBytes(directory / kGraphFile, text + "\n");
 
-    // The build files of a project go into the project, next to the
+    // The rules of a project go into the project, next to the
     // sources they name. A recorded build gets a workspace of its own.
     emitWorkspace(*module, recording,
                   project ? *project : directory / kWorkspaceDirectory);
