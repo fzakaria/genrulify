@@ -250,7 +250,11 @@ void run(std::span<char *> args) {
       for (const auto &source : copy->sources) {
         llvm::outs() << " " << source;
       }
-      llvm::outs() << " -> " << copy->destination << "\n";
+      llvm::outs() << " -> " << copy->destination;
+      if (copy->overwritten == splice_ir::CopyCommand::Overwritten::KeepsItsMode) {
+        llvm::outs() << ", a file that is there keeps its mode";
+      }
+      llvm::outs() << "\n";
     }
     if (const auto paths = splice_ir::writeBitChange(process)) {
       llvm::outs() << "chmod";

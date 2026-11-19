@@ -329,8 +329,10 @@ private:
 //
 // A copy keeps the recorded mode, except for the executable bits, which
 // a rule takes from the project's file as it is when the rule runs. That
-// is what both commands do, and it is why a chmod that touches those bits
-// is not read.
+// is what a chmod of this kind leaves and what cp gives a file it
+// creates. A chmod that touches those bits is not read. Neither is a cp
+// that wrote over a file without being told to preserve modes: the file
+// kept the mode it had, which is not the project's file's to decide.
 //
 // The directories and symlinks the commands leave become constants.
 // Which directories a source tree has is part of what a conversion
@@ -369,6 +371,15 @@ struct UnpackSources
       }
       const auto copy = copyCommand(process);
       if (!copy) {
+        continue;
+      }
+
+      // A file this cp wrote over kept its own mode, and a copy would
+      // take the executable bit from the project's file instead. Nothing
+      // in the graph says "the bytes of one file and the mode of
+      // another", so such a cp stays a command.
+      if (copy->overwritten == CopyCommand::Overwritten::KeepsItsMode &&
+          overwrites(exec)) {
         continue;
       }
       const auto inside = [&](const std::string &path) {
@@ -421,6 +432,20 @@ private:
       return std::nullopt;
     }
     return moved(path, copy.destination, copy.sources.front());
+  }
+
+  // Whether a result of `exec` that something reads is at a path that
+  // held a file when the group started.
+  bool overwrites(ExecOp exec) const {
+    const auto before = recording.state(exec.getStep());
+    for (const auto result : exec->getResults()) {
+      const auto existing = before.find(entryOf(result)->path);
+      if (!result.use_empty() && existing != before.end() &&
+          existing->second.kind == EntryKind::File) {
+        return true;
+      }
+    }
+    return false;
   }
 
   // Whether a value is a file of the project's source tree.

@@ -109,6 +109,23 @@ if grep -q 'splice.exec "cp"' "$scratch/opt.mlir"; then
     exit 1
 fi
 
+# A cp that writes over a file which is already there leaves that file's
+# mode, unless it was told to preserve the source's. The copy the pass
+# would make takes its executable bit from the project's file, which is
+# right for a file cp created and wrong for one it overwrote. Here
+# /build/app/main.c exists before the cp runs, so the cp stays a command.
+# Told to preserve modes, with -p, the same cp is read as a copy again.
+cp -r "$scratch/recording" "$scratch/over"
+sed -i 's|^\[|[\n {"content": "zz", "kind": "file", "mode": 420, "mtime": 1, "path": "/build/app/main.c"},|' "$scratch/over/states/735.json"
+graph aa 644 > "$scratch/graph.mlir"
+"$compiler" opt --recording "$scratch/over" "$scratch/graph.mlir" > "$scratch/opt.mlir"
+grep -q 'splice.exec "cp" at 735' "$scratch/opt.mlir"
+sed -i 's|"-r", "--reflink=auto"|"-pr", "--reflink=auto"|' "$scratch/over/recording.json"
+"$compiler" opt --recording "$scratch/over" "$scratch/graph.mlir" > "$scratch/opt.mlir"
+if grep -q 'splice.exec "cp"' "$scratch/opt.mlir"; then
+    exit 1
+fi
+
 # That a program is called cp says nothing about what it does. The pass
 # reads a command line only when the program the kernel loaded is the cp
 # or the chmod of GNU coreutils, which the Nix store path of the program
@@ -135,6 +152,9 @@ reads() {
 coreutils=/nix/store/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa-coreutils-9.11/bin
 reads "$coreutils/cp" -pr -- /a /b | grep -q '^cp /a -> /b$'
 reads "$coreutils/cp" -a /a /b /c | grep -q '^cp /a /b -> /c$'
+reads "$coreutils/cp" --preserve=mode,timestamps /a /b | grep -q '^cp /a -> /b$'
+reads "$coreutils/cp" -r /a /b | grep -q '^cp /a -> /b, a file that is there keeps its mode$'
+reads "$coreutils/cp" --preserve=timestamps /a /b | grep -q '^cp /a -> /b, a file that is there keeps its mode$'
 test -z "$(reads "$coreutils/cp" --no-preserve=mode /a /b)"
 test -z "$(reads "$coreutils/cp" -t /b /a)"
 test -z "$(reads "$coreutils/cp" /a)"

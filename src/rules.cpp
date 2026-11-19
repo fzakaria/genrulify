@@ -67,6 +67,12 @@ constexpr std::string_view kMultiCallBinary = "coreutils";
 constexpr std::string_view kCopyOptions =
     R"(-[rRpafv]+|--recursive|--archive|--force|--verbose|--reflink(=[a-z]+)?|--preserve(=[a-z,]+)?)";
 
+// The options among those that make cp give a file it overwrites the mode
+// of the source: -p and -a in a group of short options, --archive, and
+// --preserve when it names no attribute or names the mode or all of them.
+constexpr std::string_view kCopyPreservesMode =
+    R"(-[rRfv]*[pa][rRpafv]*|--archive|--preserve(=([a-z,]*,)?(mode|all)(,[a-z,]*)?)?)";
+
 // The options of chmod, and a mode that adds or removes only the rights
 // to read and to write.
 constexpr std::string_view kModeOptions = R"(-[Rfvc]+|--recursive|--silent|--quiet|--verbose|--changes)";
@@ -218,6 +224,7 @@ std::optional<CopyCommand> copyCommand(const Process &process) {
   // is not an option is a path.
   std::vector<std::string> paths;
   bool options = true;
+  bool preservesMode = false;
   for (const auto &argument : arguments(process)) {
     if (options && argument == kEndOfOptions) {
       options = false;
@@ -227,6 +234,7 @@ std::optional<CopyCommand> copyCommand(const Process &process) {
       if (!matches(argument, kCopyOptions)) {
         return std::nullopt;
       }
+      preservesMode = preservesMode || matches(argument, kCopyPreservesMode);
       continue;
     }
     paths.push_back(resolved(process, argument));
@@ -237,6 +245,9 @@ std::optional<CopyCommand> copyCommand(const Process &process) {
     return std::nullopt;
   }
   CopyCommand command;
+  command.overwritten = preservesMode
+                            ? CopyCommand::Overwritten::TakesSourceMode
+                            : CopyCommand::Overwritten::KeepsItsMode;
   command.destination = paths.back();
   paths.pop_back();
   command.sources = std::move(paths);

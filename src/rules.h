@@ -43,6 +43,12 @@ std::optional<std::string_view> ruleKind(const Process &process);
 struct CopyCommand {
   std::vector<std::string> sources;
   std::string destination;
+
+  // Whose mode a file has after the copy when the file was there before.
+  // cp writes into such a file and leaves its mode alone, unless told to
+  // preserve the source's. A file cp creates has the source's either way.
+  enum class Overwritten { KeepsItsMode, TakesSourceMode };
+  Overwritten overwritten = Overwritten::KeepsItsMode;
 };
 
 // What a process copies when it is the `cp` of GNU coreutils, by the Nix
