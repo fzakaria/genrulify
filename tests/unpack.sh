@@ -80,6 +80,11 @@ grep -q '"/build/app" dir 755' "$scratch/folded"
 grep -q '"/build/app/sub" dir 755' "$scratch/folded"
 grep -q 'splice.exec "dd" at 782' "$scratch/opt.mlir"
 
+# A command the pass has read needs no watching: what it does is known.
+if grep -q 'watched(%sandbox_717, %source' "$scratch/opt.mlir"; then
+    exit 1
+fi
+
 # The pass reads command lines, so without the recording, or left out of
 # the passes, the commands stay.
 "$compiler" opt "$scratch/graph.mlir" > "$scratch/opt.mlir"

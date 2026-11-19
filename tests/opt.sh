@@ -166,6 +166,45 @@ if grep -q 'splice.literal "sort" at 2 folded' "$scratch/opt.mlir"; then
 fi
 grep -q 'splice.output "out" "/out"(%sort_2#0, %sort_2#1, %sort_2#2' "$scratch/opt.mlir"
 
+# A command that read a source and left nothing a later step reads is
+# dead in a recorded build. In a project it is not: after an edit the
+# same command may write a file it did not write before, or end another
+# way, and the build the rules replay would no longer be the build Nix
+# runs. Such a command is marked `watched` and kept, so that its rule
+# runs and can fail. Here a generator read a flag and wrote only a log
+# nothing reads. A command that read no source and is dead goes as
+# before.
+cat > "$scratch/watched.mlir" <<'MLIR'
+module {
+  %0 = splice.literal "sandbox" at 1 -> [#splice.entry<"/build" dir 700 mtime 1>]
+  %1:2 = splice.literal "source" at 1 -> [
+      #splice.entry<"/nix/store/source" dir 555 mtime 1>,
+      #splice.entry<"/nix/store/source/flag" file 444 mtime 1 "aa">]
+  %2 = splice.exec "generate" at 2(%0, %1#0, %1#1) -> [#splice.entry<"/build/log" file 644 mtime 2 "bb">]
+  %3 = splice.exec "probe" at 3(%0) -> [#splice.entry<"/build/probe.log" file 644 mtime 3 "cc">]
+  %4 = splice.exec "cc" at 4(%0) -> [#splice.entry<"/out" file 755 mtime 4 "dd">]
+  splice.output "out" "/out"(%4)
+}
+MLIR
+"$compiler" opt "$scratch/watched.mlir" > "$scratch/opt.mlir"
+grep -q 'splice.exec "generate" at 2 watched(%sandbox_1, %source_1#0, %source_1#1)' "$scratch/opt.mlir"
+if grep -q 'splice.exec "probe"' "$scratch/opt.mlir"; then
+    exit 1
+fi
+if grep -q 'splice.exec "cc" at 4 watched' "$scratch/opt.mlir"; then
+    exit 1
+fi
+
+# The mark is printed and parsed like any other part of the operation.
+"$compiler" opt "$scratch/opt.mlir" | grep -q 'splice.exec "generate" at 2 watched('
+
+# A graph without a source tree has nothing to watch.
+grep -v '"source"\|/nix/store/source' "$scratch/watched.mlir" | sed 's|(%0, %1#0, %1#1)|(%0)|' > "$scratch/plain.mlir"
+"$compiler" opt "$scratch/plain.mlir" > "$scratch/opt.mlir"
+if grep -q 'watched\|splice.exec "generate"' "$scratch/opt.mlir"; then
+    exit 1
+fi
+
 # A file the builder wrote itself has no command to keep. In a recorded
 # build, a builder-written file with the bytes of an existing file is
 # linked to that file. In a project that would be a guess the next edit

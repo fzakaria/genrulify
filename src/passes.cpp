@@ -498,6 +498,10 @@ private:
       return false;
     }
 
+    // What the command does is known from here on, so nothing about it
+    // is left to watch for.
+    exec.removeWatchedAttr();
+
     // Each file becomes a copy of the file the command was given.
     auto *context = &getContext();
     mlir::OpBuilder builder(exec);
@@ -614,6 +618,15 @@ void optimize(mlir::ModuleOp module, std::span<const Pass> passes,
   const auto chosen = [&](Pass pass) {
     return std::ranges::find(passes, pass) != passes.end();
   };
+  // Every command that depends on a project's sources is watched from
+  // the start, so that elimination keeps the ones nothing reads. A pass
+  // that replaces such a command for what its command line says takes
+  // the mark off again.
+  for (auto *op : dependsOnSource(module)) {
+    if (auto exec = llvm::dyn_cast<ExecOp>(op)) {
+      exec.setWatched(true);
+    }
+  }
   mlir::PassManager manager(module.getContext());
   for (const auto pass : kAllPasses) {
     if (!chosen(pass)) {

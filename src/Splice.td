@@ -51,10 +51,19 @@ class SpliceOp<string mnemonic, list<Trait> traits = []> : Op<SpliceDialect, mne
 // same when a pass removes other operations, which a number does not.
 def NamedResults : DeclareOpInterfaceMethods<OpAsmOpInterface, ["getAsmResultNames"]>;
 
-// Pure is the claim that replay checks: the entries a process group writes
-// are a function of the entries the group was given and of the store closure.
-// An exec whose results are unused is dead, and MLIR removes it.
-def ExecOp : SpliceOp<"exec", [Pure, NamedResults]> {
+// An exec has no effect but its results, which is the claim replay
+// checks: the entries a process group writes are a function of the entries
+// the group was given and of the store closure. An exec whose results are
+// unused is therefore dead, and MLIR removes it.
+//
+// A `watched` exec is the exception. The group read the sources of a
+// project someone is editing, and what the group writes after an edit is
+// not what the recording saw: a generator that wrote nothing when a flag
+// was off writes a file when the flag is on. So the group has to run in
+// every build, where its rule can notice a new output or another exit
+// status, whether or not anything reads what the group left. A watched
+// exec reports an effect, which keeps MLIR from removing it.
+def ExecOp : SpliceOp<"exec", [NamedResults, DeclareOpInterfaceMethods<MemoryEffectsOpInterface>]> {
   let summary = "Run a recorded process group against entry versions";
   let description = [{
     `step` is the Rewind step of the group's first execve and identifies the
@@ -67,10 +76,14 @@ def ExecOp : SpliceOp<"exec", [Pure, NamedResults]> {
     kind decides what the generated rule is called and how its inputs are
     named. The kind never decides what the rule runs, which is the
     recorded command either way.
+
+    `watched` marks a group that depends on the sources of a project. Its
+    rule takes what the command leaves, and runs even when nothing reads
+    a result.
   }];
-  let arguments = (ins Variadic<Entry>:$inputs, StrAttr:$name, I64Attr:$step, EntryArrayAttr:$writes, OptionalAttr<StrAttr>:$rule);
+  let arguments = (ins Variadic<Entry>:$inputs, StrAttr:$name, I64Attr:$step, EntryArrayAttr:$writes, OptionalAttr<StrAttr>:$rule, UnitAttr:$watched);
   let results = (outs Variadic<Entry>:$outputs);
-  let assemblyFormat = "$name `at` $step (`as` $rule^)? `(` $inputs `)` custom<Writes>($writes, type($outputs)) attr-dict";
+  let assemblyFormat = "$name `at` $step (`as` $rule^)? (`watched` $watched^)? `(` $inputs `)` custom<Writes>($writes, type($outputs)) attr-dict";
   let hasVerifier = 1;
 }
 

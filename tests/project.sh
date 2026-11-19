@@ -36,8 +36,11 @@ grep -q 'splice.exec "dd" at 735(%sandbox_717, %source_717#0, %source_717#1)' "$
 # build that makes the dd a copy. Here the header is a source someone may
 # edit, and what the dd writes then is for the dd to say, so the passes
 # leave the command in.
+# The dd, and every command after it that depends on the header, is
+# marked `watched`: its rule runs in every build of the project.
 "$compiler" opt "$scratch/graph.mlir" > "$scratch/opt.mlir"
-grep -q 'splice.exec "dd" at 735(%sandbox_717, %source_717#0, %source_717#1)' "$scratch/opt.mlir"
+grep -q 'splice.exec "dd" at 735 watched(%sandbox_717, %source_717#0, %source_717#1)' "$scratch/opt.mlir"
+test "$(grep -c 'splice.exec "dd" at [0-9]* watched(' "$scratch/opt.mlir")" = 3
 if grep -q 'splice.copy "dd" at 735' "$scratch/opt.mlir"; then
     exit 1
 fi
@@ -105,6 +108,24 @@ if rule "$bazel_rules" archive | grep -q -e '--trust'; then
 fi
 test "$(cat genrulify/outputs.txt)" = /nix/store/l1dx8g9mr73bdp8y6i2yp92xprmz8xzg-genrulify-example
 rule "$bazel_rules" s735_dd | grep -q '":genrulify/outputs.txt",'
+
+# A watched command whose results nothing reads is on no path to the
+# archive, and a build system runs only what the archive needs. So the
+# archive rule waits for the stamp of every such command, and the command
+# gets to run and to fail. Here the output is emptied, which leaves the
+# last dd with no reader.
+sed 's|^\(  splice.output .*\)(%dd_782)|\1()|' "$scratch/opt.mlir" > "$scratch/unread.mlir"
+mkdir "$scratch/unread"
+printf 'header\n' > "$scratch/unread/header.txt"
+"$compiler" emit "$scratch/recording" "$scratch/unread.mlir" "$scratch/unread"
+rule "$scratch/unread/$bazel_rules" archive | grep -q '":s782_dd.ok",'
+rule "$scratch/unread/$buck_rules" archive | grep -q '":s782_dd",'
+
+# A watched command that has a reader is run for that reader, and the
+# archive does not wait for it besides.
+if rule "$scratch/unread/$bazel_rules" archive | grep -q '":s764_dd.ok",'; then
+    exit 1
+fi
 
 # A command of a recorded build is held to the recording.
 "$compiler" import "$data/example" > "$scratch/plain.mlir"

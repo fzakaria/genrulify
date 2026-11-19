@@ -799,6 +799,8 @@ void emitWorkspace(mlir::ModuleOp module, const Recording &recording,
       }
     };
 
+    // The watched commands whose results nothing reads, by rule name.
+    std::set<std::string> unread;
     std::vector<Rule> rules;
     for (auto &op : module.getBody()->getOperations()) {
       if (auto literal = llvm::dyn_cast<LiteralOp>(op)) {
@@ -835,6 +837,12 @@ void emitWorkspace(mlir::ModuleOp module, const Recording &recording,
         action = execAction(exec, recording, artifactOf, platformArtifact,
                             originOf);
         action.trusted = dependent.contains(&op);
+        const bool read = llvm::any_of(
+            exec->getResults(),
+            [](mlir::Value result) { return !result.use_empty(); });
+        if (exec.getWatched() && !read) {
+          unread.insert(action.name);
+        }
         rule.recorded.insert(platformFiles.begin(), platformFiles.end());
 
         // A group raised to a kind of rule is one command, and a compile
@@ -886,6 +894,14 @@ void emitWorkspace(mlir::ModuleOp module, const Recording &recording,
       rules.push_back(std::move(rule));
     }
 
+    // A watched command nothing reads is run for what it might do after
+    // an edit, and a build system runs only what a target needs. Every
+    // archive therefore waits for the stamp of every such command.
+    for (auto &rule : rules) {
+      if (rule.archive) {
+        rule.stamps.insert(unread.begin(), unread.end());
+      }
+    }
     nameFiles(rules, destination);
     const auto bazelFile = buildFile(Backend::Bazel, rules, layout);
     const auto buckFile = buildFile(Backend::Buck2, rules, layout);

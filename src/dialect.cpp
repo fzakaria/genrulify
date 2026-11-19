@@ -255,6 +255,15 @@ mlir::LogicalResult CopyOp::canonicalize(CopyOp op,
 
 // A process group sees one filesystem, so the group cannot be given two
 // versions of the same path.
+void ExecOp::getEffects(
+    llvm::SmallVectorImpl<mlir::MemoryEffects::EffectInstance> &effects) {
+  // A watched group is run for what it may do after an edit, which no
+  // result stands for. Reporting a write keeps the operation alive.
+  if (getWatched()) {
+    effects.emplace_back(mlir::MemoryEffects::Write::get());
+  }
+}
+
 mlir::LogicalResult ExecOp::verify() {
   if (mlir::failed(verifyWrites(getOperation(), getWrites()))) {
     return mlir::failure();
