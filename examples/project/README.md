@@ -8,6 +8,7 @@ $ genrulify convert --source examples/project .#project /tmp/project
 $ cd examples/project && bazel build //:archive
 ```
 
-The build files are written here, beside the sources they name, and
-everything else genrulify needs goes under `genrulify/`. Edit `greet.c`,
-build again, and only the rules that read it run.
+The rules are written under `genrulify/`, and the `BUILD.bazel` and
+`BUCK` written here load them. Edit `greet.c`, build again, and only the
+rules that read it run. `bazel run //:greet` or `buck2 run //:greet`
+starts the program that was just linked.

@@ -66,12 +66,27 @@ $ cd examples/project
 $ bazel build //:archive
 ```
 
-`--source` puts `BUILD.bazel` and `BUCK` beside the sources they read.
-Change the greeting in `greet.c` and build again. Bazel recompiles
-`greet.c`, reuses `main.o` and relinks the program. Project rules accept
-the new output bytes. If you add a header dependency or change a compile
-command, run `convert` again from the repository root with a fresh output
-directory.
+`--source` writes the rules into `genrulify/` in the project, with a
+`BUILD.bazel` and a `BUCK` that load them. A build file you wrote
+yourself is left alone, and `convert` prints the two lines that load the
+rules from it. Each compile reads its source from your checkout.
+
+Change the greeting in `greet.c` and build again. Bazel and Buck2
+recompile `greet.c`, reuse `main.o` and relink the program. To try the
+program without packing it, run it.
+
+```console
+$ bazel run //:greet
+```
+
+`//:greet` and `//:greet.o` are named after the files, so a rule of your
+own can depend on them and still build after you convert again. If you
+add a header dependency or change a compile command, run `convert` again
+from the repository root with a fresh output directory. A command that
+no longer leaves a file or a directory it left before fails its rule,
+and the message says to convert again. The derivation's source should
+not take in `buck-out` or Bazel's `bazel-*` links. A flake in a git
+repository leaves such untracked files out.
 
 ## How it works
 
@@ -201,6 +216,13 @@ build job for finer rules. Commands that overlap share a snapshot, so
 they must stay together. The generated rules run locally because they
 read tools and libraries from the host's `/nix/store`.
 
+A project's rules hold what one build did: which commands ran and with
+which arguments. A value the builder read from a source and passed on a
+command line stays as recorded, and so does a symlink in the source
+tree. Bazel and Buck2 do not run a rule again
+when only a file's mode changes, so `chmod +x` on a source reaches the
+output with the next change to the file's text.
+
 ## Layout
 
 ```
@@ -209,8 +231,8 @@ src/Splice.td      the dialect: entries and four operations
 src/trace.cpp      events to cuts: which processes are commands
 src/record.cpp     a Rewind run to a recording: processes and snapshots
 src/import.cpp     a recording to file SSA
-src/passes.cpp     link, fold, merge, raise, and the pipeline
-src/rules.cpp      which kind of rule a command line is
+src/passes.cpp     link, fold, unpack, merge, raise, and the pipeline
+src/rules.cpp      what a command line is: a compile, a link, a copy
 src/check.cpp      the replay ladder
 src/origins.cpp    where the files of each output came from
 src/action.cpp     one operation as a step: inputs, command lines, results

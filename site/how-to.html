@@ -93,16 +93,23 @@
 <span class="syntax-op">bazel</span> build <span class="syntax-string">//:archive</span></code></pre>
       <p>
         <code>--source</code> tells genrulify where the working sources live. It checks
-        that they match the derivation's source, then writes <code>BUILD.bazel</code> and
-        <code>BUCK</code> beside them. The rules read files from your checkout.
-        Their scripts and manifests live under <code>genrulify/</code>.
+        that they match the derivation's source, then writes the rules, their scripts
+        and their manifests under <code>genrulify/</code>. The <code>BUILD.bazel</code> and
+        <code>BUCK</code> it writes beside your sources load those rules. If you already
+        have a build file of your own, genrulify leaves it alone and prints the two
+        lines that load the rules from it. Each compile reads its source from your checkout.
         The last argument names a new directory for the recording and graph.
       </p>
       <p>
         Change the greeting in <code>greet.c</code> and run <code>bazel build //:archive</code>
         again, or use <code>buck2 build //:archive</code> for both builds. The same compile
         command reads your edited file. The linker uses the new <code>greet.o</code> and the
-        existing <code>main.o</code>. The rebuilt program now prints your new greeting.
+        existing <code>main.o</code>. To see the new greeting without packing the archive,
+        run <code>bazel run //:greet</code> or <code>buck2 run //:greet</code>.
+      </p>
+      <p>
+        <code>//:greet</code> and <code>//:greet.o</code> are named after the files, so a rule
+        you write yourself can depend on them and still build after you convert again.
       </p>
       <p>
         The generated rules list the files and commands from the build you recorded.
@@ -110,7 +117,15 @@
         header as an input. If you add <code>extra.c</code> to the Makefile, the build needs
         another compile rule. In either case, rerun <code>convert --source</code> from
         the repository root to regenerate the rules. Give the new recording its own
-        directory, for example <code>/tmp/project-recording-2</code>.
+        directory, for example <code>/tmp/project-recording-2</code>. The derivation's
+        source should not take in <code>buck-out</code> or Bazel's <code>bazel-*</code> links.
+        A flake in a git repository leaves such untracked files out.
+      </p>
+      <p>
+        A command that stops leaving a file or a directory it left before fails its rule,
+        and the message says to convert again. Bazel and Buck2 do not rerun a rule when
+        only a file's mode changes, so <code>chmod +x</code> on a source reaches the output
+        with the next change to the file's text.
       </p>
     </main>
 

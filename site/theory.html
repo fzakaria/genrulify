@@ -187,8 +187,9 @@
       <h2 id="limits">What happens when a source changes?</h2>
       <p>
         For a live project, <code>convert --source</code> generates rules that read your
-        checkout and accept new output bytes. If an edit changes which headers GCC needs,
-        record the build again to update the graph.
+        checkout. A command that depends on your sources may leave new bytes, and every
+        other command is still checked against the recording. If an edit changes which
+        headers GCC needs, record the build again to update the graph.
         <a href="how-to.html#project">Build and edit the C example</a>.
       </p>
       <p>

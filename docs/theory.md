@@ -120,6 +120,7 @@ will receive.
 | Fold constants | `mkdir` | A directory, symlink or empty file is fully described by its recorded entry. |
 | Merge or raise | `chmod` or `cp` | The result has the bytes of an input at the same path (merge) or a different path (raise). A copy carries the new metadata. |
 | Link driver writes | A build driver puts a binary in its final location | A driver entry with the same bytes as an earlier file can refer to that file. Linking before dead-code elimination keeps its producer in the graph. |
+| Unpack sources | `cp -r $src` and `chmod -R u+w` in a project | The command lines name the file each result came from, and the recording agrees on its bytes. |
 
 ## The mapping to build rules
 
@@ -145,14 +146,28 @@ timestamps. Pipe data from the driver is captured at `execve`. A group
 that needs missing state may have to use recorded bytes.
 
 The proof covers the inputs from one run. With `convert --source`, rules
-read files from the checkout and allow output bytes to change. An edit to
-`greet.c` can reuse the recorded commands. Adding a dependency or changing
-a command calls for a new recording. In such a graph the passes keep
-every command that read a source, because a result with the bytes of an
-input, or with no bytes, was computed from the source as it was that day.
-A file the builder wrote itself is not tied to a source with the same
-bytes either. It stays recorded bytes, and `check` lists every recorded
-file the project still uses, since an edit will not change those. [Try the C project](../examples/project/README.md).
+read files from the checkout. A command that depends on them is trusted:
+its rule takes the bytes the command now leaves. A command that reads no
+source is still held to the recording. An edit to `greet.c` can reuse the
+recorded commands. Adding a dependency or changing a command calls for a
+new recording.
+
+In such a graph no pass rewrites a command that read a source for the
+bytes it left. A result with the bytes of an input, an empty file and a
+directory were each computed from the source as it was that day. The
+copy of the source tree into `/build` and the `chmod` after it are
+rewritten for another reason, which is what their command lines say:
+each file they leave is a copy of the checkout's file.
+
+A trusted rule writes down the modes and symlink targets it left, and
+the rules that read its results stage those. The rule fails if a result
+is missing, or if the command leaves an entry under an output path that
+the recording did not have. A file the builder wrote itself is not tied
+to a source with the same bytes. It stays recorded bytes, and `check`
+lists every recorded file the project still uses, since an edit will not
+change those. The same goes for what the builder did with a source
+itself: which commands it ran and the arguments it gave them.
+[Try the C project](../examples/project/README.md).
 
 ## In the terms of Build Systems à la Carte
 
