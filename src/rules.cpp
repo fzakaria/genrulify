@@ -16,8 +16,8 @@ constexpr std::string_view kCompilerDrivers =
 constexpr std::string_view kArchiver = "ar";
 constexpr std::string_view kRustCompiler = "rustc";
 
-// The options that make a compiler driver stop before linking, and the
-// one that makes it stop after compiling.
+// The option that makes a compiler driver stop once it has an object, and
+// the ones that make it stop before it has one.
 constexpr std::string_view kCompileOnly = "-c";
 constexpr std::string_view kStopsEarly[] = {"-E", "-S", "-M", "-MM"};
 
@@ -93,13 +93,15 @@ std::optional<std::string> valueOf(std::span<const std::string> arguments,
 // What a compiler driver's command line builds.
 std::optional<std::string_view> driverKind(
     std::span<const std::string> arguments) {
-  if (has(arguments, kCompileOnly)) {
-    return kCcObject;
-  }
+  // An option that stops the driver before the assembler wins over `-c`:
+  // `gcc -E -c a.c` writes preprocessed text and no object.
   for (const auto option : kStopsEarly) {
     if (has(arguments, option)) {
       return std::nullopt;
     }
+  }
+  if (has(arguments, kCompileOnly)) {
+    return kCcObject;
   }
 
   // A driver that links says where to. One that was only asked for its

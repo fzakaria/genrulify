@@ -34,6 +34,8 @@ raises cc_binary c++ a.o -o /out/bin/prog
 raises cc_shared_library gcc -o libx.so.1.2 a.o
 raises cc_shared_library clang -shared -o plugin a.o
 raises '' gcc -E a.c -o a.i
+raises '' gcc -E -c a.c -o a.i
+raises '' gcc -c -S a.c
 raises '' gcc -S a.c
 raises '' gcc --version
 raises '' gcc a.c
