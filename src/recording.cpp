@@ -89,6 +89,9 @@ State Recording::sourceState() const {
   if (source.empty()) {
     return {};
   }
+  if (loadedSource) {
+    return *loadedSource;
+  }
   return readState(directory / kStatesDirectory /
                    (std::string(kSourceState) + ".json"));
 }
@@ -155,6 +158,11 @@ Recording Recording::load(const fs::path &directory) {
 
   // Only the recording of a project converted in place has a source tree.
   recording.source = document.value("source", std::string());
+  const auto sourceFile =
+      directory / kStatesDirectory / (std::string(kSourceState) + ".json");
+  if (!recording.source.empty() && fs::exists(sourceFile)) {
+    recording.loadedSource = std::make_shared<const State>(readState(sourceFile));
+  }
 
   // Recordings made before programs could be opened have no pattern.
   recording.open = document.value("open", std::string());

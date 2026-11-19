@@ -4,6 +4,7 @@
 #include "process.h"
 #include <filesystem>
 #include <map>
+#include <memory>
 #include <optional>
 #include <string>
 #include <vector>
@@ -128,6 +129,12 @@ struct Recording {
 
   // The entries of the source tree, or none when there is no source tree.
   State sourceState() const;
+
+  // The source tree's entries as `load` read them. The tree is the same
+  // at every step and every snapshot includes it, so a loaded recording
+  // parses the tree once and not once per snapshot. Unset in a recording
+  // that was not loaded, which reads the tree when asked.
+  std::shared_ptr<const State> loadedSource;
 
   // /bin and /etc as the guest had them when the builder started.
   State platform() const;
