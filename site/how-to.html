@@ -59,15 +59,20 @@
 
       <h2 id="package">Rebuild a Nix package</h2>
       <p>
-        This command records GNU hello, checks which commands it can replay, and writes
-        a Bazel and Buck2 workspace in a new directory called <code>hello/workspace</code>.
+        <code>convert</code> records the Nix build of GNU hello and writes Bazel and Buck2
+        rules in <code>hello/workspace</code>. To check a step such as compiling
+        <code>hello.c</code>, it runs the compiler again in a sandbox with the inputs GCC
+        used. It checks that GCC exits with the same status and produces the same object
+        file. If a step cannot reproduce a file the build needs, the generated workspace
+        can supply that file from the recording.
       </p>
       <pre>nix run github:fzakaria/genrulify -- convert nixpkgs#hello hello
 cd hello/workspace</pre>
       <p>
         Build the <code>archive</code> target with either tool. The result is a Nix
-        archive (NAR) of the package. Compare its SHA-256 digest with the one
-        <code>convert</code> printed for the Nix output. They should match.
+        archive (NAR) of the package. Its SHA-256 digest must match the one
+        <code>convert</code> printed for the Nix output. A different digest means the
+        build produced a different archive.
       </p>
       <h3>Bazel</h3>
       <pre>bazel build //:archive
@@ -96,13 +101,17 @@ bazel build //:archive</pre>
       </p>
       <p>
         Change the greeting in <code>greet.c</code> and run <code>bazel build //:archive</code>
-        again, or use <code>buck2 build //:archive</code> for both builds. The build recompiles
-        <code>greet.c</code> and relinks the program. It reuses the object for <code>main.c</code>.
+        again, or use <code>buck2 build //:archive</code> for both builds. The same compile
+        command reads your edited file. The linker uses the new <code>greet.o</code> and the
+        existing <code>main.o</code>. The rebuilt program now prints your new greeting.
       </p>
       <p>
-        Project rules accept changed output bytes. Their inputs and commands still come from
-        the recording. If you add a source file or include a new header, run the conversion
-        again from the repository root with a fresh recording directory.
+        The generated rules list the files and commands from the build you recorded.
+        If <code>greet.c</code> starts including a new header, its compile rule needs that
+        header as an input. If you add <code>extra.c</code> to the Makefile, the build needs
+        another compile rule. In either case, rerun <code>convert --source</code> from
+        the repository root to regenerate the rules. Give the new recording its own
+        directory, for example <code>/tmp/project-recording-2</code>.
       </p>
     </main>
 
