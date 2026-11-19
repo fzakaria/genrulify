@@ -218,6 +218,42 @@ if "$compiler" emit "$scratch/clash" "$scratch/clash.opt.mlir" "$scratch/clashin
 fi
 grep -q "the project's closure.txt has the name of a file genrulify keeps" "$scratch/error"
 
+# A file below a directory that has a build file of its own belongs to
+# that package, and neither build system lets the root package name it by
+# a path. The rules name such a file by its package, `//lib:header.txt`,
+# and the conversion says what the package has to export, since its build
+# file is the project's. A command still reads the file at its path in
+# the project, which Bazel gives it anyway and which the Buck2 rule is
+# told. Here the header is moved into lib/, which has both build files.
+cp -r "$scratch/recording" "$scratch/nested"
+sed -i "s|$source/header.txt|$source/lib/header.txt|" "$scratch/nested/recording.json" "$scratch/nested/states/source.json"
+sed -i "s|^\[|[\n {\"content\": \"\", \"kind\": \"dir\", \"mode\": 365, \"mtime\": 1, \"path\": \"$source/lib\"},|" "$scratch/nested/states/source.json"
+"$compiler" import "$scratch/nested" > "$scratch/nested.mlir"
+"$compiler" opt "$scratch/nested.mlir" > "$scratch/nested.opt.mlir"
+mkdir -p "$scratch/packages/lib"
+printf 'header\n' > "$scratch/packages/lib/header.txt"
+printf 'filegroup(name = "mine")\n' > "$scratch/packages/lib/BUILD.bazel"
+printf 'filegroup(name = "mine")\n' > "$scratch/packages/lib/BUCK"
+"$compiler" emit "$scratch/nested" "$scratch/nested.opt.mlir" "$scratch/packages" 2> "$scratch/note"
+rule "$scratch/packages/$bazel_rules" s735_dd | grep -q '"//lib:header.txt",'
+rule "$scratch/packages/$buck_rules" s735_dd | grep -q '"//lib:header.txt",'
+rule "$scratch/packages/$buck_rules" s735_dd | grep -A 2 'foreign = \[' | grep -q '"//lib:header.txt",'
+rule "$scratch/packages/$buck_rules" s735_dd | grep -A 2 'foreign_paths = \[' | grep -q '"lib/header.txt",'
+if rule "$scratch/packages/$bazel_rules" s735_dd | grep -q 'foreign\|":lib/header.txt"'; then
+    exit 1
+fi
+grep -q "lib/header.txt.*lib/header.txt.@checkout$" "$scratch/packages/genrulify/actions/s735_dd.manifest"
+grep -q 'packages/lib/BUILD.bazel has to export' "$scratch/note"
+grep -q '^  exports_files(\["header.txt"\])$' "$scratch/note"
+grep -q 'packages/lib/BUCK has to export' "$scratch/note"
+grep -q '^  export_file(name = "header.txt", visibility = \["PUBLIC"\])$' "$scratch/note"
+
+# Once the package exports the file there is nothing to say.
+printf 'exports_files(["header.txt"])\n' > "$scratch/packages/lib/BUILD.bazel"
+printf 'export_file(name = "header.txt", visibility = ["PUBLIC"])\n' > "$scratch/packages/lib/BUCK"
+"$compiler" emit "$scratch/nested" "$scratch/nested.opt.mlir" "$scratch/packages" 2> "$scratch/note"
+test ! -s "$scratch/note"
+
 # A conversion that fails leaves the last one working: the files genrulify
 # wrote before are all still there, and so are the build files that name
 # them. Here the converted project is given the recording that is refused.

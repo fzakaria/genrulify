@@ -111,6 +111,9 @@ constexpr std::string_view kBuckToolchainsDirectory = "toolchains";
 struct Layout {
   bool project = false;
 
+  // The directory of a project converted in place.
+  fs::path root;
+
   // What comes before the name of a file genrulify wrote: nothing, or the
   // support directory and a slash.
   std::string prefix() const {
@@ -151,6 +154,10 @@ struct Input {
   std::string target;
   std::string artifact;
   std::string path;
+
+  // Whether the file is one of the project's own sources, which a build
+  // file names by the package the file belongs to.
+  bool ofProject = false;
   auto operator<=>(const Input &) const = default;
 };
 
@@ -305,6 +312,45 @@ std::string commandLines(Backend backend, const Rule &rule,
   return list(lines);
 }
 
+// The names each build system reads a package's build file under, in the
+// order it looks for them.
+std::span<const std::string_view> buildFileNames(Backend backend) {
+  return backend == Backend::Bazel
+             ? std::span<const std::string_view>(kBazelBuildFiles)
+             : std::span<const std::string_view>(kBuckBuildFiles);
+}
+
+// The build file of the package a file of a project belongs to, when
+// that is not the project's root: the nearest directory above the file,
+// below the root, that has a build file of its own. Both build systems
+// let a package name only its own files by a path, so a file of such a
+// package has to be named `//package:file`, and the package has to
+// export it.
+std::optional<fs::path> owningBuildFile(const Layout &layout, Backend backend,
+                                        const std::string &file) {
+  for (auto directory = fs::path(file).parent_path(); !directory.empty();
+       directory = directory.parent_path()) {
+    for (const auto name : buildFileNames(backend)) {
+      if (fs::exists(layout.root / directory / name)) {
+        return directory / name;
+      }
+    }
+  }
+  return std::nullopt;
+}
+
+// How a build file names a file of the project: by its path when the
+// root package owns it, and by its package otherwise.
+std::string projectLabel(const Layout &layout, Backend backend,
+                         const std::string &file) {
+  const auto owner = owningBuildFile(layout, backend, file);
+  if (!owner) {
+    return backend == Backend::Bazel ? absl::StrCat(":", file) : file;
+  }
+  const auto package = owner->parent_path().string();
+  return absl::StrCat("//", package, ":", file.substr(package.size() + 1));
+}
+
 // How a build file names a file a rule wrote: the rule's output file to
 // Bazel, `:rule/path`, and a sub-target of the rule to Buck2,
 // `:rule[path]`. An artifact is named after its rule and then its path.
@@ -350,8 +396,20 @@ std::vector<std::string> ruleAttributes(Backend backend, const Rule &rule,
   for (const auto &file : rule.sources) {
     data.push_back(workspaceLabel(file));
   }
+  // Buck2 hands a rule a file of another package under the file's name
+  // in that package, and a command reads the file at its path in the
+  // project. So a Buck2 rule is told that path for each such file.
+  Arguments foreign;
+  Arguments foreignPaths;
   for (const auto &input : rule.recorded) {
-    const auto label = workspaceLabel(input.artifact);
+    const auto label = input.ofProject
+                           ? projectLabel(layout, backend, input.artifact)
+                           : workspaceLabel(input.artifact);
+    if (input.ofProject && backend == Backend::Buck2 &&
+        owningBuildFile(layout, backend, input.artifact)) {
+      foreign.push_back(label);
+      foreignPaths.push_back(input.artifact);
+    }
     if (input.target == kPlatformTarget) {
       data.push_back(label);
     } else {
@@ -461,6 +519,10 @@ std::vector<std::string> ruleAttributes(Backend backend, const Rule &rule,
   } else {
     attributes.push_back(attribute("srcs", list(rest())));
     attributes.push_back(attribute("outs", list(rule.outputs)));
+  }
+  if (!foreign.empty()) {
+    attributes.push_back(attribute("foreign", list(foreign)));
+    attributes.push_back(attribute("foreign_paths", list(foreignPaths)));
   }
   attributes.push_back(attribute("cmd", commandLines(backend, rule, layout)));
   return attributes;
@@ -614,6 +676,52 @@ std::string buildFile(Backend backend, const std::vector<Rule> &rules,
   return text;
 }
 
+// Says what the packages below a project's root have to export for the
+// converted rules to read their files. Those build files are the
+// project's, so genrulify writes about them and not into them. A file
+// whose name a build file already has in quotes is taken as dealt with.
+void noteExports(const std::vector<Rule> &rules, const Layout &layout) {
+  for (const auto backend : {Backend::Bazel, Backend::Buck2}) {
+    // The files to export, by the build file of their package.
+    std::map<fs::path, std::set<std::string>> wanted;
+    for (const auto &rule : rules) {
+      for (const auto &input : rule.recorded) {
+        if (!input.ofProject) {
+          continue;
+        }
+        const auto owner = owningBuildFile(layout, backend, input.artifact);
+        if (!owner) {
+          continue;
+        }
+        const auto package = owner->parent_path().string();
+        const auto name = input.artifact.substr(package.size() + 1);
+        const auto text = readBytes(layout.root / *owner);
+        if (text.find(quote(name)) == std::string::npos) {
+          wanted[*owner].insert(name);
+        }
+      }
+    }
+    for (const auto &[buildFile, names] : wanted) {
+      llvm::errs() << (layout.root / buildFile).string()
+                   << " has to export the files of its package that the "
+                      "converted rules read. Add:\n";
+      if (backend == Backend::Bazel) {
+        Arguments quoted;
+        for (const auto &name : names) {
+          quoted.push_back(quote(name));
+        }
+        llvm::errs() << "  exports_files([" << absl::StrJoin(quoted, ", ")
+                     << "])\n";
+        continue;
+      }
+      for (const auto &name : names) {
+        llvm::errs() << "  export_file(name = " << quote(name)
+                     << ", visibility = [\"PUBLIC\"])\n";
+      }
+    }
+  }
+}
+
 // Whether a file of a project is one genrulify wrote, or is not there.
 bool replaceable(const fs::path &file) {
   if (!fs::exists(file)) {
@@ -647,9 +755,7 @@ std::string callLine() { return absl::StrCat(kTargetsFunction, "()"); }
 // it, so every name is looked at, and a loader genrulify wrote earlier
 // goes once the project has a file of its own.
 void writeLoader(Backend backend, const fs::path &project) {
-  const auto names = backend == Backend::Bazel
-                         ? std::span<const std::string_view>(kBazelBuildFiles)
-                         : std::span<const std::string_view>(kBuckBuildFiles);
+  const auto names = buildFileNames(backend);
 
   // The project's own build file is the first one the build system would
   // read that genrulify did not write.
@@ -735,7 +841,7 @@ void emitWorkspace(mlir::ModuleOp module, const Recording &recording,
   // A project's support directory is written under another name and put
   // in place once every file is there, so that a conversion that fails
   // leaves the last one as it was.
-  const Layout layout{!recording.source.empty()};
+  const Layout layout{!recording.source.empty(), destination};
   const auto support =
       layout.project ? destination / kStagingDirectory : destination;
   if (layout.project) {
@@ -766,7 +872,8 @@ void emitWorkspace(mlir::ModuleOp module, const Recording &recording,
         const auto artifact = platformArtifact(entry);
         writeArtifact(recording, entry, support / artifact);
         platformFiles.insert(
-            {std::string(kPlatformTarget), layout.prefix() + artifact, path});
+            {std::string(kPlatformTarget), layout.prefix() + artifact, path,
+             false});
       }
     }
 
@@ -857,7 +964,7 @@ void emitWorkspace(mlir::ModuleOp module, const Recording &recording,
           rule.recorded.insert(
               {target,
                isSource(original) ? artifact : layout.prefix() + artifact,
-               path});
+               path, isSource(original)});
           continue;
         }
         rule.stamps.insert(target);
@@ -1029,6 +1136,7 @@ void emitWorkspace(mlir::ModuleOp module, const Recording &recording,
       removeTree(previous);
       writeLoader(Backend::Bazel, destination);
       writeLoader(Backend::Buck2, destination);
+      noteExports(rules, layout);
     }
 
     // What makes the directory a workspace. A project that already is one

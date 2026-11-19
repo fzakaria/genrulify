@@ -41,9 +41,14 @@ def _step_impl(ctx):
     # Everything the step reads, linked under the names sandbox.sh looks
     # files up by: a file of the workspace by its path, and a file of
     # another rule by that rule's name and then the file's path.
+    #
+    # A file of another package of the project comes under its name in
+    # that package, where the command reads it at its path in the project.
+    # `foreign` lists those files and `foreign_paths` the path of each.
+    placed = dict(zip(ctx.attrs.foreign, ctx.attrs.foreign_paths))
     sources = ctx.actions.symlinked_dir(
         _SOURCES,
-        {source.short_path: source for source in ctx.attrs.srcs},
+        {placed.get(source, source.short_path): source for source in ctx.attrs.srcs},
     )
 
     # The lines go into a script, because a long pipeline does not fit in
@@ -80,51 +85,53 @@ _step = rule(
     impl = _step_impl,
     attrs = {
         "cmd": attrs.list(attrs.string()),
+        "foreign": attrs.list(attrs.source(), default = []),
+        "foreign_paths": attrs.list(attrs.string(), default = []),
         "main": attrs.string(),
         "outs": attrs.list(attrs.string(), default = []),
         "srcs": attrs.list(attrs.source(), default = []),
     },
 )
 
-def _run(name, srcs, outs, cmd):
-    """One step, known by its stamp."""
-    _step(name = name, srcs = srcs, main = name + _STAMP, outs = outs, cmd = cmd)
+def _run(name, srcs, outs, cmd, **placed):
+    """One step, known by its stamp. `placed` is `foreign` and `foreign_paths`."""
+    _step(name = name, srcs = srcs, main = name + _STAMP, outs = outs, cmd = cmd, **placed)
 
 def _outputs(out, outs):
     """The files a rule writes: the one it names, or the several."""
     return ([out] if out else []) + outs
 
-def recorded(name, srcs = [], outs = [], cmd = []):
+def recorded(name, srcs = [], outs = [], cmd = [], **placed):
     """A recorded command or pipeline of no particular kind."""
-    _run(name, srcs, outs, cmd)
+    _run(name, srcs, outs, cmd, **placed)
 
-def cc_object(name, src, hdrs = [], out = None, outs = [], data = [], cmd = []):
+def cc_object(name, src, hdrs = [], out = None, outs = [], data = [], cmd = [], **placed):
     """A C or C++ compile: one source and the headers it opened, to an object."""
-    _run(name, [src] + hdrs + data, _outputs(out, outs), cmd)
+    _run(name, [src] + hdrs + data, _outputs(out, outs), cmd, **placed)
 
-def cc_library(name, objs = [], out = None, outs = [], data = [], cmd = []):
+def cc_library(name, objs = [], out = None, outs = [], data = [], cmd = [], **placed):
     """An `ar` that collects objects into a static library."""
-    _run(name, objs + data, _outputs(out, outs), cmd)
+    _run(name, objs + data, _outputs(out, outs), cmd, **placed)
 
-def cc_binary(name, objs = [], deps = [], out = None, outs = [], data = [], cmd = []):
+def cc_binary(name, objs = [], deps = [], out = None, outs = [], data = [], cmd = [], **placed):
     """A link of objects and libraries into a program."""
-    _run(name, objs + deps + data, _outputs(out, outs), cmd)
+    _run(name, objs + deps + data, _outputs(out, outs), cmd, **placed)
 
-def cc_shared_library(name, objs = [], deps = [], out = None, outs = [], data = [], cmd = []):
+def cc_shared_library(name, objs = [], deps = [], out = None, outs = [], data = [], cmd = [], **placed):
     """A link of objects and libraries into a shared library."""
-    _run(name, objs + deps + data, _outputs(out, outs), cmd)
+    _run(name, objs + deps + data, _outputs(out, outs), cmd, **placed)
 
-def rust_library(name, srcs = [], deps = [], outs = [], data = [], cmd = []):
+def rust_library(name, srcs = [], deps = [], outs = [], data = [], cmd = [], **placed):
     """A rustc invocation that builds a library crate."""
-    _run(name, srcs + deps + data, outs, cmd)
+    _run(name, srcs + deps + data, outs, cmd, **placed)
 
-def rust_binary(name, srcs = [], deps = [], outs = [], data = [], cmd = []):
+def rust_binary(name, srcs = [], deps = [], outs = [], data = [], cmd = [], **placed):
     """A rustc invocation that builds a program."""
-    _run(name, srcs + deps + data, outs, cmd)
+    _run(name, srcs + deps + data, outs, cmd, **placed)
 
-def rust_proc_macro(name, srcs = [], deps = [], outs = [], data = [], cmd = []):
+def rust_proc_macro(name, srcs = [], deps = [], outs = [], data = [], cmd = [], **placed):
     """A rustc invocation that builds a procedural macro."""
-    _run(name, srcs + deps + data, outs, cmd)
+    _run(name, srcs + deps + data, outs, cmd, **placed)
 
 def _named_impl(ctx):
     """Stands for one file of another rule, and runs it when it is a program."""
@@ -173,6 +180,6 @@ def program(name, file, libs = [], lib_names = []):
     """
     _named(name = name, file = file, libs = libs, lib_names = lib_names, runs = True)
 
-def nix_archive(name, srcs, out, cmd):
+def nix_archive(name, srcs, out, cmd, **placed):
     """Packs one derivation output as a NAR, the form Nix hashes."""
-    _step(name = name, srcs = srcs, main = out, cmd = cmd)
+    _step(name = name, srcs = srcs, main = out, cmd = cmd, **placed)
