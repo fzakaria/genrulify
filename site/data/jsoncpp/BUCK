@@ -12,7 +12,7 @@ recorded(
     out = "s1473_cp",
     cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name s1473_cp --timeout 300",
+        "--name s1473_cp --timeout 466",
         "run --cwd /build --env 12 --argv0 cp --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 4 --",
         "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/cp -a /nix/store/qy0yqfmvirf9nbj6ndwnndnc58l9rrra-source source",
     ],
@@ -31,106 +31,106 @@ recorded(
     out = "s2700_cmake",
     cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name s2700_cmake --timeout 300",
+        "--name s2700_cmake --timeout 466",
         "run --cwd /build/source/build --env 21 --argv0 cmake --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 28 --",
         "/nix/store/jcvvpih1046akxcwh9hdiak5q24jqcf0-cmake-4.4.3/bin/cmake .. -DCMAKE_FIND_USE_SYSTEM_PACKAGE_REGISTRY=OFF -DCMAKE_FIND_USE_PACKAGE_REGISTRY=OFF -DCMAKE_EXPORT_NO_PACKAGE_REGISTRY=ON -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF -DCMAKE_INSTALL_LOCALEDIR=/nix/store/g1jcfq4b6favy36p099qwrh3f385cmlw-jsoncpp-1.9.8/share/locale -DCMAKE_INSTALL_LIBEXECDIR=/nix/store/g1jcfq4b6favy36p099qwrh3f385cmlw-jsoncpp-1.9.8/libexec -DCMAKE_INSTALL_LIBDIR=/nix/store/g1jcfq4b6favy36p099qwrh3f385cmlw-jsoncpp-1.9.8/lib -DCMAKE_INSTALL_DOCDIR=/nix/store/g1jcfq4b6favy36p099qwrh3f385cmlw-jsoncpp-1.9.8/share/doc/jsoncpp -DCMAKE_INSTALL_INFODIR=/nix/store/g1jcfq4b6favy36p099qwrh3f385cmlw-jsoncpp-1.9.8/share/info -DCMAKE_INSTALL_MANDIR=/nix/store/g1jcfq4b6favy36p099qwrh3f385cmlw-jsoncpp-1.9.8/share/man -DCMAKE_INSTALL_INCLUDEDIR=/nix/store/q957fj0pjwaa0b8hbyyvr51cksyh5bxi-jsoncpp-1.9.8-dev/include -DCMAKE_INSTALL_SBINDIR=/nix/store/g1jcfq4b6favy36p099qwrh3f385cmlw-jsoncpp-1.9.8/sbin -DCMAKE_INSTALL_BINDIR=/nix/store/g1jcfq4b6favy36p099qwrh3f385cmlw-jsoncpp-1.9.8/bin -DCMAKE_INSTALL_NAME_DIR=/nix/store/g1jcfq4b6favy36p099qwrh3f385cmlw-jsoncpp-1.9.8/lib -DCMAKE_STRIP=/nix/store/j1938gsbvbhkyz4kbmvjk56r479mkw3s-gcc-wrapper-16.2.0/bin/strip -DCMAKE_RANLIB=/nix/store/j1938gsbvbhkyz4kbmvjk56r479mkw3s-gcc-wrapper-16.2.0/bin/ranlib -DCMAKE_AR=/nix/store/j1938gsbvbhkyz4kbmvjk56r479mkw3s-gcc-wrapper-16.2.0/bin/ar -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ -DCMAKE_INSTALL_PREFIX=/nix/store/g1jcfq4b6favy36p099qwrh3f385cmlw-jsoncpp-1.9.8 -DJSONCPP_USE_SECURE_MEMORY=OFF -DBUILD_SHARED_LIBS=ON -DBUILD_OBJECT_LIBS=OFF -DJSONCPP_WITH_CMAKE_PACKAGE=ON -DBUILD_STATIC_LIBS=OFF",
     ],
 )
 
 cc_object(
-    name = "s14676_g__",
+    name = "s14686_g__",
     srcs = [
-        "actions/s14676_g__.manifest",
+        "actions/s14686_g__.manifest",
         "closure.txt",
         "env/26.env",
         "platform",
         "sandbox.sh",
         ":s1473_cp",
     ],
-    out = "s14676_g__",
+    out = "s14686_g__",
     cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name s14676_g__ --timeout 300",
+        "--name s14686_g__ --timeout 466",
         "run --cwd /build/source/build/src/lib_json --env 26 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 49 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/g++ -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -DJSON_DLL_BUILD -Djsoncpp_lib_EXPORTS -I/build/source/include -I/build/source/src/lib_json/../../include -O3 -DNDEBUG -fPIC -Wall -Wconversion -Wshadow -Wextra -Wpedantic -Werror=strict-aliasing -MD -MT src/lib_json/CMakeFiles/jsoncpp_lib.dir/json_reader.cpp.o -MF CMakeFiles/jsoncpp_lib.dir/json_reader.cpp.o.d -o CMakeFiles/jsoncpp_lib.dir/json_reader.cpp.o -c /build/source/src/lib_json/json_reader.cpp -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=g1jcfq4b6f",
     ],
 )
 
 cc_object(
-    name = "s14847_g__",
+    name = "s14860_g__",
     srcs = [
-        "actions/s14847_g__.manifest",
+        "actions/s14860_g__.manifest",
         "closure.txt",
         "env/26.env",
         "platform",
         "sandbox.sh",
         ":s1473_cp",
     ],
-    out = "s14847_g__",
+    out = "s14860_g__",
     cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name s14847_g__ --timeout 300",
+        "--name s14860_g__ --timeout 466",
         "run --cwd /build/source/build/src/lib_json --env 26 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 49 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/g++ -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -DJSON_DLL_BUILD -Djsoncpp_lib_EXPORTS -I/build/source/include -I/build/source/src/lib_json/../../include -O3 -DNDEBUG -fPIC -Wall -Wconversion -Wshadow -Wextra -Wpedantic -Werror=strict-aliasing -MD -MT src/lib_json/CMakeFiles/jsoncpp_lib.dir/json_value.cpp.o -MF CMakeFiles/jsoncpp_lib.dir/json_value.cpp.o.d -o CMakeFiles/jsoncpp_lib.dir/json_value.cpp.o -c /build/source/src/lib_json/json_value.cpp -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=g1jcfq4b6f",
     ],
 )
 
 cc_object(
-    name = "s15019_g__",
+    name = "s15043_g__",
     srcs = [
-        "actions/s15019_g__.manifest",
+        "actions/s15043_g__.manifest",
         "closure.txt",
         "env/26.env",
         "platform",
         "sandbox.sh",
         ":s1473_cp",
     ],
-    out = "s15019_g__",
+    out = "s15043_g__",
     cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name s15019_g__ --timeout 300",
+        "--name s15043_g__ --timeout 466",
         "run --cwd /build/source/build/src/lib_json --env 26 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 49 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/g++ -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -DJSON_DLL_BUILD -Djsoncpp_lib_EXPORTS -I/build/source/include -I/build/source/src/lib_json/../../include -O3 -DNDEBUG -fPIC -Wall -Wconversion -Wshadow -Wextra -Wpedantic -Werror=strict-aliasing -MD -MT src/lib_json/CMakeFiles/jsoncpp_lib.dir/json_writer.cpp.o -MF CMakeFiles/jsoncpp_lib.dir/json_writer.cpp.o.d -o CMakeFiles/jsoncpp_lib.dir/json_writer.cpp.o -c /build/source/src/lib_json/json_writer.cpp -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=g1jcfq4b6f",
     ],
 )
 
 cc_shared_library(
-    name = "s15270_g__",
+    name = "s15286_g__",
     srcs = [
-        "actions/s15270_g__.manifest",
+        "actions/s15286_g__.manifest",
         "closure.txt",
         "env/27.env",
         "platform",
         "sandbox.sh",
-        ":s14676_g__",
-        ":s14847_g__",
-        ":s15019_g__",
+        ":s14686_g__",
+        ":s14860_g__",
+        ":s15043_g__",
         ":s2700_cmake",
     ],
-    out = "s15270_g__",
+    out = "s15286_g__",
     cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name s15270_g__ --timeout 300",
+        "--name s15286_g__ --timeout 466",
         "run --cwd /build/source/build/src/lib_json --env 27 --fd 0=null --fd 1=err --fd 2=err --fd 3=file:r@350:/build/source/build/src/lib_json/CMakeFiles/jsoncpp_lib.dir/link.txt --status 0 --argc 45 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/g++ -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -Wl,-dynamic-linker=/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ld-linux-x86-64.so.2 -fPIC -O3 -DNDEBUG -shared -Wl,--dependency-file=CMakeFiles/jsoncpp_lib.dir/link.d -Wl,-soname,libjsoncpp.so.27 -o ../../lib/libjsoncpp.so.1.9.8 CMakeFiles/jsoncpp_lib.dir/json_reader.cpp.o CMakeFiles/jsoncpp_lib.dir/json_value.cpp.o CMakeFiles/jsoncpp_lib.dir/json_writer.cpp.o -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=g1jcfq4b6f -Wl,-rpath -Wl,/nix/store/g1jcfq4b6favy36p099qwrh3f385cmlw-jsoncpp-1.9.8/lib -L/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib -L/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0 -L/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -L/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib",
     ],
 )
 
 recorded(
-    name = "s20356_find_patchelf",
+    name = "s20387_find_patchelf",
     srcs = [
-        "actions/s20356_find_patchelf.manifest",
+        "actions/s20387_find_patchelf.manifest",
         "closure.txt",
         "env/53.env",
         "env/54.env",
         "platform",
         "sandbox.sh",
-        ":s15270_g__",
+        ":s15286_g__",
     ],
-    out = "s20356_find_patchelf",
+    out = "s20387_find_patchelf",
     cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name s20356_find_patchelf --timeout 300 --pipe 1096:0:1:0",
+        "--name s20387_find_patchelf --timeout 466 --pipe 1096:0:1:0",
         "run --cwd /build/source/build --env 53 --argv0 find --fd 0=null --fd 1=pipe-w:1096 --fd 2=err --status 0 --argc 5 --",
         "/nix/store/ycrbcy9sg4knpnik6a01dk70l0m673x7-findutils-4.11.0/bin/find /nix/store/g1jcfq4b6favy36p099qwrh3f385cmlw-jsoncpp-1.9.8 -type f -print0",
         "run --cwd /build/source/build --env 54 --argv0 patchelf --fd 0=pipe-r:1096 --fd 1=err --fd 2=err --fd 63=pipe-r:1096 --after 0 --status 0 --argc 3 --",
@@ -139,21 +139,21 @@ recorded(
 )
 
 recorded(
-    name = "s20810_strip",
+    name = "s20838_strip",
     srcs = [
-        "actions/s20810_strip.manifest",
+        "actions/s20838_strip.manifest",
         "closure.txt",
-        "const_20704_mktemp",
+        "const_20732_mktemp",
         "env/64.env",
         "platform",
         "sandbox.sh",
-        ":s20356_find_patchelf",
+        ":s20387_find_patchelf",
     ],
-    out = "s20810_strip",
+    out = "s20838_strip",
     cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name s20810_strip --timeout 300",
-        "run --cwd /build/source/build --env 64 --fd 0=null --fd 1=err --fd 2=file:w:/build/striperr.oq3yJI --status 0 --argc 5 --",
+        "--name s20838_strip --timeout 466",
+        "run --cwd /build/source/build --env 64 --fd 0=null --fd 1=err --fd 2=file:w:/build/striperr.xYvqAU --status 0 --argc 5 --",
         "/nix/store/y5sgl0vvrpbcwgjwpjs60r1hg0gi7i0n-binutils-2.46/bin/strip --enable-deterministic-archives -S -p /nix/store/g1jcfq4b6favy36p099qwrh3f385cmlw-jsoncpp-1.9.8/lib/libjsoncpp.so.1.9.8",
     ],
 )
@@ -162,7 +162,7 @@ nix_archive(
     name = "archive_dev",
     srcs = [
         "actions/archive_dev.manifest",
-        "glue_21389",
+        "glue_21417",
         "sandbox.sh",
         ":s1473_cp",
         ":s2700_cmake",
@@ -179,7 +179,7 @@ nix_archive(
     srcs = [
         "actions/archive_out.manifest",
         "sandbox.sh",
-        ":s20810_strip",
+        ":s20838_strip",
     ],
     out = "archive_out.nar",
     cmd = [

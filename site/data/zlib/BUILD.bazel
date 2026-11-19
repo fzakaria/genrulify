@@ -48,7 +48,7 @@ recorded(
     ],
     cmd = [
         "./sandbox.sh --in . --in $(RULEDIR) --out $(RULEDIR)",
-        "--name s1268_tar --timeout 467",
+        "--name s1268_tar --timeout 300",
         "run --cwd /build --env 12 --argv0 tar --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 5 --",
         "/nix/store/5ixf6i3kxcs512kl5glglb0y51rdgaar-gnutar-static-1.35/bin/tar xf /nix/store/13vkic2v8zac4m6p38asdhasb3xylv07-zlib-1.3.2.tar.gz --mode=+w --warning=no-timestamp",
     ],
@@ -79,7 +79,7 @@ recorded(
     ],
     cmd = [
         "./sandbox.sh --in . --in $(RULEDIR) --out $(RULEDIR)",
-        "--name s2637_find_basename_stat_mktemp__4 --timeout 467 --pipe 443:0:1,2,3,4,5,6,7:0",
+        "--name s2637_find_basename_stat_mktemp__4 --timeout 300 --pipe 443:0:1,2,3,4,5,6,7:0",
         "run --cwd /build/zlib-1.3.2 --env 27 --argv0 find --fd 0=null --fd 1=pipe-w:443 --fd 2=err --status 0 --argc 7 --",
         "/nix/store/kvb0b2rhgripxnbnckzinlisghg0yrrg-findutils-static-4.11.0/bin/find ./configure -type f -perm -0100 -print0",
         "run --cwd /build/zlib-1.3.2 --env 28 --argv0 basename --fd 0=pipe-r:443 --fd 1=null --fd 2=err --fd 63=pipe-r:443 --after 0 --status 0 --argc 2 --",
@@ -88,14 +88,14 @@ recorded(
         "/nix/store/flqxa8p0n5wpvycmnjx23l1m147c6z89-coreutils-static-9.11/bin/stat --printf %y ./configure",
         "run --cwd /build/zlib-1.3.2 --env 24 --argv0 mktemp --fd 0=pipe-r:443 --fd 1=null --fd 2=err --fd 63=pipe-r:443 --after 0,1,2 --status 0 --argc 3 --",
         "/nix/store/flqxa8p0n5wpvycmnjx23l1m147c6z89-coreutils-static-9.11/bin/mktemp -t patchShebangs.XXXXXXXXXX",
-        "run --cwd /build/zlib-1.3.2 --env 30 --argv0 sed --fd 0=pipe-r:443 --fd 1=file:w:/build/patchShebangs.LyWmFHyf90 --fd 2=err --fd 63=pipe-r:443 --after 0,1,2,3 --status 0 --argc 4 --",
+        "run --cwd /build/zlib-1.3.2 --env 30 --argv0 sed --fd 0=pipe-r:443 --fd 1=file:w:/build/patchShebangs.372O6Wyui3 --fd 2=err --fd 63=pipe-r:443 --after 0,1,2,3 --status 0 --argc 4 --",
         "/nix/store/9hi4vvvkajwmnxp02wyg9svkhqhhhafy-gnused-static-4.10/bin/sed -e '1 s|.*|#\\!/nix/store/h1ikzxwsf6dc1jlijjcrzwxzanhlw9xj-bash-static-5.3/bin/sh|' ./configure",
         "run --cwd /build/zlib-1.3.2 --env 31 --argv0 cat --fd 0=pipe-r:443 --fd 1=file:w:/build/zlib-1.3.2/configure --fd 2=err --fd 63=pipe-r:443 --after 0,1,2,3,4 --status 0 --argc 2 --",
-        "/nix/store/flqxa8p0n5wpvycmnjx23l1m147c6z89-coreutils-static-9.11/bin/cat /build/patchShebangs.LyWmFHyf90",
+        "/nix/store/flqxa8p0n5wpvycmnjx23l1m147c6z89-coreutils-static-9.11/bin/cat /build/patchShebangs.372O6Wyui3",
         "run --cwd /build/zlib-1.3.2 --env 25 --argv0 rm --fd 0=pipe-r:443 --fd 1=err --fd 2=err --fd 63=pipe-r:443 --after 0,1,2,3,4,5 --status 0 --argc 2 --",
-        "/nix/store/flqxa8p0n5wpvycmnjx23l1m147c6z89-coreutils-static-9.11/bin/rm /build/patchShebangs.LyWmFHyf90",
+        "/nix/store/flqxa8p0n5wpvycmnjx23l1m147c6z89-coreutils-static-9.11/bin/rm /build/patchShebangs.372O6Wyui3",
         "run --cwd /build/zlib-1.3.2 --env 32 --argv0 touch --fd 0=pipe-r:443 --fd 1=err --fd 2=err --fd 63=pipe-r:443 --after 0,1,2,3,4,5,6 --status 0 --argc 4 --",
-        "/nix/store/flqxa8p0n5wpvycmnjx23l1m147c6z89-coreutils-static-9.11/bin/touch --date '2026-11-18 00:00:00.040000000 +0000' ./configure",
+        "/nix/store/flqxa8p0n5wpvycmnjx23l1m147c6z89-coreutils-static-9.11/bin/touch --date '2026-11-19 00:00:00.040000000 +0000' ./configure",
     ],
 )
 
@@ -127,23 +127,23 @@ recorded(
     ],
     cmd = [
         "./sandbox.sh --in . --in $(RULEDIR) --out $(RULEDIR)",
-        "--name s2780_configure --timeout 467",
+        "--name s2780_configure --timeout 300",
         "run --cwd /build/zlib-1.3.2 --env 33 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 7 --",
         "/nix/store/h1ikzxwsf6dc1jlijjcrzwxzanhlw9xj-bash-static-5.3/bin/sh ./configure --prefix=/nix/store/wgw25d181h0qks7qsfp1bh7c5nd3f0s7-zlib-1.3.2 --includedir=/nix/store/879xd5x23lfd4l93jz71yaz06wa15yc1-zlib-1.3.2-dev/include --sharedlibdir=/nix/store/wgw25d181h0qks7qsfp1bh7c5nd3f0s7-zlib-1.3.2/lib --libdir=/nix/store/igzrdkid07pdyh30cswrjb7a9yln9mpp-zlib-1.3.2-static/lib --enable-shared",
     ],
 )
 
 cc_object(
-    name = "s6455_gcc",
+    name = "s6451_gcc",
     src = ":s1268_tar/build/zlib-1.3.2/adler32.c",
     hdrs = [
         ":s1268_tar/build/zlib-1.3.2/zlib.h",
         ":s1268_tar/build/zlib-1.3.2/zutil.h",
         ":s2780_configure/build/zlib-1.3.2/zconf.h",
     ],
-    out = "s6455_gcc/build/zlib-1.3.2/adler32.o",
+    out = "s6451_gcc/build/zlib-1.3.2/adler32.o",
     data = [
-        ":actions/s6455_gcc.manifest",
+        ":actions/s6451_gcc.manifest",
         ":closure.txt",
         ":env/35.env",
         ":platform/bin/sh",
@@ -156,14 +156,14 @@ cc_object(
     ],
     cmd = [
         "./sandbox.sh --in . --in $(RULEDIR) --out $(RULEDIR)",
-        "--name s6455_gcc --timeout 467",
+        "--name s6451_gcc --timeout 300",
         "run --cwd /build/zlib-1.3.2 --env 35 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 37 --",
         "/nix/store/xg9jq55qj9k603jabx1j5wwsgq7ma1bq-xgcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -O3 -fPIC -D_LARGEFILE64_SOURCE=1 -DHAVE_HIDDEN -c -o adler32.o adler32.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/xg9jq55qj9k603jabx1j5wwsgq7ma1bq-xgcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/95yczsn7hjc6lkh3zg1nhz6zcgfn97ck-xgcc-16.2.0-lib/lib --sysroot=/nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev -static-libgcc -frandom-seed=wgw25d181h",
     ],
 )
 
 cc_object(
-    name = "s6562_gcc",
+    name = "s6552_gcc",
     src = ":s1268_tar/build/zlib-1.3.2/crc32.c",
     hdrs = [
         ":s1268_tar/build/zlib-1.3.2/crc32.h",
@@ -171,9 +171,9 @@ cc_object(
         ":s1268_tar/build/zlib-1.3.2/zutil.h",
         ":s2780_configure/build/zlib-1.3.2/zconf.h",
     ],
-    out = "s6562_gcc/build/zlib-1.3.2/crc32.o",
+    out = "s6552_gcc/build/zlib-1.3.2/crc32.o",
     data = [
-        ":actions/s6562_gcc.manifest",
+        ":actions/s6552_gcc.manifest",
         ":closure.txt",
         ":env/35.env",
         ":platform/bin/sh",
@@ -186,14 +186,14 @@ cc_object(
     ],
     cmd = [
         "./sandbox.sh --in . --in $(RULEDIR) --out $(RULEDIR)",
-        "--name s6562_gcc --timeout 467",
+        "--name s6552_gcc --timeout 300",
         "run --cwd /build/zlib-1.3.2 --env 35 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 37 --",
         "/nix/store/xg9jq55qj9k603jabx1j5wwsgq7ma1bq-xgcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -O3 -fPIC -D_LARGEFILE64_SOURCE=1 -DHAVE_HIDDEN -c -o crc32.o crc32.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/xg9jq55qj9k603jabx1j5wwsgq7ma1bq-xgcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/95yczsn7hjc6lkh3zg1nhz6zcgfn97ck-xgcc-16.2.0-lib/lib --sysroot=/nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev -static-libgcc -frandom-seed=wgw25d181h",
     ],
 )
 
 cc_object(
-    name = "s6664_gcc",
+    name = "s6663_gcc",
     src = ":s1268_tar/build/zlib-1.3.2/deflate.c",
     hdrs = [
         ":s1268_tar/build/zlib-1.3.2/deflate.h",
@@ -201,9 +201,9 @@ cc_object(
         ":s1268_tar/build/zlib-1.3.2/zutil.h",
         ":s2780_configure/build/zlib-1.3.2/zconf.h",
     ],
-    out = "s6664_gcc/build/zlib-1.3.2/deflate.o",
+    out = "s6663_gcc/build/zlib-1.3.2/deflate.o",
     data = [
-        ":actions/s6664_gcc.manifest",
+        ":actions/s6663_gcc.manifest",
         ":closure.txt",
         ":env/35.env",
         ":platform/bin/sh",
@@ -216,14 +216,14 @@ cc_object(
     ],
     cmd = [
         "./sandbox.sh --in . --in $(RULEDIR) --out $(RULEDIR)",
-        "--name s6664_gcc --timeout 467",
+        "--name s6663_gcc --timeout 300",
         "run --cwd /build/zlib-1.3.2 --env 35 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 37 --",
         "/nix/store/xg9jq55qj9k603jabx1j5wwsgq7ma1bq-xgcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -O3 -fPIC -D_LARGEFILE64_SOURCE=1 -DHAVE_HIDDEN -c -o deflate.o deflate.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/xg9jq55qj9k603jabx1j5wwsgq7ma1bq-xgcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/95yczsn7hjc6lkh3zg1nhz6zcgfn97ck-xgcc-16.2.0-lib/lib --sysroot=/nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev -static-libgcc -frandom-seed=wgw25d181h",
     ],
 )
 
 cc_object(
-    name = "s6766_gcc",
+    name = "s6765_gcc",
     src = ":s1268_tar/build/zlib-1.3.2/infback.c",
     hdrs = [
         ":s1268_tar/build/zlib-1.3.2/inffast.h",
@@ -233,9 +233,9 @@ cc_object(
         ":s1268_tar/build/zlib-1.3.2/zutil.h",
         ":s2780_configure/build/zlib-1.3.2/zconf.h",
     ],
-    out = "s6766_gcc/build/zlib-1.3.2/infback.o",
+    out = "s6765_gcc/build/zlib-1.3.2/infback.o",
     data = [
-        ":actions/s6766_gcc.manifest",
+        ":actions/s6765_gcc.manifest",
         ":closure.txt",
         ":env/35.env",
         ":platform/bin/sh",
@@ -248,14 +248,14 @@ cc_object(
     ],
     cmd = [
         "./sandbox.sh --in . --in $(RULEDIR) --out $(RULEDIR)",
-        "--name s6766_gcc --timeout 467",
+        "--name s6765_gcc --timeout 300",
         "run --cwd /build/zlib-1.3.2 --env 35 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 37 --",
         "/nix/store/xg9jq55qj9k603jabx1j5wwsgq7ma1bq-xgcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -O3 -fPIC -D_LARGEFILE64_SOURCE=1 -DHAVE_HIDDEN -c -o infback.o infback.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/xg9jq55qj9k603jabx1j5wwsgq7ma1bq-xgcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/95yczsn7hjc6lkh3zg1nhz6zcgfn97ck-xgcc-16.2.0-lib/lib --sysroot=/nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev -static-libgcc -frandom-seed=wgw25d181h",
     ],
 )
 
 cc_object(
-    name = "s6878_gcc",
+    name = "s6868_gcc",
     src = ":s1268_tar/build/zlib-1.3.2/inffast.c",
     hdrs = [
         ":s1268_tar/build/zlib-1.3.2/inffast.h",
@@ -265,9 +265,9 @@ cc_object(
         ":s1268_tar/build/zlib-1.3.2/zutil.h",
         ":s2780_configure/build/zlib-1.3.2/zconf.h",
     ],
-    out = "s6878_gcc/build/zlib-1.3.2/inffast.o",
+    out = "s6868_gcc/build/zlib-1.3.2/inffast.o",
     data = [
-        ":actions/s6878_gcc.manifest",
+        ":actions/s6868_gcc.manifest",
         ":closure.txt",
         ":env/35.env",
         ":platform/bin/sh",
@@ -280,14 +280,14 @@ cc_object(
     ],
     cmd = [
         "./sandbox.sh --in . --in $(RULEDIR) --out $(RULEDIR)",
-        "--name s6878_gcc --timeout 467",
+        "--name s6868_gcc --timeout 300",
         "run --cwd /build/zlib-1.3.2 --env 35 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 37 --",
         "/nix/store/xg9jq55qj9k603jabx1j5wwsgq7ma1bq-xgcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -O3 -fPIC -D_LARGEFILE64_SOURCE=1 -DHAVE_HIDDEN -c -o inffast.o inffast.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/xg9jq55qj9k603jabx1j5wwsgq7ma1bq-xgcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/95yczsn7hjc6lkh3zg1nhz6zcgfn97ck-xgcc-16.2.0-lib/lib --sysroot=/nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev -static-libgcc -frandom-seed=wgw25d181h",
     ],
 )
 
 cc_object(
-    name = "s6986_gcc",
+    name = "s6970_gcc",
     src = ":s1268_tar/build/zlib-1.3.2/inflate.c",
     hdrs = [
         ":s1268_tar/build/zlib-1.3.2/inffast.h",
@@ -297,9 +297,9 @@ cc_object(
         ":s1268_tar/build/zlib-1.3.2/zutil.h",
         ":s2780_configure/build/zlib-1.3.2/zconf.h",
     ],
-    out = "s6986_gcc/build/zlib-1.3.2/inflate.o",
+    out = "s6970_gcc/build/zlib-1.3.2/inflate.o",
     data = [
-        ":actions/s6986_gcc.manifest",
+        ":actions/s6970_gcc.manifest",
         ":closure.txt",
         ":env/35.env",
         ":platform/bin/sh",
@@ -312,14 +312,14 @@ cc_object(
     ],
     cmd = [
         "./sandbox.sh --in . --in $(RULEDIR) --out $(RULEDIR)",
-        "--name s6986_gcc --timeout 467",
+        "--name s6970_gcc --timeout 300",
         "run --cwd /build/zlib-1.3.2 --env 35 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 37 --",
         "/nix/store/xg9jq55qj9k603jabx1j5wwsgq7ma1bq-xgcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -O3 -fPIC -D_LARGEFILE64_SOURCE=1 -DHAVE_HIDDEN -c -o inflate.o inflate.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/xg9jq55qj9k603jabx1j5wwsgq7ma1bq-xgcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/95yczsn7hjc6lkh3zg1nhz6zcgfn97ck-xgcc-16.2.0-lib/lib --sysroot=/nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev -static-libgcc -frandom-seed=wgw25d181h",
     ],
 )
 
 cc_object(
-    name = "s7088_gcc",
+    name = "s7079_gcc",
     src = ":s1268_tar/build/zlib-1.3.2/inftrees.c",
     hdrs = [
         ":s1268_tar/build/zlib-1.3.2/inffixed.h",
@@ -329,9 +329,9 @@ cc_object(
         ":s1268_tar/build/zlib-1.3.2/zutil.h",
         ":s2780_configure/build/zlib-1.3.2/zconf.h",
     ],
-    out = "s7088_gcc/build/zlib-1.3.2/inftrees.o",
+    out = "s7079_gcc/build/zlib-1.3.2/inftrees.o",
     data = [
-        ":actions/s7088_gcc.manifest",
+        ":actions/s7079_gcc.manifest",
         ":closure.txt",
         ":env/35.env",
         ":platform/bin/sh",
@@ -344,14 +344,14 @@ cc_object(
     ],
     cmd = [
         "./sandbox.sh --in . --in $(RULEDIR) --out $(RULEDIR)",
-        "--name s7088_gcc --timeout 467",
+        "--name s7079_gcc --timeout 300",
         "run --cwd /build/zlib-1.3.2 --env 35 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 37 --",
         "/nix/store/xg9jq55qj9k603jabx1j5wwsgq7ma1bq-xgcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -O3 -fPIC -D_LARGEFILE64_SOURCE=1 -DHAVE_HIDDEN -c -o inftrees.o inftrees.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/xg9jq55qj9k603jabx1j5wwsgq7ma1bq-xgcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/95yczsn7hjc6lkh3zg1nhz6zcgfn97ck-xgcc-16.2.0-lib/lib --sysroot=/nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev -static-libgcc -frandom-seed=wgw25d181h",
     ],
 )
 
 cc_object(
-    name = "s7190_gcc",
+    name = "s7172_gcc",
     src = ":s1268_tar/build/zlib-1.3.2/trees.c",
     hdrs = [
         ":s1268_tar/build/zlib-1.3.2/deflate.h",
@@ -360,9 +360,9 @@ cc_object(
         ":s1268_tar/build/zlib-1.3.2/zutil.h",
         ":s2780_configure/build/zlib-1.3.2/zconf.h",
     ],
-    out = "s7190_gcc/build/zlib-1.3.2/trees.o",
+    out = "s7172_gcc/build/zlib-1.3.2/trees.o",
     data = [
-        ":actions/s7190_gcc.manifest",
+        ":actions/s7172_gcc.manifest",
         ":closure.txt",
         ":env/35.env",
         ":platform/bin/sh",
@@ -375,14 +375,14 @@ cc_object(
     ],
     cmd = [
         "./sandbox.sh --in . --in $(RULEDIR) --out $(RULEDIR)",
-        "--name s7190_gcc --timeout 467",
+        "--name s7172_gcc --timeout 300",
         "run --cwd /build/zlib-1.3.2 --env 35 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 37 --",
         "/nix/store/xg9jq55qj9k603jabx1j5wwsgq7ma1bq-xgcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -O3 -fPIC -D_LARGEFILE64_SOURCE=1 -DHAVE_HIDDEN -c -o trees.o trees.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/xg9jq55qj9k603jabx1j5wwsgq7ma1bq-xgcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/95yczsn7hjc6lkh3zg1nhz6zcgfn97ck-xgcc-16.2.0-lib/lib --sysroot=/nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev -static-libgcc -frandom-seed=wgw25d181h",
     ],
 )
 
 cc_object(
-    name = "s7288_gcc",
+    name = "s7284_gcc",
     src = ":s1268_tar/build/zlib-1.3.2/zutil.c",
     hdrs = [
         ":s1268_tar/build/zlib-1.3.2/gzguts.h",
@@ -390,9 +390,9 @@ cc_object(
         ":s1268_tar/build/zlib-1.3.2/zutil.h",
         ":s2780_configure/build/zlib-1.3.2/zconf.h",
     ],
-    out = "s7288_gcc/build/zlib-1.3.2/zutil.o",
+    out = "s7284_gcc/build/zlib-1.3.2/zutil.o",
     data = [
-        ":actions/s7288_gcc.manifest",
+        ":actions/s7284_gcc.manifest",
         ":closure.txt",
         ":env/35.env",
         ":platform/bin/sh",
@@ -405,22 +405,22 @@ cc_object(
     ],
     cmd = [
         "./sandbox.sh --in . --in $(RULEDIR) --out $(RULEDIR)",
-        "--name s7288_gcc --timeout 467",
+        "--name s7284_gcc --timeout 300",
         "run --cwd /build/zlib-1.3.2 --env 35 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 37 --",
         "/nix/store/xg9jq55qj9k603jabx1j5wwsgq7ma1bq-xgcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -O3 -fPIC -D_LARGEFILE64_SOURCE=1 -DHAVE_HIDDEN -c -o zutil.o zutil.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/xg9jq55qj9k603jabx1j5wwsgq7ma1bq-xgcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/95yczsn7hjc6lkh3zg1nhz6zcgfn97ck-xgcc-16.2.0-lib/lib --sysroot=/nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev -static-libgcc -frandom-seed=wgw25d181h",
     ],
 )
 
 cc_object(
-    name = "s7399_gcc",
+    name = "s7384_gcc",
     src = ":s1268_tar/build/zlib-1.3.2/compress.c",
     hdrs = [
         ":s1268_tar/build/zlib-1.3.2/zlib.h",
         ":s2780_configure/build/zlib-1.3.2/zconf.h",
     ],
-    out = "s7399_gcc/build/zlib-1.3.2/compress.o",
+    out = "s7384_gcc/build/zlib-1.3.2/compress.o",
     data = [
-        ":actions/s7399_gcc.manifest",
+        ":actions/s7384_gcc.manifest",
         ":closure.txt",
         ":env/35.env",
         ":platform/bin/sh",
@@ -433,22 +433,22 @@ cc_object(
     ],
     cmd = [
         "./sandbox.sh --in . --in $(RULEDIR) --out $(RULEDIR)",
-        "--name s7399_gcc --timeout 467",
+        "--name s7384_gcc --timeout 300",
         "run --cwd /build/zlib-1.3.2 --env 35 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 37 --",
         "/nix/store/xg9jq55qj9k603jabx1j5wwsgq7ma1bq-xgcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -O3 -fPIC -D_LARGEFILE64_SOURCE=1 -DHAVE_HIDDEN -c -o compress.o compress.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/xg9jq55qj9k603jabx1j5wwsgq7ma1bq-xgcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/95yczsn7hjc6lkh3zg1nhz6zcgfn97ck-xgcc-16.2.0-lib/lib --sysroot=/nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev -static-libgcc -frandom-seed=wgw25d181h",
     ],
 )
 
 cc_object(
-    name = "s7491_gcc",
+    name = "s7486_gcc",
     src = ":s1268_tar/build/zlib-1.3.2/uncompr.c",
     hdrs = [
         ":s1268_tar/build/zlib-1.3.2/zlib.h",
         ":s2780_configure/build/zlib-1.3.2/zconf.h",
     ],
-    out = "s7491_gcc/build/zlib-1.3.2/uncompr.o",
+    out = "s7486_gcc/build/zlib-1.3.2/uncompr.o",
     data = [
-        ":actions/s7491_gcc.manifest",
+        ":actions/s7486_gcc.manifest",
         ":closure.txt",
         ":env/35.env",
         ":platform/bin/sh",
@@ -461,23 +461,23 @@ cc_object(
     ],
     cmd = [
         "./sandbox.sh --in . --in $(RULEDIR) --out $(RULEDIR)",
-        "--name s7491_gcc --timeout 467",
+        "--name s7486_gcc --timeout 300",
         "run --cwd /build/zlib-1.3.2 --env 35 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 37 --",
         "/nix/store/xg9jq55qj9k603jabx1j5wwsgq7ma1bq-xgcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -O3 -fPIC -D_LARGEFILE64_SOURCE=1 -DHAVE_HIDDEN -c -o uncompr.o uncompr.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/xg9jq55qj9k603jabx1j5wwsgq7ma1bq-xgcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/95yczsn7hjc6lkh3zg1nhz6zcgfn97ck-xgcc-16.2.0-lib/lib --sysroot=/nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev -static-libgcc -frandom-seed=wgw25d181h",
     ],
 )
 
 cc_object(
-    name = "s7592_gcc",
+    name = "s7586_gcc",
     src = ":s1268_tar/build/zlib-1.3.2/gzclose.c",
     hdrs = [
         ":s1268_tar/build/zlib-1.3.2/gzguts.h",
         ":s1268_tar/build/zlib-1.3.2/zlib.h",
         ":s2780_configure/build/zlib-1.3.2/zconf.h",
     ],
-    out = "s7592_gcc/build/zlib-1.3.2/gzclose.o",
+    out = "s7586_gcc/build/zlib-1.3.2/gzclose.o",
     data = [
-        ":actions/s7592_gcc.manifest",
+        ":actions/s7586_gcc.manifest",
         ":closure.txt",
         ":env/35.env",
         ":platform/bin/sh",
@@ -490,23 +490,23 @@ cc_object(
     ],
     cmd = [
         "./sandbox.sh --in . --in $(RULEDIR) --out $(RULEDIR)",
-        "--name s7592_gcc --timeout 467",
+        "--name s7586_gcc --timeout 300",
         "run --cwd /build/zlib-1.3.2 --env 35 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 37 --",
         "/nix/store/xg9jq55qj9k603jabx1j5wwsgq7ma1bq-xgcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -O3 -fPIC -D_LARGEFILE64_SOURCE=1 -DHAVE_HIDDEN -c -o gzclose.o gzclose.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/xg9jq55qj9k603jabx1j5wwsgq7ma1bq-xgcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/95yczsn7hjc6lkh3zg1nhz6zcgfn97ck-xgcc-16.2.0-lib/lib --sysroot=/nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev -static-libgcc -frandom-seed=wgw25d181h",
     ],
 )
 
 cc_object(
-    name = "s7693_gcc",
+    name = "s7688_gcc",
     src = ":s1268_tar/build/zlib-1.3.2/gzlib.c",
     hdrs = [
         ":s1268_tar/build/zlib-1.3.2/gzguts.h",
         ":s1268_tar/build/zlib-1.3.2/zlib.h",
         ":s2780_configure/build/zlib-1.3.2/zconf.h",
     ],
-    out = "s7693_gcc/build/zlib-1.3.2/gzlib.o",
+    out = "s7688_gcc/build/zlib-1.3.2/gzlib.o",
     data = [
-        ":actions/s7693_gcc.manifest",
+        ":actions/s7688_gcc.manifest",
         ":closure.txt",
         ":env/35.env",
         ":platform/bin/sh",
@@ -519,23 +519,23 @@ cc_object(
     ],
     cmd = [
         "./sandbox.sh --in . --in $(RULEDIR) --out $(RULEDIR)",
-        "--name s7693_gcc --timeout 467",
+        "--name s7688_gcc --timeout 300",
         "run --cwd /build/zlib-1.3.2 --env 35 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 37 --",
         "/nix/store/xg9jq55qj9k603jabx1j5wwsgq7ma1bq-xgcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -O3 -fPIC -D_LARGEFILE64_SOURCE=1 -DHAVE_HIDDEN -c -o gzlib.o gzlib.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/xg9jq55qj9k603jabx1j5wwsgq7ma1bq-xgcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/95yczsn7hjc6lkh3zg1nhz6zcgfn97ck-xgcc-16.2.0-lib/lib --sysroot=/nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev -static-libgcc -frandom-seed=wgw25d181h",
     ],
 )
 
 cc_object(
-    name = "s7795_gcc",
+    name = "s7789_gcc",
     src = ":s1268_tar/build/zlib-1.3.2/gzread.c",
     hdrs = [
         ":s1268_tar/build/zlib-1.3.2/gzguts.h",
         ":s1268_tar/build/zlib-1.3.2/zlib.h",
         ":s2780_configure/build/zlib-1.3.2/zconf.h",
     ],
-    out = "s7795_gcc/build/zlib-1.3.2/gzread.o",
+    out = "s7789_gcc/build/zlib-1.3.2/gzread.o",
     data = [
-        ":actions/s7795_gcc.manifest",
+        ":actions/s7789_gcc.manifest",
         ":closure.txt",
         ":env/35.env",
         ":platform/bin/sh",
@@ -548,23 +548,23 @@ cc_object(
     ],
     cmd = [
         "./sandbox.sh --in . --in $(RULEDIR) --out $(RULEDIR)",
-        "--name s7795_gcc --timeout 467",
+        "--name s7789_gcc --timeout 300",
         "run --cwd /build/zlib-1.3.2 --env 35 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 37 --",
         "/nix/store/xg9jq55qj9k603jabx1j5wwsgq7ma1bq-xgcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -O3 -fPIC -D_LARGEFILE64_SOURCE=1 -DHAVE_HIDDEN -c -o gzread.o gzread.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/xg9jq55qj9k603jabx1j5wwsgq7ma1bq-xgcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/95yczsn7hjc6lkh3zg1nhz6zcgfn97ck-xgcc-16.2.0-lib/lib --sysroot=/nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev -static-libgcc -frandom-seed=wgw25d181h",
     ],
 )
 
 cc_object(
-    name = "s7908_gcc",
+    name = "s7892_gcc",
     src = ":s1268_tar/build/zlib-1.3.2/gzwrite.c",
     hdrs = [
         ":s1268_tar/build/zlib-1.3.2/gzguts.h",
         ":s1268_tar/build/zlib-1.3.2/zlib.h",
         ":s2780_configure/build/zlib-1.3.2/zconf.h",
     ],
-    out = "s7908_gcc/build/zlib-1.3.2/gzwrite.o",
+    out = "s7892_gcc/build/zlib-1.3.2/gzwrite.o",
     data = [
-        ":actions/s7908_gcc.manifest",
+        ":actions/s7892_gcc.manifest",
         ":closure.txt",
         ":env/35.env",
         ":platform/bin/sh",
@@ -577,34 +577,34 @@ cc_object(
     ],
     cmd = [
         "./sandbox.sh --in . --in $(RULEDIR) --out $(RULEDIR)",
-        "--name s7908_gcc --timeout 467",
+        "--name s7892_gcc --timeout 300",
         "run --cwd /build/zlib-1.3.2 --env 35 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 37 --",
         "/nix/store/xg9jq55qj9k603jabx1j5wwsgq7ma1bq-xgcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -O3 -fPIC -D_LARGEFILE64_SOURCE=1 -DHAVE_HIDDEN -c -o gzwrite.o gzwrite.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/xg9jq55qj9k603jabx1j5wwsgq7ma1bq-xgcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/95yczsn7hjc6lkh3zg1nhz6zcgfn97ck-xgcc-16.2.0-lib/lib --sysroot=/nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev -static-libgcc -frandom-seed=wgw25d181h",
     ],
 )
 
 cc_library(
-    name = "s7996_ar",
+    name = "s7989_ar",
     objs = [
-        ":s6455_gcc/build/zlib-1.3.2/adler32.o",
-        ":s6562_gcc/build/zlib-1.3.2/crc32.o",
-        ":s6664_gcc/build/zlib-1.3.2/deflate.o",
-        ":s6766_gcc/build/zlib-1.3.2/infback.o",
-        ":s6878_gcc/build/zlib-1.3.2/inffast.o",
-        ":s6986_gcc/build/zlib-1.3.2/inflate.o",
-        ":s7088_gcc/build/zlib-1.3.2/inftrees.o",
-        ":s7190_gcc/build/zlib-1.3.2/trees.o",
-        ":s7288_gcc/build/zlib-1.3.2/zutil.o",
-        ":s7399_gcc/build/zlib-1.3.2/compress.o",
-        ":s7491_gcc/build/zlib-1.3.2/uncompr.o",
-        ":s7592_gcc/build/zlib-1.3.2/gzclose.o",
-        ":s7693_gcc/build/zlib-1.3.2/gzlib.o",
-        ":s7795_gcc/build/zlib-1.3.2/gzread.o",
-        ":s7908_gcc/build/zlib-1.3.2/gzwrite.o",
+        ":s6451_gcc/build/zlib-1.3.2/adler32.o",
+        ":s6552_gcc/build/zlib-1.3.2/crc32.o",
+        ":s6663_gcc/build/zlib-1.3.2/deflate.o",
+        ":s6765_gcc/build/zlib-1.3.2/infback.o",
+        ":s6868_gcc/build/zlib-1.3.2/inffast.o",
+        ":s6970_gcc/build/zlib-1.3.2/inflate.o",
+        ":s7079_gcc/build/zlib-1.3.2/inftrees.o",
+        ":s7172_gcc/build/zlib-1.3.2/trees.o",
+        ":s7284_gcc/build/zlib-1.3.2/zutil.o",
+        ":s7384_gcc/build/zlib-1.3.2/compress.o",
+        ":s7486_gcc/build/zlib-1.3.2/uncompr.o",
+        ":s7586_gcc/build/zlib-1.3.2/gzclose.o",
+        ":s7688_gcc/build/zlib-1.3.2/gzlib.o",
+        ":s7789_gcc/build/zlib-1.3.2/gzread.o",
+        ":s7892_gcc/build/zlib-1.3.2/gzwrite.o",
     ],
-    out = "s7996_ar/build/zlib-1.3.2/libz.a",
+    out = "s7989_ar/build/zlib-1.3.2/libz.a",
     data = [
-        ":actions/s7996_ar.manifest",
+        ":actions/s7989_ar.manifest",
         ":closure.txt",
         ":env/36.env",
         ":platform/bin/sh",
@@ -612,41 +612,41 @@ cc_library(
         ":platform/etc/hosts",
         ":platform/etc/passwd",
         ":sandbox.sh",
-        ":s6455_gcc.ok",
-        ":s6562_gcc.ok",
-        ":s6664_gcc.ok",
-        ":s6766_gcc.ok",
-        ":s6878_gcc.ok",
-        ":s6986_gcc.ok",
-        ":s7088_gcc.ok",
-        ":s7190_gcc.ok",
-        ":s7288_gcc.ok",
-        ":s7399_gcc.ok",
-        ":s7491_gcc.ok",
-        ":s7592_gcc.ok",
-        ":s7693_gcc.ok",
-        ":s7795_gcc.ok",
-        ":s7908_gcc.ok",
+        ":s6451_gcc.ok",
+        ":s6552_gcc.ok",
+        ":s6663_gcc.ok",
+        ":s6765_gcc.ok",
+        ":s6868_gcc.ok",
+        ":s6970_gcc.ok",
+        ":s7079_gcc.ok",
+        ":s7172_gcc.ok",
+        ":s7284_gcc.ok",
+        ":s7384_gcc.ok",
+        ":s7486_gcc.ok",
+        ":s7586_gcc.ok",
+        ":s7688_gcc.ok",
+        ":s7789_gcc.ok",
+        ":s7892_gcc.ok",
     ],
     cmd = [
         "./sandbox.sh --in . --in $(RULEDIR) --out $(RULEDIR)",
-        "--name s7996_ar --timeout 467",
+        "--name s7989_ar --timeout 300",
         "run --cwd /build/zlib-1.3.2 --env 36 --argv0 ar --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 18 --",
         "/nix/store/c6lz3f7bqqidm0lrdvn1wg9g2bag04ca-bootstrap-stage3-gcc-wrapper-16.2.0/bin/ar rc libz.a adler32.o crc32.o deflate.o infback.o inffast.o inflate.o inftrees.o trees.o zutil.o compress.o uncompr.o gzclose.o gzlib.o gzread.o gzwrite.o",
     ],
 )
 
 cc_object(
-    name = "s8720_gcc",
+    name = "s8715_gcc",
     src = ":s1268_tar/build/zlib-1.3.2/adler32.c",
     hdrs = [
         ":s1268_tar/build/zlib-1.3.2/zlib.h",
         ":s1268_tar/build/zlib-1.3.2/zutil.h",
         ":s2780_configure/build/zlib-1.3.2/zconf.h",
     ],
-    out = "s8720_gcc/build/zlib-1.3.2/objs/adler32.o",
+    out = "s8715_gcc/build/zlib-1.3.2/objs/adler32.o",
     data = [
-        ":actions/s8720_gcc.manifest",
+        ":actions/s8715_gcc.manifest",
         ":closure.txt",
         ":env/35.env",
         ":platform/bin/sh",
@@ -659,14 +659,14 @@ cc_object(
     ],
     cmd = [
         "./sandbox.sh --in . --in $(RULEDIR) --out $(RULEDIR)",
-        "--name s8720_gcc --timeout 467",
+        "--name s8715_gcc --timeout 300",
         "run --cwd /build/zlib-1.3.2 --env 35 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 38 --",
         "/nix/store/xg9jq55qj9k603jabx1j5wwsgq7ma1bq-xgcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -O3 -fPIC -D_LARGEFILE64_SOURCE=1 -DHAVE_HIDDEN -DPIC -c -o objs/adler32.o adler32.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/xg9jq55qj9k603jabx1j5wwsgq7ma1bq-xgcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/95yczsn7hjc6lkh3zg1nhz6zcgfn97ck-xgcc-16.2.0-lib/lib --sysroot=/nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev -static-libgcc -frandom-seed=wgw25d181h",
     ],
 )
 
 cc_object(
-    name = "s8859_gcc",
+    name = "s8854_gcc",
     src = ":s1268_tar/build/zlib-1.3.2/crc32.c",
     hdrs = [
         ":s1268_tar/build/zlib-1.3.2/crc32.h",
@@ -674,9 +674,9 @@ cc_object(
         ":s1268_tar/build/zlib-1.3.2/zutil.h",
         ":s2780_configure/build/zlib-1.3.2/zconf.h",
     ],
-    out = "s8859_gcc/build/zlib-1.3.2/objs/crc32.o",
+    out = "s8854_gcc/build/zlib-1.3.2/objs/crc32.o",
     data = [
-        ":actions/s8859_gcc.manifest",
+        ":actions/s8854_gcc.manifest",
         ":closure.txt",
         ":env/35.env",
         ":platform/bin/sh",
@@ -689,14 +689,14 @@ cc_object(
     ],
     cmd = [
         "./sandbox.sh --in . --in $(RULEDIR) --out $(RULEDIR)",
-        "--name s8859_gcc --timeout 467",
+        "--name s8854_gcc --timeout 300",
         "run --cwd /build/zlib-1.3.2 --env 35 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 38 --",
         "/nix/store/xg9jq55qj9k603jabx1j5wwsgq7ma1bq-xgcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -O3 -fPIC -D_LARGEFILE64_SOURCE=1 -DHAVE_HIDDEN -DPIC -c -o objs/crc32.o crc32.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/xg9jq55qj9k603jabx1j5wwsgq7ma1bq-xgcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/95yczsn7hjc6lkh3zg1nhz6zcgfn97ck-xgcc-16.2.0-lib/lib --sysroot=/nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev -static-libgcc -frandom-seed=wgw25d181h",
     ],
 )
 
 cc_object(
-    name = "s8998_gcc",
+    name = "s8993_gcc",
     src = ":s1268_tar/build/zlib-1.3.2/deflate.c",
     hdrs = [
         ":s1268_tar/build/zlib-1.3.2/deflate.h",
@@ -704,9 +704,9 @@ cc_object(
         ":s1268_tar/build/zlib-1.3.2/zutil.h",
         ":s2780_configure/build/zlib-1.3.2/zconf.h",
     ],
-    out = "s8998_gcc/build/zlib-1.3.2/objs/deflate.o",
+    out = "s8993_gcc/build/zlib-1.3.2/objs/deflate.o",
     data = [
-        ":actions/s8998_gcc.manifest",
+        ":actions/s8993_gcc.manifest",
         ":closure.txt",
         ":env/35.env",
         ":platform/bin/sh",
@@ -719,14 +719,14 @@ cc_object(
     ],
     cmd = [
         "./sandbox.sh --in . --in $(RULEDIR) --out $(RULEDIR)",
-        "--name s8998_gcc --timeout 467",
+        "--name s8993_gcc --timeout 300",
         "run --cwd /build/zlib-1.3.2 --env 35 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 38 --",
         "/nix/store/xg9jq55qj9k603jabx1j5wwsgq7ma1bq-xgcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -O3 -fPIC -D_LARGEFILE64_SOURCE=1 -DHAVE_HIDDEN -DPIC -c -o objs/deflate.o deflate.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/xg9jq55qj9k603jabx1j5wwsgq7ma1bq-xgcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/95yczsn7hjc6lkh3zg1nhz6zcgfn97ck-xgcc-16.2.0-lib/lib --sysroot=/nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev -static-libgcc -frandom-seed=wgw25d181h",
     ],
 )
 
 cc_object(
-    name = "s9137_gcc",
+    name = "s9136_gcc",
     src = ":s1268_tar/build/zlib-1.3.2/infback.c",
     hdrs = [
         ":s1268_tar/build/zlib-1.3.2/inffast.h",
@@ -736,9 +736,9 @@ cc_object(
         ":s1268_tar/build/zlib-1.3.2/zutil.h",
         ":s2780_configure/build/zlib-1.3.2/zconf.h",
     ],
-    out = "s9137_gcc/build/zlib-1.3.2/objs/infback.o",
+    out = "s9136_gcc/build/zlib-1.3.2/objs/infback.o",
     data = [
-        ":actions/s9137_gcc.manifest",
+        ":actions/s9136_gcc.manifest",
         ":closure.txt",
         ":env/35.env",
         ":platform/bin/sh",
@@ -751,14 +751,14 @@ cc_object(
     ],
     cmd = [
         "./sandbox.sh --in . --in $(RULEDIR) --out $(RULEDIR)",
-        "--name s9137_gcc --timeout 467",
+        "--name s9136_gcc --timeout 300",
         "run --cwd /build/zlib-1.3.2 --env 35 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 38 --",
         "/nix/store/xg9jq55qj9k603jabx1j5wwsgq7ma1bq-xgcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -O3 -fPIC -D_LARGEFILE64_SOURCE=1 -DHAVE_HIDDEN -DPIC -c -o objs/infback.o infback.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/xg9jq55qj9k603jabx1j5wwsgq7ma1bq-xgcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/95yczsn7hjc6lkh3zg1nhz6zcgfn97ck-xgcc-16.2.0-lib/lib --sysroot=/nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev -static-libgcc -frandom-seed=wgw25d181h",
     ],
 )
 
 cc_object(
-    name = "s9282_gcc",
+    name = "s9275_gcc",
     src = ":s1268_tar/build/zlib-1.3.2/inffast.c",
     hdrs = [
         ":s1268_tar/build/zlib-1.3.2/inffast.h",
@@ -768,9 +768,9 @@ cc_object(
         ":s1268_tar/build/zlib-1.3.2/zutil.h",
         ":s2780_configure/build/zlib-1.3.2/zconf.h",
     ],
-    out = "s9282_gcc/build/zlib-1.3.2/objs/inffast.o",
+    out = "s9275_gcc/build/zlib-1.3.2/objs/inffast.o",
     data = [
-        ":actions/s9282_gcc.manifest",
+        ":actions/s9275_gcc.manifest",
         ":closure.txt",
         ":env/35.env",
         ":platform/bin/sh",
@@ -783,14 +783,14 @@ cc_object(
     ],
     cmd = [
         "./sandbox.sh --in . --in $(RULEDIR) --out $(RULEDIR)",
-        "--name s9282_gcc --timeout 467",
+        "--name s9275_gcc --timeout 300",
         "run --cwd /build/zlib-1.3.2 --env 35 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 38 --",
         "/nix/store/xg9jq55qj9k603jabx1j5wwsgq7ma1bq-xgcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -O3 -fPIC -D_LARGEFILE64_SOURCE=1 -DHAVE_HIDDEN -DPIC -c -o objs/inffast.o inffast.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/xg9jq55qj9k603jabx1j5wwsgq7ma1bq-xgcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/95yczsn7hjc6lkh3zg1nhz6zcgfn97ck-xgcc-16.2.0-lib/lib --sysroot=/nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev -static-libgcc -frandom-seed=wgw25d181h",
     ],
 )
 
 cc_object(
-    name = "s9417_gcc",
+    name = "s9419_gcc",
     src = ":s1268_tar/build/zlib-1.3.2/inflate.c",
     hdrs = [
         ":s1268_tar/build/zlib-1.3.2/inffast.h",
@@ -800,9 +800,9 @@ cc_object(
         ":s1268_tar/build/zlib-1.3.2/zutil.h",
         ":s2780_configure/build/zlib-1.3.2/zconf.h",
     ],
-    out = "s9417_gcc/build/zlib-1.3.2/objs/inflate.o",
+    out = "s9419_gcc/build/zlib-1.3.2/objs/inflate.o",
     data = [
-        ":actions/s9417_gcc.manifest",
+        ":actions/s9419_gcc.manifest",
         ":closure.txt",
         ":env/35.env",
         ":platform/bin/sh",
@@ -815,14 +815,14 @@ cc_object(
     ],
     cmd = [
         "./sandbox.sh --in . --in $(RULEDIR) --out $(RULEDIR)",
-        "--name s9417_gcc --timeout 467",
+        "--name s9419_gcc --timeout 300",
         "run --cwd /build/zlib-1.3.2 --env 35 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 38 --",
         "/nix/store/xg9jq55qj9k603jabx1j5wwsgq7ma1bq-xgcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -O3 -fPIC -D_LARGEFILE64_SOURCE=1 -DHAVE_HIDDEN -DPIC -c -o objs/inflate.o inflate.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/xg9jq55qj9k603jabx1j5wwsgq7ma1bq-xgcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/95yczsn7hjc6lkh3zg1nhz6zcgfn97ck-xgcc-16.2.0-lib/lib --sysroot=/nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev -static-libgcc -frandom-seed=wgw25d181h",
     ],
 )
 
 cc_object(
-    name = "s9563_gcc",
+    name = "s9559_gcc",
     src = ":s1268_tar/build/zlib-1.3.2/inftrees.c",
     hdrs = [
         ":s1268_tar/build/zlib-1.3.2/inffixed.h",
@@ -832,9 +832,9 @@ cc_object(
         ":s1268_tar/build/zlib-1.3.2/zutil.h",
         ":s2780_configure/build/zlib-1.3.2/zconf.h",
     ],
-    out = "s9563_gcc/build/zlib-1.3.2/objs/inftrees.o",
+    out = "s9559_gcc/build/zlib-1.3.2/objs/inftrees.o",
     data = [
-        ":actions/s9563_gcc.manifest",
+        ":actions/s9559_gcc.manifest",
         ":closure.txt",
         ":env/35.env",
         ":platform/bin/sh",
@@ -847,14 +847,14 @@ cc_object(
     ],
     cmd = [
         "./sandbox.sh --in . --in $(RULEDIR) --out $(RULEDIR)",
-        "--name s9563_gcc --timeout 467",
+        "--name s9559_gcc --timeout 300",
         "run --cwd /build/zlib-1.3.2 --env 35 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 38 --",
         "/nix/store/xg9jq55qj9k603jabx1j5wwsgq7ma1bq-xgcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -O3 -fPIC -D_LARGEFILE64_SOURCE=1 -DHAVE_HIDDEN -DPIC -c -o objs/inftrees.o inftrees.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/xg9jq55qj9k603jabx1j5wwsgq7ma1bq-xgcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/95yczsn7hjc6lkh3zg1nhz6zcgfn97ck-xgcc-16.2.0-lib/lib --sysroot=/nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev -static-libgcc -frandom-seed=wgw25d181h",
     ],
 )
 
 cc_object(
-    name = "s9709_gcc",
+    name = "s9702_gcc",
     src = ":s1268_tar/build/zlib-1.3.2/trees.c",
     hdrs = [
         ":s1268_tar/build/zlib-1.3.2/deflate.h",
@@ -863,9 +863,9 @@ cc_object(
         ":s1268_tar/build/zlib-1.3.2/zutil.h",
         ":s2780_configure/build/zlib-1.3.2/zconf.h",
     ],
-    out = "s9709_gcc/build/zlib-1.3.2/objs/trees.o",
+    out = "s9702_gcc/build/zlib-1.3.2/objs/trees.o",
     data = [
-        ":actions/s9709_gcc.manifest",
+        ":actions/s9702_gcc.manifest",
         ":closure.txt",
         ":env/35.env",
         ":platform/bin/sh",
@@ -878,14 +878,14 @@ cc_object(
     ],
     cmd = [
         "./sandbox.sh --in . --in $(RULEDIR) --out $(RULEDIR)",
-        "--name s9709_gcc --timeout 467",
+        "--name s9702_gcc --timeout 300",
         "run --cwd /build/zlib-1.3.2 --env 35 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 38 --",
         "/nix/store/xg9jq55qj9k603jabx1j5wwsgq7ma1bq-xgcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -O3 -fPIC -D_LARGEFILE64_SOURCE=1 -DHAVE_HIDDEN -DPIC -c -o objs/trees.o trees.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/xg9jq55qj9k603jabx1j5wwsgq7ma1bq-xgcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/95yczsn7hjc6lkh3zg1nhz6zcgfn97ck-xgcc-16.2.0-lib/lib --sysroot=/nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev -static-libgcc -frandom-seed=wgw25d181h",
     ],
 )
 
 cc_object(
-    name = "s9839_gcc",
+    name = "s9856_gcc",
     src = ":s1268_tar/build/zlib-1.3.2/zutil.c",
     hdrs = [
         ":s1268_tar/build/zlib-1.3.2/gzguts.h",
@@ -893,9 +893,9 @@ cc_object(
         ":s1268_tar/build/zlib-1.3.2/zutil.h",
         ":s2780_configure/build/zlib-1.3.2/zconf.h",
     ],
-    out = "s9839_gcc/build/zlib-1.3.2/objs/zutil.o",
+    out = "s9856_gcc/build/zlib-1.3.2/objs/zutil.o",
     data = [
-        ":actions/s9839_gcc.manifest",
+        ":actions/s9856_gcc.manifest",
         ":closure.txt",
         ":env/35.env",
         ":platform/bin/sh",
@@ -908,22 +908,22 @@ cc_object(
     ],
     cmd = [
         "./sandbox.sh --in . --in $(RULEDIR) --out $(RULEDIR)",
-        "--name s9839_gcc --timeout 467",
+        "--name s9856_gcc --timeout 300",
         "run --cwd /build/zlib-1.3.2 --env 35 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 38 --",
         "/nix/store/xg9jq55qj9k603jabx1j5wwsgq7ma1bq-xgcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -O3 -fPIC -D_LARGEFILE64_SOURCE=1 -DHAVE_HIDDEN -DPIC -c -o objs/zutil.o zutil.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/xg9jq55qj9k603jabx1j5wwsgq7ma1bq-xgcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/95yczsn7hjc6lkh3zg1nhz6zcgfn97ck-xgcc-16.2.0-lib/lib --sysroot=/nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev -static-libgcc -frandom-seed=wgw25d181h",
     ],
 )
 
 cc_object(
-    name = "s9981_gcc",
+    name = "s10000_gcc",
     src = ":s1268_tar/build/zlib-1.3.2/compress.c",
     hdrs = [
         ":s1268_tar/build/zlib-1.3.2/zlib.h",
         ":s2780_configure/build/zlib-1.3.2/zconf.h",
     ],
-    out = "s9981_gcc/build/zlib-1.3.2/objs/compress.o",
+    out = "s10000_gcc/build/zlib-1.3.2/objs/compress.o",
     data = [
-        ":actions/s9981_gcc.manifest",
+        ":actions/s10000_gcc.manifest",
         ":closure.txt",
         ":env/35.env",
         ":platform/bin/sh",
@@ -936,22 +936,22 @@ cc_object(
     ],
     cmd = [
         "./sandbox.sh --in . --in $(RULEDIR) --out $(RULEDIR)",
-        "--name s9981_gcc --timeout 467",
+        "--name s10000_gcc --timeout 300",
         "run --cwd /build/zlib-1.3.2 --env 35 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 38 --",
         "/nix/store/xg9jq55qj9k603jabx1j5wwsgq7ma1bq-xgcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -O3 -fPIC -D_LARGEFILE64_SOURCE=1 -DHAVE_HIDDEN -DPIC -c -o objs/compress.o compress.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/xg9jq55qj9k603jabx1j5wwsgq7ma1bq-xgcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/95yczsn7hjc6lkh3zg1nhz6zcgfn97ck-xgcc-16.2.0-lib/lib --sysroot=/nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev -static-libgcc -frandom-seed=wgw25d181h",
     ],
 )
 
 cc_object(
-    name = "s10119_gcc",
+    name = "s10134_gcc",
     src = ":s1268_tar/build/zlib-1.3.2/uncompr.c",
     hdrs = [
         ":s1268_tar/build/zlib-1.3.2/zlib.h",
         ":s2780_configure/build/zlib-1.3.2/zconf.h",
     ],
-    out = "s10119_gcc/build/zlib-1.3.2/objs/uncompr.o",
+    out = "s10134_gcc/build/zlib-1.3.2/objs/uncompr.o",
     data = [
-        ":actions/s10119_gcc.manifest",
+        ":actions/s10134_gcc.manifest",
         ":closure.txt",
         ":env/35.env",
         ":platform/bin/sh",
@@ -964,23 +964,23 @@ cc_object(
     ],
     cmd = [
         "./sandbox.sh --in . --in $(RULEDIR) --out $(RULEDIR)",
-        "--name s10119_gcc --timeout 467",
+        "--name s10134_gcc --timeout 300",
         "run --cwd /build/zlib-1.3.2 --env 35 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 38 --",
         "/nix/store/xg9jq55qj9k603jabx1j5wwsgq7ma1bq-xgcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -O3 -fPIC -D_LARGEFILE64_SOURCE=1 -DHAVE_HIDDEN -DPIC -c -o objs/uncompr.o uncompr.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/xg9jq55qj9k603jabx1j5wwsgq7ma1bq-xgcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/95yczsn7hjc6lkh3zg1nhz6zcgfn97ck-xgcc-16.2.0-lib/lib --sysroot=/nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev -static-libgcc -frandom-seed=wgw25d181h",
     ],
 )
 
 cc_object(
-    name = "s10262_gcc",
+    name = "s10272_gcc",
     src = ":s1268_tar/build/zlib-1.3.2/gzclose.c",
     hdrs = [
         ":s1268_tar/build/zlib-1.3.2/gzguts.h",
         ":s1268_tar/build/zlib-1.3.2/zlib.h",
         ":s2780_configure/build/zlib-1.3.2/zconf.h",
     ],
-    out = "s10262_gcc/build/zlib-1.3.2/objs/gzclose.o",
+    out = "s10272_gcc/build/zlib-1.3.2/objs/gzclose.o",
     data = [
-        ":actions/s10262_gcc.manifest",
+        ":actions/s10272_gcc.manifest",
         ":closure.txt",
         ":env/35.env",
         ":platform/bin/sh",
@@ -993,23 +993,23 @@ cc_object(
     ],
     cmd = [
         "./sandbox.sh --in . --in $(RULEDIR) --out $(RULEDIR)",
-        "--name s10262_gcc --timeout 467",
+        "--name s10272_gcc --timeout 300",
         "run --cwd /build/zlib-1.3.2 --env 35 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 38 --",
         "/nix/store/xg9jq55qj9k603jabx1j5wwsgq7ma1bq-xgcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -O3 -fPIC -D_LARGEFILE64_SOURCE=1 -DHAVE_HIDDEN -DPIC -c -o objs/gzclose.o gzclose.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/xg9jq55qj9k603jabx1j5wwsgq7ma1bq-xgcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/95yczsn7hjc6lkh3zg1nhz6zcgfn97ck-xgcc-16.2.0-lib/lib --sysroot=/nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev -static-libgcc -frandom-seed=wgw25d181h",
     ],
 )
 
 cc_object(
-    name = "s10400_gcc",
+    name = "s10415_gcc",
     src = ":s1268_tar/build/zlib-1.3.2/gzlib.c",
     hdrs = [
         ":s1268_tar/build/zlib-1.3.2/gzguts.h",
         ":s1268_tar/build/zlib-1.3.2/zlib.h",
         ":s2780_configure/build/zlib-1.3.2/zconf.h",
     ],
-    out = "s10400_gcc/build/zlib-1.3.2/objs/gzlib.o",
+    out = "s10415_gcc/build/zlib-1.3.2/objs/gzlib.o",
     data = [
-        ":actions/s10400_gcc.manifest",
+        ":actions/s10415_gcc.manifest",
         ":closure.txt",
         ":env/35.env",
         ":platform/bin/sh",
@@ -1022,23 +1022,23 @@ cc_object(
     ],
     cmd = [
         "./sandbox.sh --in . --in $(RULEDIR) --out $(RULEDIR)",
-        "--name s10400_gcc --timeout 467",
+        "--name s10415_gcc --timeout 300",
         "run --cwd /build/zlib-1.3.2 --env 35 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 38 --",
         "/nix/store/xg9jq55qj9k603jabx1j5wwsgq7ma1bq-xgcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -O3 -fPIC -D_LARGEFILE64_SOURCE=1 -DHAVE_HIDDEN -DPIC -c -o objs/gzlib.o gzlib.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/xg9jq55qj9k603jabx1j5wwsgq7ma1bq-xgcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/95yczsn7hjc6lkh3zg1nhz6zcgfn97ck-xgcc-16.2.0-lib/lib --sysroot=/nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev -static-libgcc -frandom-seed=wgw25d181h",
     ],
 )
 
 cc_object(
-    name = "s10543_gcc",
+    name = "s10553_gcc",
     src = ":s1268_tar/build/zlib-1.3.2/gzread.c",
     hdrs = [
         ":s1268_tar/build/zlib-1.3.2/gzguts.h",
         ":s1268_tar/build/zlib-1.3.2/zlib.h",
         ":s2780_configure/build/zlib-1.3.2/zconf.h",
     ],
-    out = "s10543_gcc/build/zlib-1.3.2/objs/gzread.o",
+    out = "s10553_gcc/build/zlib-1.3.2/objs/gzread.o",
     data = [
-        ":actions/s10543_gcc.manifest",
+        ":actions/s10553_gcc.manifest",
         ":closure.txt",
         ":env/35.env",
         ":platform/bin/sh",
@@ -1051,23 +1051,23 @@ cc_object(
     ],
     cmd = [
         "./sandbox.sh --in . --in $(RULEDIR) --out $(RULEDIR)",
-        "--name s10543_gcc --timeout 467",
+        "--name s10553_gcc --timeout 300",
         "run --cwd /build/zlib-1.3.2 --env 35 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 38 --",
         "/nix/store/xg9jq55qj9k603jabx1j5wwsgq7ma1bq-xgcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -O3 -fPIC -D_LARGEFILE64_SOURCE=1 -DHAVE_HIDDEN -DPIC -c -o objs/gzread.o gzread.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/xg9jq55qj9k603jabx1j5wwsgq7ma1bq-xgcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/95yczsn7hjc6lkh3zg1nhz6zcgfn97ck-xgcc-16.2.0-lib/lib --sysroot=/nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev -static-libgcc -frandom-seed=wgw25d181h",
     ],
 )
 
 cc_object(
-    name = "s10682_gcc",
+    name = "s10706_gcc",
     src = ":s1268_tar/build/zlib-1.3.2/gzwrite.c",
     hdrs = [
         ":s1268_tar/build/zlib-1.3.2/gzguts.h",
         ":s1268_tar/build/zlib-1.3.2/zlib.h",
         ":s2780_configure/build/zlib-1.3.2/zconf.h",
     ],
-    out = "s10682_gcc/build/zlib-1.3.2/objs/gzwrite.o",
+    out = "s10706_gcc/build/zlib-1.3.2/objs/gzwrite.o",
     data = [
-        ":actions/s10682_gcc.manifest",
+        ":actions/s10706_gcc.manifest",
         ":closure.txt",
         ":env/35.env",
         ":platform/bin/sh",
@@ -1080,16 +1080,16 @@ cc_object(
     ],
     cmd = [
         "./sandbox.sh --in . --in $(RULEDIR) --out $(RULEDIR)",
-        "--name s10682_gcc --timeout 467",
+        "--name s10706_gcc --timeout 300",
         "run --cwd /build/zlib-1.3.2 --env 35 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 38 --",
         "/nix/store/xg9jq55qj9k603jabx1j5wwsgq7ma1bq-xgcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -O3 -fPIC -D_LARGEFILE64_SOURCE=1 -DHAVE_HIDDEN -DPIC -c -o objs/gzwrite.o gzwrite.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/xg9jq55qj9k603jabx1j5wwsgq7ma1bq-xgcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/95yczsn7hjc6lkh3zg1nhz6zcgfn97ck-xgcc-16.2.0-lib/lib --sysroot=/nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev -static-libgcc -frandom-seed=wgw25d181h",
     ],
 )
 
 recorded(
-    name = "s10868_collect2",
+    name = "s10891_collect2",
     srcs = [
-        ":actions/s10868_collect2.manifest",
+        ":actions/s10891_collect2.manifest",
         ":closure.txt",
         ":env/42.env",
         ":platform/bin/sh",
@@ -1097,54 +1097,54 @@ recorded(
         ":platform/etc/hosts",
         ":platform/etc/passwd",
         ":sandbox.sh",
-        ":s10119_gcc/build/zlib-1.3.2/objs/uncompr.o",
-        ":s10262_gcc/build/zlib-1.3.2/objs/gzclose.o",
-        ":s10400_gcc/build/zlib-1.3.2/objs/gzlib.o",
-        ":s10543_gcc/build/zlib-1.3.2/objs/gzread.o",
-        ":s10682_gcc/build/zlib-1.3.2/objs/gzwrite.o",
+        ":s10000_gcc/build/zlib-1.3.2/objs/compress.o",
+        ":s10134_gcc/build/zlib-1.3.2/objs/uncompr.o",
+        ":s10272_gcc/build/zlib-1.3.2/objs/gzclose.o",
+        ":s10415_gcc/build/zlib-1.3.2/objs/gzlib.o",
+        ":s10553_gcc/build/zlib-1.3.2/objs/gzread.o",
+        ":s10706_gcc/build/zlib-1.3.2/objs/gzwrite.o",
         ":s1268_tar/build/zlib-1.3.2/zlib.map",
-        ":s8720_gcc/build/zlib-1.3.2/objs/adler32.o",
-        ":s8859_gcc/build/zlib-1.3.2/objs/crc32.o",
-        ":s8998_gcc/build/zlib-1.3.2/objs/deflate.o",
-        ":s9137_gcc/build/zlib-1.3.2/objs/infback.o",
-        ":s9282_gcc/build/zlib-1.3.2/objs/inffast.o",
-        ":s9417_gcc/build/zlib-1.3.2/objs/inflate.o",
-        ":s9563_gcc/build/zlib-1.3.2/objs/inftrees.o",
-        ":s9709_gcc/build/zlib-1.3.2/objs/trees.o",
-        ":s9839_gcc/build/zlib-1.3.2/objs/zutil.o",
-        ":s9981_gcc/build/zlib-1.3.2/objs/compress.o",
-        ":s10119_gcc.ok",
-        ":s10262_gcc.ok",
-        ":s10400_gcc.ok",
-        ":s10543_gcc.ok",
-        ":s10682_gcc.ok",
+        ":s8715_gcc/build/zlib-1.3.2/objs/adler32.o",
+        ":s8854_gcc/build/zlib-1.3.2/objs/crc32.o",
+        ":s8993_gcc/build/zlib-1.3.2/objs/deflate.o",
+        ":s9136_gcc/build/zlib-1.3.2/objs/infback.o",
+        ":s9275_gcc/build/zlib-1.3.2/objs/inffast.o",
+        ":s9419_gcc/build/zlib-1.3.2/objs/inflate.o",
+        ":s9559_gcc/build/zlib-1.3.2/objs/inftrees.o",
+        ":s9702_gcc/build/zlib-1.3.2/objs/trees.o",
+        ":s9856_gcc/build/zlib-1.3.2/objs/zutil.o",
+        ":s10000_gcc.ok",
+        ":s10134_gcc.ok",
+        ":s10272_gcc.ok",
+        ":s10415_gcc.ok",
+        ":s10553_gcc.ok",
+        ":s10706_gcc.ok",
         ":s1268_tar.ok",
-        ":s8720_gcc.ok",
-        ":s8859_gcc.ok",
-        ":s8998_gcc.ok",
-        ":s9137_gcc.ok",
-        ":s9282_gcc.ok",
-        ":s9417_gcc.ok",
-        ":s9563_gcc.ok",
-        ":s9709_gcc.ok",
-        ":s9839_gcc.ok",
-        ":s9981_gcc.ok",
+        ":s8715_gcc.ok",
+        ":s8854_gcc.ok",
+        ":s8993_gcc.ok",
+        ":s9136_gcc.ok",
+        ":s9275_gcc.ok",
+        ":s9419_gcc.ok",
+        ":s9559_gcc.ok",
+        ":s9702_gcc.ok",
+        ":s9856_gcc.ok",
     ],
     outs = [
-        "s10868_collect2/build/zlib-1.3.2/libz.so.1.3.2",
+        "s10891_collect2/build/zlib-1.3.2/libz.so.1.3.2",
     ],
     cmd = [
         "./sandbox.sh --in . --in $(RULEDIR) --out $(RULEDIR)",
-        "--name s10868_collect2 --timeout 467",
+        "--name s10891_collect2 --timeout 300",
         "run --cwd /build/zlib-1.3.2 --env 42 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 49 --",
         "/nix/store/xg9jq55qj9k603jabx1j5wwsgq7ma1bq-xgcc-16.2.0/libexec/gcc/x86_64-unknown-linux-gnu/16.2.0/collect2 --sysroot=/nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev --eh-frame-hdr -m elf_x86_64 -shared -o libz.so.1.3.2 /nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/crti.o /nix/store/xg9jq55qj9k603jabx1j5wwsgq7ma1bq-xgcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/crtbeginS.o -L/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib -L/nix/store/xg9jq55qj9k603jabx1j5wwsgq7ma1bq-xgcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0 -L/nix/store/95yczsn7hjc6lkh3zg1nhz6zcgfn97ck-xgcc-16.2.0-lib/lib -L/nix/store/95yczsn7hjc6lkh3zg1nhz6zcgfn97ck-xgcc-16.2.0-lib/lib -L/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib -L/nix/store/95yczsn7hjc6lkh3zg1nhz6zcgfn97ck-xgcc-16.2.0-lib/lib -L/nix/store/xg9jq55qj9k603jabx1j5wwsgq7ma1bq-xgcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0 -L/nix/store/xg9jq55qj9k603jabx1j5wwsgq7ma1bq-xgcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/../../.. -dynamic-linker=/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ld-linux-x86-64.so.2 -soname libz.so.1 --version-script zlib.map adler32.lo crc32.lo deflate.lo infback.lo inffast.lo inflate.lo inftrees.lo trees.lo zutil.lo compress.lo uncompr.lo gzclose.lo gzlib.lo gzread.lo gzwrite.lo -lc -rpath /nix/store/wgw25d181h0qks7qsfp1bh7c5nd3f0s7-zlib-1.3.2/lib -lgcc -lgcc_eh -latomic_asneeded -lc -lgcc -lgcc_eh /nix/store/xg9jq55qj9k603jabx1j5wwsgq7ma1bq-xgcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/crtendS.o /nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/crtn.o",
     ],
 )
 
 recorded(
-    name = "s13860_find_patchelf",
+    name = "s13888_find_patchelf",
     srcs = [
-        ":actions/s13860_find_patchelf.manifest",
+        ":actions/s13888_find_patchelf.manifest",
         ":closure.txt",
         ":env/75.env",
         ":env/76.env",
@@ -1153,15 +1153,15 @@ recorded(
         ":platform/etc/hosts",
         ":platform/etc/passwd",
         ":sandbox.sh",
-        ":s10868_collect2/build/zlib-1.3.2/libz.so.1.3.2",
-        ":s10868_collect2.ok",
+        ":s10891_collect2/build/zlib-1.3.2/libz.so.1.3.2",
+        ":s10891_collect2.ok",
     ],
     outs = [
-        "s13860_find_patchelf/nix/store/wgw25d181h0qks7qsfp1bh7c5nd3f0s7-zlib-1.3.2/lib/libz.so.1.3.2",
+        "s13888_find_patchelf/nix/store/wgw25d181h0qks7qsfp1bh7c5nd3f0s7-zlib-1.3.2/lib/libz.so.1.3.2",
     ],
     cmd = [
         "./sandbox.sh --in . --in $(RULEDIR) --out $(RULEDIR)",
-        "--name s13860_find_patchelf --timeout 467 --pipe 877:0:1:0",
+        "--name s13888_find_patchelf --timeout 300 --pipe 877:0:1:0",
         "run --cwd /build/zlib-1.3.2 --env 75 --argv0 find --fd 0=null --fd 1=pipe-w:877 --fd 2=err --status 0 --argc 5 --",
         "/nix/store/kvb0b2rhgripxnbnckzinlisghg0yrrg-findutils-static-4.11.0/bin/find /nix/store/wgw25d181h0qks7qsfp1bh7c5nd3f0s7-zlib-1.3.2 -type f -print0",
         "run --cwd /build/zlib-1.3.2 --env 76 --argv0 patchelf --fd 0=pipe-r:877 --fd 1=err --fd 2=err --fd 63=pipe-r:877 --after 0 --status 0 --argc 3 --",
@@ -1170,9 +1170,9 @@ recorded(
 )
 
 recorded(
-    name = "s14078_gzip",
+    name = "s14108_gzip",
     srcs = [
-        ":actions/s14078_gzip.manifest",
+        ":actions/s14108_gzip.manifest",
         ":closure.txt",
         ":env/84.env",
         ":platform/bin/sh",
@@ -1184,20 +1184,20 @@ recorded(
         ":s1268_tar.ok",
     ],
     outs = [
-        "s14078_gzip/nix/store/wgw25d181h0qks7qsfp1bh7c5nd3f0s7-zlib-1.3.2/share/man/man3/zlib.3.gz",
+        "s14108_gzip/nix/store/wgw25d181h0qks7qsfp1bh7c5nd3f0s7-zlib-1.3.2/share/man/man3/zlib.3.gz",
     ],
     cmd = [
         "./sandbox.sh --in . --in $(RULEDIR) --out $(RULEDIR)",
-        "--name s14078_gzip --timeout 467",
+        "--name s14108_gzip --timeout 300",
         "run --cwd /build/zlib-1.3.2 --env 84 --argv0 gzip --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 4 --",
         "/nix/store/1bgh8202bdz32ya2x4yp7lvccpq16bxl-gzip-static-1.14/bin/gzip -n -f /nix/store/wgw25d181h0qks7qsfp1bh7c5nd3f0s7-zlib-1.3.2/share/man/man3/zlib.3",
     ],
 )
 
 recorded(
-    name = "s14195_strip",
+    name = "s14225_strip",
     srcs = [
-        ":actions/s14195_strip.manifest",
+        ":actions/s14225_strip.manifest",
         ":closure.txt",
         ":env/84.env",
         ":platform/bin/sh",
@@ -1205,25 +1205,25 @@ recorded(
         ":platform/etc/hosts",
         ":platform/etc/passwd",
         ":sandbox.sh",
-        ":const_14153_mktemp/build/striperr.uHQCtJ",
-        ":s13860_find_patchelf/nix/store/wgw25d181h0qks7qsfp1bh7c5nd3f0s7-zlib-1.3.2/lib/libz.so.1.3.2",
-        ":s13860_find_patchelf.ok",
+        ":const_14183_mktemp/build/striperr.PudoQ0",
+        ":s13888_find_patchelf/nix/store/wgw25d181h0qks7qsfp1bh7c5nd3f0s7-zlib-1.3.2/lib/libz.so.1.3.2",
+        ":s13888_find_patchelf.ok",
     ],
     outs = [
-        "s14195_strip/nix/store/wgw25d181h0qks7qsfp1bh7c5nd3f0s7-zlib-1.3.2/lib/libz.so.1.3.2",
+        "s14225_strip/nix/store/wgw25d181h0qks7qsfp1bh7c5nd3f0s7-zlib-1.3.2/lib/libz.so.1.3.2",
     ],
     cmd = [
         "./sandbox.sh --in . --in $(RULEDIR) --out $(RULEDIR)",
-        "--name s14195_strip --timeout 467",
-        "run --cwd /build/zlib-1.3.2 --env 84 --argv0 strip --fd 0=null --fd 1=err --fd 2=file:w:/build/striperr.uHQCtJ --status 0 --argc 4 --",
+        "--name s14225_strip --timeout 300",
+        "run --cwd /build/zlib-1.3.2 --env 84 --argv0 strip --fd 0=null --fd 1=err --fd 2=file:w:/build/striperr.PudoQ0 --status 0 --argc 4 --",
         "/nix/store/wdjg34rmvz8hhnd5m5bkblzlbpv5hrwm-binutils-patchelfed-ld-2.46/bin/strip -S -p /nix/store/wgw25d181h0qks7qsfp1bh7c5nd3f0s7-zlib-1.3.2/lib/libz.so.1.3.2",
     ],
 )
 
 recorded(
-    name = "s14440_strip",
+    name = "s14470_strip",
     srcs = [
-        ":actions/s14440_strip.manifest",
+        ":actions/s14470_strip.manifest",
         ":closure.txt",
         ":env/95.env",
         ":platform/bin/sh",
@@ -1231,17 +1231,17 @@ recorded(
         ":platform/etc/hosts",
         ":platform/etc/passwd",
         ":sandbox.sh",
-        ":const_14398_mktemp/build/striperr.zFVlKo",
-        ":s7996_ar/build/zlib-1.3.2/libz.a",
-        ":s7996_ar.ok",
+        ":const_14428_mktemp/build/striperr.xMFdo5",
+        ":s7989_ar/build/zlib-1.3.2/libz.a",
+        ":s7989_ar.ok",
     ],
     outs = [
-        "s14440_strip/nix/store/igzrdkid07pdyh30cswrjb7a9yln9mpp-zlib-1.3.2-static/lib/libz.a",
+        "s14470_strip/nix/store/igzrdkid07pdyh30cswrjb7a9yln9mpp-zlib-1.3.2-static/lib/libz.a",
     ],
     cmd = [
         "./sandbox.sh --in . --in $(RULEDIR) --out $(RULEDIR)",
-        "--name s14440_strip --timeout 467",
-        "run --cwd /build/zlib-1.3.2 --env 95 --argv0 strip --fd 0=null --fd 1=err --fd 2=file:w:/build/striperr.zFVlKo --status 0 --argc 4 --",
+        "--name s14470_strip --timeout 300",
+        "run --cwd /build/zlib-1.3.2 --env 95 --argv0 strip --fd 0=null --fd 1=err --fd 2=file:w:/build/striperr.xMFdo5 --status 0 --argc 4 --",
         "/nix/store/wdjg34rmvz8hhnd5m5bkblzlbpv5hrwm-binutils-patchelfed-ld-2.46/bin/strip -S -p /nix/store/igzrdkid07pdyh30cswrjb7a9yln9mpp-zlib-1.3.2-static/lib/libz.a",
     ],
 )
@@ -1251,7 +1251,7 @@ nix_archive(
     srcs = [
         ":actions/archive_dev.manifest",
         ":sandbox.sh",
-        ":glue_14873/nix/store/879xd5x23lfd4l93jz71yaz06wa15yc1-zlib-1.3.2-dev/nix-support/propagated-build-inputs",
+        ":glue_14910/nix/store/879xd5x23lfd4l93jz71yaz06wa15yc1-zlib-1.3.2-dev/nix-support/propagated-build-inputs",
         ":s1268_tar/build/zlib-1.3.2/zlib.h",
         ":s2780_configure/build/zlib-1.3.2/zconf.h",
         ":s2780_configure/build/zlib-1.3.2/zlib.pc",
@@ -1270,10 +1270,10 @@ nix_archive(
     srcs = [
         ":actions/archive_out.manifest",
         ":sandbox.sh",
-        ":s14078_gzip/nix/store/wgw25d181h0qks7qsfp1bh7c5nd3f0s7-zlib-1.3.2/share/man/man3/zlib.3.gz",
-        ":s14195_strip/nix/store/wgw25d181h0qks7qsfp1bh7c5nd3f0s7-zlib-1.3.2/lib/libz.so.1.3.2",
-        ":s14078_gzip.ok",
-        ":s14195_strip.ok",
+        ":s14108_gzip/nix/store/wgw25d181h0qks7qsfp1bh7c5nd3f0s7-zlib-1.3.2/share/man/man3/zlib.3.gz",
+        ":s14225_strip/nix/store/wgw25d181h0qks7qsfp1bh7c5nd3f0s7-zlib-1.3.2/lib/libz.so.1.3.2",
+        ":s14108_gzip.ok",
+        ":s14225_strip.ok",
     ],
     out = "archive_out.nar",
     cmd = [
@@ -1287,8 +1287,8 @@ nix_archive(
     srcs = [
         ":actions/archive_static.manifest",
         ":sandbox.sh",
-        ":s14440_strip/nix/store/igzrdkid07pdyh30cswrjb7a9yln9mpp-zlib-1.3.2-static/lib/libz.a",
-        ":s14440_strip.ok",
+        ":s14470_strip/nix/store/igzrdkid07pdyh30cswrjb7a9yln9mpp-zlib-1.3.2-static/lib/libz.a",
+        ":s14470_strip.ok",
     ],
     out = "archive_static.nar",
     cmd = [

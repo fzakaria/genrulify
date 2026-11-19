@@ -2,7 +2,7 @@
   {
     "id": "hello",
     "label": "hello",
-    "note": "GNU hello 2.12.3: autotools, 84 compiles, tests, install"
+    "note": "GNU hello 2.12.3: autotools, 83 compiles, an archive, a link and an install"
   },
   {
     "id": "hello-coarse",
@@ -15,14 +15,29 @@
     "note": "GNU hello recorded with --cores 4: commands that overlapped are merged into large groups"
   },
   {
+    "id": "bash",
+    "label": "bash",
+    "note": "GNU bash 5.3: autotools, 11,847 execve calls, six outputs, 366 rules"
+  },
+  {
     "id": "ninja",
     "label": "ninja",
     "note": "ninja 1.13.2: bootstrapped by a Python script, then built by itself"
   },
   {
+    "id": "gawk",
+    "label": "gawk",
+    "note": "GNU awk 5.4.1: autoreconf and autotools, three outputs"
+  },
+  {
     "id": "lua",
     "label": "lua",
     "note": "Lua 5.2.4: a plain Makefile"
+  },
+  {
+    "id": "gnused",
+    "label": "sed",
+    "note": "GNU sed 4.10: autotools and gnulib, 8,848 execve calls, two outputs"
   },
   {
     "id": "jsoncpp",

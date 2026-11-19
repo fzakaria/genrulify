@@ -19,78 +19,78 @@ recorded(
 )
 
 recorded(
-    name = "s3495_cmake",
+    name = "s3502_cmake",
     srcs = [
-        "actions/s3495_cmake.manifest",
+        "actions/s3502_cmake.manifest",
         "closure.txt",
         "env/24.env",
         "platform",
         "sandbox.sh",
         ":s2140_cp",
     ],
-    out = "s3495_cmake",
+    out = "s3502_cmake",
     cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name s3495_cmake --timeout 300",
+        "--name s3502_cmake --timeout 300",
         "run --cwd /build/source/build --env 24 --argv0 cmake --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 26 --",
         "/nix/store/jcvvpih1046akxcwh9hdiak5q24jqcf0-cmake-4.4.3/bin/cmake .. -DCMAKE_FIND_USE_SYSTEM_PACKAGE_REGISTRY=OFF -DCMAKE_FIND_USE_PACKAGE_REGISTRY=OFF -DCMAKE_EXPORT_NO_PACKAGE_REGISTRY=ON -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF -DCMAKE_INSTALL_LOCALEDIR=/nix/store/zxzky44n1nngijv1n5xvgcbf005fajq5-tinyxml2-11.0.0/share/locale -DCMAKE_INSTALL_LIBEXECDIR=/nix/store/zxzky44n1nngijv1n5xvgcbf005fajq5-tinyxml2-11.0.0/libexec -DCMAKE_INSTALL_LIBDIR=/nix/store/zxzky44n1nngijv1n5xvgcbf005fajq5-tinyxml2-11.0.0/lib -DCMAKE_INSTALL_DOCDIR=/nix/store/zxzky44n1nngijv1n5xvgcbf005fajq5-tinyxml2-11.0.0/share/doc/tinyxml2 -DCMAKE_INSTALL_INFODIR=/nix/store/zxzky44n1nngijv1n5xvgcbf005fajq5-tinyxml2-11.0.0/share/info -DCMAKE_INSTALL_MANDIR=/nix/store/zxzky44n1nngijv1n5xvgcbf005fajq5-tinyxml2-11.0.0/share/man -DCMAKE_INSTALL_INCLUDEDIR=/nix/store/zxzky44n1nngijv1n5xvgcbf005fajq5-tinyxml2-11.0.0/include -DCMAKE_INSTALL_SBINDIR=/nix/store/zxzky44n1nngijv1n5xvgcbf005fajq5-tinyxml2-11.0.0/sbin -DCMAKE_INSTALL_BINDIR=/nix/store/zxzky44n1nngijv1n5xvgcbf005fajq5-tinyxml2-11.0.0/bin -DCMAKE_INSTALL_NAME_DIR=/nix/store/zxzky44n1nngijv1n5xvgcbf005fajq5-tinyxml2-11.0.0/lib -DCMAKE_STRIP=/nix/store/j1938gsbvbhkyz4kbmvjk56r479mkw3s-gcc-wrapper-16.2.0/bin/strip -DCMAKE_RANLIB=/nix/store/j1938gsbvbhkyz4kbmvjk56r479mkw3s-gcc-wrapper-16.2.0/bin/ranlib -DCMAKE_AR=/nix/store/j1938gsbvbhkyz4kbmvjk56r479mkw3s-gcc-wrapper-16.2.0/bin/ar -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ -DCMAKE_INSTALL_PREFIX=/nix/store/zxzky44n1nngijv1n5xvgcbf005fajq5-tinyxml2-11.0.0 -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_INCLUDEDIR=include -DCMAKE_INSTALL_LIBDIR=lib",
     ],
 )
 
 cc_object(
-    name = "s9941_g__",
+    name = "s9884_g__",
     srcs = [
-        "actions/s9941_g__.manifest",
+        "actions/s9884_g__.manifest",
         "closure.txt",
         "env/29.env",
         "platform",
         "sandbox.sh",
         ":s2140_cp",
     ],
-    out = "s9941_g__",
+    out = "s9884_g__",
     cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name s9941_g__ --timeout 300",
+        "--name s9884_g__ --timeout 300",
         "run --cwd /build/source/build --env 29 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 44 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/g++ -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -DTINYXML2_EXPORT -D_FILE_OFFSET_BITS=64 -I/build/source -O3 -DNDEBUG -fPIC -fvisibility=hidden -fvisibility-inlines-hidden -MD -MT CMakeFiles/tinyxml2.dir/tinyxml2.cpp.o -MF CMakeFiles/tinyxml2.dir/tinyxml2.cpp.o.d -o CMakeFiles/tinyxml2.dir/tinyxml2.cpp.o -c /build/source/tinyxml2.cpp -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=zxzky44n1n",
     ],
 )
 
 cc_shared_library(
-    name = "s10176_g__",
+    name = "s10128_g__",
     srcs = [
-        "actions/s10176_g__.manifest",
+        "actions/s10128_g__.manifest",
         "closure.txt",
         "env/30.env",
         "platform",
         "sandbox.sh",
-        ":s3495_cmake",
-        ":s9941_g__",
+        ":s3502_cmake",
+        ":s9884_g__",
     ],
-    out = "s10176_g__",
+    out = "s10128_g__",
     cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name s10176_g__ --timeout 300",
+        "--name s10128_g__ --timeout 300",
         "run --cwd /build/source/build --env 30 --fd 0=null --fd 1=err --fd 2=err --fd 3=file:r@245:/build/source/build/CMakeFiles/tinyxml2.dir/link.txt --status 0 --argc 43 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/g++ -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -Wl,-dynamic-linker=/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ld-linux-x86-64.so.2 -fPIC -O3 -DNDEBUG -shared -Wl,--dependency-file=CMakeFiles/tinyxml2.dir/link.d -Wl,-soname,libtinyxml2.so.11 -o libtinyxml2.so.11.0.0 CMakeFiles/tinyxml2.dir/tinyxml2.cpp.o -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=zxzky44n1n -Wl,-rpath -Wl,/nix/store/zxzky44n1nngijv1n5xvgcbf005fajq5-tinyxml2-11.0.0/lib -L/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib -L/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0 -L/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -L/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib",
     ],
 )
 
 recorded(
-    name = "s11553_find_patchelf",
+    name = "s11501_find_patchelf",
     srcs = [
-        "actions/s11553_find_patchelf.manifest",
+        "actions/s11501_find_patchelf.manifest",
         "closure.txt",
         "env/36.env",
         "env/37.env",
         "platform",
         "sandbox.sh",
-        ":s10176_g__",
+        ":s10128_g__",
     ],
-    out = "s11553_find_patchelf",
+    out = "s11501_find_patchelf",
     cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name s11553_find_patchelf --timeout 300 --pipe 762:0:1:0",
+        "--name s11501_find_patchelf --timeout 300 --pipe 762:0:1:0",
         "run --cwd /build/source/build --env 36 --argv0 find --fd 0=null --fd 1=pipe-w:762 --fd 2=err --status 0 --argc 5 --",
         "/nix/store/ycrbcy9sg4knpnik6a01dk70l0m673x7-findutils-4.11.0/bin/find /nix/store/zxzky44n1nngijv1n5xvgcbf005fajq5-tinyxml2-11.0.0 -type f -print0",
         "run --cwd /build/source/build --env 37 --argv0 patchelf --fd 0=pipe-r:762 --fd 1=err --fd 2=err --fd 63=pipe-r:762 --after 0 --status 0 --argc 3 --",
@@ -99,21 +99,21 @@ recorded(
 )
 
 recorded(
-    name = "s12012_strip",
+    name = "s11948_strip",
     srcs = [
-        "actions/s12012_strip.manifest",
+        "actions/s11948_strip.manifest",
         "closure.txt",
-        "const_11906_mktemp",
+        "const_11839_mktemp",
         "env/47.env",
         "platform",
         "sandbox.sh",
-        ":s11553_find_patchelf",
+        ":s11501_find_patchelf",
     ],
-    out = "s12012_strip",
+    out = "s11948_strip",
     cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name s12012_strip --timeout 300",
-        "run --cwd /build/source/build --env 47 --fd 0=null --fd 1=err --fd 2=file:w:/build/striperr.3qCf8T --status 0 --argc 5 --",
+        "--name s11948_strip --timeout 300",
+        "run --cwd /build/source/build --env 47 --fd 0=null --fd 1=err --fd 2=file:w:/build/striperr.SJIceq --status 0 --argc 5 --",
         "/nix/store/y5sgl0vvrpbcwgjwpjs60r1hg0gi7i0n-binutils-2.46/bin/strip --enable-deterministic-archives -S -p /nix/store/zxzky44n1nngijv1n5xvgcbf005fajq5-tinyxml2-11.0.0/lib/libtinyxml2.so.11.0.0",
     ],
 )
@@ -123,9 +123,9 @@ nix_archive(
     srcs = [
         "actions/archive.manifest",
         "sandbox.sh",
-        ":s12012_strip",
+        ":s11948_strip",
         ":s2140_cp",
-        ":s3495_cmake",
+        ":s3502_cmake",
     ],
     out = "archive.nar",
     cmd = [

@@ -40,7 +40,7 @@ digest as the output that Rewind recorded.
 
 ```console
 $ nix run github:fzakaria/genrulify -- convert nixpkgs#hello hello
-659 process groups: 132 replayed and reproduced, 75 raised to copies, 50 folded to constants, 0 kept as recorded bytes, 402 dead
+650 process groups: 132 replayed and reproduced, 75 raised to copies, 50 folded to constants, 0 kept as recorded bytes, 393 dead
 cca3804d340495150db44b1e762655d8a0b4fe6d37b8350f1a0d8fa33c27c8cc  /nix/store/5z2yp3ysx8476c8g5w25b0smlgkjvaq3-hello-2.12.3
 
 $ cd hello/workspace && bazel build //:archive
@@ -103,14 +103,14 @@ files and run the recorded GCC command. The full rule is in the
 
 ```python
 cc_object(
-    name = "s95245_gcc",
-    src = ":s1375_tar/build/hello-2.12.3/src/hello.c",
+    name = "s95823_gcc",
+    src = ":s1378_tar/build/hello-2.12.3/src/hello.c",
     hdrs = [
         …
-        ":s4251_bash/build/hello-2.12.3/config.h",
+        ":s4254_bash/build/hello-2.12.3/config.h",
         …
     ],
-    out = "s95245_gcc/build/hello-2.12.3/src/hello.o",
+    out = "s95823_gcc/build/hello-2.12.3/src/hello.o",
     …
 )
 ```
@@ -134,15 +134,18 @@ gives the proof.
 | `python3.14-six-1.17.0` | `pyproject-build` | 137 | 107 | 3 | 2 | 2 | 0 | 5 |
 | `ninja-1.13.2` | Python bootstrap, Ninja | 493 | 81 | 9 | 4 | 4 | 0 | 10 |
 | `tinyxml2-11.0.0` | CMake | 275 | 81 | 6 | 2 | 3 | 0 | 7 |
-| `jsoncpp-1.9.8` | CMake | 602 | 136 | 8 | 4 | 6 | 0 | 10 |
-| `lz4-1.10.0` | patch, CMake | 806 | 195 | 39 | 6 | 8 | 0 | 43 |
+| `jsoncpp-1.9.8` | CMake | 602 | 137 | 8 | 4 | 6 | 0 | 10 |
+| `lz4-1.10.0` | patch, CMake | 806 | 194 | 39 | 6 | 8 | 0 | 43 |
 | `zlib-1.3.2` | patches, `configure` | 700 | 202 | 39 | 20 | 12 | 0 | 42 |
 | `lua-5.2.4` | Makefile | 386 | 145 | 50 | 9 | 5 | 0 | 52 |
 | `patchelf-0.15.2` | autotools | 503 | 76 | 6 | 3 | 6 | 0 | 7 |
 | `which-2.25` | patch, autotools | 1,137 | 98 | 15 | 3 | 3 | 0 | 18 |
-| `hello-2.12.3` | autotools | 4,605 | 659 | 132 | 75 | 50 | 0 | 133 |
+| `hello-2.12.3` | autotools | 4,605 | 650 | 132 | 75 | 50 | 0 | 133 |
+| `gawk-5.4.1` | autotools | 6,857 | 1,260 | 145 | 96 | 36 | 0 | 148 |
+| `gnused-4.10` | autotools | 8,848 | 645 | 152 | 84 | 65 | 0 | 154 |
+| `bash-interactive-5.3p15` | autotools, 6 outputs | 11,847 | 1,450 | 360 | 161 | 138 | 0 | 366 |
 | `hello-2.12.3`, coarse cuts | autotools | 4,605 | 70 | 9 | 1 | 2 | 0 | 10 |
-| `hello-2.12.3`, 4 jobs | autotools | 4,605 | 126 | 9 | 1 | 2 | 0 | 10 |
+| `hello-2.12.3`, 4 jobs | autotools | 4,605 | 125 | 9 | 1 | 2 | 0 | 10 |
 
 *Groups* are commands or pipelines. *Run* is how many of them a build
 system runs again, each checked to leave the recorded bytes. *Copies*

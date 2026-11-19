@@ -49,9 +49,9 @@ recorded(
 )
 
 recorded(
-    name = "s3345_find_patchelf",
+    name = "s3343_find_patchelf",
     srcs = [
-        ":actions/s3345_find_patchelf.manifest",
+        ":actions/s3343_find_patchelf.manifest",
         ":closure.txt",
         ":env/28.env",
         ":env/29.env",
@@ -64,11 +64,11 @@ recorded(
         ":s2685_g__.ok",
     ],
     outs = [
-        "s3345_find_patchelf/nix/store/s7lfxf6nljg66na31h9ay8qj8adiwdxs-colstr-1.0.0/bin/colstr",
+        "s3343_find_patchelf/nix/store/s7lfxf6nljg66na31h9ay8qj8adiwdxs-colstr-1.0.0/bin/colstr",
     ],
     cmd = [
         "./sandbox.sh --in . --in $(RULEDIR) --out $(RULEDIR)",
-        "--name s3345_find_patchelf --timeout 300 --pipe 474:0:1:0",
+        "--name s3343_find_patchelf --timeout 300 --pipe 474:0:1:0",
         "run --cwd /build/source --env 28 --argv0 find --fd 0=null --fd 1=pipe-w:474 --fd 2=err --status 0 --argc 5 --",
         "/nix/store/ycrbcy9sg4knpnik6a01dk70l0m673x7-findutils-4.11.0/bin/find /nix/store/s7lfxf6nljg66na31h9ay8qj8adiwdxs-colstr-1.0.0 -type f -print0",
         "run --cwd /build/source --env 29 --argv0 patchelf --fd 0=pipe-r:474 --fd 1=err --fd 2=err --fd 63=pipe-r:474 --after 0 --status 0 --argc 3 --",
@@ -77,9 +77,9 @@ recorded(
 )
 
 recorded(
-    name = "s3796_strip",
+    name = "s3795_strip",
     srcs = [
-        ":actions/s3796_strip.manifest",
+        ":actions/s3795_strip.manifest",
         ":closure.txt",
         ":env/39.env",
         ":platform/bin/sh",
@@ -87,17 +87,17 @@ recorded(
         ":platform/etc/hosts",
         ":platform/etc/passwd",
         ":sandbox.sh",
-        ":const_3690_mktemp/build/striperr.WNwmmf",
-        ":s3345_find_patchelf/nix/store/s7lfxf6nljg66na31h9ay8qj8adiwdxs-colstr-1.0.0/bin/colstr",
-        ":s3345_find_patchelf.ok",
+        ":const_3689_mktemp/build/striperr.tNMYXV",
+        ":s3343_find_patchelf/nix/store/s7lfxf6nljg66na31h9ay8qj8adiwdxs-colstr-1.0.0/bin/colstr",
+        ":s3343_find_patchelf.ok",
     ],
     outs = [
-        "s3796_strip/nix/store/s7lfxf6nljg66na31h9ay8qj8adiwdxs-colstr-1.0.0/bin/colstr",
+        "s3795_strip/nix/store/s7lfxf6nljg66na31h9ay8qj8adiwdxs-colstr-1.0.0/bin/colstr",
     ],
     cmd = [
         "./sandbox.sh --in . --in $(RULEDIR) --out $(RULEDIR)",
-        "--name s3796_strip --timeout 300",
-        "run --cwd /build/source --env 39 --fd 0=null --fd 1=err --fd 2=file:w:/build/striperr.WNwmmf --status 0 --argc 5 --",
+        "--name s3795_strip --timeout 300",
+        "run --cwd /build/source --env 39 --fd 0=null --fd 1=err --fd 2=file:w:/build/striperr.tNMYXV --status 0 --argc 5 --",
         "/nix/store/y5sgl0vvrpbcwgjwpjs60r1hg0gi7i0n-binutils-2.46/bin/strip --enable-deterministic-archives -S -p /nix/store/s7lfxf6nljg66na31h9ay8qj8adiwdxs-colstr-1.0.0/bin/colstr",
     ],
 )
@@ -107,8 +107,8 @@ nix_archive(
     srcs = [
         ":actions/archive.manifest",
         ":sandbox.sh",
-        ":s3796_strip/nix/store/s7lfxf6nljg66na31h9ay8qj8adiwdxs-colstr-1.0.0/bin/colstr",
-        ":s3796_strip.ok",
+        ":s3795_strip/nix/store/s7lfxf6nljg66na31h9ay8qj8adiwdxs-colstr-1.0.0/bin/colstr",
+        ":s3795_strip.ok",
     ],
     out = "archive.nar",
     cmd = [

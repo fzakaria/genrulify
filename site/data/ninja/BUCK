@@ -12,16 +12,16 @@ recorded(
     out = "s2232_cp",
     cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name s2232_cp --timeout 533",
+        "--name s2232_cp --timeout 969",
         "run --cwd /build --env 27 --argv0 cp --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 7 --",
         "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/cp -r --preserve=timestamps --reflink=auto -- /nix/store/rawihb8wn1qdv7ylxims26whxgw8hsb0-source source",
     ],
 )
 
 recorded(
-    name = "s2847_cat_patch",
+    name = "s2846_cat_patch",
     srcs = [
-        "actions/s2847_cat_patch.manifest",
+        "actions/s2846_cat_patch.manifest",
         "closure.txt",
         "env/34.env",
         "env/35.env",
@@ -29,10 +29,10 @@ recorded(
         "sandbox.sh",
         ":s2232_cp",
     ],
-    out = "s2847_cat_patch",
+    out = "s2846_cat_patch",
     cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name s2847_cat_patch --timeout 533 --pipe 453:0:1:0",
+        "--name s2846_cat_patch --timeout 969 --pipe 453:0:1:0",
         "run --cwd /build/source --env 34 --argv0 cat --fd 0=store:/nix/store/fw7yyzr7iby63y0qr5dl9j9y4538gb7z-0001-spawn-sh-instead-of-bin-sh.patch --fd 1=pipe-w:453 --fd 2=pipe-w:453 --status 0 --argc 1 --",
         "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/cat",
         "run --cwd /build/source --env 35 --argv0 patch --fd 0=pipe-r:453 --fd 1=err --fd 2=err --after 0 --status 0 --argc 2 --",
@@ -41,125 +41,125 @@ recorded(
 )
 
 recorded(
-    name = "s3266_python",
+    name = "s3265_python",
     srcs = [
-        "actions/s3266_python.manifest",
+        "actions/s3265_python.manifest",
         "closure.txt",
         "env/42.env",
-        "glue_2916",
+        "glue_2915",
         "platform",
         "sandbox.sh",
         ":s2232_cp",
-        ":s2847_cat_patch",
+        ":s2846_cat_patch",
     ],
-    out = "s3266_python",
+    out = "s3265_python",
     cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name s3266_python --timeout 533",
+        "--name s3265_python --timeout 969",
         "run --cwd /build/source --env 42 --argv0 python --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 3 --",
         "/nix/store/lb41b0anx1f98y9y5s9mdv97gjgsq740-python3-3.14.7/bin/python configure.py --bootstrap",
     ],
 )
 
 recorded(
-    name = "s18308_python",
+    name = "s18218_python",
     srcs = [
-        "actions/s18308_python.manifest",
+        "actions/s18218_python.manifest",
         "closure.txt",
         "env/43.env",
-        "glue_2916",
+        "glue_2915",
         "platform",
         "sandbox.sh",
         ":s2232_cp",
-        ":s3266_python",
+        ":s3265_python",
     ],
-    out = "s18308_python",
+    out = "s18218_python",
     cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name s18308_python --timeout 533",
+        "--name s18218_python --timeout 969",
         "run --cwd /build/source --env 43 --argv0 python --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 2 --",
         "/nix/store/lb41b0anx1f98y9y5s9mdv97gjgsq740-python3-3.14.7/bin/python configure.py",
     ],
 )
 
 recorded(
-    name = "s18707_ninja",
+    name = "s18613_ninja",
     srcs = [
-        "actions/s18707_ninja.manifest",
+        "actions/s18613_ninja.manifest",
         "closure.txt",
         "env/44.env",
-        "glue_2916",
+        "glue_2915",
         "platform",
         "sandbox.sh",
-        ":s18308_python",
+        ":s18218_python",
         ":s2232_cp",
-        ":s2847_cat_patch",
-        ":s3266_python",
+        ":s2846_cat_patch",
+        ":s3265_python",
     ],
-    out = "s18707_ninja",
+    out = "s18613_ninja",
     cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name s18707_ninja --timeout 533",
+        "--name s18613_ninja --timeout 969",
         "run --cwd /build/source --env 44 --argv0 ./ninja --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 1 --",
         "/build/source/ninja",
     ],
 )
 
 recorded(
-    name = "s30581_.asciidoc-wrapped",
+    name = "s30622_.asciidoc-wrapped",
     srcs = [
-        "actions/s30581_.asciidoc-wrapped.manifest",
+        "actions/s30622_.asciidoc-wrapped.manifest",
         "closure.txt",
         "env/45.env",
         "platform",
         "sandbox.sh",
         ":s2232_cp",
     ],
-    out = "s30581_.asciidoc-wrapped",
+    out = "s30622_.asciidoc-wrapped",
     cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name s30581_.asciidoc-wrapped --timeout 533",
+        "--name s30622_.asciidoc-wrapped --timeout 969",
         "run --cwd /build/source --env 45 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 9 --",
         "/nix/store/lb41b0anx1f98y9y5s9mdv97gjgsq740-python3-3.14.7/bin/python3.14 /nix/store/z3m7m4fx3xvps2cxv5jk297qd641jqxs-asciidoc-10.2.1/bin/.asciidoc-wrapped -b docbook -d book -o build/manual.xml doc/manual.asciidoc",
     ],
 )
 
 recorded(
-    name = "s31727_xsltproc",
+    name = "s31777_xsltproc",
     srcs = [
-        "actions/s31727_xsltproc.manifest",
+        "actions/s31777_xsltproc.manifest",
         "closure.txt",
         "env/46.env",
-        "glue_31727",
+        "glue_31777",
         "platform",
         "sandbox.sh",
         ":s2232_cp",
-        ":s30581_.asciidoc-wrapped",
+        ":s30622_.asciidoc-wrapped",
     ],
-    out = "s31727_xsltproc",
+    out = "s31777_xsltproc",
     cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name s31727_xsltproc --timeout 533",
+        "--name s31777_xsltproc --timeout 969",
         "run --cwd /build/source --env 46 --argv0 xsltproc --fd 0=null --fd 1=file:w:/build/source/doc/manual.html --fd 2=err --status 0 --argc 4 --",
         "/nix/store/k2m6vahi01nhjg1xyj95plrnpvfykimk-libxslt-1.1.45-bin/bin/xsltproc --nonet doc/docbook.xsl build/manual.xml",
     ],
 )
 
 recorded(
-    name = "s32223_find_patchelf",
+    name = "s32272_find_patchelf",
     srcs = [
-        "actions/s32223_find_patchelf.manifest",
+        "actions/s32272_find_patchelf.manifest",
         "closure.txt",
         "env/53.env",
         "env/54.env",
         "platform",
         "sandbox.sh",
-        ":s18707_ninja",
+        ":s18613_ninja",
     ],
-    out = "s32223_find_patchelf",
+    out = "s32272_find_patchelf",
     cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name s32223_find_patchelf --timeout 533 --pipe 648:0:1:0",
+        "--name s32272_find_patchelf --timeout 969 --pipe 648:0:1:0",
         "run --cwd /build/source --env 53 --argv0 find --fd 0=null --fd 1=pipe-w:648 --fd 2=err --status 0 --argc 5 --",
         "/nix/store/ycrbcy9sg4knpnik6a01dk70l0m673x7-findutils-4.11.0/bin/find /nix/store/4nsdla28c4177ssp0hlyv5l2yzj8wcba-ninja-1.13.2 -type f -print0",
         "run --cwd /build/source --env 54 --argv0 patchelf --fd 0=pipe-r:648 --fd 1=err --fd 2=err --fd 63=pipe-r:648 --after 0 --status 0 --argc 3 --",
@@ -168,21 +168,21 @@ recorded(
 )
 
 recorded(
-    name = "s32679_strip",
+    name = "s32731_strip",
     srcs = [
-        "actions/s32679_strip.manifest",
+        "actions/s32731_strip.manifest",
         "closure.txt",
-        "const_32573_mktemp",
+        "const_32625_mktemp",
         "env/64.env",
         "platform",
         "sandbox.sh",
-        ":s32223_find_patchelf",
+        ":s32272_find_patchelf",
     ],
-    out = "s32679_strip",
+    out = "s32731_strip",
     cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name s32679_strip --timeout 533",
-        "run --cwd /build/source --env 64 --fd 0=null --fd 1=err --fd 2=file:w:/build/striperr.co0Upa --status 0 --argc 5 --",
+        "--name s32731_strip --timeout 969",
+        "run --cwd /build/source --env 64 --fd 0=null --fd 1=err --fd 2=file:w:/build/striperr.EUTvBz --status 0 --argc 5 --",
         "/nix/store/y5sgl0vvrpbcwgjwpjs60r1hg0gi7i0n-binutils-2.46/bin/strip --enable-deterministic-archives -S -p /nix/store/4nsdla28c4177ssp0hlyv5l2yzj8wcba-ninja-1.13.2/bin/ninja",
     ],
 )
@@ -191,11 +191,11 @@ nix_archive(
     name = "archive",
     srcs = [
         "actions/archive.manifest",
-        "glue_32821",
+        "glue_32873",
         "sandbox.sh",
         ":s2232_cp",
-        ":s31727_xsltproc",
-        ":s32679_strip",
+        ":s31777_xsltproc",
+        ":s32731_strip",
     ],
     out = "archive.nar",
     cmd = [

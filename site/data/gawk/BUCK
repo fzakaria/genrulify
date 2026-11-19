@@ -1,0 +1,3147 @@
+load(":genrulify.buck.bzl", "cc_binary", "cc_library", "cc_object", "nix_archive", "recorded")
+
+recorded(
+    name = "s1467_tar_xz",
+    srcs = [
+        "actions/s1467_tar_xz.manifest",
+        "closure.txt",
+        "env/12.env",
+        "env/13.env",
+        "platform",
+        "sandbox.sh",
+    ],
+    out = "s1467_tar_xz",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s1467_tar_xz --timeout 496 --pipe 413:1:0:0",
+        "run --cwd /build --env 12 --argv0 tar --fd 0=pipe-r:413 --fd 1=err --fd 2=err --status 0 --argc 5 --",
+        "/nix/store/5ixf6i3kxcs512kl5glglb0y51rdgaar-gnutar-static-1.35/bin/tar xf - --mode=+w --warning=no-timestamp",
+        "run --cwd /build --env 13 --argv0 xz --fd 0=store:/nix/store/73dx55dqkx9c13x282rp1vdbs84fxbps-gawk-5.4.1.tar.xz --fd 1=pipe-w:413 --fd 2=err --status 0 --argc 2 --",
+        "/nix/store/dcs51mvz6ydhhvxx90hbcamd88k8cf77-xz-5.8.4-bin/bin/xz -d",
+    ],
+)
+
+recorded(
+    name = "s8932_cat_patch",
+    srcs = [
+        "actions/s8932_cat_patch.manifest",
+        "closure.txt",
+        "env/20.env",
+        "env/21.env",
+        "platform",
+        "sandbox.sh",
+        ":s1467_tar_xz",
+    ],
+    out = "s8932_cat_patch",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s8932_cat_patch --timeout 496 --pipe 425:0:1:0",
+        "run --cwd /build/gawk-5.4.1 --env 20 --argv0 cat --fd 0=store:/nix/store/rbwlls4yc1l6169xzpf4nbyqgk7lzpx1-node-struct-without-gmp-mpfr.patch --fd 1=pipe-w:425 --fd 2=pipe-w:425 --status 0 --argc 1 --",
+        "/nix/store/flqxa8p0n5wpvycmnjx23l1m147c6z89-coreutils-static-9.11/bin/cat",
+        "run --cwd /build/gawk-5.4.1 --env 21 --argv0 patch --fd 0=pipe-r:425 --fd 1=err --fd 2=err --after 0 --status 0 --argc 2 --",
+        "/nix/store/s89axxdw1ysm4nkjbgrwgqqm7frhq2l9-gnupatch-static-2.8/bin/patch -p1",
+    ],
+)
+
+recorded(
+    name = "s10162_xz_tar",
+    srcs = [
+        "actions/s10162_xz_tar.manifest",
+        "closure.txt",
+        "env/24.env",
+        "env/25.env",
+        "platform",
+        "sandbox.sh",
+    ],
+    out = "s10162_xz_tar",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s10162_xz_tar --timeout 496 --pipe 537:0:1:0",
+        "run --cwd /build/gawk-5.4.1 --env 24 --argv0 xz --fd 0=store:/nix/store/v6ni4zf9xn5wh4sasv1dq50530haw7g7-gettext-1.0/share/gettext/archive.dir.tar.xz --fd 1=pipe-w:537 --fd 2=err --status 0 --argc 3 --",
+        "/nix/store/dcs51mvz6ydhhvxx90hbcamd88k8cf77-xz-5.8.4-bin/bin/xz -d -c",
+        "run --cwd /build/gawk-5.4.1/tmpwrk98 --env 25 --argv0 tar --fd 0=pipe-r:537 --fd 1=err --fd 2=err --status 0 --argc 4 --",
+        "/nix/store/5ixf6i3kxcs512kl5glglb0y51rdgaar-gnutar-static-1.35/bin/tar xf - gettext-0.20.2",
+    ],
+)
+
+recorded(
+    name = "s14331_aclocal",
+    srcs = [
+        "actions/s14331_aclocal.manifest",
+        "closure.txt",
+        "env/23.env",
+        "platform",
+        "sandbox.sh",
+        ":s10162_xz_tar",
+        ":s1467_tar_xz",
+    ],
+    out = "s14331_aclocal",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s14331_aclocal --timeout 496",
+        "run --cwd /build/gawk-5.4.1 --env 23 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 5 --",
+        "/nix/store/r63l53k2cma81hm1ddh186586qafz490-perl-5.42.3/bin/perl /nix/store/slymrpzzsg8xmwzi9799bcrx1hiwvd45-automake-1.18.1/bin/aclocal --force -I m4",
+    ],
+)
+
+recorded(
+    name = "s15108_autom4te",
+    srcs = [
+        "actions/s15108_autom4te.manifest",
+        "closure.txt",
+        "env/27.env",
+        "platform",
+        "sandbox.sh",
+        ":s10162_xz_tar",
+        ":s14331_aclocal",
+        ":s1467_tar_xz",
+    ],
+    out = "s15108_autom4te",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s15108_autom4te --timeout 496",
+        "run --cwd /build/gawk-5.4.1 --env 27 --fd 0=null --fd 1=null --fd 2=err --status 0 --argc 28 --",
+        "/nix/store/r63l53k2cma81hm1ddh186586qafz490-perl-5.42.3/bin/perl /nix/store/amrxlvwk7ix0c8my3adcnbc1dg5glsrq-autoconf-2.73/bin/autom4te --force --language=autoconf --output=- '--trace=AC_CONFIG_AUX_DIR:$n::${::}%' '--trace=AC_CONFIG_HEADERS:$n::${::}%' '--trace=AC_CONFIG_SUBDIRS:$n::${::}%' '--trace=AC_CONFIG_MACRO_DIR_TRACE:$n::${::}%' '--trace=AC_CONFIG_MACRO_DIR:$n::${::}%' '--trace=AC_INIT:$n::${::}%' '--trace=AC_REQUIRE_AUX_FILE:$n::${::}%' '--trace=AC_PROG_LIBTOOL:$n::${::}%' '--trace=AM_PROG_LIBTOOL:$n::${::}%' '--trace=LT_INIT:$n::${::}%' '--trace=LT_CONFIG_LTDL_DIR:$n::${::}%' '--trace=AC_LIB_LINKFLAGS:$n::${::}%' '--trace=AC_LIB_HAVE_LINKFLAGS:$n::${::}%' '--trace=AC_LIB_LINKFLAGS_FROM_LIBS:$n::${::}%' '--trace=GUILE_FLAGS:$n::${::}%' '--trace=AM_ICONV:$n::${::}%' '--trace=AM_GNU_GETTEXT:$n::${::}%' '--trace=AM_GNU_GETTEXT_VERSION:$n::${::}%' '--trace=AM_GNU_GETTEXT_REQUIRE_VERSION:$n::${::}%' '--trace=AM_INIT_AUTOMAKE:$n::${::}%' '--trace=GTK_DOC_CHECK:$n::${::}%' '--trace=IT_PROG_INTLTOOL:$n::${::}%' configure.ac",
+    ],
+)
+
+recorded(
+    name = "s16462_xz_tar",
+    srcs = [
+        "actions/s16462_xz_tar.manifest",
+        "closure.txt",
+        "env/28.env",
+        "env/29.env",
+        "platform",
+        "sandbox.sh",
+    ],
+    out = "s16462_xz_tar",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s16462_xz_tar --timeout 496 --pipe 922:0:1:0",
+        "run --cwd /build/gawk-5.4.1/extension --env 28 --argv0 xz --fd 0=store:/nix/store/v6ni4zf9xn5wh4sasv1dq50530haw7g7-gettext-1.0/share/gettext/archive.dir.tar.xz --fd 1=pipe-w:922 --fd 2=err --status 0 --argc 3 --",
+        "/nix/store/dcs51mvz6ydhhvxx90hbcamd88k8cf77-xz-5.8.4-bin/bin/xz -d -c",
+        "run --cwd /build/gawk-5.4.1/extension/tmpwrk491 --env 29 --argv0 tar --fd 0=pipe-r:922 --fd 1=err --fd 2=err --status 0 --argc 4 --",
+        "/nix/store/5ixf6i3kxcs512kl5glglb0y51rdgaar-gnutar-static-1.35/bin/tar xf - gettext-0.20.2",
+    ],
+)
+
+recorded(
+    name = "s19246_aclocal",
+    srcs = [
+        "actions/s19246_aclocal.manifest",
+        "closure.txt",
+        "env/23.env",
+        "platform",
+        "sandbox.sh",
+        ":s10162_xz_tar",
+        ":s1467_tar_xz",
+    ],
+    out = "s19246_aclocal",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s19246_aclocal --timeout 496",
+        "run --cwd /build/gawk-5.4.1/extension --env 23 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 5 --",
+        "/nix/store/r63l53k2cma81hm1ddh186586qafz490-perl-5.42.3/bin/perl /nix/store/slymrpzzsg8xmwzi9799bcrx1hiwvd45-automake-1.18.1/bin/aclocal --force -I ../m4",
+    ],
+)
+
+recorded(
+    name = "s20012_autom4te",
+    srcs = [
+        "actions/s20012_autom4te.manifest",
+        "closure.txt",
+        "env/31.env",
+        "platform",
+        "sandbox.sh",
+        ":s10162_xz_tar",
+        ":s1467_tar_xz",
+        ":s19246_aclocal",
+    ],
+    out = "s20012_autom4te",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s20012_autom4te --timeout 496",
+        "run --cwd /build/gawk-5.4.1/extension --env 31 --fd 0=null --fd 1=null --fd 2=err --status 0 --argc 28 --",
+        "/nix/store/r63l53k2cma81hm1ddh186586qafz490-perl-5.42.3/bin/perl /nix/store/amrxlvwk7ix0c8my3adcnbc1dg5glsrq-autoconf-2.73/bin/autom4te --force --language=autoconf --output=- '--trace=AC_CONFIG_AUX_DIR:$n::${::}%' '--trace=AC_CONFIG_HEADERS:$n::${::}%' '--trace=AC_CONFIG_SUBDIRS:$n::${::}%' '--trace=AC_CONFIG_MACRO_DIR_TRACE:$n::${::}%' '--trace=AC_CONFIG_MACRO_DIR:$n::${::}%' '--trace=AC_INIT:$n::${::}%' '--trace=AC_REQUIRE_AUX_FILE:$n::${::}%' '--trace=AC_PROG_LIBTOOL:$n::${::}%' '--trace=AM_PROG_LIBTOOL:$n::${::}%' '--trace=LT_INIT:$n::${::}%' '--trace=LT_CONFIG_LTDL_DIR:$n::${::}%' '--trace=AC_LIB_LINKFLAGS:$n::${::}%' '--trace=AC_LIB_HAVE_LINKFLAGS:$n::${::}%' '--trace=AC_LIB_LINKFLAGS_FROM_LIBS:$n::${::}%' '--trace=GUILE_FLAGS:$n::${::}%' '--trace=AM_ICONV:$n::${::}%' '--trace=AM_GNU_GETTEXT:$n::${::}%' '--trace=AM_GNU_GETTEXT_VERSION:$n::${::}%' '--trace=AM_GNU_GETTEXT_REQUIRE_VERSION:$n::${::}%' '--trace=AM_INIT_AUTOMAKE:$n::${::}%' '--trace=GTK_DOC_CHECK:$n::${::}%' '--trace=IT_PROG_INTLTOOL:$n::${::}%' configure.ac",
+    ],
+)
+
+recorded(
+    name = "s21444_cp",
+    srcs = [
+        "actions/s21444_cp.manifest",
+        "closure.txt",
+        "env/42.env",
+        "platform",
+        "sandbox.sh",
+    ],
+    out = "s21444_cp",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s21444_cp --timeout 496",
+        "run --cwd /build/gawk-5.4.1/extension --env 42 --argv0 cp --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 4 --",
+        "/nix/store/flqxa8p0n5wpvycmnjx23l1m147c6z89-coreutils-static-9.11/bin/cp -f /nix/store/q0cp1nppaiymzrvfqvmj2s8qlyka2y1v-libtool-2.6.2/share/libtool/build-aux/ltmain.sh ../build-aux/ltmain.sh",
+    ],
+)
+
+recorded(
+    name = "s21891_cp",
+    srcs = [
+        "actions/s21891_cp.manifest",
+        "closure.txt",
+        "env/42.env",
+        "platform",
+        "sandbox.sh",
+    ],
+    out = "s21891_cp",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s21891_cp --timeout 496",
+        "run --cwd /build/gawk-5.4.1/extension --env 42 --argv0 cp --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 4 --",
+        "/nix/store/flqxa8p0n5wpvycmnjx23l1m147c6z89-coreutils-static-9.11/bin/cp -f /nix/store/q0cp1nppaiymzrvfqvmj2s8qlyka2y1v-libtool-2.6.2/share/aclocal/libtool.m4 ../m4/libtool.m4",
+    ],
+)
+
+recorded(
+    name = "s22189_cp",
+    srcs = [
+        "actions/s22189_cp.manifest",
+        "closure.txt",
+        "env/42.env",
+        "platform",
+        "sandbox.sh",
+    ],
+    out = "s22189_cp",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s22189_cp --timeout 496",
+        "run --cwd /build/gawk-5.4.1/extension --env 42 --argv0 cp --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 4 --",
+        "/nix/store/flqxa8p0n5wpvycmnjx23l1m147c6z89-coreutils-static-9.11/bin/cp -f /nix/store/q0cp1nppaiymzrvfqvmj2s8qlyka2y1v-libtool-2.6.2/share/aclocal/ltoptions.m4 ../m4/ltoptions.m4",
+    ],
+)
+
+recorded(
+    name = "s22514_cp",
+    srcs = [
+        "actions/s22514_cp.manifest",
+        "closure.txt",
+        "env/42.env",
+        "platform",
+        "sandbox.sh",
+    ],
+    out = "s22514_cp",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s22514_cp --timeout 496",
+        "run --cwd /build/gawk-5.4.1/extension --env 42 --argv0 cp --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 4 --",
+        "/nix/store/flqxa8p0n5wpvycmnjx23l1m147c6z89-coreutils-static-9.11/bin/cp -f /nix/store/q0cp1nppaiymzrvfqvmj2s8qlyka2y1v-libtool-2.6.2/share/aclocal/ltsugar.m4 ../m4/ltsugar.m4",
+    ],
+)
+
+recorded(
+    name = "s22845_cp",
+    srcs = [
+        "actions/s22845_cp.manifest",
+        "closure.txt",
+        "env/42.env",
+        "platform",
+        "sandbox.sh",
+    ],
+    out = "s22845_cp",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s22845_cp --timeout 496",
+        "run --cwd /build/gawk-5.4.1/extension --env 42 --argv0 cp --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 4 --",
+        "/nix/store/flqxa8p0n5wpvycmnjx23l1m147c6z89-coreutils-static-9.11/bin/cp -f /nix/store/q0cp1nppaiymzrvfqvmj2s8qlyka2y1v-libtool-2.6.2/share/aclocal/ltversion.m4 ../m4/ltversion.m4",
+    ],
+)
+
+recorded(
+    name = "s23184_cp",
+    srcs = [
+        "actions/s23184_cp.manifest",
+        "closure.txt",
+        "env/42.env",
+        "platform",
+        "sandbox.sh",
+    ],
+    out = "s23184_cp",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s23184_cp --timeout 496",
+        "run --cwd /build/gawk-5.4.1/extension --env 42 --argv0 cp --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 4 --",
+        "/nix/store/flqxa8p0n5wpvycmnjx23l1m147c6z89-coreutils-static-9.11/bin/cp -f '/nix/store/q0cp1nppaiymzrvfqvmj2s8qlyka2y1v-libtool-2.6.2/share/aclocal/lt~obsolete.m4' '../m4/lt~obsolete.m4'",
+    ],
+)
+
+recorded(
+    name = "s23618_aclocal",
+    srcs = [
+        "actions/s23618_aclocal.manifest",
+        "closure.txt",
+        "env/23.env",
+        "platform",
+        "sandbox.sh",
+        ":s10162_xz_tar",
+        ":s1467_tar_xz",
+        ":s19246_aclocal",
+        ":s20012_autom4te",
+        ":s21891_cp",
+        ":s22189_cp",
+        ":s22514_cp",
+        ":s22845_cp",
+        ":s23184_cp",
+    ],
+    out = "s23618_aclocal",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s23618_aclocal --timeout 496",
+        "run --cwd /build/gawk-5.4.1/extension --env 23 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 5 --",
+        "/nix/store/r63l53k2cma81hm1ddh186586qafz490-perl-5.42.3/bin/perl /nix/store/slymrpzzsg8xmwzi9799bcrx1hiwvd45-automake-1.18.1/bin/aclocal --force -I ../m4",
+    ],
+)
+
+recorded(
+    name = "s24370_autom4te",
+    srcs = [
+        "actions/s24370_autom4te.manifest",
+        "closure.txt",
+        "env/23.env",
+        "platform",
+        "sandbox.sh",
+        ":s10162_xz_tar",
+        ":s1467_tar_xz",
+        ":s19246_aclocal",
+        ":s21891_cp",
+        ":s22189_cp",
+        ":s22514_cp",
+        ":s22845_cp",
+        ":s23184_cp",
+        ":s23618_aclocal",
+    ],
+    out = "s24370_autom4te",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s24370_autom4te --timeout 496",
+        "run --cwd /build/gawk-5.4.1/extension --env 23 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 7 --",
+        "/nix/store/r63l53k2cma81hm1ddh186586qafz490-perl-5.42.3/bin/perl /nix/store/amrxlvwk7ix0c8my3adcnbc1dg5glsrq-autoconf-2.73/bin/autom4te --force --language=autoconf --output=configure /nix/store/amrxlvwk7ix0c8my3adcnbc1dg5glsrq-autoconf-2.73/share/autoconf/autoconf/trailer.m4 configure.ac",
+    ],
+)
+
+recorded(
+    name = "s24625_autoheader",
+    srcs = [
+        "actions/s24625_autoheader.manifest",
+        "closure.txt",
+        "env/23.env",
+        "platform",
+        "sandbox.sh",
+        ":s10162_xz_tar",
+        ":s1467_tar_xz",
+        ":s19246_aclocal",
+        ":s20012_autom4te",
+        ":s21891_cp",
+        ":s22189_cp",
+        ":s22514_cp",
+        ":s22845_cp",
+        ":s23184_cp",
+        ":s24370_autom4te",
+    ],
+    out = "s24625_autoheader",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s24625_autoheader --timeout 496",
+        "run --cwd /build/gawk-5.4.1/extension --env 23 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 3 --",
+        "/nix/store/r63l53k2cma81hm1ddh186586qafz490-perl-5.42.3/bin/perl /nix/store/amrxlvwk7ix0c8my3adcnbc1dg5glsrq-autoconf-2.73/bin/autoheader --force",
+    ],
+)
+
+recorded(
+    name = "s24905_automake",
+    srcs = [
+        "actions/s24905_automake.manifest",
+        "closure.txt",
+        "env/23.env",
+        "platform",
+        "sandbox.sh",
+        ":s10162_xz_tar",
+        ":s1467_tar_xz",
+        ":s19246_aclocal",
+        ":s20012_autom4te",
+        ":s21444_cp",
+        ":s21891_cp",
+        ":s22189_cp",
+        ":s22514_cp",
+        ":s22845_cp",
+        ":s23184_cp",
+        ":s24370_autom4te",
+        ":s24625_autoheader",
+    ],
+    out = "s24905_automake",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s24905_automake --timeout 496",
+        "run --cwd /build/gawk-5.4.1/extension --env 23 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 5 --",
+        "/nix/store/r63l53k2cma81hm1ddh186586qafz490-perl-5.42.3/bin/perl /nix/store/slymrpzzsg8xmwzi9799bcrx1hiwvd45-automake-1.18.1/bin/automake --add-missing --copy --force-missing",
+    ],
+)
+
+recorded(
+    name = "s25318_autom4te",
+    srcs = [
+        "actions/s25318_autom4te.manifest",
+        "closure.txt",
+        "env/23.env",
+        "platform",
+        "sandbox.sh",
+        ":s10162_xz_tar",
+        ":s14331_aclocal",
+        ":s1467_tar_xz",
+        ":s15108_autom4te",
+    ],
+    out = "s25318_autom4te",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s25318_autom4te --timeout 496",
+        "run --cwd /build/gawk-5.4.1 --env 23 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 7 --",
+        "/nix/store/r63l53k2cma81hm1ddh186586qafz490-perl-5.42.3/bin/perl /nix/store/amrxlvwk7ix0c8my3adcnbc1dg5glsrq-autoconf-2.73/bin/autom4te --force --language=autoconf --output=configure /nix/store/amrxlvwk7ix0c8my3adcnbc1dg5glsrq-autoconf-2.73/share/autoconf/autoconf/trailer.m4 configure.ac",
+    ],
+)
+
+recorded(
+    name = "s25580_autoheader",
+    srcs = [
+        "actions/s25580_autoheader.manifest",
+        "closure.txt",
+        "env/23.env",
+        "platform",
+        "sandbox.sh",
+        ":s10162_xz_tar",
+        ":s14331_aclocal",
+        ":s1467_tar_xz",
+        ":s15108_autom4te",
+    ],
+    out = "s25580_autoheader",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s25580_autoheader --timeout 496",
+        "run --cwd /build/gawk-5.4.1 --env 23 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 3 --",
+        "/nix/store/r63l53k2cma81hm1ddh186586qafz490-perl-5.42.3/bin/perl /nix/store/amrxlvwk7ix0c8my3adcnbc1dg5glsrq-autoconf-2.73/bin/autoheader --force",
+    ],
+)
+
+recorded(
+    name = "s25858_automake",
+    srcs = [
+        "actions/s25858_automake.manifest",
+        "closure.txt",
+        "const_1467_tar_xz",
+        "env/23.env",
+        "platform",
+        "sandbox.sh",
+        ":s10162_xz_tar",
+        ":s14331_aclocal",
+        ":s1467_tar_xz",
+        ":s15108_autom4te",
+        ":s21444_cp",
+        ":s24905_automake",
+        ":s25318_autom4te",
+        ":s25580_autoheader",
+        ":s8932_cat_patch",
+    ],
+    out = "s25858_automake",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s25858_automake --timeout 496",
+        "run --cwd /build/gawk-5.4.1 --env 23 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 5 --",
+        "/nix/store/r63l53k2cma81hm1ddh186586qafz490-perl-5.42.3/bin/perl /nix/store/slymrpzzsg8xmwzi9799bcrx1hiwvd45-automake-1.18.1/bin/automake --add-missing --copy --force-missing",
+    ],
+)
+
+recorded(
+    name = "s26594_find_sed",
+    srcs = [
+        "actions/s26594_find_sed.manifest",
+        "closure.txt",
+        "env/50.env",
+        "env/51.env",
+        "platform",
+        "sandbox.sh",
+        ":s21444_cp",
+    ],
+    out = "s26594_find_sed",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s26594_find_sed --timeout 496 --pipe 1604:0:1:0",
+        "run --cwd /build/gawk-5.4.1 --env 50 --argv0 find --fd 0=null --fd 1=pipe-w:1604 --fd 2=err --status 0 --argc 5 --",
+        "/nix/store/kvb0b2rhgripxnbnckzinlisghg0yrrg-findutils-static-4.11.0/bin/find . -iname ltmain.sh -print0",
+        "run --cwd /build/gawk-5.4.1 --env 51 --argv0 sed --fd 0=pipe-r:1604 --fd 1=err --fd 2=err --after 0 --status 0 --argc 7 --",
+        "/nix/store/9hi4vvvkajwmnxp02wyg9svkhqhhhafy-gnused-static-4.10/bin/sed -i ./build-aux/ltmain.sh -e 's^eval \\(sys_lib_search_path=\\).*^\\1'\\'''\\''^' -e 's^eval sys_lib_.+search_path=.*^^'",
+    ],
+)
+
+recorded(
+    name = "s26776_find_basename_stat_mktemp__4",
+    srcs = [
+        "actions/s26776_find_basename_stat_mktemp__4.manifest",
+        "closure.txt",
+        "env/51.env",
+        "env/52.env",
+        "env/53.env",
+        "env/55.env",
+        "env/56.env",
+        "env/57.env",
+        "env/58.env",
+        "env/59.env",
+        "platform",
+        "sandbox.sh",
+        ":s25318_autom4te",
+    ],
+    out = "s26776_find_basename_stat_mktemp__4",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s26776_find_basename_stat_mktemp__4 --timeout 496 --pipe 1616:0:1,2,3,4,5,6,7:0",
+        "run --cwd /build/gawk-5.4.1 --env 55 --argv0 find --fd 0=null --fd 1=pipe-w:1616 --fd 2=err --status 0 --argc 7 --",
+        "/nix/store/kvb0b2rhgripxnbnckzinlisghg0yrrg-findutils-static-4.11.0/bin/find ./configure -type f -perm -0100 -print0",
+        "run --cwd /build/gawk-5.4.1 --env 56 --argv0 basename --fd 0=pipe-r:1616 --fd 1=null --fd 2=err --fd 63=pipe-r:1616 --after 0 --status 0 --argc 2 --",
+        "/nix/store/flqxa8p0n5wpvycmnjx23l1m147c6z89-coreutils-static-9.11/bin/basename /bin/sh",
+        "run --cwd /build/gawk-5.4.1 --env 57 --argv0 stat --fd 0=pipe-r:1616 --fd 1=null --fd 2=err --fd 63=pipe-r:1616 --after 0,1 --status 0 --argc 4 --",
+        "/nix/store/flqxa8p0n5wpvycmnjx23l1m147c6z89-coreutils-static-9.11/bin/stat --printf %y ./configure",
+        "run --cwd /build/gawk-5.4.1 --env 52 --argv0 mktemp --fd 0=pipe-r:1616 --fd 1=null --fd 2=err --fd 63=pipe-r:1616 --after 0,1,2 --status 0 --argc 3 --",
+        "/nix/store/flqxa8p0n5wpvycmnjx23l1m147c6z89-coreutils-static-9.11/bin/mktemp -t patchShebangs.XXXXXXXXXX",
+        "run --cwd /build/gawk-5.4.1 --env 51 --argv0 sed --fd 0=pipe-r:1616 --fd 1=file:w:/build/patchShebangs.8l689WirnY --fd 2=err --fd 63=pipe-r:1616 --after 0,1,2,3 --status 0 --argc 4 --",
+        "/nix/store/9hi4vvvkajwmnxp02wyg9svkhqhhhafy-gnused-static-4.10/bin/sed -e '1 s|.*|#\\!/nix/store/h1ikzxwsf6dc1jlijjcrzwxzanhlw9xj-bash-static-5.3/bin/sh|' ./configure",
+        "run --cwd /build/gawk-5.4.1 --env 58 --argv0 cat --fd 0=pipe-r:1616 --fd 1=file:w:/build/gawk-5.4.1/configure --fd 2=err --fd 63=pipe-r:1616 --after 0,1,2,3,4 --status 0 --argc 2 --",
+        "/nix/store/flqxa8p0n5wpvycmnjx23l1m147c6z89-coreutils-static-9.11/bin/cat /build/patchShebangs.8l689WirnY",
+        "run --cwd /build/gawk-5.4.1 --env 53 --argv0 rm --fd 0=pipe-r:1616 --fd 1=err --fd 2=err --fd 63=pipe-r:1616 --after 0,1,2,3,4,5 --status 0 --argc 2 --",
+        "/nix/store/flqxa8p0n5wpvycmnjx23l1m147c6z89-coreutils-static-9.11/bin/rm /build/patchShebangs.8l689WirnY",
+        "run --cwd /build/gawk-5.4.1 --env 59 --argv0 touch --fd 0=pipe-r:1616 --fd 1=err --fd 2=err --fd 63=pipe-r:1616 --after 0,1,2,3,4,5,6 --status 0 --argc 4 --",
+        "/nix/store/flqxa8p0n5wpvycmnjx23l1m147c6z89-coreutils-static-9.11/bin/touch --date '2026-11-19 00:00:08.510000000 +0000' ./configure",
+    ],
+)
+
+recorded(
+    name = "s26987_bash",
+    srcs = [
+        "actions/s26987_bash.manifest",
+        "closure.txt",
+        "env/60.env",
+        "platform",
+        "sandbox.sh",
+        ":s10162_xz_tar",
+        ":s14331_aclocal",
+        ":s1467_tar_xz",
+        ":s16462_xz_tar",
+        ":s19246_aclocal",
+        ":s24370_autom4te",
+        ":s24625_autoheader",
+        ":s24905_automake",
+        ":s25580_autoheader",
+        ":s25858_automake",
+        ":s26594_find_sed",
+        ":s26776_find_basename_stat_mktemp__4",
+        ":s8932_cat_patch",
+    ],
+    out = "s26987_bash",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s26987_bash --timeout 496",
+        "run --cwd /build/gawk-5.4.1 --env 60 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 14 --",
+        "/nix/store/h1ikzxwsf6dc1jlijjcrzwxzanhlw9xj-bash-static-5.3/bin/bash ./configure --disable-dependency-tracking --prefix=/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1 --bindir=/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/bin --sbindir=/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/sbin --includedir=/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/include --mandir=/nix/store/0azvqykndxs3clnj974q99cjfnmpprjv-gawk-5.4.1-man/share/man --infodir=/nix/store/l4pwpdc6hrgy8n3diy24n389k53jqqjk-gawk-5.4.1-info/share/info --docdir=/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/share/doc/gawk --libdir=/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/lib --libexecdir=/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/libexec --localedir=/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/share/locale --without-readline",
+    ],
+)
+
+cc_object(
+    name = "s108274_gcc",
+    srcs = [
+        "actions/s108274_gcc.manifest",
+        "closure.txt",
+        "env/67.env",
+        "platform",
+        "sandbox.sh",
+        ":s1467_tar_xz",
+        ":s26987_bash",
+    ],
+    out = "s108274_gcc",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s108274_gcc --timeout 496",
+        "run --cwd /build/gawk-5.4.1/support --env 67 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 40 --",
+        "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -DGAWK -DHAVE_CONFIG_H -I./.. -I. -I.. -g -O2 -g -O2 -c -o dfa.o dfa.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=63g104xwbz",
+    ],
+)
+
+cc_object(
+    name = "s108386_gcc",
+    srcs = [
+        "actions/s108386_gcc.manifest",
+        "closure.txt",
+        "env/67.env",
+        "platform",
+        "sandbox.sh",
+        ":s1467_tar_xz",
+        ":s26987_bash",
+    ],
+    out = "s108386_gcc",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s108386_gcc --timeout 496",
+        "run --cwd /build/gawk-5.4.1/support --env 67 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 40 --",
+        "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -DGAWK -DHAVE_CONFIG_H -I./.. -I. -I.. -g -O2 -g -O2 -c -o getopt.o getopt.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=63g104xwbz",
+    ],
+)
+
+cc_object(
+    name = "s108514_gcc",
+    srcs = [
+        "actions/s108514_gcc.manifest",
+        "closure.txt",
+        "env/67.env",
+        "platform",
+        "sandbox.sh",
+        ":s1467_tar_xz",
+        ":s26987_bash",
+    ],
+    out = "s108514_gcc",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s108514_gcc --timeout 496",
+        "run --cwd /build/gawk-5.4.1/support --env 67 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 40 --",
+        "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -DGAWK -DHAVE_CONFIG_H -I./.. -I. -I.. -g -O2 -g -O2 -c -o getopt1.o getopt1.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=63g104xwbz",
+    ],
+)
+
+cc_object(
+    name = "s108615_gcc",
+    srcs = [
+        "actions/s108615_gcc.manifest",
+        "closure.txt",
+        "env/67.env",
+        "platform",
+        "sandbox.sh",
+        ":s1467_tar_xz",
+        ":s26987_bash",
+    ],
+    out = "s108615_gcc",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s108615_gcc --timeout 496",
+        "run --cwd /build/gawk-5.4.1/support --env 67 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 40 --",
+        "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -DGAWK -DHAVE_CONFIG_H -I./.. -I. -I.. -g -O2 -g -O2 -c -o localeinfo.o localeinfo.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=63g104xwbz",
+    ],
+)
+
+cc_object(
+    name = "s108717_gcc",
+    srcs = [
+        "actions/s108717_gcc.manifest",
+        "closure.txt",
+        "env/67.env",
+        "platform",
+        "sandbox.sh",
+        ":s1467_tar_xz",
+        ":s26987_bash",
+    ],
+    out = "s108717_gcc",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s108717_gcc --timeout 496",
+        "run --cwd /build/gawk-5.4.1/support --env 67 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 40 --",
+        "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -DGAWK -DHAVE_CONFIG_H -I./.. -I. -I.. -g -O2 -g -O2 -c -o minrx.o minrx.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=63g104xwbz",
+    ],
+)
+
+cc_object(
+    name = "s108830_gcc",
+    srcs = [
+        "actions/s108830_gcc.manifest",
+        "closure.txt",
+        "env/67.env",
+        "platform",
+        "sandbox.sh",
+        ":s1467_tar_xz",
+        ":s26987_bash",
+    ],
+    out = "s108830_gcc",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s108830_gcc --timeout 496",
+        "run --cwd /build/gawk-5.4.1/support --env 67 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 40 --",
+        "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -DGAWK -DHAVE_CONFIG_H -I./.. -I. -I.. -g -O2 -g -O2 -c -o random.o random.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=63g104xwbz",
+    ],
+)
+
+cc_object(
+    name = "s108932_gcc",
+    srcs = [
+        "actions/s108932_gcc.manifest",
+        "closure.txt",
+        "env/67.env",
+        "platform",
+        "sandbox.sh",
+        ":s1467_tar_xz",
+        ":s26987_bash",
+    ],
+    out = "s108932_gcc",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s108932_gcc --timeout 496",
+        "run --cwd /build/gawk-5.4.1/support --env 67 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 40 --",
+        "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -DGAWK -DHAVE_CONFIG_H -I./.. -I. -I.. -g -O2 -g -O2 -c -o regex.o regex.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=63g104xwbz",
+    ],
+)
+
+cc_object(
+    name = "s109102_gcc",
+    srcs = [
+        "actions/s109102_gcc.manifest",
+        "closure.txt",
+        "env/67.env",
+        "platform",
+        "sandbox.sh",
+        ":s1467_tar_xz",
+        ":s26987_bash",
+    ],
+    out = "s109102_gcc",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s109102_gcc --timeout 496",
+        "run --cwd /build/gawk-5.4.1/support --env 67 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 40 --",
+        "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -DGAWK -DHAVE_CONFIG_H -I./.. -I. -I.. -g -O2 -g -O2 -c -o malloc/dynarray_at_failure.o malloc/dynarray_at_failure.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=63g104xwbz",
+    ],
+)
+
+cc_object(
+    name = "s109202_gcc",
+    srcs = [
+        "actions/s109202_gcc.manifest",
+        "closure.txt",
+        "env/67.env",
+        "platform",
+        "sandbox.sh",
+        ":s1467_tar_xz",
+        ":s26987_bash",
+    ],
+    out = "s109202_gcc",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s109202_gcc --timeout 496",
+        "run --cwd /build/gawk-5.4.1/support --env 67 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 40 --",
+        "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -DGAWK -DHAVE_CONFIG_H -I./.. -I. -I.. -g -O2 -g -O2 -c -o malloc/dynarray_emplace_enlarge.o malloc/dynarray_emplace_enlarge.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=63g104xwbz",
+    ],
+)
+
+cc_object(
+    name = "s109303_gcc",
+    srcs = [
+        "actions/s109303_gcc.manifest",
+        "closure.txt",
+        "env/67.env",
+        "platform",
+        "sandbox.sh",
+        ":s1467_tar_xz",
+        ":s26987_bash",
+    ],
+    out = "s109303_gcc",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s109303_gcc --timeout 496",
+        "run --cwd /build/gawk-5.4.1/support --env 67 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 40 --",
+        "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -DGAWK -DHAVE_CONFIG_H -I./.. -I. -I.. -g -O2 -g -O2 -c -o malloc/dynarray_finalize.o malloc/dynarray_finalize.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=63g104xwbz",
+    ],
+)
+
+cc_object(
+    name = "s109402_gcc",
+    srcs = [
+        "actions/s109402_gcc.manifest",
+        "closure.txt",
+        "env/67.env",
+        "platform",
+        "sandbox.sh",
+        ":s1467_tar_xz",
+        ":s26987_bash",
+    ],
+    out = "s109402_gcc",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s109402_gcc --timeout 496",
+        "run --cwd /build/gawk-5.4.1/support --env 67 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 40 --",
+        "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -DGAWK -DHAVE_CONFIG_H -I./.. -I. -I.. -g -O2 -g -O2 -c -o malloc/dynarray_resize.o malloc/dynarray_resize.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=63g104xwbz",
+    ],
+)
+
+cc_object(
+    name = "s109502_gcc",
+    srcs = [
+        "actions/s109502_gcc.manifest",
+        "closure.txt",
+        "env/67.env",
+        "platform",
+        "sandbox.sh",
+        ":s1467_tar_xz",
+        ":s26987_bash",
+    ],
+    out = "s109502_gcc",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s109502_gcc --timeout 496",
+        "run --cwd /build/gawk-5.4.1/support --env 67 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 40 --",
+        "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -DGAWK -DHAVE_CONFIG_H -I./.. -I. -I.. -g -O2 -g -O2 -c -o malloc/dynarray_resize_clear.o malloc/dynarray_resize_clear.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=63g104xwbz",
+    ],
+)
+
+cc_object(
+    name = "s109602_gcc",
+    srcs = [
+        "actions/s109602_gcc.manifest",
+        "closure.txt",
+        "env/67.env",
+        "platform",
+        "sandbox.sh",
+        ":s1467_tar_xz",
+    ],
+    out = "s109602_gcc",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s109602_gcc --timeout 496",
+        "run --cwd /build/gawk-5.4.1/support --env 67 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 40 --",
+        "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -DGAWK -DHAVE_CONFIG_H -I./.. -I. -I.. -g -O2 -g -O2 -c -o pma.o pma.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=63g104xwbz",
+    ],
+)
+
+cc_library(
+    name = "s109725_ar",
+    srcs = [
+        "actions/s109725_ar.manifest",
+        "closure.txt",
+        "env/71.env",
+        "platform",
+        "sandbox.sh",
+        ":s108274_gcc",
+        ":s108386_gcc",
+        ":s108514_gcc",
+        ":s108615_gcc",
+        ":s108717_gcc",
+        ":s108830_gcc",
+        ":s108932_gcc",
+        ":s109102_gcc",
+        ":s109202_gcc",
+        ":s109303_gcc",
+        ":s109402_gcc",
+        ":s109502_gcc",
+        ":s109602_gcc",
+    ],
+    out = "s109725_ar",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s109725_ar --timeout 496",
+        "run --cwd /build/gawk-5.4.1/support --env 71 --argv0 ar --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 16 --",
+        "/nix/store/4f6lpwn65y6k7hc7xaqh6iajglh6rj3r-bootstrap-stage4-gcc-wrapper-16.2.0/bin/ar cr libsupport.a dfa.o getopt.o getopt1.o localeinfo.o minrx.o random.o regex.o malloc/dynarray_at_failure.o malloc/dynarray_emplace_enlarge.o malloc/dynarray_finalize.o malloc/dynarray_resize.o malloc/dynarray_resize_clear.o pma.o",
+    ],
+)
+
+cc_object(
+    name = "s109805_gcc",
+    srcs = [
+        "actions/s109805_gcc.manifest",
+        "closure.txt",
+        "env/73.env",
+        "platform",
+        "sandbox.sh",
+        ":s1467_tar_xz",
+        ":s26987_bash",
+        ":s8932_cat_patch",
+    ],
+    out = "s109805_gcc",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s109805_gcc --timeout 496",
+        "run --cwd /build/gawk-5.4.1 --env 73 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 43 --",
+        "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 '-DDEFPATH=\".:/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/share/awk\"' '-DDEFLIBPATH=\"/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/lib/gawk\"' '-DSHLIBEXT=\"so\"' -DHAVE_CONFIG_H -DGAWK '-DLOCALEDIR=\"/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/share/locale\"' -I./support -I. -g -O2 -g -O2 -c -o array.o array.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=63g104xwbz",
+    ],
+)
+
+cc_object(
+    name = "s109918_gcc",
+    srcs = [
+        "actions/s109918_gcc.manifest",
+        "closure.txt",
+        "env/73.env",
+        "platform",
+        "sandbox.sh",
+        ":s1467_tar_xz",
+        ":s26987_bash",
+        ":s8932_cat_patch",
+    ],
+    out = "s109918_gcc",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s109918_gcc --timeout 496",
+        "run --cwd /build/gawk-5.4.1 --env 73 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 43 --",
+        "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 '-DDEFPATH=\".:/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/share/awk\"' '-DDEFLIBPATH=\"/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/lib/gawk\"' '-DSHLIBEXT=\"so\"' -DHAVE_CONFIG_H -DGAWK '-DLOCALEDIR=\"/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/share/locale\"' -I./support -I. -g -O2 -g -O2 -c -o awkgram.o awkgram.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=63g104xwbz",
+    ],
+)
+
+cc_object(
+    name = "s110030_gcc",
+    srcs = [
+        "actions/s110030_gcc.manifest",
+        "closure.txt",
+        "env/73.env",
+        "platform",
+        "sandbox.sh",
+        ":s1467_tar_xz",
+        ":s26987_bash",
+        ":s8932_cat_patch",
+    ],
+    out = "s110030_gcc",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s110030_gcc --timeout 496",
+        "run --cwd /build/gawk-5.4.1 --env 73 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 43 --",
+        "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 '-DDEFPATH=\".:/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/share/awk\"' '-DDEFLIBPATH=\"/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/lib/gawk\"' '-DSHLIBEXT=\"so\"' -DHAVE_CONFIG_H -DGAWK '-DLOCALEDIR=\"/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/share/locale\"' -I./support -I. -g -O2 -g -O2 -c -o builtin.o builtin.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=63g104xwbz",
+    ],
+)
+
+cc_object(
+    name = "s110154_gcc",
+    srcs = [
+        "actions/s110154_gcc.manifest",
+        "closure.txt",
+        "env/73.env",
+        "platform",
+        "sandbox.sh",
+        ":s1467_tar_xz",
+        ":s26987_bash",
+        ":s8932_cat_patch",
+    ],
+    out = "s110154_gcc",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s110154_gcc --timeout 496",
+        "run --cwd /build/gawk-5.4.1 --env 73 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 43 --",
+        "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 '-DDEFPATH=\".:/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/share/awk\"' '-DDEFLIBPATH=\"/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/lib/gawk\"' '-DSHLIBEXT=\"so\"' -DHAVE_CONFIG_H -DGAWK '-DLOCALEDIR=\"/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/share/locale\"' -I./support -I. -g -O2 -g -O2 -c -o cint_array.o cint_array.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=63g104xwbz",
+    ],
+)
+
+cc_object(
+    name = "s110256_gcc",
+    srcs = [
+        "actions/s110256_gcc.manifest",
+        "closure.txt",
+        "env/73.env",
+        "platform",
+        "sandbox.sh",
+        ":s1467_tar_xz",
+        ":s26987_bash",
+        ":s8932_cat_patch",
+    ],
+    out = "s110256_gcc",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s110256_gcc --timeout 496",
+        "run --cwd /build/gawk-5.4.1 --env 73 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 43 --",
+        "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 '-DDEFPATH=\".:/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/share/awk\"' '-DDEFLIBPATH=\"/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/lib/gawk\"' '-DSHLIBEXT=\"so\"' -DHAVE_CONFIG_H -DGAWK '-DLOCALEDIR=\"/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/share/locale\"' -I./support -I. -g -O2 -g -O2 -c -o command.o command.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=63g104xwbz",
+    ],
+)
+
+cc_object(
+    name = "s110367_gcc",
+    srcs = [
+        "actions/s110367_gcc.manifest",
+        "closure.txt",
+        "env/73.env",
+        "platform",
+        "sandbox.sh",
+        ":s1467_tar_xz",
+        ":s26987_bash",
+        ":s8932_cat_patch",
+    ],
+    out = "s110367_gcc",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s110367_gcc --timeout 496",
+        "run --cwd /build/gawk-5.4.1 --env 73 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 43 --",
+        "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 '-DDEFPATH=\".:/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/share/awk\"' '-DDEFLIBPATH=\"/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/lib/gawk\"' '-DSHLIBEXT=\"so\"' -DHAVE_CONFIG_H -DGAWK '-DLOCALEDIR=\"/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/share/locale\"' -I./support -I. -g -O2 -g -O2 -c -o debug.o debug.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=63g104xwbz",
+    ],
+)
+
+cc_object(
+    name = "s110487_gcc",
+    srcs = [
+        "actions/s110487_gcc.manifest",
+        "closure.txt",
+        "env/73.env",
+        "platform",
+        "sandbox.sh",
+        ":s1467_tar_xz",
+        ":s26987_bash",
+        ":s8932_cat_patch",
+    ],
+    out = "s110487_gcc",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s110487_gcc --timeout 496",
+        "run --cwd /build/gawk-5.4.1 --env 73 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 43 --",
+        "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 '-DDEFPATH=\".:/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/share/awk\"' '-DDEFLIBPATH=\"/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/lib/gawk\"' '-DSHLIBEXT=\"so\"' -DHAVE_CONFIG_H -DGAWK '-DLOCALEDIR=\"/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/share/locale\"' -I./support -I. -g -O2 -g -O2 -c -o eval.o eval.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=63g104xwbz",
+    ],
+)
+
+cc_object(
+    name = "s110601_gcc",
+    srcs = [
+        "actions/s110601_gcc.manifest",
+        "closure.txt",
+        "env/73.env",
+        "platform",
+        "sandbox.sh",
+        ":s1467_tar_xz",
+        ":s26987_bash",
+        ":s8932_cat_patch",
+    ],
+    out = "s110601_gcc",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s110601_gcc --timeout 496",
+        "run --cwd /build/gawk-5.4.1 --env 73 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 43 --",
+        "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 '-DDEFPATH=\".:/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/share/awk\"' '-DDEFLIBPATH=\"/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/lib/gawk\"' '-DSHLIBEXT=\"so\"' -DHAVE_CONFIG_H -DGAWK '-DLOCALEDIR=\"/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/share/locale\"' -I./support -I. -g -O2 -g -O2 -c -o ext.o ext.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=63g104xwbz",
+    ],
+)
+
+cc_object(
+    name = "s110703_gcc",
+    srcs = [
+        "actions/s110703_gcc.manifest",
+        "closure.txt",
+        "env/73.env",
+        "platform",
+        "sandbox.sh",
+        ":s1467_tar_xz",
+        ":s26987_bash",
+        ":s8932_cat_patch",
+    ],
+    out = "s110703_gcc",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s110703_gcc --timeout 496",
+        "run --cwd /build/gawk-5.4.1 --env 73 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 43 --",
+        "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 '-DDEFPATH=\".:/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/share/awk\"' '-DDEFLIBPATH=\"/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/lib/gawk\"' '-DSHLIBEXT=\"so\"' -DHAVE_CONFIG_H -DGAWK '-DLOCALEDIR=\"/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/share/locale\"' -I./support -I. -g -O2 -g -O2 -c -o field.o field.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=63g104xwbz",
+    ],
+)
+
+cc_object(
+    name = "s110813_gcc",
+    srcs = [
+        "actions/s110813_gcc.manifest",
+        "closure.txt",
+        "env/73.env",
+        "platform",
+        "sandbox.sh",
+        ":s1467_tar_xz",
+        ":s26987_bash",
+        ":s8932_cat_patch",
+    ],
+    out = "s110813_gcc",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s110813_gcc --timeout 496",
+        "run --cwd /build/gawk-5.4.1 --env 73 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 43 --",
+        "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 '-DDEFPATH=\".:/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/share/awk\"' '-DDEFLIBPATH=\"/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/lib/gawk\"' '-DSHLIBEXT=\"so\"' -DHAVE_CONFIG_H -DGAWK '-DLOCALEDIR=\"/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/share/locale\"' -I./support -I. -g -O2 -g -O2 -c -o floatcomp.o floatcomp.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=63g104xwbz",
+    ],
+)
+
+cc_object(
+    name = "s110913_gcc",
+    srcs = [
+        "actions/s110913_gcc.manifest",
+        "closure.txt",
+        "env/73.env",
+        "platform",
+        "sandbox.sh",
+        ":s1467_tar_xz",
+        ":s26987_bash",
+        ":s8932_cat_patch",
+    ],
+    out = "s110913_gcc",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s110913_gcc --timeout 496",
+        "run --cwd /build/gawk-5.4.1 --env 73 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 43 --",
+        "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 '-DDEFPATH=\".:/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/share/awk\"' '-DDEFLIBPATH=\"/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/lib/gawk\"' '-DSHLIBEXT=\"so\"' -DHAVE_CONFIG_H -DGAWK '-DLOCALEDIR=\"/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/share/locale\"' -I./support -I. -g -O2 -g -O2 -c -o gawkapi.o gawkapi.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=63g104xwbz",
+    ],
+)
+
+cc_object(
+    name = "s111024_gcc",
+    srcs = [
+        "actions/s111024_gcc.manifest",
+        "closure.txt",
+        "env/73.env",
+        "platform",
+        "sandbox.sh",
+        ":s1467_tar_xz",
+        ":s26987_bash",
+        ":s8932_cat_patch",
+    ],
+    out = "s111024_gcc",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s111024_gcc --timeout 496",
+        "run --cwd /build/gawk-5.4.1 --env 73 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 43 --",
+        "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 '-DDEFPATH=\".:/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/share/awk\"' '-DDEFLIBPATH=\"/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/lib/gawk\"' '-DSHLIBEXT=\"so\"' -DHAVE_CONFIG_H -DGAWK '-DLOCALEDIR=\"/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/share/locale\"' -I./support -I. -g -O2 -g -O2 -c -o gawkmisc.o gawkmisc.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=63g104xwbz",
+    ],
+)
+
+cc_object(
+    name = "s111135_gcc",
+    srcs = [
+        "actions/s111135_gcc.manifest",
+        "closure.txt",
+        "env/73.env",
+        "platform",
+        "sandbox.sh",
+        ":s1467_tar_xz",
+        ":s26987_bash",
+        ":s8932_cat_patch",
+    ],
+    out = "s111135_gcc",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s111135_gcc --timeout 496",
+        "run --cwd /build/gawk-5.4.1 --env 73 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 43 --",
+        "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 '-DDEFPATH=\".:/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/share/awk\"' '-DDEFLIBPATH=\"/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/lib/gawk\"' '-DSHLIBEXT=\"so\"' -DHAVE_CONFIG_H -DGAWK '-DLOCALEDIR=\"/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/share/locale\"' -I./support -I. -g -O2 -g -O2 -c -o int_array.o int_array.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=63g104xwbz",
+    ],
+)
+
+cc_object(
+    name = "s111251_gcc",
+    srcs = [
+        "actions/s111251_gcc.manifest",
+        "closure.txt",
+        "env/73.env",
+        "platform",
+        "sandbox.sh",
+        ":s1467_tar_xz",
+        ":s26987_bash",
+        ":s8932_cat_patch",
+    ],
+    out = "s111251_gcc",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s111251_gcc --timeout 496",
+        "run --cwd /build/gawk-5.4.1 --env 73 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 43 --",
+        "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 '-DDEFPATH=\".:/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/share/awk\"' '-DDEFLIBPATH=\"/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/lib/gawk\"' '-DSHLIBEXT=\"so\"' -DHAVE_CONFIG_H -DGAWK '-DLOCALEDIR=\"/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/share/locale\"' -I./support -I. -g -O2 -g -O2 -c -o io.o io.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=63g104xwbz",
+    ],
+)
+
+cc_object(
+    name = "s111354_gcc",
+    srcs = [
+        "actions/s111354_gcc.manifest",
+        "closure.txt",
+        "env/73.env",
+        "platform",
+        "sandbox.sh",
+        ":s1467_tar_xz",
+        ":s26987_bash",
+        ":s8932_cat_patch",
+    ],
+    out = "s111354_gcc",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s111354_gcc --timeout 496",
+        "run --cwd /build/gawk-5.4.1 --env 73 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 43 --",
+        "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 '-DDEFPATH=\".:/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/share/awk\"' '-DDEFLIBPATH=\"/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/lib/gawk\"' '-DSHLIBEXT=\"so\"' -DHAVE_CONFIG_H -DGAWK '-DLOCALEDIR=\"/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/share/locale\"' -I./support -I. -g -O2 -g -O2 -c -o main.o main.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=63g104xwbz",
+    ],
+)
+
+cc_object(
+    name = "s111466_gcc",
+    srcs = [
+        "actions/s111466_gcc.manifest",
+        "closure.txt",
+        "env/73.env",
+        "platform",
+        "sandbox.sh",
+        ":s1467_tar_xz",
+        ":s26987_bash",
+        ":s8932_cat_patch",
+    ],
+    out = "s111466_gcc",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s111466_gcc --timeout 496",
+        "run --cwd /build/gawk-5.4.1 --env 73 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 43 --",
+        "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 '-DDEFPATH=\".:/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/share/awk\"' '-DDEFLIBPATH=\"/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/lib/gawk\"' '-DSHLIBEXT=\"so\"' -DHAVE_CONFIG_H -DGAWK '-DLOCALEDIR=\"/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/share/locale\"' -I./support -I. -g -O2 -g -O2 -c -o mpfr.o mpfr.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=63g104xwbz",
+    ],
+)
+
+cc_object(
+    name = "s111567_gcc",
+    srcs = [
+        "actions/s111567_gcc.manifest",
+        "closure.txt",
+        "env/73.env",
+        "platform",
+        "sandbox.sh",
+        ":s1467_tar_xz",
+        ":s26987_bash",
+        ":s8932_cat_patch",
+    ],
+    out = "s111567_gcc",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s111567_gcc --timeout 496",
+        "run --cwd /build/gawk-5.4.1 --env 73 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 43 --",
+        "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 '-DDEFPATH=\".:/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/share/awk\"' '-DDEFLIBPATH=\"/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/lib/gawk\"' '-DSHLIBEXT=\"so\"' -DHAVE_CONFIG_H -DGAWK '-DLOCALEDIR=\"/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/share/locale\"' -I./support -I. -g -O2 -g -O2 -c -o msg.o msg.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=63g104xwbz",
+    ],
+)
+
+cc_object(
+    name = "s111679_gcc",
+    srcs = [
+        "actions/s111679_gcc.manifest",
+        "closure.txt",
+        "env/73.env",
+        "platform",
+        "sandbox.sh",
+        ":s1467_tar_xz",
+        ":s26987_bash",
+        ":s8932_cat_patch",
+    ],
+    out = "s111679_gcc",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s111679_gcc --timeout 496",
+        "run --cwd /build/gawk-5.4.1 --env 73 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 43 --",
+        "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 '-DDEFPATH=\".:/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/share/awk\"' '-DDEFLIBPATH=\"/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/lib/gawk\"' '-DSHLIBEXT=\"so\"' -DHAVE_CONFIG_H -DGAWK '-DLOCALEDIR=\"/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/share/locale\"' -I./support -I. -g -O2 -g -O2 -c -o node.o node.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=63g104xwbz",
+    ],
+)
+
+cc_object(
+    name = "s111789_gcc",
+    srcs = [
+        "actions/s111789_gcc.manifest",
+        "closure.txt",
+        "env/73.env",
+        "platform",
+        "sandbox.sh",
+        ":s1467_tar_xz",
+        ":s26987_bash",
+        ":s8932_cat_patch",
+    ],
+    out = "s111789_gcc",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s111789_gcc --timeout 496",
+        "run --cwd /build/gawk-5.4.1 --env 73 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 43 --",
+        "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 '-DDEFPATH=\".:/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/share/awk\"' '-DDEFLIBPATH=\"/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/lib/gawk\"' '-DSHLIBEXT=\"so\"' -DHAVE_CONFIG_H -DGAWK '-DLOCALEDIR=\"/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/share/locale\"' -I./support -I. -g -O2 -g -O2 -c -o printf.o printf.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=63g104xwbz",
+    ],
+)
+
+cc_object(
+    name = "s111899_gcc",
+    srcs = [
+        "actions/s111899_gcc.manifest",
+        "closure.txt",
+        "env/73.env",
+        "platform",
+        "sandbox.sh",
+        ":s1467_tar_xz",
+        ":s26987_bash",
+        ":s8932_cat_patch",
+    ],
+    out = "s111899_gcc",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s111899_gcc --timeout 496",
+        "run --cwd /build/gawk-5.4.1 --env 73 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 43 --",
+        "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 '-DDEFPATH=\".:/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/share/awk\"' '-DDEFLIBPATH=\"/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/lib/gawk\"' '-DSHLIBEXT=\"so\"' -DHAVE_CONFIG_H -DGAWK '-DLOCALEDIR=\"/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/share/locale\"' -I./support -I. -g -O2 -g -O2 -c -o profile.o profile.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=63g104xwbz",
+    ],
+)
+
+cc_object(
+    name = "s112010_gcc",
+    srcs = [
+        "actions/s112010_gcc.manifest",
+        "closure.txt",
+        "env/73.env",
+        "platform",
+        "sandbox.sh",
+        ":s1467_tar_xz",
+        ":s26987_bash",
+        ":s8932_cat_patch",
+    ],
+    out = "s112010_gcc",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s112010_gcc --timeout 496",
+        "run --cwd /build/gawk-5.4.1 --env 73 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 43 --",
+        "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 '-DDEFPATH=\".:/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/share/awk\"' '-DDEFLIBPATH=\"/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/lib/gawk\"' '-DSHLIBEXT=\"so\"' -DHAVE_CONFIG_H -DGAWK '-DLOCALEDIR=\"/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/share/locale\"' -I./support -I. -g -O2 -g -O2 -c -o re.o re.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=63g104xwbz",
+    ],
+)
+
+cc_object(
+    name = "s112120_gcc",
+    srcs = [
+        "actions/s112120_gcc.manifest",
+        "closure.txt",
+        "env/73.env",
+        "platform",
+        "sandbox.sh",
+        ":s1467_tar_xz",
+        ":s26987_bash",
+        ":s8932_cat_patch",
+    ],
+    out = "s112120_gcc",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s112120_gcc --timeout 496",
+        "run --cwd /build/gawk-5.4.1 --env 73 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 43 --",
+        "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 '-DDEFPATH=\".:/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/share/awk\"' '-DDEFLIBPATH=\"/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/lib/gawk\"' '-DSHLIBEXT=\"so\"' -DHAVE_CONFIG_H -DGAWK '-DLOCALEDIR=\"/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/share/locale\"' -I./support -I. -g -O2 -g -O2 -c -o replace.o replace.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=63g104xwbz",
+    ],
+)
+
+cc_object(
+    name = "s112222_gcc",
+    srcs = [
+        "actions/s112222_gcc.manifest",
+        "closure.txt",
+        "env/73.env",
+        "platform",
+        "sandbox.sh",
+        ":s1467_tar_xz",
+        ":s26987_bash",
+        ":s8932_cat_patch",
+    ],
+    out = "s112222_gcc",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s112222_gcc --timeout 496",
+        "run --cwd /build/gawk-5.4.1 --env 73 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 43 --",
+        "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 '-DDEFPATH=\".:/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/share/awk\"' '-DDEFLIBPATH=\"/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/lib/gawk\"' '-DSHLIBEXT=\"so\"' -DHAVE_CONFIG_H -DGAWK '-DLOCALEDIR=\"/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/share/locale\"' -I./support -I. -g -O2 -g -O2 -c -o str_array.o str_array.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=63g104xwbz",
+    ],
+)
+
+cc_object(
+    name = "s112333_gcc",
+    srcs = [
+        "actions/s112333_gcc.manifest",
+        "closure.txt",
+        "env/73.env",
+        "platform",
+        "sandbox.sh",
+        ":s1467_tar_xz",
+        ":s26987_bash",
+        ":s8932_cat_patch",
+    ],
+    out = "s112333_gcc",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s112333_gcc --timeout 496",
+        "run --cwd /build/gawk-5.4.1 --env 73 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 43 --",
+        "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 '-DDEFPATH=\".:/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/share/awk\"' '-DDEFLIBPATH=\"/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/lib/gawk\"' '-DSHLIBEXT=\"so\"' -DHAVE_CONFIG_H -DGAWK '-DLOCALEDIR=\"/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/share/locale\"' -I./support -I. -g -O2 -g -O2 -c -o symbol.o symbol.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=63g104xwbz",
+    ],
+)
+
+cc_object(
+    name = "s112444_gcc",
+    srcs = [
+        "actions/s112444_gcc.manifest",
+        "closure.txt",
+        "env/73.env",
+        "platform",
+        "sandbox.sh",
+        ":s1467_tar_xz",
+        ":s26987_bash",
+    ],
+    out = "s112444_gcc",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s112444_gcc --timeout 496",
+        "run --cwd /build/gawk-5.4.1 --env 73 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 43 --",
+        "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 '-DDEFPATH=\".:/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/share/awk\"' '-DDEFLIBPATH=\"/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/lib/gawk\"' '-DSHLIBEXT=\"so\"' -DHAVE_CONFIG_H -DGAWK '-DLOCALEDIR=\"/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/share/locale\"' -I./support -I. -g -O2 -g -O2 -c -o version.o version.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=63g104xwbz",
+    ],
+)
+
+cc_binary(
+    name = "s112594_gcc",
+    srcs = [
+        "actions/s112594_gcc.manifest",
+        "closure.txt",
+        "env/75.env",
+        "platform",
+        "sandbox.sh",
+        ":s109725_ar",
+        ":s109805_gcc",
+        ":s109918_gcc",
+        ":s110030_gcc",
+        ":s110154_gcc",
+        ":s110256_gcc",
+        ":s110367_gcc",
+        ":s110487_gcc",
+        ":s110601_gcc",
+        ":s110703_gcc",
+        ":s110813_gcc",
+        ":s110913_gcc",
+        ":s111024_gcc",
+        ":s111135_gcc",
+        ":s111251_gcc",
+        ":s111354_gcc",
+        ":s111466_gcc",
+        ":s111567_gcc",
+        ":s111679_gcc",
+        ":s111789_gcc",
+        ":s111899_gcc",
+        ":s112010_gcc",
+        ":s112120_gcc",
+        ":s112222_gcc",
+        ":s112333_gcc",
+        ":s112444_gcc",
+    ],
+    out = "s112594_gcc",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s112594_gcc --timeout 496",
+        "run --cwd /build/gawk-5.4.1 --env 75 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 67 --",
+        "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -Wl,-dynamic-linker=/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ld-linux-x86-64.so.2 -g -O2 -g -O2 -o gawk array.o awkgram.o builtin.o cint_array.o command.o debug.o eval.o ext.o field.o floatcomp.o gawkapi.o gawkmisc.o int_array.o io.o main.o mpfr.o msg.o node.o printf.o profile.o re.o replace.o str_array.o symbol.o version.o support/libsupport.a -lm -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=63g104xwbz -Wl,-rpath -Wl,/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/lib -L/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib -L/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0 -L/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -L/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib",
+    ],
+)
+
+cc_object(
+    name = "s115535_gcc",
+    srcs = [
+        "actions/s115535_gcc.manifest",
+        "closure.txt",
+        "env/90.env",
+        "platform",
+        "sandbox.sh",
+        ":s1467_tar_xz",
+        ":s26987_bash",
+    ],
+    out = "s115535_gcc",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s115535_gcc --timeout 496",
+        "run --cwd /build/gawk-5.4.1/extension --env 90 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 39 --",
+        "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -DHAVE_CONFIG_H -I. -I./.. -g -O2 -Wall -c filefuncs.c -fPIC -DPIC -o .libs/filefuncs.o -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=63g104xwbz",
+    ],
+)
+
+recorded(
+    name = "s115638_cat",
+    srcs = [
+        "actions/s115638_cat.manifest",
+        "actions/s115638_cat.pipe5296.data",
+        "closure.txt",
+        "env/91.env",
+        "glue_115638",
+        "platform",
+        "sandbox.sh",
+    ],
+    out = "s115638_cat",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s115638_cat --timeout 496",
+        "run --cwd /build/gawk-5.4.1/extension --env 91 --argv0 cat --fd 0=data:actions/s115638_cat.pipe5296.data --fd 1=file:w:/build/gawk-5.4.1/extension/filefuncs.loT --fd 2=err --status 0 --argc 1 --",
+        "/nix/store/flqxa8p0n5wpvycmnjx23l1m147c6z89-coreutils-static-9.11/bin/cat",
+    ],
+)
+
+cc_object(
+    name = "s116038_gcc",
+    srcs = [
+        "actions/s116038_gcc.manifest",
+        "closure.txt",
+        "env/90.env",
+        "platform",
+        "sandbox.sh",
+        ":s1467_tar_xz",
+    ],
+    out = "s116038_gcc",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s116038_gcc --timeout 496",
+        "run --cwd /build/gawk-5.4.1/extension --env 90 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 39 --",
+        "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -DHAVE_CONFIG_H -I. -I./.. -g -O2 -Wall -c stack.c -fPIC -DPIC -o .libs/stack.o -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=63g104xwbz",
+    ],
+)
+
+recorded(
+    name = "s116132_cat",
+    srcs = [
+        "actions/s116132_cat.manifest",
+        "actions/s116132_cat.pipe5310.data",
+        "closure.txt",
+        "env/91.env",
+        "glue_116132",
+        "platform",
+        "sandbox.sh",
+    ],
+    out = "s116132_cat",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s116132_cat --timeout 496",
+        "run --cwd /build/gawk-5.4.1/extension --env 91 --argv0 cat --fd 0=data:actions/s116132_cat.pipe5310.data --fd 1=file:w:/build/gawk-5.4.1/extension/stack.loT --fd 2=err --status 0 --argc 1 --",
+        "/nix/store/flqxa8p0n5wpvycmnjx23l1m147c6z89-coreutils-static-9.11/bin/cat",
+    ],
+)
+
+cc_object(
+    name = "s116521_gcc",
+    srcs = [
+        "actions/s116521_gcc.manifest",
+        "closure.txt",
+        "env/90.env",
+        "platform",
+        "sandbox.sh",
+        ":s1467_tar_xz",
+        ":s26987_bash",
+    ],
+    out = "s116521_gcc",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s116521_gcc --timeout 496",
+        "run --cwd /build/gawk-5.4.1/extension --env 90 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 39 --",
+        "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -DHAVE_CONFIG_H -I. -I./.. -g -O2 -Wall -c gawkfts.c -fPIC -DPIC -o .libs/gawkfts.o -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=63g104xwbz",
+    ],
+)
+
+recorded(
+    name = "s116624_cat",
+    srcs = [
+        "actions/s116624_cat.manifest",
+        "actions/s116624_cat.pipe5324.data",
+        "closure.txt",
+        "env/91.env",
+        "glue_116624",
+        "platform",
+        "sandbox.sh",
+    ],
+    out = "s116624_cat",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s116624_cat --timeout 496",
+        "run --cwd /build/gawk-5.4.1/extension --env 91 --argv0 cat --fd 0=data:actions/s116624_cat.pipe5324.data --fd 1=file:w:/build/gawk-5.4.1/extension/gawkfts.loT --fd 2=err --status 0 --argc 1 --",
+        "/nix/store/flqxa8p0n5wpvycmnjx23l1m147c6z89-coreutils-static-9.11/bin/cat",
+    ],
+)
+
+recorded(
+    name = "s116655_bash",
+    srcs = [
+        "actions/s116655_bash.manifest",
+        "closure.txt",
+        "env/93.env",
+        "platform",
+        "sandbox.sh",
+        ":s115535_gcc",
+        ":s115638_cat",
+        ":s116038_gcc",
+        ":s116132_cat",
+        ":s116521_gcc",
+        ":s116624_cat",
+        ":s26987_bash",
+    ],
+    out = "s116655_bash",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s116655_bash --timeout 496",
+        "run --cwd /build/gawk-5.4.1/extension --env 93 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 19 --",
+        "/nix/store/h1ikzxwsf6dc1jlijjcrzwxzanhlw9xj-bash-static-5.3/bin/bash ./libtool --tag=CC --mode=link gcc -g -O2 -Wall -module -avoid-version -no-undefined -o filefuncs.la -rpath /nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/lib/gawk filefuncs.lo stack.lo gawkfts.lo -lm",
+    ],
+)
+
+cc_object(
+    name = "s117923_gcc",
+    srcs = [
+        "actions/s117923_gcc.manifest",
+        "closure.txt",
+        "env/90.env",
+        "platform",
+        "sandbox.sh",
+        ":s1467_tar_xz",
+        ":s26987_bash",
+    ],
+    out = "s117923_gcc",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s117923_gcc --timeout 496",
+        "run --cwd /build/gawk-5.4.1/extension --env 90 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 39 --",
+        "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -DHAVE_CONFIG_H -I. -I./.. -g -O2 -Wall -c fnmatch.c -fPIC -DPIC -o .libs/fnmatch.o -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=63g104xwbz",
+    ],
+)
+
+recorded(
+    name = "s118028_cat",
+    srcs = [
+        "actions/s118028_cat.manifest",
+        "actions/s118028_cat.pipe5389.data",
+        "closure.txt",
+        "env/91.env",
+        "glue_118028",
+        "platform",
+        "sandbox.sh",
+    ],
+    out = "s118028_cat",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s118028_cat --timeout 496",
+        "run --cwd /build/gawk-5.4.1/extension --env 91 --argv0 cat --fd 0=data:actions/s118028_cat.pipe5389.data --fd 1=file:w:/build/gawk-5.4.1/extension/fnmatch.loT --fd 2=err --status 0 --argc 1 --",
+        "/nix/store/flqxa8p0n5wpvycmnjx23l1m147c6z89-coreutils-static-9.11/bin/cat",
+    ],
+)
+
+recorded(
+    name = "s118059_bash",
+    srcs = [
+        "actions/s118059_bash.manifest",
+        "closure.txt",
+        "env/93.env",
+        "platform",
+        "sandbox.sh",
+        ":s117923_gcc",
+        ":s118028_cat",
+        ":s26987_bash",
+    ],
+    out = "s118059_bash",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s118059_bash --timeout 496",
+        "run --cwd /build/gawk-5.4.1/extension --env 93 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 17 --",
+        "/nix/store/h1ikzxwsf6dc1jlijjcrzwxzanhlw9xj-bash-static-5.3/bin/bash ./libtool --tag=CC --mode=link gcc -g -O2 -Wall -module -avoid-version -no-undefined -o fnmatch.la -rpath /nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/lib/gawk fnmatch.lo -lm",
+    ],
+)
+
+cc_object(
+    name = "s119323_gcc",
+    srcs = [
+        "actions/s119323_gcc.manifest",
+        "closure.txt",
+        "env/90.env",
+        "platform",
+        "sandbox.sh",
+        ":s1467_tar_xz",
+        ":s26987_bash",
+    ],
+    out = "s119323_gcc",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s119323_gcc --timeout 496",
+        "run --cwd /build/gawk-5.4.1/extension --env 90 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 39 --",
+        "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -DHAVE_CONFIG_H -I. -I./.. -g -O2 -Wall -c fork.c -fPIC -DPIC -o .libs/fork.o -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=63g104xwbz",
+    ],
+)
+
+recorded(
+    name = "s119417_cat",
+    srcs = [
+        "actions/s119417_cat.manifest",
+        "actions/s119417_cat.pipe5454.data",
+        "closure.txt",
+        "env/91.env",
+        "glue_119417",
+        "platform",
+        "sandbox.sh",
+    ],
+    out = "s119417_cat",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s119417_cat --timeout 496",
+        "run --cwd /build/gawk-5.4.1/extension --env 91 --argv0 cat --fd 0=data:actions/s119417_cat.pipe5454.data --fd 1=file:w:/build/gawk-5.4.1/extension/fork.loT --fd 2=err --status 0 --argc 1 --",
+        "/nix/store/flqxa8p0n5wpvycmnjx23l1m147c6z89-coreutils-static-9.11/bin/cat",
+    ],
+)
+
+recorded(
+    name = "s119448_bash",
+    srcs = [
+        "actions/s119448_bash.manifest",
+        "closure.txt",
+        "env/93.env",
+        "platform",
+        "sandbox.sh",
+        ":s119323_gcc",
+        ":s119417_cat",
+        ":s26987_bash",
+    ],
+    out = "s119448_bash",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s119448_bash --timeout 496",
+        "run --cwd /build/gawk-5.4.1/extension --env 93 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 17 --",
+        "/nix/store/h1ikzxwsf6dc1jlijjcrzwxzanhlw9xj-bash-static-5.3/bin/bash ./libtool --tag=CC --mode=link gcc -g -O2 -Wall -module -avoid-version -no-undefined -o fork.la -rpath /nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/lib/gawk fork.lo -lm",
+    ],
+)
+
+cc_object(
+    name = "s120712_gcc",
+    srcs = [
+        "actions/s120712_gcc.manifest",
+        "closure.txt",
+        "env/90.env",
+        "platform",
+        "sandbox.sh",
+        ":s1467_tar_xz",
+        ":s26987_bash",
+    ],
+    out = "s120712_gcc",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s120712_gcc --timeout 496",
+        "run --cwd /build/gawk-5.4.1/extension --env 90 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 39 --",
+        "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -DHAVE_CONFIG_H -I. -I./.. -g -O2 -Wall -c inplace.c -fPIC -DPIC -o .libs/inplace.o -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=63g104xwbz",
+    ],
+)
+
+recorded(
+    name = "s120816_cat",
+    srcs = [
+        "actions/s120816_cat.manifest",
+        "actions/s120816_cat.pipe5519.data",
+        "closure.txt",
+        "env/91.env",
+        "glue_120816",
+        "platform",
+        "sandbox.sh",
+    ],
+    out = "s120816_cat",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s120816_cat --timeout 496",
+        "run --cwd /build/gawk-5.4.1/extension --env 91 --argv0 cat --fd 0=data:actions/s120816_cat.pipe5519.data --fd 1=file:w:/build/gawk-5.4.1/extension/inplace.loT --fd 2=err --status 0 --argc 1 --",
+        "/nix/store/flqxa8p0n5wpvycmnjx23l1m147c6z89-coreutils-static-9.11/bin/cat",
+    ],
+)
+
+recorded(
+    name = "s120847_bash",
+    srcs = [
+        "actions/s120847_bash.manifest",
+        "closure.txt",
+        "env/93.env",
+        "platform",
+        "sandbox.sh",
+        ":s120712_gcc",
+        ":s120816_cat",
+        ":s26987_bash",
+    ],
+    out = "s120847_bash",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s120847_bash --timeout 496",
+        "run --cwd /build/gawk-5.4.1/extension --env 93 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 17 --",
+        "/nix/store/h1ikzxwsf6dc1jlijjcrzwxzanhlw9xj-bash-static-5.3/bin/bash ./libtool --tag=CC --mode=link gcc -g -O2 -Wall -module -avoid-version -no-undefined -o inplace.la -rpath /nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/lib/gawk inplace.lo -lm",
+    ],
+)
+
+cc_object(
+    name = "s122110_gcc",
+    srcs = [
+        "actions/s122110_gcc.manifest",
+        "closure.txt",
+        "env/90.env",
+        "platform",
+        "sandbox.sh",
+        ":s1467_tar_xz",
+        ":s26987_bash",
+    ],
+    out = "s122110_gcc",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s122110_gcc --timeout 496",
+        "run --cwd /build/gawk-5.4.1/extension --env 90 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 39 --",
+        "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -DHAVE_CONFIG_H -I. -I./.. -g -O2 -Wall -c intdiv.c -fPIC -DPIC -o .libs/intdiv.o -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=63g104xwbz",
+    ],
+)
+
+recorded(
+    name = "s122195_cat",
+    srcs = [
+        "actions/s122195_cat.manifest",
+        "actions/s122195_cat.pipe5584.data",
+        "closure.txt",
+        "env/91.env",
+        "glue_122195",
+        "platform",
+        "sandbox.sh",
+    ],
+    out = "s122195_cat",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s122195_cat --timeout 496",
+        "run --cwd /build/gawk-5.4.1/extension --env 91 --argv0 cat --fd 0=data:actions/s122195_cat.pipe5584.data --fd 1=file:w:/build/gawk-5.4.1/extension/intdiv.loT --fd 2=err --status 0 --argc 1 --",
+        "/nix/store/flqxa8p0n5wpvycmnjx23l1m147c6z89-coreutils-static-9.11/bin/cat",
+    ],
+)
+
+recorded(
+    name = "s122226_bash",
+    srcs = [
+        "actions/s122226_bash.manifest",
+        "closure.txt",
+        "env/93.env",
+        "platform",
+        "sandbox.sh",
+        ":s122110_gcc",
+        ":s122195_cat",
+        ":s26987_bash",
+    ],
+    out = "s122226_bash",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s122226_bash --timeout 496",
+        "run --cwd /build/gawk-5.4.1/extension --env 93 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 18 --",
+        "/nix/store/h1ikzxwsf6dc1jlijjcrzwxzanhlw9xj-bash-static-5.3/bin/bash ./libtool --tag=CC --mode=link gcc -g -O2 -Wall -module -avoid-version -no-undefined -o intdiv.la -rpath /nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/lib/gawk intdiv.lo -lm -lm",
+    ],
+)
+
+cc_object(
+    name = "s123502_gcc",
+    srcs = [
+        "actions/s123502_gcc.manifest",
+        "closure.txt",
+        "env/90.env",
+        "platform",
+        "sandbox.sh",
+        ":s1467_tar_xz",
+        ":s26987_bash",
+    ],
+    out = "s123502_gcc",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s123502_gcc --timeout 496",
+        "run --cwd /build/gawk-5.4.1/extension --env 90 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 39 --",
+        "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -DHAVE_CONFIG_H -I. -I./.. -g -O2 -Wall -c ordchr.c -fPIC -DPIC -o .libs/ordchr.o -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=63g104xwbz",
+    ],
+)
+
+recorded(
+    name = "s123606_cat",
+    srcs = [
+        "actions/s123606_cat.manifest",
+        "actions/s123606_cat.pipe5649.data",
+        "closure.txt",
+        "env/91.env",
+        "glue_123606",
+        "platform",
+        "sandbox.sh",
+    ],
+    out = "s123606_cat",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s123606_cat --timeout 496",
+        "run --cwd /build/gawk-5.4.1/extension --env 91 --argv0 cat --fd 0=data:actions/s123606_cat.pipe5649.data --fd 1=file:w:/build/gawk-5.4.1/extension/ordchr.loT --fd 2=err --status 0 --argc 1 --",
+        "/nix/store/flqxa8p0n5wpvycmnjx23l1m147c6z89-coreutils-static-9.11/bin/cat",
+    ],
+)
+
+recorded(
+    name = "s123637_bash",
+    srcs = [
+        "actions/s123637_bash.manifest",
+        "closure.txt",
+        "env/93.env",
+        "platform",
+        "sandbox.sh",
+        ":s123502_gcc",
+        ":s123606_cat",
+        ":s26987_bash",
+    ],
+    out = "s123637_bash",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s123637_bash --timeout 496",
+        "run --cwd /build/gawk-5.4.1/extension --env 93 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 17 --",
+        "/nix/store/h1ikzxwsf6dc1jlijjcrzwxzanhlw9xj-bash-static-5.3/bin/bash ./libtool --tag=CC --mode=link gcc -g -O2 -Wall -module -avoid-version -no-undefined -o ordchr.la -rpath /nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/lib/gawk ordchr.lo -lm",
+    ],
+)
+
+cc_object(
+    name = "s124898_gcc",
+    srcs = [
+        "actions/s124898_gcc.manifest",
+        "closure.txt",
+        "env/90.env",
+        "platform",
+        "sandbox.sh",
+        ":s1467_tar_xz",
+        ":s26987_bash",
+    ],
+    out = "s124898_gcc",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s124898_gcc --timeout 496",
+        "run --cwd /build/gawk-5.4.1/extension --env 90 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 39 --",
+        "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -DHAVE_CONFIG_H -I. -I./.. -g -O2 -Wall -c readdir.c -fPIC -DPIC -o .libs/readdir.o -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=63g104xwbz",
+    ],
+)
+
+recorded(
+    name = "s124993_cat",
+    srcs = [
+        "actions/s124993_cat.manifest",
+        "actions/s124993_cat.pipe5714.data",
+        "closure.txt",
+        "env/91.env",
+        "glue_124993",
+        "platform",
+        "sandbox.sh",
+    ],
+    out = "s124993_cat",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s124993_cat --timeout 496",
+        "run --cwd /build/gawk-5.4.1/extension --env 91 --argv0 cat --fd 0=data:actions/s124993_cat.pipe5714.data --fd 1=file:w:/build/gawk-5.4.1/extension/readdir.loT --fd 2=err --status 0 --argc 1 --",
+        "/nix/store/flqxa8p0n5wpvycmnjx23l1m147c6z89-coreutils-static-9.11/bin/cat",
+    ],
+)
+
+recorded(
+    name = "s125024_bash",
+    srcs = [
+        "actions/s125024_bash.manifest",
+        "closure.txt",
+        "env/93.env",
+        "platform",
+        "sandbox.sh",
+        ":s124898_gcc",
+        ":s124993_cat",
+        ":s26987_bash",
+    ],
+    out = "s125024_bash",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s125024_bash --timeout 496",
+        "run --cwd /build/gawk-5.4.1/extension --env 93 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 17 --",
+        "/nix/store/h1ikzxwsf6dc1jlijjcrzwxzanhlw9xj-bash-static-5.3/bin/bash ./libtool --tag=CC --mode=link gcc -g -O2 -Wall -module -avoid-version -no-undefined -o readdir.la -rpath /nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/lib/gawk readdir.lo -lm",
+    ],
+)
+
+cc_object(
+    name = "s126288_gcc",
+    srcs = [
+        "actions/s126288_gcc.manifest",
+        "closure.txt",
+        "env/90.env",
+        "platform",
+        "sandbox.sh",
+        ":s1467_tar_xz",
+        ":s26987_bash",
+    ],
+    out = "s126288_gcc",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s126288_gcc --timeout 496",
+        "run --cwd /build/gawk-5.4.1/extension --env 90 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 39 --",
+        "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -DHAVE_CONFIG_H -I. -I./.. -g -O2 -Wall -c readfile.c -fPIC -DPIC -o .libs/readfile.o -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=63g104xwbz",
+    ],
+)
+
+recorded(
+    name = "s126383_cat",
+    srcs = [
+        "actions/s126383_cat.manifest",
+        "actions/s126383_cat.pipe5779.data",
+        "closure.txt",
+        "env/91.env",
+        "glue_126383",
+        "platform",
+        "sandbox.sh",
+    ],
+    out = "s126383_cat",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s126383_cat --timeout 496",
+        "run --cwd /build/gawk-5.4.1/extension --env 91 --argv0 cat --fd 0=data:actions/s126383_cat.pipe5779.data --fd 1=file:w:/build/gawk-5.4.1/extension/readfile.loT --fd 2=err --status 0 --argc 1 --",
+        "/nix/store/flqxa8p0n5wpvycmnjx23l1m147c6z89-coreutils-static-9.11/bin/cat",
+    ],
+)
+
+recorded(
+    name = "s126414_bash",
+    srcs = [
+        "actions/s126414_bash.manifest",
+        "closure.txt",
+        "env/93.env",
+        "platform",
+        "sandbox.sh",
+        ":s126288_gcc",
+        ":s126383_cat",
+        ":s26987_bash",
+    ],
+    out = "s126414_bash",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s126414_bash --timeout 496",
+        "run --cwd /build/gawk-5.4.1/extension --env 93 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 17 --",
+        "/nix/store/h1ikzxwsf6dc1jlijjcrzwxzanhlw9xj-bash-static-5.3/bin/bash ./libtool --tag=CC --mode=link gcc -g -O2 -Wall -module -avoid-version -no-undefined -o readfile.la -rpath /nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/lib/gawk readfile.lo -lm",
+    ],
+)
+
+cc_object(
+    name = "s127681_gcc",
+    srcs = [
+        "actions/s127681_gcc.manifest",
+        "closure.txt",
+        "env/90.env",
+        "platform",
+        "sandbox.sh",
+        ":s1467_tar_xz",
+        ":s26987_bash",
+    ],
+    out = "s127681_gcc",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s127681_gcc --timeout 496",
+        "run --cwd /build/gawk-5.4.1/extension --env 90 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 39 --",
+        "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -DHAVE_CONFIG_H -I. -I./.. -g -O2 -Wall -c revoutput.c -fPIC -DPIC -o .libs/revoutput.o -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=63g104xwbz",
+    ],
+)
+
+recorded(
+    name = "s127776_cat",
+    srcs = [
+        "actions/s127776_cat.manifest",
+        "actions/s127776_cat.pipe5844.data",
+        "closure.txt",
+        "env/91.env",
+        "glue_127776",
+        "platform",
+        "sandbox.sh",
+    ],
+    out = "s127776_cat",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s127776_cat --timeout 496",
+        "run --cwd /build/gawk-5.4.1/extension --env 91 --argv0 cat --fd 0=data:actions/s127776_cat.pipe5844.data --fd 1=file:w:/build/gawk-5.4.1/extension/revoutput.loT --fd 2=err --status 0 --argc 1 --",
+        "/nix/store/flqxa8p0n5wpvycmnjx23l1m147c6z89-coreutils-static-9.11/bin/cat",
+    ],
+)
+
+recorded(
+    name = "s127807_bash",
+    srcs = [
+        "actions/s127807_bash.manifest",
+        "closure.txt",
+        "env/93.env",
+        "platform",
+        "sandbox.sh",
+        ":s127681_gcc",
+        ":s127776_cat",
+        ":s26987_bash",
+    ],
+    out = "s127807_bash",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s127807_bash --timeout 496",
+        "run --cwd /build/gawk-5.4.1/extension --env 93 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 17 --",
+        "/nix/store/h1ikzxwsf6dc1jlijjcrzwxzanhlw9xj-bash-static-5.3/bin/bash ./libtool --tag=CC --mode=link gcc -g -O2 -Wall -module -avoid-version -no-undefined -o revoutput.la -rpath /nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/lib/gawk revoutput.lo -lm",
+    ],
+)
+
+cc_object(
+    name = "s129075_gcc",
+    srcs = [
+        "actions/s129075_gcc.manifest",
+        "closure.txt",
+        "env/90.env",
+        "platform",
+        "sandbox.sh",
+        ":s1467_tar_xz",
+        ":s26987_bash",
+    ],
+    out = "s129075_gcc",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s129075_gcc --timeout 496",
+        "run --cwd /build/gawk-5.4.1/extension --env 90 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 39 --",
+        "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -DHAVE_CONFIG_H -I. -I./.. -g -O2 -Wall -c revtwoway.c -fPIC -DPIC -o .libs/revtwoway.o -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=63g104xwbz",
+    ],
+)
+
+recorded(
+    name = "s129169_cat",
+    srcs = [
+        "actions/s129169_cat.manifest",
+        "actions/s129169_cat.pipe5909.data",
+        "closure.txt",
+        "env/91.env",
+        "glue_129169",
+        "platform",
+        "sandbox.sh",
+    ],
+    out = "s129169_cat",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s129169_cat --timeout 496",
+        "run --cwd /build/gawk-5.4.1/extension --env 91 --argv0 cat --fd 0=data:actions/s129169_cat.pipe5909.data --fd 1=file:w:/build/gawk-5.4.1/extension/revtwoway.loT --fd 2=err --status 0 --argc 1 --",
+        "/nix/store/flqxa8p0n5wpvycmnjx23l1m147c6z89-coreutils-static-9.11/bin/cat",
+    ],
+)
+
+recorded(
+    name = "s129200_bash",
+    srcs = [
+        "actions/s129200_bash.manifest",
+        "closure.txt",
+        "env/93.env",
+        "platform",
+        "sandbox.sh",
+        ":s129075_gcc",
+        ":s129169_cat",
+        ":s26987_bash",
+    ],
+    out = "s129200_bash",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s129200_bash --timeout 496",
+        "run --cwd /build/gawk-5.4.1/extension --env 93 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 17 --",
+        "/nix/store/h1ikzxwsf6dc1jlijjcrzwxzanhlw9xj-bash-static-5.3/bin/bash ./libtool --tag=CC --mode=link gcc -g -O2 -Wall -module -avoid-version -no-undefined -o revtwoway.la -rpath /nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/lib/gawk revtwoway.lo -lm",
+    ],
+)
+
+cc_object(
+    name = "s130464_gcc",
+    srcs = [
+        "actions/s130464_gcc.manifest",
+        "closure.txt",
+        "env/90.env",
+        "platform",
+        "sandbox.sh",
+        ":s1467_tar_xz",
+        ":s26987_bash",
+    ],
+    out = "s130464_gcc",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s130464_gcc --timeout 496",
+        "run --cwd /build/gawk-5.4.1/extension --env 90 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 39 --",
+        "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -DHAVE_CONFIG_H -I. -I./.. -g -O2 -Wall -c rwarray.c -fPIC -DPIC -o .libs/rwarray.o -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=63g104xwbz",
+    ],
+)
+
+recorded(
+    name = "s130568_cat",
+    srcs = [
+        "actions/s130568_cat.manifest",
+        "actions/s130568_cat.pipe5974.data",
+        "closure.txt",
+        "env/91.env",
+        "glue_130568",
+        "platform",
+        "sandbox.sh",
+    ],
+    out = "s130568_cat",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s130568_cat --timeout 496",
+        "run --cwd /build/gawk-5.4.1/extension --env 91 --argv0 cat --fd 0=data:actions/s130568_cat.pipe5974.data --fd 1=file:w:/build/gawk-5.4.1/extension/rwarray.loT --fd 2=err --status 0 --argc 1 --",
+        "/nix/store/flqxa8p0n5wpvycmnjx23l1m147c6z89-coreutils-static-9.11/bin/cat",
+    ],
+)
+
+recorded(
+    name = "s130599_bash",
+    srcs = [
+        "actions/s130599_bash.manifest",
+        "closure.txt",
+        "env/93.env",
+        "platform",
+        "sandbox.sh",
+        ":s130464_gcc",
+        ":s130568_cat",
+        ":s26987_bash",
+    ],
+    out = "s130599_bash",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s130599_bash --timeout 496",
+        "run --cwd /build/gawk-5.4.1/extension --env 93 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 17 --",
+        "/nix/store/h1ikzxwsf6dc1jlijjcrzwxzanhlw9xj-bash-static-5.3/bin/bash ./libtool --tag=CC --mode=link gcc -g -O2 -Wall -module -avoid-version -no-undefined -o rwarray.la -rpath /nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/lib/gawk rwarray.lo -lm",
+    ],
+)
+
+cc_object(
+    name = "s131866_gcc",
+    srcs = [
+        "actions/s131866_gcc.manifest",
+        "closure.txt",
+        "env/90.env",
+        "platform",
+        "sandbox.sh",
+        ":s1467_tar_xz",
+        ":s26987_bash",
+    ],
+    out = "s131866_gcc",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s131866_gcc --timeout 496",
+        "run --cwd /build/gawk-5.4.1/extension --env 90 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 39 --",
+        "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -DHAVE_CONFIG_H -I. -I./.. -g -O2 -Wall -c time.c -fPIC -DPIC -o .libs/time.o -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=63g104xwbz",
+    ],
+)
+
+recorded(
+    name = "s131971_cat",
+    srcs = [
+        "actions/s131971_cat.manifest",
+        "actions/s131971_cat.pipe6039.data",
+        "closure.txt",
+        "env/91.env",
+        "glue_131971",
+        "platform",
+        "sandbox.sh",
+    ],
+    out = "s131971_cat",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s131971_cat --timeout 496",
+        "run --cwd /build/gawk-5.4.1/extension --env 91 --argv0 cat --fd 0=data:actions/s131971_cat.pipe6039.data --fd 1=file:w:/build/gawk-5.4.1/extension/time.loT --fd 2=err --status 0 --argc 1 --",
+        "/nix/store/flqxa8p0n5wpvycmnjx23l1m147c6z89-coreutils-static-9.11/bin/cat",
+    ],
+)
+
+recorded(
+    name = "s132002_bash",
+    srcs = [
+        "actions/s132002_bash.manifest",
+        "closure.txt",
+        "env/93.env",
+        "platform",
+        "sandbox.sh",
+        ":s131866_gcc",
+        ":s131971_cat",
+        ":s26987_bash",
+    ],
+    out = "s132002_bash",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s132002_bash --timeout 496",
+        "run --cwd /build/gawk-5.4.1/extension --env 93 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 17 --",
+        "/nix/store/h1ikzxwsf6dc1jlijjcrzwxzanhlw9xj-bash-static-5.3/bin/bash ./libtool --tag=CC --mode=link gcc -g -O2 -Wall -module -avoid-version -no-undefined -o time.la -rpath /nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/lib/gawk time.lo -lm",
+    ],
+)
+
+recorded(
+    name = "s132997_gcc",
+    srcs = [
+        "actions/s132997_gcc.manifest",
+        "closure.txt",
+        "env/98.env",
+        "platform",
+        "sandbox.sh",
+        ":s1467_tar_xz",
+        ":s26987_bash",
+    ],
+    out = "s132997_gcc",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s132997_gcc --timeout 496",
+        "run --cwd /build/gawk-5.4.1/awklib --env 98 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 39 --",
+        "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -DHAVE_CONFIG_H -I. -I.. -I.. -I.. -I../support -g -O2 -c -o pwcat.o pwcat.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=63g104xwbz",
+    ],
+)
+
+cc_binary(
+    name = "s133158_gcc",
+    srcs = [
+        "actions/s133158_gcc.manifest",
+        "closure.txt",
+        "env/99.env",
+        "platform",
+        "sandbox.sh",
+        ":s132997_gcc",
+    ],
+    out = "s133158_gcc",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s133158_gcc --timeout 496",
+        "run --cwd /build/gawk-5.4.1/awklib --env 99 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 40 --",
+        "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -Wl,-dynamic-linker=/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ld-linux-x86-64.so.2 -g -O2 -o pwcat pwcat.o -lm -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=63g104xwbz -Wl,-rpath -Wl,/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/lib -L/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib -L/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0 -L/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -L/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib",
+    ],
+)
+
+recorded(
+    name = "s133399_gcc",
+    srcs = [
+        "actions/s133399_gcc.manifest",
+        "closure.txt",
+        "env/98.env",
+        "platform",
+        "sandbox.sh",
+        ":s1467_tar_xz",
+        ":s26987_bash",
+    ],
+    out = "s133399_gcc",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s133399_gcc --timeout 496",
+        "run --cwd /build/gawk-5.4.1/awklib --env 98 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 39 --",
+        "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -DHAVE_CONFIG_H -I. -I.. -I.. -I.. -I../support -g -O2 -c -o grcat.o grcat.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=63g104xwbz",
+    ],
+)
+
+cc_binary(
+    name = "s133562_gcc",
+    srcs = [
+        "actions/s133562_gcc.manifest",
+        "closure.txt",
+        "env/99.env",
+        "platform",
+        "sandbox.sh",
+        ":s133399_gcc",
+    ],
+    out = "s133562_gcc",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s133562_gcc --timeout 496",
+        "run --cwd /build/gawk-5.4.1/awklib --env 99 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 40 --",
+        "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -Wl,-dynamic-linker=/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ld-linux-x86-64.so.2 -g -O2 -o grcat grcat.o -lm -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=63g104xwbz -Wl,-rpath -Wl,/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/lib -L/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib -L/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0 -L/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -L/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib",
+    ],
+)
+
+recorded(
+    name = "s133778_sed",
+    srcs = [
+        "actions/s133778_sed.manifest",
+        "closure.txt",
+        "env/100.env",
+        "glue_133778",
+        "platform",
+        "sandbox.sh",
+        ":s1467_tar_xz",
+    ],
+    out = "s133778_sed",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s133778_sed --timeout 496",
+        "run --cwd /build/gawk-5.4.1/awklib --env 100 --argv0 sed --fd 0=file:r:/build/gawk-5.4.1/awklib/eg/lib/passwdawk.in --fd 1=file:w:/build/gawk-5.4.1/awklib/passwd.awk --fd 2=err --status 0 --argc 2 --",
+        "/nix/store/9hi4vvvkajwmnxp02wyg9svkhqhhhafy-gnused-static-4.10/bin/sed 's;/usr/local/libexec/awk;/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/libexec/awk;'",
+    ],
+)
+
+recorded(
+    name = "s133802_sed",
+    srcs = [
+        "actions/s133802_sed.manifest",
+        "closure.txt",
+        "env/100.env",
+        "glue_133802",
+        "platform",
+        "sandbox.sh",
+        ":s1467_tar_xz",
+    ],
+    out = "s133802_sed",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s133802_sed --timeout 496",
+        "run --cwd /build/gawk-5.4.1/awklib --env 100 --argv0 sed --fd 0=file:r:/build/gawk-5.4.1/awklib/eg/lib/groupawk.in --fd 1=file:w:/build/gawk-5.4.1/awklib/group.awk --fd 2=err --status 0 --argc 2 --",
+        "/nix/store/9hi4vvvkajwmnxp02wyg9svkhqhhhafy-gnused-static-4.10/bin/sed 's;/usr/local/libexec/awk;/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/libexec/awk;'",
+    ],
+)
+
+recorded(
+    name = "s140957_install-info",
+    srcs = [
+        "actions/s140957_install-info.manifest",
+        "closure.txt",
+        "env/137.env",
+        "platform",
+        "sandbox.sh",
+        ":s1467_tar_xz",
+    ],
+    out = "s140957_install-info",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s140957_install-info --timeout 496",
+        "run --cwd /build/gawk-5.4.1/doc --env 137 --argv0 install-info --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 3 --",
+        "/nix/store/xni56158m5iqkgjr05bic7rmd5979pp1-texinfo-7.3/bin/install-info --info-dir=/nix/store/l4pwpdc6hrgy8n3diy24n389k53jqqjk-gawk-5.4.1-info/share/info /nix/store/l4pwpdc6hrgy8n3diy24n389k53jqqjk-gawk-5.4.1-info/share/info/gawk.info",
+    ],
+)
+
+recorded(
+    name = "s141027_install-info",
+    srcs = [
+        "actions/s141027_install-info.manifest",
+        "closure.txt",
+        "env/137.env",
+        "platform",
+        "sandbox.sh",
+        ":s140957_install-info",
+        ":s1467_tar_xz",
+    ],
+    out = "s141027_install-info",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s141027_install-info --timeout 496",
+        "run --cwd /build/gawk-5.4.1/doc --env 137 --argv0 install-info --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 3 --",
+        "/nix/store/xni56158m5iqkgjr05bic7rmd5979pp1-texinfo-7.3/bin/install-info --info-dir=/nix/store/l4pwpdc6hrgy8n3diy24n389k53jqqjk-gawk-5.4.1-info/share/info /nix/store/l4pwpdc6hrgy8n3diy24n389k53jqqjk-gawk-5.4.1-info/share/info/gawkinet.info",
+    ],
+)
+
+recorded(
+    name = "s141084_install-info",
+    srcs = [
+        "actions/s141084_install-info.manifest",
+        "closure.txt",
+        "env/137.env",
+        "platform",
+        "sandbox.sh",
+        ":s141027_install-info",
+        ":s1467_tar_xz",
+    ],
+    out = "s141084_install-info",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s141084_install-info --timeout 496",
+        "run --cwd /build/gawk-5.4.1/doc --env 137 --argv0 install-info --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 3 --",
+        "/nix/store/xni56158m5iqkgjr05bic7rmd5979pp1-texinfo-7.3/bin/install-info --info-dir=/nix/store/l4pwpdc6hrgy8n3diy24n389k53jqqjk-gawk-5.4.1-info/share/info /nix/store/l4pwpdc6hrgy8n3diy24n389k53jqqjk-gawk-5.4.1-info/share/info/gawkworkflow.info",
+    ],
+)
+
+recorded(
+    name = "s141140_install-info",
+    srcs = [
+        "actions/s141140_install-info.manifest",
+        "closure.txt",
+        "env/137.env",
+        "platform",
+        "sandbox.sh",
+        ":s141084_install-info",
+        ":s1467_tar_xz",
+    ],
+    out = "s141140_install-info",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s141140_install-info --timeout 496",
+        "run --cwd /build/gawk-5.4.1/doc --env 137 --argv0 install-info --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 3 --",
+        "/nix/store/xni56158m5iqkgjr05bic7rmd5979pp1-texinfo-7.3/bin/install-info --info-dir=/nix/store/l4pwpdc6hrgy8n3diy24n389k53jqqjk-gawk-5.4.1-info/share/info /nix/store/l4pwpdc6hrgy8n3diy24n389k53jqqjk-gawk-5.4.1-info/share/info/pm-gawk.info",
+    ],
+)
+
+recorded(
+    name = "s147507_gzip",
+    srcs = [
+        "actions/s147507_gzip.manifest",
+        "closure.txt",
+        "env/168.env",
+        "platform",
+        "sandbox.sh",
+        ":s1467_tar_xz",
+    ],
+    out = "s147507_gzip",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s147507_gzip --timeout 496",
+        "run --cwd /build/gawk-5.4.1 --env 168 --argv0 gzip --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 4 --",
+        "/nix/store/1bgh8202bdz32ya2x4yp7lvccpq16bxl-gzip-static-1.14/bin/gzip -n -f /nix/store/0azvqykndxs3clnj974q99cjfnmpprjv-gawk-5.4.1-man/share/man/man1/pm-gawk.1",
+    ],
+)
+
+recorded(
+    name = "s147523_gzip",
+    srcs = [
+        "actions/s147523_gzip.manifest",
+        "closure.txt",
+        "env/168.env",
+        "platform",
+        "sandbox.sh",
+        ":s1467_tar_xz",
+    ],
+    out = "s147523_gzip",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s147523_gzip --timeout 496",
+        "run --cwd /build/gawk-5.4.1 --env 168 --argv0 gzip --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 4 --",
+        "/nix/store/1bgh8202bdz32ya2x4yp7lvccpq16bxl-gzip-static-1.14/bin/gzip -n -f /nix/store/0azvqykndxs3clnj974q99cjfnmpprjv-gawk-5.4.1-man/share/man/man1/gawkbug.1",
+    ],
+)
+
+recorded(
+    name = "s147536_gzip",
+    srcs = [
+        "actions/s147536_gzip.manifest",
+        "closure.txt",
+        "env/168.env",
+        "platform",
+        "sandbox.sh",
+        ":s1467_tar_xz",
+    ],
+    out = "s147536_gzip",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s147536_gzip --timeout 496",
+        "run --cwd /build/gawk-5.4.1 --env 168 --argv0 gzip --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 4 --",
+        "/nix/store/1bgh8202bdz32ya2x4yp7lvccpq16bxl-gzip-static-1.14/bin/gzip -n -f /nix/store/0azvqykndxs3clnj974q99cjfnmpprjv-gawk-5.4.1-man/share/man/man1/gawk.1",
+    ],
+)
+
+recorded(
+    name = "s147559_gzip",
+    srcs = [
+        "actions/s147559_gzip.manifest",
+        "closure.txt",
+        "env/168.env",
+        "platform",
+        "sandbox.sh",
+        ":s1467_tar_xz",
+    ],
+    out = "s147559_gzip",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s147559_gzip --timeout 496",
+        "run --cwd /build/gawk-5.4.1 --env 168 --argv0 gzip --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 4 --",
+        "/nix/store/1bgh8202bdz32ya2x4yp7lvccpq16bxl-gzip-static-1.14/bin/gzip -n -f /nix/store/0azvqykndxs3clnj974q99cjfnmpprjv-gawk-5.4.1-man/share/man/man3/time.3am",
+    ],
+)
+
+recorded(
+    name = "s147572_gzip",
+    srcs = [
+        "actions/s147572_gzip.manifest",
+        "closure.txt",
+        "env/168.env",
+        "platform",
+        "sandbox.sh",
+        ":s1467_tar_xz",
+    ],
+    out = "s147572_gzip",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s147572_gzip --timeout 496",
+        "run --cwd /build/gawk-5.4.1 --env 168 --argv0 gzip --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 4 --",
+        "/nix/store/1bgh8202bdz32ya2x4yp7lvccpq16bxl-gzip-static-1.14/bin/gzip -n -f /nix/store/0azvqykndxs3clnj974q99cjfnmpprjv-gawk-5.4.1-man/share/man/man3/rwarray.3am",
+    ],
+)
+
+recorded(
+    name = "s147585_gzip",
+    srcs = [
+        "actions/s147585_gzip.manifest",
+        "closure.txt",
+        "env/168.env",
+        "platform",
+        "sandbox.sh",
+        ":s1467_tar_xz",
+    ],
+    out = "s147585_gzip",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s147585_gzip --timeout 496",
+        "run --cwd /build/gawk-5.4.1 --env 168 --argv0 gzip --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 4 --",
+        "/nix/store/1bgh8202bdz32ya2x4yp7lvccpq16bxl-gzip-static-1.14/bin/gzip -n -f /nix/store/0azvqykndxs3clnj974q99cjfnmpprjv-gawk-5.4.1-man/share/man/man3/revtwoway.3am",
+    ],
+)
+
+recorded(
+    name = "s147599_gzip",
+    srcs = [
+        "actions/s147599_gzip.manifest",
+        "closure.txt",
+        "env/168.env",
+        "platform",
+        "sandbox.sh",
+        ":s1467_tar_xz",
+    ],
+    out = "s147599_gzip",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s147599_gzip --timeout 496",
+        "run --cwd /build/gawk-5.4.1 --env 168 --argv0 gzip --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 4 --",
+        "/nix/store/1bgh8202bdz32ya2x4yp7lvccpq16bxl-gzip-static-1.14/bin/gzip -n -f /nix/store/0azvqykndxs3clnj974q99cjfnmpprjv-gawk-5.4.1-man/share/man/man3/revoutput.3am",
+    ],
+)
+
+recorded(
+    name = "s147610_gzip",
+    srcs = [
+        "actions/s147610_gzip.manifest",
+        "closure.txt",
+        "env/168.env",
+        "platform",
+        "sandbox.sh",
+        ":s1467_tar_xz",
+    ],
+    out = "s147610_gzip",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s147610_gzip --timeout 496",
+        "run --cwd /build/gawk-5.4.1 --env 168 --argv0 gzip --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 4 --",
+        "/nix/store/1bgh8202bdz32ya2x4yp7lvccpq16bxl-gzip-static-1.14/bin/gzip -n -f /nix/store/0azvqykndxs3clnj974q99cjfnmpprjv-gawk-5.4.1-man/share/man/man3/readfile.3am",
+    ],
+)
+
+recorded(
+    name = "s147621_gzip",
+    srcs = [
+        "actions/s147621_gzip.manifest",
+        "closure.txt",
+        "env/168.env",
+        "platform",
+        "sandbox.sh",
+        ":s1467_tar_xz",
+    ],
+    out = "s147621_gzip",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s147621_gzip --timeout 496",
+        "run --cwd /build/gawk-5.4.1 --env 168 --argv0 gzip --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 4 --",
+        "/nix/store/1bgh8202bdz32ya2x4yp7lvccpq16bxl-gzip-static-1.14/bin/gzip -n -f /nix/store/0azvqykndxs3clnj974q99cjfnmpprjv-gawk-5.4.1-man/share/man/man3/readdir.3am",
+    ],
+)
+
+recorded(
+    name = "s147634_gzip",
+    srcs = [
+        "actions/s147634_gzip.manifest",
+        "closure.txt",
+        "env/168.env",
+        "platform",
+        "sandbox.sh",
+        ":s1467_tar_xz",
+    ],
+    out = "s147634_gzip",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s147634_gzip --timeout 496",
+        "run --cwd /build/gawk-5.4.1 --env 168 --argv0 gzip --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 4 --",
+        "/nix/store/1bgh8202bdz32ya2x4yp7lvccpq16bxl-gzip-static-1.14/bin/gzip -n -f /nix/store/0azvqykndxs3clnj974q99cjfnmpprjv-gawk-5.4.1-man/share/man/man3/ordchr.3am",
+    ],
+)
+
+recorded(
+    name = "s147648_gzip",
+    srcs = [
+        "actions/s147648_gzip.manifest",
+        "closure.txt",
+        "env/168.env",
+        "platform",
+        "sandbox.sh",
+        ":s1467_tar_xz",
+    ],
+    out = "s147648_gzip",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s147648_gzip --timeout 496",
+        "run --cwd /build/gawk-5.4.1 --env 168 --argv0 gzip --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 4 --",
+        "/nix/store/1bgh8202bdz32ya2x4yp7lvccpq16bxl-gzip-static-1.14/bin/gzip -n -f /nix/store/0azvqykndxs3clnj974q99cjfnmpprjv-gawk-5.4.1-man/share/man/man3/intdiv.3am",
+    ],
+)
+
+recorded(
+    name = "s147661_gzip",
+    srcs = [
+        "actions/s147661_gzip.manifest",
+        "closure.txt",
+        "env/168.env",
+        "platform",
+        "sandbox.sh",
+        ":s1467_tar_xz",
+    ],
+    out = "s147661_gzip",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s147661_gzip --timeout 496",
+        "run --cwd /build/gawk-5.4.1 --env 168 --argv0 gzip --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 4 --",
+        "/nix/store/1bgh8202bdz32ya2x4yp7lvccpq16bxl-gzip-static-1.14/bin/gzip -n -f /nix/store/0azvqykndxs3clnj974q99cjfnmpprjv-gawk-5.4.1-man/share/man/man3/inplace.3am",
+    ],
+)
+
+recorded(
+    name = "s147675_gzip",
+    srcs = [
+        "actions/s147675_gzip.manifest",
+        "closure.txt",
+        "env/168.env",
+        "platform",
+        "sandbox.sh",
+        ":s1467_tar_xz",
+    ],
+    out = "s147675_gzip",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s147675_gzip --timeout 496",
+        "run --cwd /build/gawk-5.4.1 --env 168 --argv0 gzip --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 4 --",
+        "/nix/store/1bgh8202bdz32ya2x4yp7lvccpq16bxl-gzip-static-1.14/bin/gzip -n -f /nix/store/0azvqykndxs3clnj974q99cjfnmpprjv-gawk-5.4.1-man/share/man/man3/fork.3am",
+    ],
+)
+
+recorded(
+    name = "s147686_gzip",
+    srcs = [
+        "actions/s147686_gzip.manifest",
+        "closure.txt",
+        "env/168.env",
+        "platform",
+        "sandbox.sh",
+        ":s1467_tar_xz",
+    ],
+    out = "s147686_gzip",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s147686_gzip --timeout 496",
+        "run --cwd /build/gawk-5.4.1 --env 168 --argv0 gzip --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 4 --",
+        "/nix/store/1bgh8202bdz32ya2x4yp7lvccpq16bxl-gzip-static-1.14/bin/gzip -n -f /nix/store/0azvqykndxs3clnj974q99cjfnmpprjv-gawk-5.4.1-man/share/man/man3/fnmatch.3am",
+    ],
+)
+
+recorded(
+    name = "s147698_gzip",
+    srcs = [
+        "actions/s147698_gzip.manifest",
+        "closure.txt",
+        "env/168.env",
+        "platform",
+        "sandbox.sh",
+        ":s1467_tar_xz",
+    ],
+    out = "s147698_gzip",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s147698_gzip --timeout 496",
+        "run --cwd /build/gawk-5.4.1 --env 168 --argv0 gzip --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 4 --",
+        "/nix/store/1bgh8202bdz32ya2x4yp7lvccpq16bxl-gzip-static-1.14/bin/gzip -n -f /nix/store/0azvqykndxs3clnj974q99cjfnmpprjv-gawk-5.4.1-man/share/man/man3/filefuncs.3am",
+    ],
+)
+
+recorded(
+    name = "s147816_find_patchelf_patchelf_patchelf__12",
+    srcs = [
+        "actions/s147816_find_patchelf_patchelf_patchelf__12.manifest",
+        "closure.txt",
+        "env/172.env",
+        "env/173.env",
+        "platform",
+        "sandbox.sh",
+        ":s112594_gcc",
+        ":s116655_bash",
+        ":s118059_bash",
+        ":s119448_bash",
+        ":s120847_bash",
+        ":s122226_bash",
+        ":s123637_bash",
+        ":s125024_bash",
+        ":s126414_bash",
+        ":s127807_bash",
+        ":s129200_bash",
+        ":s130599_bash",
+        ":s132002_bash",
+        ":s133158_gcc",
+        ":s133562_gcc",
+    ],
+    out = "s147816_find_patchelf_patchelf_patchelf__12",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s147816_find_patchelf_patchelf_patchelf__12 --timeout 496 --pipe 6821:0:1,2,3,4,5,6,7,8,9,10,11,12,13,14,15:0",
+        "run --cwd /build/gawk-5.4.1 --env 172 --argv0 find --fd 0=null --fd 1=pipe-w:6821 --fd 2=err --status 0 --argc 5 --",
+        "/nix/store/kvb0b2rhgripxnbnckzinlisghg0yrrg-findutils-static-4.11.0/bin/find /nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1 -type f -print0",
+        "run --cwd /build/gawk-5.4.1 --env 173 --argv0 patchelf --fd 0=pipe-r:6821 --fd 1=err --fd 2=err --fd 63=pipe-r:6821 --after 0 --status 0 --argc 3 --",
+        "/nix/store/f8sz16l0d7ms0bvfsfgkqkp5wb7zdkki-patchelf-0.15.2/bin/patchelf --shrink-rpath /nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/libexec/awk/grcat",
+        "run --cwd /build/gawk-5.4.1 --env 173 --argv0 patchelf --fd 0=pipe-r:6821 --fd 1=err --fd 2=err --fd 63=pipe-r:6821 --after 0,1 --status 0 --argc 3 --",
+        "/nix/store/f8sz16l0d7ms0bvfsfgkqkp5wb7zdkki-patchelf-0.15.2/bin/patchelf --shrink-rpath /nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/libexec/awk/pwcat",
+        "run --cwd /build/gawk-5.4.1 --env 173 --argv0 patchelf --fd 0=pipe-r:6821 --fd 1=err --fd 2=err --fd 63=pipe-r:6821 --after 0,1,2 --status 0 --argc 3 --",
+        "/nix/store/f8sz16l0d7ms0bvfsfgkqkp5wb7zdkki-patchelf-0.15.2/bin/patchelf --shrink-rpath /nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/lib/gawk/time.so",
+        "run --cwd /build/gawk-5.4.1 --env 173 --argv0 patchelf --fd 0=pipe-r:6821 --fd 1=err --fd 2=err --fd 63=pipe-r:6821 --after 0,1,2,3 --status 0 --argc 3 --",
+        "/nix/store/f8sz16l0d7ms0bvfsfgkqkp5wb7zdkki-patchelf-0.15.2/bin/patchelf --shrink-rpath /nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/lib/gawk/rwarray.so",
+        "run --cwd /build/gawk-5.4.1 --env 173 --argv0 patchelf --fd 0=pipe-r:6821 --fd 1=err --fd 2=err --fd 63=pipe-r:6821 --after 0,1,2,3,4 --status 0 --argc 3 --",
+        "/nix/store/f8sz16l0d7ms0bvfsfgkqkp5wb7zdkki-patchelf-0.15.2/bin/patchelf --shrink-rpath /nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/lib/gawk/revtwoway.so",
+        "run --cwd /build/gawk-5.4.1 --env 173 --argv0 patchelf --fd 0=pipe-r:6821 --fd 1=err --fd 2=err --fd 63=pipe-r:6821 --after 0,1,2,3,4,5 --status 0 --argc 3 --",
+        "/nix/store/f8sz16l0d7ms0bvfsfgkqkp5wb7zdkki-patchelf-0.15.2/bin/patchelf --shrink-rpath /nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/lib/gawk/revoutput.so",
+        "run --cwd /build/gawk-5.4.1 --env 173 --argv0 patchelf --fd 0=pipe-r:6821 --fd 1=err --fd 2=err --fd 63=pipe-r:6821 --after 0,1,2,3,4,5,6 --status 0 --argc 3 --",
+        "/nix/store/f8sz16l0d7ms0bvfsfgkqkp5wb7zdkki-patchelf-0.15.2/bin/patchelf --shrink-rpath /nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/lib/gawk/readfile.so",
+        "run --cwd /build/gawk-5.4.1 --env 173 --argv0 patchelf --fd 0=pipe-r:6821 --fd 1=err --fd 2=err --fd 63=pipe-r:6821 --after 0,1,2,3,4,5,6,7 --status 0 --argc 3 --",
+        "/nix/store/f8sz16l0d7ms0bvfsfgkqkp5wb7zdkki-patchelf-0.15.2/bin/patchelf --shrink-rpath /nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/lib/gawk/readdir.so",
+        "run --cwd /build/gawk-5.4.1 --env 173 --argv0 patchelf --fd 0=pipe-r:6821 --fd 1=err --fd 2=err --fd 63=pipe-r:6821 --after 0,1,2,3,4,5,6,7,8 --status 0 --argc 3 --",
+        "/nix/store/f8sz16l0d7ms0bvfsfgkqkp5wb7zdkki-patchelf-0.15.2/bin/patchelf --shrink-rpath /nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/lib/gawk/ordchr.so",
+        "run --cwd /build/gawk-5.4.1 --env 173 --argv0 patchelf --fd 0=pipe-r:6821 --fd 1=err --fd 2=err --fd 63=pipe-r:6821 --after 0,1,2,3,4,5,6,7,8,9 --status 0 --argc 3 --",
+        "/nix/store/f8sz16l0d7ms0bvfsfgkqkp5wb7zdkki-patchelf-0.15.2/bin/patchelf --shrink-rpath /nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/lib/gawk/intdiv.so",
+        "run --cwd /build/gawk-5.4.1 --env 173 --argv0 patchelf --fd 0=pipe-r:6821 --fd 1=err --fd 2=err --fd 63=pipe-r:6821 --after 0,1,2,3,4,5,6,7,8,9,10 --status 0 --argc 3 --",
+        "/nix/store/f8sz16l0d7ms0bvfsfgkqkp5wb7zdkki-patchelf-0.15.2/bin/patchelf --shrink-rpath /nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/lib/gawk/inplace.so",
+        "run --cwd /build/gawk-5.4.1 --env 173 --argv0 patchelf --fd 0=pipe-r:6821 --fd 1=err --fd 2=err --fd 63=pipe-r:6821 --after 0,1,2,3,4,5,6,7,8,9,10,11 --status 0 --argc 3 --",
+        "/nix/store/f8sz16l0d7ms0bvfsfgkqkp5wb7zdkki-patchelf-0.15.2/bin/patchelf --shrink-rpath /nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/lib/gawk/fork.so",
+        "run --cwd /build/gawk-5.4.1 --env 173 --argv0 patchelf --fd 0=pipe-r:6821 --fd 1=err --fd 2=err --fd 63=pipe-r:6821 --after 0,1,2,3,4,5,6,7,8,9,10,11,12 --status 0 --argc 3 --",
+        "/nix/store/f8sz16l0d7ms0bvfsfgkqkp5wb7zdkki-patchelf-0.15.2/bin/patchelf --shrink-rpath /nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/lib/gawk/fnmatch.so",
+        "run --cwd /build/gawk-5.4.1 --env 173 --argv0 patchelf --fd 0=pipe-r:6821 --fd 1=err --fd 2=err --fd 63=pipe-r:6821 --after 0,1,2,3,4,5,6,7,8,9,10,11,12,13 --status 0 --argc 3 --",
+        "/nix/store/f8sz16l0d7ms0bvfsfgkqkp5wb7zdkki-patchelf-0.15.2/bin/patchelf --shrink-rpath /nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/lib/gawk/filefuncs.so",
+        "run --cwd /build/gawk-5.4.1 --env 173 --argv0 patchelf --fd 0=pipe-r:6821 --fd 1=err --fd 2=err --fd 63=pipe-r:6821 --after 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14 --status 0 --argc 3 --",
+        "/nix/store/f8sz16l0d7ms0bvfsfgkqkp5wb7zdkki-patchelf-0.15.2/bin/patchelf --shrink-rpath /nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/bin/gawk",
+    ],
+)
+
+recorded(
+    name = "s149271_strip",
+    srcs = [
+        "actions/s149271_strip.manifest",
+        "closure.txt",
+        "const_149224_mktemp",
+        "env/183.env",
+        "platform",
+        "sandbox.sh",
+        ":s147816_find_patchelf_patchelf_patchelf__12",
+    ],
+    out = "s149271_strip",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s149271_strip --timeout 496",
+        "run --cwd /build/gawk-5.4.1 --env 183 --argv0 strip --fd 0=null --fd 1=err --fd 2=file:w:/build/striperr.6WxUp8 --status 0 --argc 4 --",
+        "/nix/store/wdjg34rmvz8hhnd5m5bkblzlbpv5hrwm-binutils-patchelfed-ld-2.46/bin/strip -S -p /nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/bin/gawk",
+    ],
+)
+
+recorded(
+    name = "s149299_strip",
+    srcs = [
+        "actions/s149299_strip.manifest",
+        "closure.txt",
+        "const_149224_mktemp",
+        "env/183.env",
+        "platform",
+        "sandbox.sh",
+        ":s147816_find_patchelf_patchelf_patchelf__12",
+    ],
+    out = "s149299_strip",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s149299_strip --timeout 496",
+        "run --cwd /build/gawk-5.4.1 --env 183 --argv0 strip --fd 0=null --fd 1=err --fd 2=file:w:/build/striperr.6WxUp8 --status 0 --argc 4 --",
+        "/nix/store/wdjg34rmvz8hhnd5m5bkblzlbpv5hrwm-binutils-patchelfed-ld-2.46/bin/strip -S -p /nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/lib/gawk/filefuncs.so",
+    ],
+)
+
+recorded(
+    name = "s149330_strip",
+    srcs = [
+        "actions/s149330_strip.manifest",
+        "closure.txt",
+        "const_149224_mktemp",
+        "env/183.env",
+        "platform",
+        "sandbox.sh",
+        ":s147816_find_patchelf_patchelf_patchelf__12",
+    ],
+    out = "s149330_strip",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s149330_strip --timeout 496",
+        "run --cwd /build/gawk-5.4.1 --env 183 --argv0 strip --fd 0=null --fd 1=err --fd 2=file:w:/build/striperr.6WxUp8 --status 0 --argc 4 --",
+        "/nix/store/wdjg34rmvz8hhnd5m5bkblzlbpv5hrwm-binutils-patchelfed-ld-2.46/bin/strip -S -p /nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/lib/gawk/fnmatch.so",
+    ],
+)
+
+recorded(
+    name = "s149359_strip",
+    srcs = [
+        "actions/s149359_strip.manifest",
+        "closure.txt",
+        "const_149224_mktemp",
+        "env/183.env",
+        "platform",
+        "sandbox.sh",
+        ":s147816_find_patchelf_patchelf_patchelf__12",
+    ],
+    out = "s149359_strip",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s149359_strip --timeout 496",
+        "run --cwd /build/gawk-5.4.1 --env 183 --argv0 strip --fd 0=null --fd 1=err --fd 2=file:w:/build/striperr.6WxUp8 --status 0 --argc 4 --",
+        "/nix/store/wdjg34rmvz8hhnd5m5bkblzlbpv5hrwm-binutils-patchelfed-ld-2.46/bin/strip -S -p /nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/lib/gawk/fork.so",
+    ],
+)
+
+recorded(
+    name = "s149389_strip",
+    srcs = [
+        "actions/s149389_strip.manifest",
+        "closure.txt",
+        "const_149224_mktemp",
+        "env/183.env",
+        "platform",
+        "sandbox.sh",
+        ":s147816_find_patchelf_patchelf_patchelf__12",
+    ],
+    out = "s149389_strip",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s149389_strip --timeout 496",
+        "run --cwd /build/gawk-5.4.1 --env 183 --argv0 strip --fd 0=null --fd 1=err --fd 2=file:w:/build/striperr.6WxUp8 --status 0 --argc 4 --",
+        "/nix/store/wdjg34rmvz8hhnd5m5bkblzlbpv5hrwm-binutils-patchelfed-ld-2.46/bin/strip -S -p /nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/lib/gawk/inplace.so",
+    ],
+)
+
+recorded(
+    name = "s149421_strip",
+    srcs = [
+        "actions/s149421_strip.manifest",
+        "closure.txt",
+        "const_149224_mktemp",
+        "env/183.env",
+        "platform",
+        "sandbox.sh",
+        ":s147816_find_patchelf_patchelf_patchelf__12",
+    ],
+    out = "s149421_strip",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s149421_strip --timeout 496",
+        "run --cwd /build/gawk-5.4.1 --env 183 --argv0 strip --fd 0=null --fd 1=err --fd 2=file:w:/build/striperr.6WxUp8 --status 0 --argc 4 --",
+        "/nix/store/wdjg34rmvz8hhnd5m5bkblzlbpv5hrwm-binutils-patchelfed-ld-2.46/bin/strip -S -p /nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/lib/gawk/intdiv.so",
+    ],
+)
+
+recorded(
+    name = "s149447_strip",
+    srcs = [
+        "actions/s149447_strip.manifest",
+        "closure.txt",
+        "const_149224_mktemp",
+        "env/183.env",
+        "platform",
+        "sandbox.sh",
+        ":s147816_find_patchelf_patchelf_patchelf__12",
+    ],
+    out = "s149447_strip",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s149447_strip --timeout 496",
+        "run --cwd /build/gawk-5.4.1 --env 183 --argv0 strip --fd 0=null --fd 1=err --fd 2=file:w:/build/striperr.6WxUp8 --status 0 --argc 4 --",
+        "/nix/store/wdjg34rmvz8hhnd5m5bkblzlbpv5hrwm-binutils-patchelfed-ld-2.46/bin/strip -S -p /nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/lib/gawk/ordchr.so",
+    ],
+)
+
+recorded(
+    name = "s149479_strip",
+    srcs = [
+        "actions/s149479_strip.manifest",
+        "closure.txt",
+        "const_149224_mktemp",
+        "env/183.env",
+        "platform",
+        "sandbox.sh",
+        ":s147816_find_patchelf_patchelf_patchelf__12",
+    ],
+    out = "s149479_strip",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s149479_strip --timeout 496",
+        "run --cwd /build/gawk-5.4.1 --env 183 --argv0 strip --fd 0=null --fd 1=err --fd 2=file:w:/build/striperr.6WxUp8 --status 0 --argc 4 --",
+        "/nix/store/wdjg34rmvz8hhnd5m5bkblzlbpv5hrwm-binutils-patchelfed-ld-2.46/bin/strip -S -p /nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/lib/gawk/readdir.so",
+    ],
+)
+
+recorded(
+    name = "s149505_strip",
+    srcs = [
+        "actions/s149505_strip.manifest",
+        "closure.txt",
+        "const_149224_mktemp",
+        "env/183.env",
+        "platform",
+        "sandbox.sh",
+        ":s147816_find_patchelf_patchelf_patchelf__12",
+    ],
+    out = "s149505_strip",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s149505_strip --timeout 496",
+        "run --cwd /build/gawk-5.4.1 --env 183 --argv0 strip --fd 0=null --fd 1=err --fd 2=file:w:/build/striperr.6WxUp8 --status 0 --argc 4 --",
+        "/nix/store/wdjg34rmvz8hhnd5m5bkblzlbpv5hrwm-binutils-patchelfed-ld-2.46/bin/strip -S -p /nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/lib/gawk/readfile.so",
+    ],
+)
+
+recorded(
+    name = "s149537_strip",
+    srcs = [
+        "actions/s149537_strip.manifest",
+        "closure.txt",
+        "const_149224_mktemp",
+        "env/183.env",
+        "platform",
+        "sandbox.sh",
+        ":s147816_find_patchelf_patchelf_patchelf__12",
+    ],
+    out = "s149537_strip",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s149537_strip --timeout 496",
+        "run --cwd /build/gawk-5.4.1 --env 183 --argv0 strip --fd 0=null --fd 1=err --fd 2=file:w:/build/striperr.6WxUp8 --status 0 --argc 4 --",
+        "/nix/store/wdjg34rmvz8hhnd5m5bkblzlbpv5hrwm-binutils-patchelfed-ld-2.46/bin/strip -S -p /nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/lib/gawk/revoutput.so",
+    ],
+)
+
+recorded(
+    name = "s149563_strip",
+    srcs = [
+        "actions/s149563_strip.manifest",
+        "closure.txt",
+        "const_149224_mktemp",
+        "env/183.env",
+        "platform",
+        "sandbox.sh",
+        ":s147816_find_patchelf_patchelf_patchelf__12",
+    ],
+    out = "s149563_strip",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s149563_strip --timeout 496",
+        "run --cwd /build/gawk-5.4.1 --env 183 --argv0 strip --fd 0=null --fd 1=err --fd 2=file:w:/build/striperr.6WxUp8 --status 0 --argc 4 --",
+        "/nix/store/wdjg34rmvz8hhnd5m5bkblzlbpv5hrwm-binutils-patchelfed-ld-2.46/bin/strip -S -p /nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/lib/gawk/revtwoway.so",
+    ],
+)
+
+recorded(
+    name = "s149595_strip",
+    srcs = [
+        "actions/s149595_strip.manifest",
+        "closure.txt",
+        "const_149224_mktemp",
+        "env/183.env",
+        "platform",
+        "sandbox.sh",
+        ":s147816_find_patchelf_patchelf_patchelf__12",
+    ],
+    out = "s149595_strip",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s149595_strip --timeout 496",
+        "run --cwd /build/gawk-5.4.1 --env 183 --argv0 strip --fd 0=null --fd 1=err --fd 2=file:w:/build/striperr.6WxUp8 --status 0 --argc 4 --",
+        "/nix/store/wdjg34rmvz8hhnd5m5bkblzlbpv5hrwm-binutils-patchelfed-ld-2.46/bin/strip -S -p /nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/lib/gawk/rwarray.so",
+    ],
+)
+
+recorded(
+    name = "s149621_strip",
+    srcs = [
+        "actions/s149621_strip.manifest",
+        "closure.txt",
+        "const_149224_mktemp",
+        "env/183.env",
+        "platform",
+        "sandbox.sh",
+        ":s147816_find_patchelf_patchelf_patchelf__12",
+    ],
+    out = "s149621_strip",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s149621_strip --timeout 496",
+        "run --cwd /build/gawk-5.4.1 --env 183 --argv0 strip --fd 0=null --fd 1=err --fd 2=file:w:/build/striperr.6WxUp8 --status 0 --argc 4 --",
+        "/nix/store/wdjg34rmvz8hhnd5m5bkblzlbpv5hrwm-binutils-patchelfed-ld-2.46/bin/strip -S -p /nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/lib/gawk/time.so",
+    ],
+)
+
+recorded(
+    name = "s149653_strip",
+    srcs = [
+        "actions/s149653_strip.manifest",
+        "closure.txt",
+        "const_149224_mktemp",
+        "env/183.env",
+        "platform",
+        "sandbox.sh",
+        ":s147816_find_patchelf_patchelf_patchelf__12",
+    ],
+    out = "s149653_strip",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s149653_strip --timeout 496",
+        "run --cwd /build/gawk-5.4.1 --env 183 --argv0 strip --fd 0=null --fd 1=err --fd 2=file:w:/build/striperr.6WxUp8 --status 0 --argc 4 --",
+        "/nix/store/wdjg34rmvz8hhnd5m5bkblzlbpv5hrwm-binutils-patchelfed-ld-2.46/bin/strip -S -p /nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/libexec/awk/pwcat",
+    ],
+)
+
+recorded(
+    name = "s149679_strip",
+    srcs = [
+        "actions/s149679_strip.manifest",
+        "closure.txt",
+        "const_149224_mktemp",
+        "env/183.env",
+        "platform",
+        "sandbox.sh",
+        ":s147816_find_patchelf_patchelf_patchelf__12",
+    ],
+    out = "s149679_strip",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s149679_strip --timeout 496",
+        "run --cwd /build/gawk-5.4.1 --env 183 --argv0 strip --fd 0=null --fd 1=err --fd 2=file:w:/build/striperr.6WxUp8 --status 0 --argc 4 --",
+        "/nix/store/wdjg34rmvz8hhnd5m5bkblzlbpv5hrwm-binutils-patchelfed-ld-2.46/bin/strip -S -p /nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/libexec/awk/grcat",
+    ],
+)
+
+nix_archive(
+    name = "archive_info",
+    srcs = [
+        "actions/archive_info.manifest",
+        "sandbox.sh",
+        ":s141140_install-info",
+        ":s1467_tar_xz",
+    ],
+    out = "archive_info.nar",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name archive_info pack /nix/store/l4pwpdc6hrgy8n3diy24n389k53jqqjk-gawk-5.4.1-info",
+    ],
+)
+
+nix_archive(
+    name = "archive_man",
+    srcs = [
+        "actions/archive_man.manifest",
+        "sandbox.sh",
+        ":s147507_gzip",
+        ":s147523_gzip",
+        ":s147536_gzip",
+        ":s147559_gzip",
+        ":s147572_gzip",
+        ":s147585_gzip",
+        ":s147599_gzip",
+        ":s147610_gzip",
+        ":s147621_gzip",
+        ":s147634_gzip",
+        ":s147648_gzip",
+        ":s147661_gzip",
+        ":s147675_gzip",
+        ":s147686_gzip",
+        ":s147698_gzip",
+    ],
+    out = "archive_man.nar",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name archive_man pack /nix/store/0azvqykndxs3clnj974q99cjfnmpprjv-gawk-5.4.1-man",
+    ],
+)
+
+nix_archive(
+    name = "archive_out",
+    srcs = [
+        "actions/archive_out.manifest",
+        "sandbox.sh",
+        ":s133778_sed",
+        ":s133802_sed",
+        ":s1467_tar_xz",
+        ":s149271_strip",
+        ":s149299_strip",
+        ":s149330_strip",
+        ":s149359_strip",
+        ":s149389_strip",
+        ":s149421_strip",
+        ":s149447_strip",
+        ":s149479_strip",
+        ":s149505_strip",
+        ":s149537_strip",
+        ":s149563_strip",
+        ":s149595_strip",
+        ":s149621_strip",
+        ":s149653_strip",
+        ":s149679_strip",
+    ],
+    out = "archive_out.nar",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name archive_out pack /nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1",
+    ],
+)
+

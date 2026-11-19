@@ -12,7 +12,7 @@ recorded(
     out = "s1410_cp",
     cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name s1410_cp --timeout 394",
+        "--name s1410_cp --timeout 359",
         "run --cwd /build --env 13 --argv0 cp --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 7 --",
         "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/cp -r --preserve=timestamps --reflink=auto -- /nix/store/w0ac0h6gz1xiaycrbnxwhd2ra9l6mfq8-src src",
     ],
@@ -31,28 +31,28 @@ recorded(
     out = "s2039_go",
     cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name s2039_go --timeout 394",
+        "--name s2039_go --timeout 359",
         "run --cwd /build/src --env 25 --argv0 go --fd 0=null --fd 1=null --fd 2=null --status 0 --argc 6 --",
         "/nix/store/iqq9yz2yrcrzsn52h3vkkz72i92h1zds-go-1.26.8/bin/go install -ldflags=-buildid= -p 1 .",
     ],
 )
 
 recorded(
-    name = "s2218190_strip",
+    name = "s2219527_strip",
     srcs = [
-        "actions/s2218190_strip.manifest",
+        "actions/s2219527_strip.manifest",
         "closure.txt",
-        "const_2218083_mktemp",
+        "const_2219420_mktemp",
         "env/44.env",
         "platform",
         "sandbox.sh",
         ":s2039_go",
     ],
-    out = "s2218190_strip",
+    out = "s2219527_strip",
     cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name s2218190_strip --timeout 394",
-        "run --cwd /build/src --env 44 --fd 0=null --fd 1=err --fd 2=file:w:/build/striperr.7iLUCO --status 0 --argc 5 --",
+        "--name s2219527_strip --timeout 359",
+        "run --cwd /build/src --env 44 --fd 0=null --fd 1=err --fd 2=file:w:/build/striperr.w5LHJc --status 0 --argc 5 --",
         "/nix/store/y5sgl0vvrpbcwgjwpjs60r1hg0gi7i0n-binutils-2.46/bin/strip --enable-deterministic-archives -S -p /nix/store/58hm8df496lhnj0gpbvvzbk6542b6smq-hello-go/bin/hello-go",
     ],
 )
@@ -62,7 +62,7 @@ nix_archive(
     srcs = [
         "actions/archive.manifest",
         "sandbox.sh",
-        ":s2218190_strip",
+        ":s2219527_strip",
     ],
     out = "archive.nar",
     cmd = [

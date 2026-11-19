@@ -1,56 +1,56 @@
 load(":genrulify.buck.bzl", "nix_archive", "recorded")
 
 recorded(
-    name = "s1851_cp",
+    name = "s1855_cp",
     srcs = [
-        "actions/s1851_cp.manifest",
+        "actions/s1855_cp.manifest",
         "closure.txt",
         "env/13.env",
         "platform",
         "sandbox.sh",
     ],
-    out = "s1851_cp",
+    out = "s1855_cp",
     cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name s1851_cp --timeout 300",
+        "--name s1855_cp --timeout 300",
         "run --cwd /build --env 13 --argv0 cp --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 7 --",
         "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/cp -r --preserve=timestamps --reflink=auto -- /nix/store/lwxq6mgyrggsc6s3x0p4izbn5w3j0vvs-source source",
     ],
 )
 
 recorded(
-    name = "s2674_.pyproject-build-wrapped",
+    name = "s2678_.pyproject-build-wrapped",
     srcs = [
-        "actions/s2674_.pyproject-build-wrapped.manifest",
+        "actions/s2678_.pyproject-build-wrapped.manifest",
         "closure.txt",
         "env/26.env",
         "platform",
         "sandbox.sh",
-        ":s1851_cp",
+        ":s1855_cp",
     ],
-    out = "s2674_.pyproject-build-wrapped",
+    out = "s2678_.pyproject-build-wrapped",
     cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name s2674_.pyproject-build-wrapped --timeout 300",
+        "--name s2678_.pyproject-build-wrapped --timeout 300",
         "run --cwd /build/source --env 26 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 6 --",
         "/nix/store/lb41b0anx1f98y9y5s9mdv97gjgsq740-python3-3.14.7/bin/python3.14 /nix/store/i4ndg5syrmvch754vlchyhz5chaphkgn-python3.14-build-1.5.1/bin/.pyproject-build-wrapped --no-isolation --outdir dist/ --wheel",
     ],
 )
 
 recorded(
-    name = "s8691_python3.14",
+    name = "s8694_python3.14",
     srcs = [
-        "actions/s8691_python3.14.manifest",
+        "actions/s8694_python3.14.manifest",
         "closure.txt",
         "env/30.env",
         "platform",
         "sandbox.sh",
-        ":s2674_.pyproject-build-wrapped",
+        ":s2678_.pyproject-build-wrapped",
     ],
-    out = "s8691_python3.14",
+    out = "s8694_python3.14",
     cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name s8691_python3.14 --timeout 300",
+        "--name s8694_python3.14 --timeout 300",
         "run --cwd /build/source/dist --env 30 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 8 --",
         "/nix/store/lb41b0anx1f98y9y5s9mdv97gjgsq740-python3-3.14.7/bin/python3.14 -m installer --prefix /nix/store/ryg0sjdnp2vhi51m876d5blj7si80mgf-python3.14-six-1.17.0 --executable /nix/store/lb41b0anx1f98y9y5s9mdv97gjgsq740-python3-3.14.7/bin/python3.14 six-1.17.0-py2.py3-none-any.whl",
     ],
@@ -61,7 +61,7 @@ nix_archive(
     srcs = [
         "actions/archive_dist.manifest",
         "sandbox.sh",
-        ":s2674_.pyproject-build-wrapped",
+        ":s2678_.pyproject-build-wrapped",
     ],
     out = "archive_dist.nar",
     cmd = [
@@ -74,9 +74,9 @@ nix_archive(
     name = "archive_out",
     srcs = [
         "actions/archive_out.manifest",
-        "glue_10973",
+        "glue_10975",
         "sandbox.sh",
-        ":s8691_python3.14",
+        ":s8694_python3.14",
     ],
     out = "archive_out.nar",
     cmd = [
