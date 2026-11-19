@@ -52,3 +52,33 @@ module {
 MLIR
 "$compiler" origins "$data/example" "$scratch/computed.mlir" > "$scratch/origins"
 test "$(cat "$scratch/origins")" = "out: 2 files ($((2 * size)) bytes) from commands that run, 0 files (0 bytes) from the recording, 1 entry without bytes"
+
+# In a project the recorded bytes matter more: they are what an edit will
+# not change. The breakdown lists each recorded file that is still in
+# use, with why the file is recorded and who uses it. Here the builder
+# wrote a file two commands read, and one file of a command that runs is
+# pinned to the recording and goes into the output.
+cat > "$scratch/project.mlir" <<MLIR
+module {
+  %0 = splice.literal "sandbox" at 1 -> [#splice.entry<"/build" dir 700 mtime 1>]
+  %1:2 = splice.literal "source" at 1 -> [
+      #splice.entry<"/nix/store/source" dir 555 mtime 1>,
+      #splice.entry<"/nix/store/source/main.c" file 444 mtime 1 "$bytes">]
+  %2 = splice.literal "glue" at 2 -> [#splice.entry<"/build/config.h" file 644 mtime 2 "$bytes">]
+  %3 = splice.literal "cc" at 3 demoted -> [#splice.entry<"/out/log" file 644 mtime 3 "$bytes">]
+  %4:2 = splice.exec "cc" at 3(%0, %1#1, %2) -> [
+      #splice.entry<"/out" dir 755 mtime 3>,
+      #splice.entry<"/out/prog" file 755 mtime 3 "$bytes">]
+  %5 = splice.exec "strip" at 4(%0, %2, %4#1) -> [#splice.entry<"/out/prog" file 755 mtime 4 "$bytes">]
+  splice.output "out" "/out"(%4#0, %5, %3)
+}
+MLIR
+"$compiler" origins "$data/example" "$scratch/project.mlir" > "$scratch/origins"
+cat > "$scratch/expected" <<TEXT
+out: 1 file ($size bytes) from commands that run, 1 file ($size bytes) from the recording, 1 entry without bytes
+  /out/log: pinned to the recording while its command runs
+recorded bytes that an edit to the project will not change:
+  /build/config.h: written by the builder, read by 2 commands
+  /out/log: pinned to the recording while its command runs, in output out
+TEXT
+diff "$scratch/expected" "$scratch/origins"

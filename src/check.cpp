@@ -381,8 +381,20 @@ void checkRecording(const Recording &recording,
                        {"recordedFiles", recordedFiles},
                        {"withoutBytes", output.withoutBytes}});
   }
+  // What an edit to a project will not change.
+  const auto frozen = frozenFiles(*module);
+  Json frozenList = Json::array();
+  for (const auto &file : frozen) {
+    frozenList.push_back({{"path", file.path},
+                          {"reason", file.reason},
+                          {"commands", file.commands},
+                          {"outputs", file.outputs}});
+  }
   writeBytes(recording.directory / kReportFile,
-             Json{{"passes", names}, {"groups", groups}, {"outputs", outputs}}
+             Json{{"passes", names},
+                  {"groups", groups},
+                  {"outputs", outputs},
+                  {"frozen", frozenList}}
                      .dump(kJsonIndent) +
                  "\n");
   const auto dead = recording.groups.size() - replayedSteps.size() -
@@ -393,6 +405,6 @@ void checkRecording(const Recording &recording,
                << " folded to constants, "
                << keptCount << " kept as recorded bytes, " << dead
                << " dead\n"
-               << originsText(origins);
+               << originsText(origins) << frozenText(frozen);
 }
 } // namespace splice_ir

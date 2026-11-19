@@ -2,14 +2,67 @@
 #include "compiler.h"
 #include "dialect.h"
 #include <filesystem>
+#include <set>
 
 namespace splice_ir {
 namespace fs = std::filesystem;
 namespace {
-// What the builder's own writes and a group that is not run are called in
-// a report.
+// Why a file is carried as recorded bytes, as a report says it: the
+// builder wrote the file itself, the file's command is not run, or the
+// command runs and this one file of it is taken from the recording.
 constexpr std::string_view kBuilderReason = "written by the builder";
 constexpr std::string_view kNotRunReason = "from a command that is not run";
+constexpr std::string_view kPinnedReason =
+    "pinned to the recording while its command runs";
+
+// The heading over the recorded files of a project.
+constexpr std::string_view kFrozenHeading =
+    "recorded bytes that an edit to the project will not change:\n";
+
+// Whether a literal holds a project's source tree.
+bool isSourceTree(LiteralOp literal) {
+  return literal.getName().str() == kSourceName && !literal.getDemoted() &&
+         !literal.getFolded();
+}
+
+// The steps at which a command of the graph runs.
+std::set<uint64_t> stepsThatRun(mlir::ModuleOp module) {
+  std::set<uint64_t> steps;
+  for (auto &op : module.getBody()->getOperations()) {
+    if (auto exec = llvm::dyn_cast<ExecOp>(op)) {
+      steps.insert(exec.getStep());
+    }
+  }
+  return steps;
+}
+
+// Why the files of a literal are recorded bytes.
+std::string_view reasonFor(LiteralOp literal,
+                           const std::set<uint64_t> &running) {
+  if (!literal.getDemoted()) {
+    return kBuilderReason;
+  }
+  return running.contains(literal.getStep()) ? kPinnedReason : kNotRunReason;
+}
+
+// Who uses a value: how many commands read it, and which outputs it is
+// in. A copy passes its readers on to the file it copies.
+struct Users {
+  std::set<mlir::Operation *> commands;
+  std::set<std::string> outputs;
+};
+
+void collectUsers(mlir::Value value, Users &users) {
+  for (auto *user : value.getUsers()) {
+    if (llvm::isa<ExecOp>(user)) {
+      users.commands.insert(user);
+    } else if (auto output = llvm::dyn_cast<OutputOp>(user)) {
+      users.outputs.insert(output.getName().str());
+    } else if (auto copy = llvm::dyn_cast<CopyOp>(user)) {
+      collectUsers(copy.getOutput(), users);
+    }
+  }
+}
 
 // The size of a file's bytes, which the recording keeps under their
 // digest. A graph written by hand may name bytes the recording has not.
@@ -34,6 +87,7 @@ std::string filesAndBytes(const FileCount &files) {
 std::vector<OutputOrigins> outputOrigins(mlir::ModuleOp module,
                                          const Recording &recording) {
   std::vector<OutputOrigins> outputs;
+  const auto running = stepsThatRun(module);
   for (auto &op : module.getBody()->getOperations()) {
     auto output = llvm::dyn_cast<OutputOp>(op);
     if (!output) {
@@ -61,18 +115,74 @@ std::vector<OutputOrigins> outputOrigins(mlir::ModuleOp module,
         origins.computed += file;
         continue;
       }
-      if (literal.getName().str() == kSourceName && !literal.getDemoted()) {
+      if (isSourceTree(literal)) {
         origins.source += file;
         continue;
       }
       origins.recorded += file;
       origins.recordedFiles.push_back(
-          {entry.path, std::string(literal.getDemoted() ? kNotRunReason
-                                                        : kBuilderReason)});
+          {entry.path, std::string(reasonFor(literal, running))});
     }
     outputs.push_back(std::move(origins));
   }
   return outputs;
+}
+
+std::vector<FrozenFile> frozenFiles(mlir::ModuleOp module) {
+  // Only a project is built again after its sources change.
+  bool project = false;
+  for (auto &op : module.getBody()->getOperations()) {
+    auto literal = llvm::dyn_cast<LiteralOp>(op);
+    project = project || (literal && isSourceTree(literal));
+  }
+  std::vector<FrozenFile> frozen;
+  if (!project) {
+    return frozen;
+  }
+
+  // Every file with bytes that a literal other than the source tree
+  // defines and something still uses.
+  const auto running = stepsThatRun(module);
+  for (auto &op : module.getBody()->getOperations()) {
+    auto literal = llvm::dyn_cast<LiteralOp>(op);
+    if (!literal || isSourceTree(literal)) {
+      continue;
+    }
+    for (const auto result : literal->getResults()) {
+      const auto entry = *entryOf(result);
+      if (entry.kind != EntryKind::File || isConstant(entry)) {
+        continue;
+      }
+      Users users;
+      collectUsers(result, users);
+      if (users.commands.empty() && users.outputs.empty()) {
+        continue;
+      }
+      frozen.push_back({entry.path, std::string(reasonFor(literal, running)),
+                        users.commands.size(),
+                        {users.outputs.begin(), users.outputs.end()}});
+    }
+  }
+  return frozen;
+}
+
+std::string frozenText(const std::vector<FrozenFile> &frozen) {
+  if (frozen.empty()) {
+    return "";
+  }
+  std::string text(kFrozenHeading);
+  for (const auto &file : frozen) {
+    absl::StrAppend(&text, "  ", file.path, ": ", file.reason);
+    if (file.commands != 0) {
+      absl::StrAppend(&text, ", read by ",
+                      counted(file.commands, "command", "commands"));
+    }
+    for (const auto &output : file.outputs) {
+      absl::StrAppend(&text, ", in output ", output);
+    }
+    absl::StrAppend(&text, "\n");
+  }
+  return text;
 }
 
 std::string originsText(const std::vector<OutputOrigins> &outputs) {

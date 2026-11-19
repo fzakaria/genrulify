@@ -163,3 +163,26 @@ grep -q '"/out" dir' "$scratch/folded"
 if grep -q '/out/errors' "$scratch/folded"; then
     exit 1
 fi
+
+# A file the builder wrote itself has no command to keep. In a recorded
+# build, a builder-written file with the bytes of an existing file is
+# linked to that file. In a project that would be a guess the next edit
+# can prove wrong: a builder that writes the same word a source happens
+# to hold never read the source. The file stays recorded bytes.
+cat > "$scratch/constant.mlir" <<'MLIR'
+module {
+  %0 = splice.literal "sandbox" at 1 -> [#splice.entry<"/build" dir 700 mtime 1>]
+  %1:2 = splice.literal "source" at 1 -> [
+      #splice.entry<"/nix/store/source" dir 555 mtime 1>,
+      #splice.entry<"/nix/store/source/message.txt" file 444 mtime 1 "aa">]
+  %2 = splice.exec "cp" at 2(%0, %1#0, %1#1) -> [#splice.entry<"/build/message.txt" file 644 mtime 2 "aa">]
+  %3 = splice.literal "glue" at 3 -> [#splice.entry<"/out" file 644 mtime 3 "aa">]
+  splice.output "out" "/out"(%3)
+}
+MLIR
+"$compiler" opt "$scratch/constant.mlir" > "$scratch/opt.mlir"
+grep -q 'splice.literal "glue" at 3' "$scratch/opt.mlir"
+if grep -q 'splice.copy' "$scratch/opt.mlir"; then
+    exit 1
+fi
+grep -q 'splice.output "out" "/out"(%glue_3)' "$scratch/opt.mlir"

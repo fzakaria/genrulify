@@ -138,6 +138,13 @@ struct FoldConstants
 // The pass runs before elimination. Until the copy exists nothing reads
 // the compiled file, and elimination would delete the compiler and leave
 // the output as recorded bytes.
+//
+// That the driver copied the file is inferred from the bytes. Nobody saw
+// the driver read it. In a project the inference is not made for a file
+// that depends on the sources: a builder that writes the word a source
+// happens to hold would be tied to that source, and the next edit would
+// change an output the real build leaves alone. Such a file stays recorded
+// bytes, and the report says that an edit will not change it.
 struct LinkDriverWrites
     : mlir::PassWrapper<LinkDriverWrites,
                         mlir::OperationPass<mlir::ModuleOp>> {
@@ -150,6 +157,7 @@ struct LinkDriverWrites
 
   void runOnOperation() final {
     auto *context = &getContext();
+    const auto dependent = dependsOnSource(getOperation());
 
     // The latest file version with each content, among the operations
     // walked so far.
@@ -183,7 +191,8 @@ struct LinkDriverWrites
         const auto entry = *entryOf(result);
         const auto original = latest.find(entry.content);
         if (result.use_empty() || entry.kind != EntryKind::File ||
-            original == latest.end()) {
+            original == latest.end() ||
+            dependent.contains(original->second.getDefiningOp())) {
           continue;
         }
         auto copy = CopyOp::create(builder, literal->getLoc(),

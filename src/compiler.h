@@ -129,6 +129,28 @@ std::vector<OutputOrigins> outputOrigins(mlir::ModuleOp module,
 // files that were carried as recorded bytes.
 std::string originsText(const std::vector<OutputOrigins> &outputs);
 
+// A file of a project's graph that is recorded bytes and still in use. A
+// rebuild after an edit gives the file the bytes of the day of the
+// recording, whether or not the real build would. Nothing in a recording
+// says which, so each one is reported.
+struct FrozenFile {
+  std::string path;
+
+  // Why the file is recorded bytes.
+  std::string reason;
+
+  // How many commands read the file, and the outputs the file is in.
+  size_t commands = 0;
+  std::vector<std::string> outputs;
+};
+
+// The recorded files in use in a project's graph, in the order they were
+// written. Empty for a graph without a source tree.
+std::vector<FrozenFile> frozenFiles(mlir::ModuleOp module);
+
+// The list as text under a heading, or nothing when the list is empty.
+std::string frozenText(const std::vector<FrozenFile> &frozen);
+
 // The groups the processes of a recording fall into, worked out again
 // from each process's lifetime and descriptors. Recording a run groups
 // its commands this way. The groups come back without their reads.
