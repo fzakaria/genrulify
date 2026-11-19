@@ -109,6 +109,21 @@ if grep -q 'splice.exec "cp"' "$scratch/opt.mlir"; then
     exit 1
 fi
 
+# That a program is called cp says nothing about what it does. The pass
+# reads a command line only when the program the kernel loaded is the cp
+# or the chmod of GNU coreutils, which the Nix store path of the program
+# says. Here the recording's cp is a program of the same name from another
+# package, and it stays a command although its result has the bytes of its
+# input: a tool that uppercases its input leaves an uppercase file as it
+# was. The chmod after it is then given no file of the project and stays
+# too.
+cp -r "$scratch/recording" "$scratch/other"
+sed -i '0,/"exe": "[^"]*"/s||"exe": "/nix/store/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa-mytools-1.0/bin/cp"|' "$scratch/other/recording.json"
+graph aa 644 > "$scratch/graph.mlir"
+"$compiler" opt --recording "$scratch/other" "$scratch/graph.mlir" > "$scratch/opt.mlir"
+grep -q 'splice.exec "cp" at 735' "$scratch/opt.mlir"
+grep -q 'splice.exec "chmod" at 764' "$scratch/opt.mlir"
+
 # `genrulify unpack PROGRAM ARG...` prints what the pass reads a command
 # line as: the trees a cp copies and where to, or the paths a chmod
 # changes. Command lines the pass does not read as a plain copy print
@@ -117,13 +132,23 @@ fi
 reads() {
     "$compiler" unpack "$@"
 }
-reads cp -pr -- /a /b | grep -q '^cp /a -> /b$'
-reads cp -a /a /b /c | grep -q '^cp /a /b -> /c$'
-test -z "$(reads cp --no-preserve=mode /a /b)"
-test -z "$(reads cp -t /b /a)"
-test -z "$(reads cp /a)"
-reads chmod u+w,go-w /a /b | grep -q '^chmod /a /b$'
-test -z "$(reads chmod -R +x /a)"
-test -z "$(reads chmod u=rw /a)"
-test -z "$(reads chmod 644 /a)"
-test -z "$(reads install -m644 /a /b)"
+coreutils=/nix/store/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa-coreutils-9.11/bin
+reads "$coreutils/cp" -pr -- /a /b | grep -q '^cp /a -> /b$'
+reads "$coreutils/cp" -a /a /b /c | grep -q '^cp /a /b -> /c$'
+test -z "$(reads "$coreutils/cp" --no-preserve=mode /a /b)"
+test -z "$(reads "$coreutils/cp" -t /b /a)"
+test -z "$(reads "$coreutils/cp" /a)"
+reads "$coreutils/chmod" u+w,go-w /a /b | grep -q '^chmod /a /b$'
+test -z "$(reads "$coreutils/chmod" -R +x /a)"
+test -z "$(reads "$coreutils/chmod" u=rw /a)"
+test -z "$(reads "$coreutils/chmod" 644 /a)"
+test -z "$(reads "$coreutils/install" -m644 /a /b)"
+
+# A program of the same name from anywhere else is not read: one on the
+# search path, one in the build tree, one from another package, and the
+# cp of a package whose name only contains the word.
+test -z "$(reads cp -r /a /b)"
+test -z "$(reads /build/app/cp -r /a /b)"
+test -z "$(reads /nix/store/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa-busybox-1.36/bin/cp -r /a /b)"
+test -z "$(reads /nix/store/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa-uutils-coreutils-0.1/bin/cp -r /a /b)"
+test -z "$(reads /nix/store/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa-mytools-1.0/bin/chmod u+w /a)"

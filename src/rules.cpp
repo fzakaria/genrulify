@@ -51,6 +51,15 @@ constexpr std::string_view kCopyProgram = "cp";
 constexpr std::string_view kModeProgram = "chmod";
 constexpr std::string_view kEndOfOptions = "--";
 
+// Where GNU coreutils keeps a program in the Nix store: a store path
+// named `coreutils` or `coreutils-full` and a version, and in its bin
+// either the program or the one binary that is every program. A package
+// with another name is another implementation, however its programs are
+// called.
+constexpr std::string_view kCoreutilsDirectory =
+    R"(/nix/store/[0-9a-z]{32}-coreutils(-full)?-[0-9][^/]*/bin/)";
+constexpr std::string_view kMultiCallBinary = "coreutils";
+
 // The options of cp under which a copy has the executable bits of its
 // source: recursion, preservation, force, verbosity and reflinks. An
 // option that is not here, such as --no-preserve or -t, means the command
@@ -171,6 +180,24 @@ std::optional<std::string_view> rustKind(
   return std::nullopt;
 }
 
+// Whether a process ran the GNU coreutils program `tool`. A name alone
+// does not say what a program does: anything can be called cp. A command
+// may be replaced by what its command line says only when the program is
+// known, so the file the kernel loaded has to be that program in a
+// coreutils store path, or the one binary of that package that acts by
+// the name it is called with. The recording has that file as `exe`, and
+// one made by hand without it has the path given to execve.
+bool isCoreutils(const Process &process, std::string_view tool) {
+  if (process.argv.empty() || programName(process) != tool ||
+      fs::path(process.argv.front()).filename() != tool) {
+    return false;
+  }
+  const auto &loaded = process.exe.empty() ? process.filename : process.exe;
+  return matches(loaded, std::string(kCoreutilsDirectory) + "(" +
+                             std::string(tool) + "|" +
+                             std::string(kMultiCallBinary) + ")");
+}
+
 // A path a command names, resolved against its working directory, with
 // no slash at the end.
 std::string resolved(const Process &process, const std::string &argument) {
@@ -183,7 +210,7 @@ std::string resolved(const Process &process, const std::string &argument) {
 } // namespace
 
 std::optional<CopyCommand> copyCommand(const Process &process) {
-  if (process.argv.empty() || programName(process) != kCopyProgram) {
+  if (!isCoreutils(process, kCopyProgram)) {
     return std::nullopt;
   }
 
@@ -217,7 +244,7 @@ std::optional<CopyCommand> copyCommand(const Process &process) {
 }
 
 std::optional<std::vector<std::string>> writeBitChange(const Process &process) {
-  if (process.argv.empty() || programName(process) != kModeProgram) {
+  if (!isCoreutils(process, kModeProgram)) {
     return std::nullopt;
   }
 

@@ -45,15 +45,17 @@ struct CopyCommand {
   std::string destination;
 };
 
-// What a process copies when it is a `cp` whose every option is known to
+// What a process copies when it is the `cp` of GNU coreutils, by the Nix
+// store path of the program the kernel loaded, and every option is known to
 // hand a file's executable bits on from the source: the recursive and
 // preserving options, and nothing that names the target another way or
 // drops the mode. Nothing for any other command.
 std::optional<CopyCommand> copyCommand(const Process &process);
 
-// The paths a process changes the mode of when it is a `chmod` that only
-// adds or removes the right to read or to write, which leaves every
-// executable bit as it was. Nothing for any other command.
+// The paths a process changes the mode of when it is the `chmod` of GNU
+// coreutils and only adds or removes the right to read or to write,
+// which leaves every executable bit as it was. Nothing for any other
+// command.
 std::optional<std::vector<std::string>> writeBitChange(const Process &process);
 
 // The guest paths of the files a compile names as its sources: the
