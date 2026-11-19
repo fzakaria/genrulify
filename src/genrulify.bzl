@@ -106,8 +106,12 @@ def _program_impl(ctx):
         ),
         is_executable = True,
     )
+
+    # The target's file is the program itself, so that a rule which names
+    # the target among its sources is given the program. The launcher is
+    # what `bazel run` starts, and its runfiles exist only there.
     return [DefaultInfo(
-        files = depset([launcher]),
+        files = depset([ctx.file.file]),
         executable = launcher,
         runfiles = ctx.runfiles(files = [ctx.file.file], symlinks = symlinks),
     )]

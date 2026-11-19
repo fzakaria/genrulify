@@ -169,6 +169,11 @@ rule BUILD.bazel libbundle.so | grep -A 2 'lib_names = \[' | grep -q '"libbundle
 rule BUCK libbundle.so | grep -A 2 'libs = \[' | grep -q '":s735_dd\[build/libbundle.so\]",'
 grep -q 'LD_LIBRARY_PATH' genrulify.bzl
 grep -q 'LD_LIBRARY_PATH' genrulify.buck.bzl
+
+# A rule written by hand that lists the program among its sources is
+# given the program and not the script `bazel run` starts it through,
+# which only works where its runfiles are.
+grep -q 'files = depset(\[ctx.file.file\]),' genrulify.bzl
 cd "$scratch/workspace"
 
 # A rule in the shipped files runs the recorded command and nothing else,
