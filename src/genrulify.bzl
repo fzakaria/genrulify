@@ -74,6 +74,29 @@ def rust_proc_macro(name, srcs = [], deps = [], outs = [], data = [], cmd = []):
     """A rustc invocation that builds a procedural macro."""
     _run(name, srcs + deps + data, outs, cmd)
 
+def built_file(name, file):
+    """Names a file a rule wrote after the file's place in the build tree."""
+    native.alias(name = name, actual = file)
+
+def _program_impl(ctx):
+    """Links the program under the rule's name, for `bazel run`."""
+    program = ctx.actions.declare_file(ctx.label.name)
+    ctx.actions.symlink(
+        output = program,
+        target_file = ctx.file.file,
+        is_executable = True,
+    )
+    return [DefaultInfo(files = depset([program]), executable = program)]
+
+# Names a program a rule linked after the program's place in the build
+# tree. The program is the recorded build's: it finds its libraries in the
+# Nix store the recording used.
+program = rule(
+    implementation = _program_impl,
+    attrs = {"file": attr.label(allow_single_file = True, mandatory = True)},
+    executable = True,
+)
+
 def nix_archive(name, srcs, out, cmd):
     """Packs one derivation output as a NAR, the form Nix hashes."""
     native.genrule(

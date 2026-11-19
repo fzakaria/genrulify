@@ -98,8 +98,8 @@ grep -q '"rule":"cc_object"' "$scratch/description.json"
 cd "$scratch/workspace"
 test -s genrulify.bzl
 test -s genrulify.buck.bzl
-grep -q '^load(":genrulify.bzl", "cc_object", "nix_archive", "recorded")$' BUILD.bazel
-grep -q '^load(":genrulify.buck.bzl", "cc_object", "nix_archive", "recorded")$' BUCK
+grep -q '^load(":genrulify.bzl", "built_file", "cc_object", "nix_archive", "recorded")$' BUILD.bazel
+grep -q '^load(":genrulify.buck.bzl", "built_file", "cc_object", "nix_archive", "recorded")$' BUCK
 # Prints the rule named $2 of the build file $1, from the line that says
 # which rule it is to its closing parenthesis.
 rule() {
@@ -120,6 +120,33 @@ rule BUILD.bazel archive | grep -q '^nix_archive($'
 rule BUCK s764_dd | grep -q '^cc_object($'
 rule BUCK s764_dd | grep -q 'src = ":s735_dd\[build/bundle.c\]",'
 rule BUCK s764_dd | grep -q 'out = "s764_dd/build/bundle.c",'
+
+# A rule is named after the step it was recorded at, which changes from
+# one recording to the next. The file a typed rule writes gets a target of
+# its own, named after the file's place in the build tree, that a rule
+# someone wrote by hand can depend on and that stays put when the project
+# is converted again.
+rule BUILD.bazel bundle.c | grep -q '^built_file($'
+rule BUILD.bazel bundle.c | grep -q 'file = ":s764_dd/build/bundle.c",'
+rule BUCK bundle.c | grep -q 'file = ":s764_dd\[build/bundle.c\]",'
+
+# A link's file is a program, which `bazel run` and `buck2 run` start.
+# Here the compile is turned into a link by giving it `-o`. Two rules
+# that write the same path are two versions of one file, and the name
+# goes to the later one: the first dd writes the path the link then
+# rewrites, and is no typed rule, so only the link is named.
+sed -i 's|"-c",|"-o",|' "$scratch/recording/recording.json"
+"$compiler" opt --recording "$scratch/recording" "$scratch/graph.mlir" > "$scratch/linked.mlir"
+"$compiler" emit "$scratch/recording" "$scratch/linked.mlir" "$scratch/linked"
+cd "$scratch/linked"
+rule BUILD.bazel s764_dd | grep -q '^cc_binary($'
+rule BUILD.bazel bundle.c | grep -q '^program($'
+rule BUILD.bazel bundle.c | grep -q 'file = ":s764_dd/build/bundle.c",'
+rule BUCK bundle.c | grep -q '^program($'
+test "$(grep -c 'name = "bundle.c"' BUILD.bazel)" = 1
+grep -q '^program = rule($' genrulify.bzl
+grep -q 'RunInfo' genrulify.buck.bzl
+cd "$scratch/workspace"
 
 # A rule in the shipped files runs the recorded command and nothing else,
 # so a kind cannot change what is run. Bazel's rules are all one genrule.

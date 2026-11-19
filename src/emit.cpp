@@ -6,6 +6,7 @@
 #include "rules.h"
 #include "rules_text.h"
 #include <algorithm>
+#include <map>
 #include <regex>
 #include <set>
 
@@ -118,6 +119,12 @@ constexpr std::string_view kSharedLibraryName = R"(.*\.so(\.[0-9]+)*)";
 constexpr std::string_view kRustSourceExtension = ".rs";
 constexpr std::string_view kRustCrateExtensions[] = {".rlib", ".rmeta"};
 
+// Where a Nix build works, with the slash that ends the name, and the
+// characters a file's place below it may have to be used as the name of a
+// target.
+constexpr std::string_view kBuildTree = "/build/";
+constexpr std::string_view kTargetName = "[A-Za-z0-9_.+/-]+";
+
 // The indent of a rule's attributes, and of the items of an attribute
 // that spans several lines.
 constexpr std::string_view kAttributeIndent = "    ";
@@ -159,6 +166,12 @@ struct Rule {
   // The files this rule writes, and whether its last output is a NAR.
   std::vector<std::string> outputs;
   bool archive = false;
+
+  // The guest path of the file the rule writes when it writes exactly
+  // one, and the name that file is given as a target of its own, or
+  // empty.
+  std::string writes;
+  std::string fileName;
 
   std::vector<Arguments> arguments;
 };
@@ -242,6 +255,13 @@ std::string_view macroOf(const Rule &rule) {
   return named == 1 ? kCcObject : kRecordedRule;
 }
 
+// The rule that names the file a typed rule wrote: a program for a link
+// that makes one, and a plain file for everything else.
+std::string_view fileRuleOf(std::string_view macro) {
+  return macro == kCcBinary || macro == kRustBinary ? kProgramRule
+                                                    : kBuiltFileRule;
+}
+
 // The command of a rule as the lines of a list: where the sandbox script
 // finds its inputs and puts its outputs, then the recorded command lines.
 // The rule joins the lines with spaces.
@@ -256,6 +276,18 @@ std::string commandLines(Backend backend, const Rule &rule,
     lines.push_back(commandLine(backend, arguments));
   }
   return list(lines);
+}
+
+// How a build file names a file a rule wrote: the rule's output file to
+// Bazel, `:rule/path`, and a sub-target of the rule to Buck2,
+// `:rule[path]`. An artifact is named after its rule and then its path.
+std::string outputLabel(Backend backend, std::string_view target,
+                        std::string_view artifact) {
+  if (backend == Backend::Bazel) {
+    return absl::StrCat(":", artifact);
+  }
+  return absl::StrCat(":", target, "[", artifact.substr(target.size() + 1),
+                      "]");
 }
 
 // The attributes of a rule, which are the same in both build files but
@@ -277,13 +309,7 @@ std::vector<std::string> ruleAttributes(Backend backend, const Rule &rule,
     return backend == Backend::Bazel ? absl::StrCat(":", file) : file;
   };
   const auto generatedLabel = [&](const Input &input) {
-    if (backend == Backend::Bazel) {
-      return absl::StrCat(":", input.artifact);
-    }
-
-    // An artifact is named after its rule and then its path.
-    return absl::StrCat(":", input.target, "[",
-                        input.artifact.substr(input.target.size() + 1), "]");
+    return outputLabel(backend, input.target, input.artifact);
   };
   const auto stampLabel = [&](const std::string &target) {
     return backend == Backend::Bazel ? absl::StrCat(":", stampFile(target))
@@ -420,7 +446,76 @@ std::string renderRule(Backend backend, const Rule &rule,
   for (const auto &line : ruleAttributes(backend, rule, macro, layout)) {
     absl::StrAppend(&text, kAttributeIndent, line, ",\n");
   }
-  return text + ")\n\n";
+  text += ")\n\n";
+
+  // The file a typed rule wrote, under a name of its own.
+  if (!rule.fileName.empty()) {
+    absl::StrAppend(
+        &text, fileRuleOf(macro), "(\n", kAttributeIndent,
+        attribute("name", quote(rule.fileName)), ",\n", kAttributeIndent,
+        attribute("file", quote(outputLabel(backend, rule.name,
+                                            rule.outputs.front()))),
+        ",\n)\n\n");
+  }
+  return text;
+}
+
+// Gives the file each typed rule writes a name of its own: the file's
+// place in the build tree. A rule is named after the step it was recorded
+// at, and steps move from one recording to the next. A name that comes
+// from a path stays put, so a rule written by hand can depend on
+// `:greet` or `:src/hello.o` and still build after the project is
+// converted again.
+//
+// The directory every such file is under, as `hello-2.12.3/` is in a
+// build from a tarball, is left off. Two rules that write one path wrote
+// two versions of the file, and the name goes to the later one. A name
+// that a rule or a file of the workspace already has is not given out.
+void nameFiles(std::vector<Rule> &rules, const fs::path &workspace) {
+  // The rules that have a file to name, with the file's place below the
+  // build tree.
+  std::vector<std::pair<Rule *, std::string>> candidates;
+  for (auto &rule : rules) {
+    const auto macro = macroOf(rule);
+    const bool typed = macro != kRecordedRule && macro != kArchiveRule;
+    if (!typed || rule.writes.empty() || !rule.writes.starts_with(kBuildTree)) {
+      continue;
+    }
+    candidates.emplace_back(&rule, rule.writes.substr(kBuildTree.size()));
+  }
+  if (candidates.empty()) {
+    return;
+  }
+
+  // Leave off the first directory when all the files share one.
+  const auto top = [](const std::string &place) {
+    return place.substr(0, place.find('/') + 1);
+  };
+  const auto shared = top(candidates.front().second);
+  const bool common =
+      !shared.empty() &&
+      std::ranges::all_of(candidates, [&](const auto &candidate) {
+        return top(candidate.second) == shared;
+      });
+
+  // The later rule takes a name two rules would have.
+  static const std::regex allowed{std::string(kTargetName)};
+  std::set<std::string> taken;
+  for (const auto &rule : rules) {
+    taken.insert(rule.name);
+  }
+  std::map<std::string, Rule *> named;
+  for (const auto &[rule, place] : candidates) {
+    const auto name = common ? place.substr(shared.size()) : place;
+    if (!std::regex_match(name, allowed) || taken.contains(name) ||
+        fs::exists(workspace / name)) {
+      continue;
+    }
+    named[name] = rule;
+  }
+  for (const auto &[name, rule] : named) {
+    rule->fileName = name;
+  }
 }
 
 // A build file: the rules it uses, loaded from the file of definitions
@@ -430,6 +525,9 @@ std::string buildFile(Backend backend, const std::vector<Rule> &rules,
   std::set<std::string> macros;
   for (const auto &rule : rules) {
     macros.insert(std::string(macroOf(rule)));
+    if (!rule.fileName.empty()) {
+      macros.insert(std::string(fileRuleOf(macroOf(rule))));
+    }
   }
   // Bazel loads a file of its own package by path. Buck2 takes a path
   // only as a package and a file, so a project's rules are loaded from
@@ -702,7 +800,11 @@ void emitWorkspace(mlir::ModuleOp module, const Recording &recording,
         for (const auto &result : action.results) {
           if (!result.artifact.empty()) {
             rule.outputs.push_back(result.artifact);
+            rule.writes = result.entry.path;
           }
+        }
+        if (rule.outputs.size() != 1) {
+          rule.writes.clear();
         }
       } else if (auto output = llvm::dyn_cast<OutputOp>(op)) {
         action = outputAction(output, outputCount, artifactOf, originOf);
@@ -734,6 +836,7 @@ void emitWorkspace(mlir::ModuleOp module, const Recording &recording,
       rules.push_back(std::move(rule));
     }
 
+    nameFiles(rules, destination);
     const auto bazelFile = buildFile(Backend::Bazel, rules, layout);
     const auto buckFile = buildFile(Backend::Buck2, rules, layout);
     writeBytes(support / kBazelRulesFile, kBazelRules);

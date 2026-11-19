@@ -126,6 +126,33 @@ def rust_proc_macro(name, srcs = [], deps = [], outs = [], data = [], cmd = []):
     """A rustc invocation that builds a procedural macro."""
     _run(name, srcs + deps + data, outs, cmd)
 
+def _named_impl(ctx):
+    """Stands for one file of another rule, and runs it when it is a program."""
+    providers = [DefaultInfo(default_output = ctx.attrs.file)]
+    if ctx.attrs.runs:
+        providers.append(RunInfo(args = cmd_args(ctx.attrs.file)))
+    return providers
+
+_named = rule(
+    impl = _named_impl,
+    attrs = {
+        "file": attrs.source(),
+        "runs": attrs.bool(default = False),
+    },
+)
+
+def built_file(name, file):
+    """Names a file a rule wrote after the file's place in the build tree."""
+    _named(name = name, file = file)
+
+def program(name, file):
+    """Names a program a rule linked, for `buck2 run`.
+
+    The program is the recorded build's: it finds its libraries in the
+    Nix store the recording used.
+    """
+    _named(name = name, file = file, runs = True)
+
 def nix_archive(name, srcs, out, cmd):
     """Packs one derivation output as a NAR, the form Nix hashes."""
     _step(name = name, srcs = srcs, main = out, cmd = cmd)

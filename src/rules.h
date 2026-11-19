@@ -26,6 +26,11 @@ inline constexpr std::string_view kRustProcMacro = "rust_proc_macro";
 inline constexpr std::string_view kRecordedRule = "recorded";
 inline constexpr std::string_view kArchiveRule = "nix_archive";
 
+// The rules that give the file a typed rule wrote a name of its own: a
+// program that can be run, and any other file.
+inline constexpr std::string_view kProgramRule = "program";
+inline constexpr std::string_view kBuiltFileRule = "built_file";
+
 // The kind of rule a process stands for, read from the program's name and
 // its arguments: a compiler driver that stops after compiling, one that
 // links, `ar` adding members, `rustc` by its crate type. Nothing for a
