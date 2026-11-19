@@ -11,7 +11,8 @@
 # Set GENRULIFY_WORK to a directory an earlier conversion left behind to
 # reuse its recording. Recording is the slow part and Rewind makes it
 # repeatable, so a change to the compiler can be tried on the recording
-# that already exists.
+# that already exists. Each run writes its graph, workspaces and logs to a
+# new validation.* directory inside, and removes nothing.
 #
 # Set GENRULIFY_PASSES to the passes to optimize with, for example `dce`
 # for one rule per live process group. Every pass runs by default.
@@ -56,6 +57,12 @@ fi
 # shellcheck disable=SC2086
 "$compiler" check "$work/recording" ${GENRULIFY_PASSES:-}
 
+# Everything this run makes, apart from the recording, goes into a
+# directory of the run's own. A rerun reuses the recording and touches
+# nothing an earlier run, or anybody else, left in the work directory.
+run_dir=$(mktemp -d "$work/validation.XXXXXXXX")
+echo "This run: $run_dir"
+
 # One archive per derivation output. A single output is named `archive`.
 outputs=$(jq -r '.outputs | keys[]' "$work/recording/recording.json")
 count=$(wc -w <<< "$outputs")
@@ -64,22 +71,9 @@ count=$(wc -w <<< "$outputs")
 for output in $outputs; do
     path=$(jq -er --arg output "$output" '.outputs[$output]' "$work/recording/recording.json")
     recorded=$(jq -er --arg path "$path" '.outputs[] | select(.path == $path) | .hash' "$work/run.json")
-    "$compiler" reference "$work/recording" "$output" "$work/$output.reference.nar"
-    test "sha256:$(sha256sum "$work/$output.reference.nar" | cut -d' ' -f1)" = "$recorded"
+    "$compiler" reference "$work/recording" "$output" "$run_dir/$output.reference.nar"
+    test "sha256:$(sha256sum "$run_dir/$output.reference.nar" | cut -d' ' -f1)" = "$recorded"
 done
-
-# An earlier validation in the same directory left its workspaces and its
-# build logs. This validation makes its own from the recording, which is
-# all that is reused.
-for old in "$work"/workspace.*; do
-    if [ ! -d "$old" ]; then
-        continue
-    fi
-    (cd "$old" && "$buck" kill) > /dev/null 2>&1 || true
-    chmod -R u+w "$old"
-    rm -rf "$old"
-done
-rm -f "$work/workspace" "$work"/build.*.log
 
 # What build returns when the graph could not be made or emitted, so that
 # no build system ran.
@@ -89,11 +83,11 @@ GRAPH_FAILED=2
 # every output with both systems. Everything the builds print goes to
 # build.$1.log, where a failed replay names its rule and what differed.
 build() {
-    local workspace=$work/workspace.$1
-    "$compiler" import "$work/recording" > "$work/recorded.mlir" || return "$GRAPH_FAILED"
+    local workspace=$run_dir/workspace.$1
+    "$compiler" import "$work/recording" > "$run_dir/recorded.mlir" || return "$GRAPH_FAILED"
     # shellcheck disable=SC2086
-    "$compiler" opt --recording "$work/recording" "$work/recorded.mlir" ${GENRULIFY_PASSES:-} > "$work/graph.mlir" || return "$GRAPH_FAILED"
-    "$compiler" emit "$work/recording" "$work/graph.mlir" "$workspace" || return "$GRAPH_FAILED"
+    "$compiler" opt --recording "$work/recording" "$run_dir/recorded.mlir" ${GENRULIFY_PASSES:-} > "$run_dir/graph.mlir" || return "$GRAPH_FAILED"
+    "$compiler" emit "$work/recording" "$run_dir/graph.mlir" "$workspace" || return "$GRAPH_FAILED"
     (
         cd "$workspace"
         for output in $outputs; do
@@ -102,11 +96,11 @@ build() {
                 target=archive_$output
             fi
             "$bazel" --batch build --enable_bzlmod=false "//:$target" || exit 1
-            "$compiler" verify "$work/$output.reference.nar" "bazel-bin/$target.nar" || exit 1
-            "$buck" build "//:$target" --out "$work/$output.buck.nar" || exit 1
-            "$compiler" verify "$work/$output.reference.nar" "$work/$output.buck.nar" || exit 1
+            "$compiler" verify "$run_dir/$output.reference.nar" "bazel-bin/$target.nar" || exit 1
+            "$buck" build "//:$target" --out "$run_dir/$output.buck.nar" || exit 1
+            "$compiler" verify "$run_dir/$output.reference.nar" "$run_dir/$output.buck.nar" || exit 1
         done
-    ) > "$work/build.$1.log" 2>&1
+    ) > "$run_dir/build.$1.log" 2>&1
     local status=$?
 
     # Buck2 leaves a daemon behind for every workspace it builds.
@@ -138,14 +132,18 @@ while true; do
     if [ "$status" = "$GRAPH_FAILED" ]; then
         exit 1
     fi
-    tail -n 30 "$work/build.$attempt.log"
-    "$compiler" learn "$work/recording" < "$work/build.$attempt.log"
+    tail -n 30 "$run_dir/build.$attempt.log"
+    "$compiler" learn "$work/recording" < "$run_dir/build.$attempt.log"
     attempt=$((attempt + 1))
     test "$attempt" -le "$max_attempts"
 done
-ln -s "workspace.$attempt" "$work/workspace"
+# Point `workspace` in the work directory at the workspace that built,
+# unless something that is not such a link has that name.
+if [ -L "$work/workspace" ] || [ ! -e "$work/workspace" ]; then
+    ln -sfn "$run_dir/workspace.$attempt" "$work/workspace"
+fi
 
 for output in $outputs; do
-    echo "$output: Nix, Bazel and Buck2 agree on sha256:$(sha256sum "$work/$output.reference.nar" | cut -d' ' -f1)"
+    echo "$output: Nix, Bazel and Buck2 agree on sha256:$(sha256sum "$run_dir/$output.reference.nar" | cut -d' ' -f1)"
 done
 echo "Builds needed: $attempt"
