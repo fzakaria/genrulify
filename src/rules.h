@@ -32,6 +32,25 @@ inline constexpr std::string_view kArchiveRule = "nix_archive";
 // command that is none of those.
 std::optional<std::string_view> ruleKind(const Process &process);
 
+// What a `cp` command line copies: the files or trees it names, and the
+// place it copies them to, as paths resolved against the working
+// directory of the process.
+struct CopyCommand {
+  std::vector<std::string> sources;
+  std::string destination;
+};
+
+// What a process copies when it is a `cp` whose every option is known to
+// hand a file's executable bits on from the source: the recursive and
+// preserving options, and nothing that names the target another way or
+// drops the mode. Nothing for any other command.
+std::optional<CopyCommand> copyCommand(const Process &process);
+
+// The paths a process changes the mode of when it is a `chmod` that only
+// adds or removes the right to read or to write, which leaves every
+// executable bit as it was. Nothing for any other command.
+std::optional<std::vector<std::string>> writeBitChange(const Process &process);
+
 // The guest paths of the files a compile names as its sources: the
 // arguments with the extension of a source file, resolved against the
 // working directory of the process.

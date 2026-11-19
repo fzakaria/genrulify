@@ -45,6 +45,25 @@ constexpr std::string_view kProcMacroCrate = "proc-macro";
 constexpr std::string_view kLibraryCrates[] = {"lib", "rlib", "dylib", "cdylib",
                                                "staticlib"};
 
+// The programs that copy a tree and change modes, and the argument after
+// which every argument is a path.
+constexpr std::string_view kCopyProgram = "cp";
+constexpr std::string_view kModeProgram = "chmod";
+constexpr std::string_view kEndOfOptions = "--";
+
+// The options of cp under which a copy has the executable bits of its
+// source: recursion, preservation, force, verbosity and reflinks. An
+// option that is not here, such as --no-preserve or -t, means the command
+// is not read.
+constexpr std::string_view kCopyOptions =
+    R"(-[rRpafv]+|--recursive|--archive|--force|--verbose|--reflink(=[a-z]+)?|--preserve(=[a-z,]+)?)";
+
+// The options of chmod, and a mode that adds or removes only the rights
+// to read and to write.
+constexpr std::string_view kModeOptions = R"(-[Rfvc]+|--recursive|--silent|--quiet|--verbose|--changes)";
+constexpr std::string_view kWriteBitMode =
+    R"([ugoa]*[-+][rw]+(,[ugoa]*[-+][rw]+)*)";
+
 bool matches(const std::string &text, std::string_view pattern) {
   return std::regex_match(text, std::regex(std::string(pattern)));
 }
@@ -151,7 +170,87 @@ std::optional<std::string_view> rustKind(
   }
   return std::nullopt;
 }
+
+// A path a command names, resolved against its working directory, with
+// no slash at the end.
+std::string resolved(const Process &process, const std::string &argument) {
+  auto path = (fs::path(process.cwd) / argument).lexically_normal().string();
+  while (path.size() > 1 && path.ends_with("/")) {
+    path.pop_back();
+  }
+  return path;
+}
 } // namespace
+
+std::optional<CopyCommand> copyCommand(const Process &process) {
+  if (process.argv.empty() || programName(process) != kCopyProgram) {
+    return std::nullopt;
+  }
+
+  // Options come first, up to `--` when there is one. Every argument that
+  // is not an option is a path.
+  std::vector<std::string> paths;
+  bool options = true;
+  for (const auto &argument : arguments(process)) {
+    if (options && argument == kEndOfOptions) {
+      options = false;
+      continue;
+    }
+    if (options && argument.starts_with("-")) {
+      if (!matches(argument, kCopyOptions)) {
+        return std::nullopt;
+      }
+      continue;
+    }
+    paths.push_back(resolved(process, argument));
+  }
+
+  // The last path is where the others are copied to.
+  if (paths.size() < 2) {
+    return std::nullopt;
+  }
+  CopyCommand command;
+  command.destination = paths.back();
+  paths.pop_back();
+  command.sources = std::move(paths);
+  return command;
+}
+
+std::optional<std::vector<std::string>> writeBitChange(const Process &process) {
+  if (process.argv.empty() || programName(process) != kModeProgram) {
+    return std::nullopt;
+  }
+
+  // The first argument that is not an option is the mode, and what
+  // follows it are paths, after `--` when there is one.
+  std::vector<std::string> paths;
+  bool modeSeen = false;
+  bool options = true;
+  for (const auto &argument : arguments(process)) {
+    if (!modeSeen) {
+      if (matches(argument, kModeOptions)) {
+        continue;
+      }
+      if (!matches(argument, kWriteBitMode)) {
+        return std::nullopt;
+      }
+      modeSeen = true;
+      continue;
+    }
+    if (options && argument == kEndOfOptions) {
+      options = false;
+      continue;
+    }
+    if (options && argument.starts_with("-")) {
+      return std::nullopt;
+    }
+    paths.push_back(resolved(process, argument));
+  }
+  if (paths.empty()) {
+    return std::nullopt;
+  }
+  return paths;
+}
 
 std::optional<std::string_view> ruleKind(const Process &process) {
   if (process.argv.empty()) {
