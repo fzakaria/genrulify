@@ -93,6 +93,15 @@ sed 's|^  splice.output|  %9 = splice.literal "glue" at 749 -> [\n      #splice.
 test -e "$scratch/named/glue_749/build/sub/=42UILD.bazel"
 test -z "$(find "$scratch/named" -mindepth 2 -name BUILD.bazel)"
 
+# A command can be given one file under several paths, when copies of
+# the file were raised. Its rule lists the file once: Bazel rejects a
+# label that appears twice among a rule's sources.
+sed -e 's|^  %dd_764 = |  %9 = splice.copy "cp" at 740(%dd_735) -> <"/build/a" file 644 mtime 1 "cb94740ad765d0c3cb3742959e2f7556d4c7adb712660bfbacb1ba2c6f50e671">\n  %10 = splice.copy "cp" at 741(%dd_735) -> <"/build/b" file 644 mtime 1 "cb94740ad765d0c3cb3742959e2f7556d4c7adb712660bfbacb1ba2c6f50e671">\n&|' \
+    -e 's|at 764(%sandbox_717, %dd_735)|at 764(%sandbox_717, %dd_735, %9, %10)|' \
+    "$scratch/graph.mlir" > "$scratch/twice.mlir"
+"$compiler" emit "$data/example" "$scratch/twice.mlir" "$scratch/twice"
+test "$(rule "$scratch/twice/BUILD.bazel" s764_dd | grep -c '":s735_dd/build/bundle"')" = 1
+
 # A process substitution leaves a pipe on a high descriptor, and the bytes
 # the builder had written into it are part of the recording. The rule
 # wires that descriptor to a file of those bytes, named after the pipe so

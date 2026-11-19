@@ -279,6 +279,14 @@ std::vector<std::string> bazelAttributes(const Rule &rule,
     stamps.push_back(absl::StrCat(":", stampFile(target)));
   }
 
+  // A command can see one file at several paths, when copies of the file
+  // were raised. The file is one label however many paths it has, and
+  // Bazel rejects a label listed twice, so the first path stands for it.
+  std::set<std::string> listed;
+  std::erase_if(given, [&](const auto &input) {
+    return !listed.insert(input.first).second;
+  });
+
   // Takes out of `given` the inputs a predicate picks.
   const auto take = [&](const auto &picks) {
     Arguments taken;
