@@ -57,77 +57,101 @@
     <main class="theory">
       <h1>Why this works</h1>
       <p>
-        To compile GNU hello, GCC needs <code>hello.c</code> from the tarball and
-        <code>config.h</code> from <code>configure</code>. A recording tells us which
-        version of each file GCC read. Give GCC those files again and we can check whether
-        it produces the same <code>hello.o</code>. genrulify does this for each command
-        that the generated build will run.
+        During a Nix build, commands run in a shared directory. A Bazel or Buck2 rule
+        gets its own sandbox. Will the compiler still produce the same object file
+        there? genrulify tries the compile with the inputs the rule will get. The proof
+        explains how the result of each checked rule carries through to the final archive.
       </p>
 
-      <h2 id="graph">How files connect commands</h2>
+      <h2 id="graph">One path, two versions</h2>
       <p>
-        <a href="https://rewindvm.dev">Rewind</a> can return to any step in the build.
-        genrulify compares the filesystem before and after a command to see what changed.
-        Commands that share a pipe or overlap in time are checked together.
-        We call the unit we replay a <em>group</em>.
+        In the <a href="./?pkg=example">example build</a>, the Unix command <code>dd</code>
+        copies text from one file to another. The first <code>dd</code> writes the line
+        <code>Genrulify</code> to <code>/build/bundle</code>. The second appends the line
+        <code>one file, two versions</code> to that same file. A third command copies the
+        finished bundle to the package output.
       </p>
       <p>
-        Suppose one command writes a file and a second appends to it. Both write the
-        same path, but the second command needs the version the first one left behind.
-        In the build graph each version gets its own name. The second line in this
-        <a href="./?pkg=example">example recording</a> uses the name from the first.
+        genrulify writes the build graph in a language called MLIR. Each
+        <code>splice.exec</code> represents a <em>group</em> of processes that genrulify
+        runs together. Here each group contains one invocation of <code>dd</code>. A shell
+        pipeline would put several commands in one group. In this example,
+        <code>at 735</code> is the step where <code>execve</code> started the first <code>dd</code>.
       </p>
-      <pre aria-label="Two versions of /build/bundle">%dd_735 = splice.exec "dd" at 735(%sandbox_717)          -&gt; […]
-%dd_764 = splice.exec "dd" at 764(%sandbox_717, %dd_735) -&gt; […]</pre>
+      <pre aria-label="MLIR for the build directory and the first two dd commands"><code><span class="syntax-name">%sandbox_717</span> = <span class="syntax-op">splice.literal</span> <span class="syntax-string">"sandbox"</span> at 717 -&gt; [
+    #splice.entry&lt;<span class="syntax-string">"/build"</span> dir 700 mtime 1&gt;
+]
+<span class="syntax-name">%dd_735</span> = <span class="syntax-op">splice.exec</span> <span class="syntax-string">"dd"</span> at 735(<span class="syntax-name">%sandbox_717</span>) -&gt; [
+    #splice.entry&lt;<span class="syntax-string">"/build/bundle"</span> file 644 mtime 1 <span class="syntax-string">"cb94740a…"</span>&gt;
+]
+<span class="syntax-name">%dd_764</span> = <span class="syntax-op">splice.exec</span> <span class="syntax-string">"dd"</span> at 764(<span class="syntax-name">%sandbox_717</span>, <span class="syntax-name">%dd_735</span>) -&gt; [
+    #splice.entry&lt;<span class="syntax-string">"/build/bundle"</span> file 644 mtime 1 <span class="syntax-string">"50f55425…"</span>&gt;
+]</code></pre>
       <p>
-        <code>%dd_735</code> names the first version of <code>/build/bundle</code>.
-        It appears as an input on the second line. Giving each version a name is called
-        <em>single static assignment</em> (SSA).
+        The <code>splice.literal</code> supplies the recorded <code>/build</code> directory.
+        Now read the first <code>splice.exec</code> from right to left. The entry after the arrow
+        describes the file the command produced, including its path and content hash
+        (shortened here). The name before the equals sign, <code>%dd_735</code>, is how
+        another rule refers to that version of <code>/build/bundle</code>.
+      </p>
+      <p>
+        The parentheses list filesystem inputs. At step 764, <code>(%sandbox_717, %dd_735)</code>
+        tells the rule to recreate the <code>/build</code> directory and put the first
+        version of <code>bundle</code> there before starting <code>dd</code>. The two
+        commands exchange data through that file. <code>%dd_764</code> names the version
+        containing both lines. The source text files that <code>dd</code> copies from are
+        already available at their recorded paths in the Nix store.
       </p>
 
-      <h2 id="check">What one group has to reproduce</h2>
+      <h2 id="check">What the checker actually runs</h2>
       <p>
-        Call the filesystem at step \(t\) \(\sigma_t\). If a group \(G\) starts at step
-        \(a\) and ends at step \(b\), the paths it changed are
+        The <em>checker</em> is the part of <code>genrulify convert</code> that tests each
+        group the generated build will run. You can also run it as <code>genrulify check</code>.
+        For the append at step 764, it stages the one-line bundle in a sandbox, runs the
+        recorded <code>dd</code> command there, and checks its exit status and the resulting
+        file against the recording. If the rule were missing the first version of the file,
+        <code>dd</code> could exit successfully after writing just the second line. Comparing
+        the file catches that mistake.
       </p>
-      \[ W(G) = \{p \mid \sigma_b(p) \ne \sigma_a(p)\}. \]
       <p>
-        Only changes that feed another group or the final output matter. Call those paths
-        \(U(G)\). For GCC, the linker needs the object file. A scratch file that nobody
-        reads can be ignored.
+        The comparison covers each result that another rule reads or that goes into the
+        package output. For a regular file it checks the contents and mode. A scratch file
+        that nobody uses can differ. When a group needs more inputs, the checker can retry
+        with a larger set. If a needed result keeps changing, the build can take that
+        result from the recording.
       </p>
-      <p>
-        genrulify gives the group a set of input paths \(R(G)\), with the entries they had
-        at step \(a\). It runs the group in a sandbox on a fixed platform \(P\). Each
-        process must exit with its recorded status, and each used result \(p \in U(G)\) must match its recorded entry.
-      </p>
-      \[ \operatorname{run}_P(G,\sigma_a|_{R(G)})(p) = \sigma_b(p). \]
-      <p>
-        The right side is what the recording says should be there. For an object file,
-        that includes its bytes and mode. The checker requires two clean replay passes.
-        If a group needs more files, the checker widens its inputs. If a result keeps
-        changing, such as a timestamped log, the checker can supply the recorded entry.
-        This is called <em>pinning</em>.
-      </p>
+      <details>
+        <summary>The file comparison in symbols</summary>
+        <p>
+          Let \(p\) be a path whose result is used. Write \(A(p)\) for the entry the group
+          produced in the sandbox and \(B(p)\) for the entry in the recording after the
+          group finished. The test is \(A(p) = B(p)\) for each such path. For the append,
+          \(p\) is <code>/build/bundle</code> and \(B(p)\) is the two-line file.
+        </p>
+      </details>
 
       <h2 id="proof"><span id="composition">Why the checks add up</span></h2>
       <p>
-        Suppose every group that will run passes its check. Assume also that giving a group
-        the same inputs and platform always produces the same results. Then any build order
-        that puts each producer before its consumers reproduces the recorded Nix archive (NAR).
+        The proof assumes each group the graph will run has reproduced its used results
+        with the inputs listed in its rule. Running the
+        checker establishes that fact for this recording. To predict another run, we
+        also assume that the same inputs on the same platform give the same results.
+        Two clean replay passes provide evidence for that assumption. The generated rules
+        check their results again at build time, so a command that later diverges fails.
       </p>
       <p>
-        Follow one file through the graph. A literal starts with the recorded entry. A copy
-        takes bytes from an earlier file and applies the recorded metadata. By the time a
-        command runs, each of its inputs therefore matches the version used in its check.
-        It produces the same result again. Repeating the argument along every edge gives
-        the recorded entries for the final archive. This is induction over the build order.
+        Start with the directory entry from the recording. The first checked
+        <code>dd</code> produces the one-line bundle. That gives the second <code>dd</code>
+        exactly the input it had when its check passed, so it produces the two-line bundle.
+        The final copy carries those bytes to the output.
       </p>
       <p>
-        Bazel and Buck2 can run independent commands in parallel. If a group cannot replay
-        at all, the recording can supply all its results. Even a graph made entirely of
-        literals reproduces the archive. The timeline shows how much work each build
-        actually repeats.
+        The same reasoning works for a larger graph. Start with the recorded entries
+        and build each rule after its inputs. A copy preserves the file's bytes and applies
+        the recorded metadata. Each replayed command now sees the inputs it passed its
+        check with, so its readers also get the recorded entries. By induction, this holds
+        all the way to the package output. Packing those entries gives the recorded Nix
+        archive (NAR), byte for byte. Independent rules can run in either order.
       </p>
 
       <h2 id="passes">Which commands can be skipped?</h2>
@@ -144,28 +168,23 @@
         source and the rule that wrote the configuration header. Here is an excerpt from
         its <a href="./?pkg=hello">BUILD.bazel file in the explorer</a>.
       </p>
-      <pre aria-label="Excerpt from the rule that compiles hello.c">cc_object(
-    name = "s95823_gcc",
-    src = ":s1378_tar/build/hello-2.12.3/src/hello.c",
-    hdrs = [
+      <pre aria-label="Excerpt from the rule that compiles hello.c"><code><span class="syntax-op">cc_object</span>(
+    <span class="syntax-name">name</span> = <span class="syntax-string">"s95823_gcc"</span>,
+    <span class="syntax-name">src</span> = <span class="syntax-string">":s1378_tar/build/hello-2.12.3/src/hello.c"</span>,
+    <span class="syntax-name">hdrs</span> = [
         …
-        ":s4254_bash/build/hello-2.12.3/config.h",
+        <span class="syntax-string">":s4254_bash/build/hello-2.12.3/config.h"</span>,
         …
     ],
-    out = "s95823_gcc/build/hello-2.12.3/src/hello.o",
+    <span class="syntax-name">out</span> = <span class="syntax-string">"s95823_gcc/build/hello-2.12.3/src/hello.o"</span>,
     …
-)</pre>
+)</code></pre>
       <p>
         The rule calls <code>sandbox.sh</code>, which puts the inputs back at the paths
         GCC expects, runs the recorded command line and checks the resulting object.
       </p>
 
       <h2 id="limits">What happens when a source changes?</h2>
-      <p>
-        A recorded workspace checks output hashes when a rule runs. Two successful checks
-        give us evidence that a command is repeatable. A later run can still fail if, for
-        example, the command reads the clock.
-      </p>
       <p>
         For a live project, <code>convert --source</code> generates rules that read your
         checkout and accept new output bytes. If an edit changes which headers GCC needs,

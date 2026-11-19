@@ -554,3 +554,30 @@ footer {
   font-weight: 600;
   padding-bottom: 0.4rem;
 }
+
+/* Color operation names, file versions and paths in the theory examples. */
+.theory pre code {
+  padding: 0;
+  font: inherit;
+}
+.syntax-op {
+  color: #69419d;
+  font-weight: 600;
+}
+.syntax-name {
+  color: #234d88;
+}
+.syntax-string {
+  color: #216042;
+}
+@media (prefers-color-scheme: dark) {
+  .syntax-op {
+    color: #cfadff;
+  }
+  .syntax-name {
+    color: #a5c7ff;
+  }
+  .syntax-string {
+    color: #98d9ad;
+  }
+}

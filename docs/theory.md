@@ -51,7 +51,8 @@ linker reads the object and nothing uses the scratch file, only the
 object needs to match. Call the set of changed paths whose versions are
 used $U(G)$. A final output counts as a use.
 
-genrulify stages the chosen inputs at their original paths, restores
+The checker (`genrulify check`, also run by `convert`) tests the input
+set chosen for each group. It stages those inputs at their original paths, restores
 the group's commands and pipes, and runs the group. The processes must
 exit with their recorded statuses. Each used result must yield the
 recorded entry.
@@ -61,8 +62,15 @@ $$
 \qquad (p \in U(G)).
 $$
 
-Here $\sigma_a|_{R(G)}$ means the entries at those input paths just
-before the group ran. A result can come from a fresh temporary name.
+Read the equation as a comparison at one output path $p$. The left side
+runs the group on platform $P$ with the recorded entries at its input
+paths, then looks up $p$ in the result. The right side looks up the same
+path in the recording after the group finished. For the example's second
+`dd`, the input is the one-line `bundle` in `/build` and both sides must
+give the two-line file at `/build/bundle`. The checker makes this
+comparison for every used result, along with the process status checks.
+
+A result can come from a fresh temporary name.
 If the recorded name is missing, genrulify can match a new entry in the
 same directory by kind, mode and content. The next group receives that
 entry at the recorded path.
