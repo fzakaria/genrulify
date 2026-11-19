@@ -221,6 +221,25 @@ inline constexpr std::string_view kCopyOutcome = "copy";
 inline constexpr std::string_view kFoldedOutcome = "folded";
 inline constexpr std::string_view kDeadOutcome = "dead";
 
+// The operations of a project's graph that depend on the project's source
+// tree: the literal that holds the tree, and every operation given a file
+// or a symlink one of those defines. An operation given only a directory
+// is not in the set. A directory has no bytes for an edit to change, and
+// when an edit keeps the directory from being made, the command that
+// makes it fails before anything is given it.
+//
+// A project is built again after its sources are edited, with the same
+// commands. What a command that read a source left behind was computed
+// from the bytes the source had on the day of the recording. That a result
+// had the bytes of an input, or was empty, is a fact about those bytes and
+// not about the command: `sort` of a sorted file leaves its input. So no
+// pass may replace such a result on the strength of its bytes, and a rule
+// for such a command takes what the command leaves.
+//
+// A graph without a source tree depends on nothing that changes, and
+// nothing in it is in the set.
+std::set<mlir::Operation *> dependsOnSource(mlir::ModuleOp module);
+
 // The name a pass has on the command line and in reports.
 std::string_view passName(Pass pass);
 std::optional<Pass> passNamed(std::string_view name);

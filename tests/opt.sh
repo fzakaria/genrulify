@@ -126,10 +126,13 @@ fi
 # right when a source is edited. A command that read a source and left the
 # bytes of its input, or an empty file, did so for the bytes the source
 # had when the build was recorded. `sort` of a sorted file is the example.
-# Such a command stays a command. A directory it made is still folded,
-# and a command that read no source is rewritten as before. So is a
-# command that was given only a directory such a command made: a
-# directory has no bytes for the edit to change. Here that is a mktemp.
+# Such a command stays a command, and keeps every result it has. That
+# includes a directory: a command can make one only when a source says
+# so, and a build that stopped making it must fail, not package a
+# directory from the recording. A command that read no source is
+# rewritten as before. So is a command that was given only a directory a
+# source-reading command made: a directory has no bytes for the edit to
+# change. Here that is a mktemp.
 cat > "$scratch/project.mlir" <<'MLIR'
 module {
   %0 = splice.literal "sandbox" at 1 -> [#splice.entry<"/build" dir 700 mtime 1>]
@@ -158,11 +161,10 @@ fi
 if grep -q 'splice.copy "sort"' "$scratch/opt.mlir"; then
     exit 1
 fi
-sed -n '/splice.literal "sort" at 2 folded/,/\]/p' "$scratch/opt.mlir" > "$scratch/folded"
-grep -q '"/out" dir' "$scratch/folded"
-if grep -q '/out/errors' "$scratch/folded"; then
+if grep -q 'splice.literal "sort" at 2 folded' "$scratch/opt.mlir"; then
     exit 1
 fi
+grep -q 'splice.output "out" "/out"(%sort_2#0, %sort_2#1, %sort_2#2' "$scratch/opt.mlir"
 
 # A file the builder wrote itself has no command to keep. In a recorded
 # build, a builder-written file with the bytes of an existing file is

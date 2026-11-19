@@ -33,21 +33,8 @@ std::vector<ExecOp> processGroups(mlir::ModuleOp module) {
   return groups;
 }
 
-// The operations of a project's graph that depend on the project's source
-// tree: the literal that holds the tree, and every operation given a file
-// or a symlink one of those defines. A directory does not carry the
-// dependence on: that a command made the directory is not a matter of
-// what any source holds.
-//
-// A project is built again after its sources are edited, with the same
-// commands. What a command that read a source left behind was computed
-// from the bytes the source had on the day of the recording. That a result
-// had the bytes of an input, or was empty, is a fact about those bytes and
-// not about the command: `sort` of a sorted file leaves its input. So no
-// pass may replace such a result on the strength of its bytes.
-//
-// A graph without a source tree depends on nothing that changes, and
-// nothing in it is in the set.
+} // namespace
+
 std::set<mlir::Operation *> dependsOnSource(mlir::ModuleOp module) {
   std::set<mlir::Operation *> dependent;
 
@@ -69,6 +56,8 @@ std::set<mlir::Operation *> dependsOnSource(mlir::ModuleOp module) {
   return dependent;
 }
 
+namespace {
+
 // Constant folding. A directory, a symlink and an empty file are known in
 // full from their entry: there are no bytes for a process to compute. The
 // pass moves every such result that something reads into a splice.literal
@@ -80,10 +69,11 @@ std::set<mlir::Operation *> dependsOnSource(mlir::ModuleOp module) {
 // recorded entry by definition, so every reader is given what it was
 // given before.
 //
-// Of a command that read a project's source, only the directories are
-// folded. That the command makes the directory does not depend on what a
-// source holds. That a file came out empty, or where a symlink points,
-// can.
+// Nothing is folded out of a command that read a project's source. That
+// a file came out empty, where a symlink points, and whether a directory
+// is made at all can each depend on what the source holds. A result left
+// with the command is checked every time the command runs: a build that
+// no longer makes the directory fails and says so.
 struct FoldConstants
     : mlir::PassWrapper<FoldConstants, mlir::OperationPass<mlir::ModuleOp>> {
   llvm::StringRef getArgument() const final { return "splice-fold-constants"; }
@@ -95,16 +85,16 @@ struct FoldConstants
     auto *context = &getContext();
     const auto dependent = dependsOnSource(getOperation());
     for (auto exec : processGroups(getOperation())) {
+      if (dependent.contains(exec.getOperation())) {
+        continue;
+      }
+
       // Find the constant results that have a reader.
-      const bool readsSource = dependent.contains(exec.getOperation());
       std::vector<mlir::Value> constants;
       std::vector<Entry> entries;
       for (const auto result : exec->getResults()) {
         const auto entry = *entryOf(result);
         if (result.use_empty() || !isConstant(entry)) {
-          continue;
-        }
-        if (readsSource && entry.kind != EntryKind::Directory) {
           continue;
         }
         constants.push_back(result);
