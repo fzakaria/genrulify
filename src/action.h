@@ -10,9 +10,16 @@ namespace splice_ir {
 // One entry a step is given or must leave. A regular file's bytes travel
 // as an artifact, a file in the build system's tree, named here. A
 // directory or a symlink is fully described by its entry and has none.
+//
+// An entry of a project can differ from the recording by the time a step
+// is given it. `origin` says where its mode, or its symlink target, is
+// then read from: the name of the rule that made the entry and wrote down
+// what it left, or kCheckoutOrigin for a file of the project itself.
+// Empty for an entry that is staged as recorded.
 struct ActionEntry {
   Entry entry;
   std::string artifact;
+  std::string origin;
 };
 
 // One build step: what to stage, which recorded processes to start and how
@@ -23,6 +30,14 @@ struct Action {
   std::vector<Process> processes;
   std::vector<ActionEntry> inputs;
   std::vector<ActionEntry> results;
+
+  // Whether the step takes what its processes leave, and what the
+  // recorded processes wrote that nothing reads. A step that depends on a
+  // project's sources is trusted: an edit is meant to change its results.
+  // What the recording saw written is then all the step may leave under
+  // an output path.
+  bool trusted = false;
+  std::vector<Entry> unused;
 
   // How long the processes may run before the step is abandoned.
   uint64_t timeoutSeconds = 0;
@@ -70,17 +85,24 @@ std::string artifactName(std::string_view target, std::string_view guestPath);
 // Names the artifact that holds a regular file's bytes.
 using ArtifactOf = std::function<std::string(const Entry &)>;
 
+// Names something about an operand: the artifact that holds its bytes, or
+// its origin.
+using OperandName = std::function<std::string(mlir::Value)>;
+
 // The step for a splice.exec. `operandArtifact` names the artifact of an
-// operand, `platformArtifact` of a file from the guest's /bin and /etc.
-// The step asks only for the results that have a use: a write nothing
-// reads may differ from run to run.
+// operand, `platformArtifact` of a file from the guest's /bin and /etc,
+// and `operandOrigin`, when given, the origin of an operand. The step
+// asks only for the results that have a use: a write nothing reads may
+// differ from run to run.
 Action execAction(ExecOp op, const Recording &recording,
-                  const std::function<std::string(mlir::Value)> &operandArtifact,
-                  const ArtifactOf &platformArtifact);
+                  const OperandName &operandArtifact,
+                  const ArtifactOf &platformArtifact,
+                  const OperandName &operandOrigin = nullptr);
 
 // The step for a splice.output.
 Action outputAction(OutputOp op, size_t outputCount,
-                    const std::function<std::string(mlir::Value)> &operandArtifact);
+                    const OperandName &operandArtifact,
+                    const OperandName &operandOrigin = nullptr);
 
 // The arguments that make sandbox.sh carry out a step, after the options
 // that say where its inputs and outputs are. They are grouped as they are
@@ -97,13 +119,13 @@ Arguments writeActionFiles(const Action &action,
 
 // Writes the files every step shares: the sandbox script, the store
 // closure, the environments, and for a project the path of its source
-// tree.
+// tree and the output paths of its build.
 void writeSharedFiles(const Recording &recording,
                       const std::filesystem::path &directory);
 
 // The shared files one step reads: the script, the closure, the
-// environments of its processes, and for a project the file that names
-// its source tree.
+// environments of its processes, for a project the file that names its
+// source tree, and for a trusted step the file that names the outputs.
 Arguments sharedFiles(const Action &action, const Recording &recording);
 
 // The command that carries out a step outside a build system: the
@@ -154,6 +176,10 @@ std::optional<ReplayFailure> runAction(const Action &action,
 inline constexpr std::string_view kSandboxFile = "sandbox.sh";
 inline constexpr std::string_view kClosureFile = "closure.txt";
 inline constexpr std::string_view kSourceFile = "source.txt";
+inline constexpr std::string_view kOutputsFile = "outputs.txt";
+
+// The origin of an entry that is a file of the project being built.
+inline constexpr std::string_view kCheckoutOrigin = "@checkout";
 inline constexpr std::string_view kEnvironmentsDirectory = "env";
 inline constexpr std::string_view kActionsDirectory = "actions";
 inline constexpr std::string_view kPlatformTarget = "platform";

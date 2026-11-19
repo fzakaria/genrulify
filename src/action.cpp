@@ -39,9 +39,11 @@ constexpr char kFieldSeparator = '\x1f';
 
 constexpr int kStandardInput = 0;
 
-// The tags of a manifest line: an entry to stage and a result to expect.
+// The tags of a manifest line: an entry to stage, a result to expect, and
+// a path the recorded processes wrote that nothing reads.
 constexpr std::string_view kStageTag = "in";
 constexpr std::string_view kExpectTag = "out";
+constexpr std::string_view kUnusedTag = "unused";
 
 // What sandbox.sh can put at a descriptor, as its --fd option spells them.
 constexpr std::string_view kNullSpec = "null";
@@ -60,6 +62,7 @@ constexpr std::string_view kNameOption = "--name";
 constexpr std::string_view kInputOption = "--in";
 constexpr std::string_view kOutputOption = "--out";
 constexpr std::string_view kTimeoutOption = "--timeout";
+constexpr std::string_view kTrustOption = "--trust";
 constexpr std::string_view kPipeOption = "--pipe";
 constexpr std::string_view kRunCommand = "run";
 constexpr std::string_view kPackCommand = "pack";
@@ -256,10 +259,13 @@ std::string manifestLine(std::string_view tag, const ActionEntry &item) {
               item.entry.path);
   }
   const std::string separator(1, kFieldSeparator);
+
+  // The origin is the last field, and is left off a line that has none.
   return absl::StrCat(tag, separator, kindName(item.entry.kind), separator,
                       std::format("{:o}", item.entry.mode), separator,
                       item.entry.mtime, separator, item.entry.path, separator,
-                      item.entry.content, separator, item.artifact, "\n");
+                      item.entry.content, separator, item.artifact,
+                      item.origin.empty() ? "" : separator, item.origin, "\n");
 }
 
 // Reads a failed step's output back into what failed.
@@ -417,8 +423,9 @@ std::string artifactName(std::string_view target, std::string_view guestPath) {
 }
 
 Action execAction(ExecOp op, const Recording &recording,
-                  const std::function<std::string(mlir::Value)> &operandArtifact,
-                  const ArtifactOf &platformArtifact) {
+                  const OperandName &operandArtifact,
+                  const ArtifactOf &platformArtifact,
+                  const OperandName &operandOrigin) {
   Action action;
   action.name = targetName(op, 0);
   action.processes = recording.group(op.getStep()).processes;
@@ -435,13 +442,15 @@ Action execAction(ExecOp op, const Recording &recording,
   for (const auto input : op.getInputs()) {
     const auto entry = *entryOf(input);
     action.inputs.push_back(
-        {entry, entry.kind == EntryKind::File ? operandArtifact(input) : ""});
+        {entry, entry.kind == EntryKind::File ? operandArtifact(input) : "",
+         operandOrigin ? operandOrigin(input) : ""});
   }
   for (const auto result : op.getResults()) {
+    const auto entry = *entryOf(result);
     if (result.use_empty()) {
+      action.unused.push_back(entry);
       continue;
     }
-    const auto entry = *entryOf(result);
     action.results.push_back({entry, entry.kind == EntryKind::File
                                          ? artifactName(action.name, entry.path)
                                          : ""});
@@ -450,14 +459,16 @@ Action execAction(ExecOp op, const Recording &recording,
 }
 
 Action outputAction(OutputOp op, size_t outputCount,
-                    const std::function<std::string(mlir::Value)> &operandArtifact) {
+                    const OperandName &operandArtifact,
+                    const OperandName &operandOrigin) {
   Action action;
   action.name = targetName(op, outputCount);
   action.output = op.getPath().str();
   for (const auto value : op.getEntries()) {
     const auto entry = *entryOf(value);
     action.inputs.push_back(
-        {entry, entry.kind == EntryKind::File ? operandArtifact(value) : ""});
+        {entry, entry.kind == EntryKind::File ? operandArtifact(value) : "",
+         operandOrigin ? operandOrigin(value) : ""});
   }
   return action;
 }
@@ -478,6 +489,9 @@ std::vector<Arguments> actionArguments(const Action &action,
   // its processes.
   auto options = words({kNameOption, action.name, kTimeoutOption,
                         std::to_string(action.timeoutSeconds)});
+  if (action.trusted) {
+    options.emplace_back(kTrustOption);
+  }
   const auto pipes = sharedPipes(action);
   for (const auto &[id, pipe] : pipes) {
     append(options, {kPipeOption,
@@ -553,6 +567,14 @@ Arguments writeActionFiles(const Action &action, const fs::path &directory) {
   for (const auto &result : action.results) {
     manifest += manifestLine(kExpectTag, result);
   }
+
+  // Only a trusted step is asked what else it left, so only its manifest
+  // says what the recorded processes wrote besides the results.
+  if (action.trusted) {
+    for (const auto &entry : action.unused) {
+      manifest += manifestLine(kUnusedTag, {entry, "", ""});
+    }
+  }
   const auto name =
       absl::StrCat(kActionsDirectory, "/", action.name, ".manifest");
   writeBytes(directory / name, manifest);
@@ -596,6 +618,14 @@ void writeSharedFiles(const Recording &recording, const fs::path &directory) {
   // the path.
   if (!recording.source.empty()) {
     writeBytes(directory / kSourceFile, recording.source + "\n");
+
+    // A trusted step may leave nothing under an output path that the
+    // recording did not see, so the script has to know those paths too.
+    std::string outputs;
+    for (const auto &[name, path] : recording.outputs) {
+      absl::StrAppend(&outputs, path, "\n");
+    }
+    writeBytes(directory / kOutputsFile, outputs);
   }
 
   // An environment is NAME=VALUE entries, each ended by a NUL, because a
@@ -617,6 +647,9 @@ Arguments sharedFiles(const Action &action, const Recording &recording) {
     files.insert(std::string(kClosureFile));
     if (!recording.source.empty()) {
       files.insert(std::string(kSourceFile));
+    }
+    if (action.trusted) {
+      files.insert(std::string(kOutputsFile));
     }
   }
   for (const auto &process : action.processes) {
