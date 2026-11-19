@@ -54,17 +54,13 @@
         type = "app";
         program = "${pkgs.writeShellScript "serve-site" ''
           exec ${pkgs.python3}/bin/python3 - "''${1:-8139}" <<'EOF'
-          import http.server, os, sys, urllib.parse
+          import functools, http.server, os, sys
 
           SITE = os.environ.get("GENRULIFY_SITE") or "${self.packages.${system}.site}"
 
+          # The standard handler resolves a request inside its directory
+          # and drops any `..`, so nothing outside the site is served.
           class Handler(http.server.SimpleHTTPRequestHandler):
-              def translate_path(self, path):
-                  path = urllib.parse.urlparse(path).path
-                  if path == "/":
-                      path = "/index.html"
-                  return os.path.join(SITE, path.lstrip("/"))
-
               def end_headers(self):
                   self.send_header("Cache-Control", "no-store")
                   super().end_headers()
@@ -72,7 +68,8 @@
           http.server.SimpleHTTPRequestHandler.extensions_map[".js"] = "text/javascript"
           port = int(sys.argv[1])
           print(f"serving on http://127.0.0.1:{port}/ (site={SITE})", flush=True)
-          http.server.ThreadingHTTPServer(("127.0.0.1", port), Handler).serve_forever()
+          handler = functools.partial(Handler, directory=SITE)
+          http.server.ThreadingHTTPServer(("127.0.0.1", port), handler).serve_forever()
           EOF
         ''}";
       };
