@@ -120,7 +120,7 @@ will receive.
 | Fold constants | `mkdir` | A directory, symlink or empty file is fully described by its recorded entry. |
 | Merge or raise | `chmod` or `cp` | The result has the bytes of an input at the same path (merge) or a different path (raise). A copy carries the new metadata. |
 | Link driver writes | A build driver puts a binary in its final location | A driver entry with the same bytes as an earlier file can refer to that file. Linking before dead-code elimination keeps its producer in the graph. |
-| Unpack sources | `cp -r $src` and `chmod -R u+w` in a project | The command lines name the file each result came from, and the recording agrees on its bytes. |
+| Unpack sources | `cp -r $src` and `chmod -R u+w` in a project | The program is GNU coreutils, its command line names the file each result came from, and the recording agrees on the bytes. |
 
 ## The mapping to build rules
 
@@ -157,7 +157,15 @@ bytes it left. A result with the bytes of an input, an empty file and a
 directory were each computed from the source as it was that day. The
 copy of the source tree into `/build` and the `chmod` after it are
 rewritten for another reason, which is what their command lines say:
-each file they leave is a copy of the checkout's file.
+each file they leave is a copy of the checkout's file. That reading is
+made only of the `cp` and `chmod` of GNU coreutils, by the store path of
+the program that ran, and not of a `cp` that wrote over an existing file
+without preserving modes, which keeps the mode the file had.
+
+A command that read a source is also kept when nothing reads what it
+left. In the graph it is marked `watched`. After an edit it may write a
+file it did not write before, or exit with another status that the
+builder then branches on, and only a rule that runs can notice either.
 
 A trusted rule writes down the modes and symlink targets it left, and
 the rules that read its results stage those. The rule fails if a result

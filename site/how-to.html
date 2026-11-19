@@ -110,6 +110,9 @@
       <p>
         <code>//:greet</code> and <code>//:greet.o</code> are named after the files, so a rule
         you write yourself can depend on them and still build after you convert again.
+        A program is run with the shared libraries its own project built. If a source sits
+        below a directory that has its own build file, the rules name it by that package,
+        and <code>convert</code> prints what the package has to export.
       </p>
       <p>
         The generated rules list the files and commands from the build you recorded.
@@ -122,8 +125,9 @@
         A flake in a git repository leaves such untracked files out.
       </p>
       <p>
-        A command that stops leaving a file or a directory it left before fails its rule,
-        and the message says to convert again. Bazel and Buck2 do not rerun a rule when
+        Every command that read one of your sources runs again after an edit. If it stops
+        leaving a file or a directory it left before, leaves a new one in the package, or
+        exits differently, its rule fails and the message says to convert again. Bazel and Buck2 do not rerun a rule when
         only a file's mode changes, so <code>chmod +x</code> on a source reaches the output
         with the next change to the file's text.
       </p>

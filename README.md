@@ -80,7 +80,10 @@ $ bazel run //:greet
 ```
 
 `//:greet` and `//:greet.o` are named after the files, so a rule of your
-own can depend on them and still build after you convert again. If you
+own can depend on them and still build after you convert again. A
+program is run with the shared libraries its own project built. A source
+below a directory with a build file of its own is named by that package,
+and `convert` prints what the package has to export. If you
 add a header dependency or change a compile command, run `convert` again
 from the repository root with a fresh output directory. A command that
 no longer leaves a file or a directory it left before fails its rule,
@@ -217,11 +220,17 @@ they must stay together. The generated rules run locally because they
 read tools and libraries from the host's `/nix/store`.
 
 A project's rules hold what one build did: which commands ran and with
-which arguments. A value the builder read from a source and passed on a
-command line stays as recorded, and so does a symlink in the source
-tree. Bazel and Buck2 do not run a rule again
-when only a file's mode changes, so `chmod +x` on a source reaches the
-output with the next change to the file's text.
+which arguments. Every command that read a source runs again after an
+edit, and its rule fails when the command exits differently or leaves a
+file under the output that it did not leave before. A value the builder
+read from a source and passed on a command line stays as recorded, and
+so does a symlink in the source tree.
+
+Bazel and Buck2 do not run a rule again when only a file's mode changes,
+so `chmod +x` on a source reaches the output with the next change to the
+file's text. If you build one checkout with both, a running Buck2 daemon
+can miss an edit below a subdirectory once Bazel's `bazel-*` links are
+there. Remove the links or restart the daemon with `buck2 kill`.
 
 ## Layout
 
