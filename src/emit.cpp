@@ -9,8 +9,10 @@
 #include "rules_text.h"
 #include <algorithm>
 #include <map>
+#include <optional>
 #include <regex>
 #include <set>
+#include <span>
 
 namespace splice_ir {
 namespace fs = std::filesystem;
@@ -93,6 +95,11 @@ constexpr std::string_view kReferenceArchive = "reference.nar";
 // The build files, and the files a workspace needs besides them.
 constexpr std::string_view kBazelBuildFile = "BUILD.bazel";
 constexpr std::string_view kBuckBuildFile = "BUCK";
+
+// The names each build system reads a package's build file under, in the
+// order it looks for them.
+constexpr std::string_view kBazelBuildFiles[] = {"BUILD.bazel", "BUILD"};
+constexpr std::string_view kBuckBuildFiles[] = {"BUCK.v2", "BUCK"};
 constexpr std::string_view kBazelWorkspaceFile = "WORKSPACE";
 constexpr std::string_view kBazelModuleFile = "MODULE.bazel";
 constexpr std::string_view kBuckConfigFile = ".buckconfig";
@@ -598,16 +605,42 @@ std::string callLine() { return absl::StrCat(kTargetsFunction, "()"); }
 // Gives a project a build file that makes its rules, unless the project
 // has one somebody else wrote. That file is left as it is, and when it
 // does not load the rules the two lines that would are printed.
-void writeLoader(Backend backend, const fs::path &file) {
-  if (replaceable(file)) {
-    writeBytes(file, absl::StrCat(kGeneratedLine, loadLine(backend), "\n\n",
-                                  callLine(), "\n"));
+//
+// A build system reads a package's build file under more than one name
+// and takes the first it finds. A loader written beside a file of the
+// project's under the other name would hide that file, or be hidden by
+// it, so every name is looked at, and a loader genrulify wrote earlier
+// goes once the project has a file of its own.
+void writeLoader(Backend backend, const fs::path &project) {
+  const auto names = backend == Backend::Bazel
+                         ? std::span<const std::string_view>(kBazelBuildFiles)
+                         : std::span<const std::string_view>(kBuckBuildFiles);
+
+  // The project's own build file is the first one the build system would
+  // read that genrulify did not write.
+  std::optional<fs::path> own;
+  for (const auto name : names) {
+    if (fs::exists(project / name) && !replaceable(project / name)) {
+      own = project / name;
+      break;
+    }
+  }
+  if (!own) {
+    writeBytes(project / (backend == Backend::Bazel ? kBazelBuildFile
+                                                    : kBuckBuildFile),
+               absl::StrCat(kGeneratedLine, loadLine(backend), "\n\n",
+                            callLine(), "\n"));
     return;
   }
-  if (readBytes(file).find(loadLine(backend)) != std::string::npos) {
+  for (const auto name : names) {
+    if (fs::exists(project / name) && replaceable(project / name)) {
+      fs::remove(project / name);
+    }
+  }
+  if (readBytes(*own).find(loadLine(backend)) != std::string::npos) {
     return;
   }
-  llvm::errs() << file.string()
+  llvm::errs() << own->string()
                << " is not genrulify's and was left as it is. To build the "
                   "converted targets from it, add:\n  "
                << loadLine(backend) << "\n  " << callLine() << "\n";
@@ -928,8 +961,8 @@ void emitWorkspace(mlir::ModuleOp module, const Recording &recording,
       }
       fs::rename(support, final);
       removeTree(previous);
-      writeLoader(Backend::Bazel, destination / kBazelBuildFile);
-      writeLoader(Backend::Buck2, destination / kBuckBuildFile);
+      writeLoader(Backend::Bazel, destination);
+      writeLoader(Backend::Buck2, destination);
     }
 
     // What makes the directory a workspace. A project that already is one
