@@ -94,6 +94,14 @@ void append(Arguments &arguments, std::initializer_list<std::string_view> items)
   arguments.insert(arguments.end(), items.begin(), items.end());
 }
 
+// The file names Bazel and Buck2 read as the definition of a package, a
+// repository or a cell.
+constexpr std::string_view kBuildFileNames[] = {
+    "BUILD",          "BUILD.bazel", "WORKSPACE", "WORKSPACE.bazel",
+    "MODULE.bazel",   "REPO.bazel",  "BUCK",      "BUCK.v2",
+    "PACKAGE",        ".buckconfig",
+};
+
 // The characters an artifact name keeps. Everything else becomes `=XX`,
 // which is safe in a Bazel label, a Buck2 path and a file name.
 bool keptInArtifact(char c) {
@@ -391,8 +399,19 @@ std::string targetName(mlir::Operation *op, size_t outputCount) {
 
 std::string artifactName(std::string_view target, std::string_view guestPath) {
   std::string name(target);
-  for (const char c : guestPath) {
-    name += keptInArtifact(c) ? std::string(1, c) : escaped(c);
+
+  // A file named like a build file would turn its directory into a package
+  // or a repository of its own, and no label could reach into it. Such a
+  // file gets its first letter escaped.
+  const auto slash = guestPath.rfind('/');
+  const auto base = slash == std::string_view::npos ? 0 : slash + 1;
+  const bool reserved = std::ranges::find(kBuildFileNames,
+                                          guestPath.substr(base)) !=
+                        std::end(kBuildFileNames);
+  for (size_t index = 0; index < guestPath.size(); ++index) {
+    const char c = guestPath[index];
+    const bool keep = keptInArtifact(c) && !(reserved && index == base);
+    name += keep ? std::string(1, c) : escaped(c);
   }
   return name;
 }

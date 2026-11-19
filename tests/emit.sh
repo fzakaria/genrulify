@@ -83,6 +83,16 @@ fi
 grep -q 'was not replayed' "$scratch/error"
 "$compiler" emit "$scratch/reported" "$scratch/optimized.mlir" "$scratch/checked-workspace"
 
+# A file of the build can be named like a build file: zlib's tarball has a
+# BUILD.bazel in it. Checked into the workspace under that name, the file
+# would make its directory a package of its own and every label into the
+# directory invalid, so its artifact is given another name.
+sed 's|^  splice.output|  %9 = splice.literal "glue" at 749 -> [\n      #splice.entry<"/build/sub/BUILD.bazel" file 644 mtime 1 "cb94740ad765d0c3cb3742959e2f7556d4c7adb712660bfbacb1ba2c6f50e671">\n  ]\n&|' \
+    "$scratch/graph.mlir" > "$scratch/named.mlir"
+"$compiler" emit "$data/example" "$scratch/named.mlir" "$scratch/named"
+test -e "$scratch/named/glue_749/build/sub/=42UILD.bazel"
+test -z "$(find "$scratch/named" -mindepth 2 -name BUILD.bazel)"
+
 # A process substitution leaves a pipe on a high descriptor, and the bytes
 # the builder had written into it are part of the recording. The rule
 # wires that descriptor to a file of those bytes, named after the pipe so
