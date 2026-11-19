@@ -134,6 +134,7 @@ gives the proof.
 | `python3.14-six-1.17.0` | `pyproject-build` | 137 | 107 | 3 | 2 | 2 | 0 | 5 |
 | `hexyl-0.17.0` | Rust, `cargo` | 612 | 82 | 9 | 4 | 3 | 0 | 10 |
 | `ninja-1.13.2` | Python bootstrap, Ninja | 493 | 81 | 9 | 4 | 4 | 0 | 10 |
+| `inih-62`, `--open ninja` | Meson, Ninja | 472 | 121 | 10 | 3 | 4 | 0 | 12 |
 | `tinyxml2-11.0.0` | CMake | 275 | 81 | 6 | 2 | 3 | 0 | 7 |
 | `jsoncpp-1.9.8` | CMake | 602 | 137 | 8 | 4 | 6 | 0 | 10 |
 | `lz4-1.10.0` | patch, CMake | 806 | 194 | 39 | 6 | 8 | 0 | 43 |

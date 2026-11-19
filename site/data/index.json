@@ -35,6 +35,11 @@
     "note": "ninja 1.13.2: bootstrapped by a Python script, then built by itself"
   },
   {
+    "id": "inih",
+    "label": "inih (Meson, Ninja)",
+    "note": "inih 62: Meson and Ninja. Ninja writes a log of its own, so the conversion names it with --open ninja to get a rule per compile"
+  },
+  {
     "id": "gawk",
     "label": "gawk",
     "note": "GNU awk 5.4.1: autoreconf and autotools, three outputs"
