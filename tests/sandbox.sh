@@ -44,6 +44,41 @@ step same
 test "$(sha256sum < "$scratch/out/same/build/bundle" | cut -d' ' -f1)" = "$bundle"
 test -e "$scratch/out/same.ok"
 
+# A step can be given thousands of files, so staging does not start a
+# process for each. A file whose artifact is named after its producer and
+# then its guest path, as the files of a workspace are, is copied together
+# with the producer's other files. Any other file is copied on its own.
+# Either way each file has to arrive with its bytes and its recorded mode,
+# which the step's results check here: two files of the producer `maker`,
+# a file from the blobs, a symlink, and a directory whose mode keeps its
+# owner from writing into it, which can only be set once the file below
+# it is in place.
+mkdir -p "$scratch/maker/build/sub" "$scratch/maker/build/shut"
+for file in a.txt sub/b.txt shut/x.txt; do
+    cp "$data/example/blobs/$bundle" "$scratch/maker/build/$file"
+done
+{
+    line in dir 700 1 /build '' ''
+    line in dir 750 1 /build/sub '' ''
+    line in dir 500 1 /build/shut '' ''
+    line in file 600 1 /build/a.txt "$bundle" maker/build/a.txt
+    line in file 755 1 /build/sub/b.txt "$bundle" maker/build/sub/b.txt
+    line in file 444 1 /build/shut/x.txt "$bundle" maker/build/shut/x.txt
+    line in file 640 1 /build/c.txt "$bundle" "blobs/$bundle"
+    line in link 0 1 /build/sub/link ../a.txt ''
+    line out file 600 1 /build/a.txt "$bundle" batch/build/a.txt
+    line out file 755 1 /build/sub/b.txt "$bundle" batch/build/sub/b.txt
+    line out file 444 1 /build/shut/x.txt "$bundle" batch/build/shut/x.txt
+    line out file 640 1 /build/c.txt "$bundle" batch/build/c.txt
+    line out link 0 1 /build/sub/link ../a.txt ''
+    line out dir 750 1 /build/sub '' ''
+    line out dir 500 1 /build/shut '' ''
+} > "$scratch/actions/batch.manifest"
+step batch
+for file in a.txt sub/b.txt shut/x.txt c.txt; do
+    cmp "$scratch/out/batch/build/$file" "$data/example/blobs/$bundle"
+done
+
 # A step whose results are all directories still writes its stamp, which
 # is then the one file the build system has of it.
 {

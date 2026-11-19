@@ -90,6 +90,7 @@ OWNER_EXECUTE=$((8#100))
 ALL_EXECUTE=$((8#111))
 ALL_READ=$((8#444))
 READ_TO_EXECUTE=2
+OWNER_ALL=$((8#700))
 
 fail() {
     echo "sandbox.sh: $*" >&2
@@ -150,28 +151,58 @@ if [ -n "$timeout" ] && [ -z "${GENRULIFY_DEADLINE:-}" ]; then
     GENRULIFY_DEADLINE=1 exec "$C/timeout" --kill-after=10 "$timeout" "$0" "${saved[@]}" "$@"
 fi
 
-# The first --in directory that holds a file.
-find_input() {
-    local dir
-    for dir in "${in_dirs[@]}"; do
-        if [ -e "$dir/$1" ]; then
-            printf '%s' "$dir/$1"
-            return 0
-        fi
-    done
-    fail "no input named $1"
-}
-
-# The same for a file a workspace need not have. Fails quietly.
-find_optional_input() {
-    local dir
-    for dir in "${in_dirs[@]}"; do
-        if [ -e "$dir/$1" ]; then
-            printf '%s' "$dir/$1"
+# Finds a file among the --in directories without starting a process. Sets
+# `found` to the file and `found_in` to the directory that holds it.
+locate() {
+    for found_in in "${in_dirs[@]}"; do
+        found=$found_in/$1
+        if [ -e "$found" ]; then
             return 0
         fi
     done
     return 1
+}
+
+# The first --in directory that holds a file.
+find_input() {
+    locate "$1" || fail "no input named $1"
+    printf '%s' "$found"
+}
+
+# The same for a file a workspace need not have. Fails quietly.
+find_optional_input() {
+    locate "$1" || return 1
+    printf '%s' "$found"
+}
+
+# Starting a process costs about a millisecond, and a step can be given
+# thousands of files. So the script does not run a command per file where
+# one command can take many: it collects paths and hands them over in
+# batches. A batch is at most this many paths, which stays far below what
+# the kernel allows on one command line.
+BATCH=500
+
+# Runs the command after $1 once for each batch of the paths in the array
+# named $1, with the batch as its last arguments.
+each_batch() {
+    local -n batched_paths=$1
+    shift
+    local start
+    for ((start = 0; start < ${#batched_paths[@]}; start += BATCH)); do
+        "$@" "${batched_paths[@]:start:BATCH}" || return 1
+    done
+}
+
+# The same for a list kept as text, one path on each line, which is how
+# the lists of an associative array are kept.
+each_batch_of_lines() {
+    local lines=${1%$'\n'}
+    shift
+    local -a listed_paths=()
+    if [ -n "$lines" ]; then
+        mapfile -t listed_paths <<< "$lines"
+    fi
+    each_batch listed_paths "$@"
 }
 
 # Loads the stamp of the rule $1, once: what that rule saw each of its
@@ -203,6 +234,7 @@ checkout_mode() {
     fi
 }
 
+links=()            # target and host path of every symlink to stage
 scratch=$("$C/mktemp" -d) || fail "cannot create a scratch directory"
 cleanup() {
     # Staged directories keep their recorded modes, which can deny the
@@ -216,10 +248,37 @@ root=$scratch/root
 
 # ---- stage the declared inputs ----------------------------------------------
 
+# The outputs are copied from inside other directories, so the place they
+# go to is made absolute.
+case $out in
+    /*) ;;
+    *) out=$PWD/$out ;;
+esac
+
 manifest=$(find_input "actions/$name.manifest")
 declare -A known        # guest paths the step was given or is expected to write
 directories=()          # mode, mtime and path of every staged directory
 results=()              # the manifest's `out` lines
+
+# What staging collects to do in batches. A file whose artifact is named
+# after its producer and then its guest path, as `s12_tar/build/a.c` is
+# for /build/a.c, is copied by one cp for all such files of the producer,
+# which recreates each path below the root. Every other file is copied on
+# its own.
+declare -A tree_copies  # paths to copy, by the directory the paths are relative to
+declare -A tree_of      # that directory, by producer
+declare -A by_mode      # staged files, by the mode to give them
+declare -A by_time      # staged files and directories, by mtime
+declare -A links_by_time
+made_directories=()
+
+# Copies the files "$@", given relative to the directory $1, to the same
+# places below the staging root.
+copy_tree() {
+    local from=$1
+    shift
+    (cd "$from" && "$C/cp" --parents -t "$root" -- "$@")
+}
 
 while IFS=$FS read -r tag kind mode mtime path content artifact origin; do
     known[$path]=1
@@ -244,35 +303,94 @@ while IFS=$FS read -r tag kind mode mtime path content artifact origin; do
     fi
     case $kind in
         dir)
-            "$C/mkdir" -p "$host"
+            made_directories+=("$host")
             directories+=("$mode$FS$mtime$FS$path")
             ;;
         link)
-            "$C/mkdir" -p "${host%/*}"
-            "$C/ln" -s "$content" "$host"
-            "$C/touch" -h -d "@$mtime" "$host"
+            made_directories+=("${host%/*}")
+            links+=("$content$FS$host")
+            links_by_time[$mtime]+=$host$'\n'
             ;;
         file)
-            "$C/mkdir" -p "${host%/*}"
-            staged=$(find_input "$artifact")
-            "$C/cp" "$staged" "$host" || fail "cannot stage $path"
-            if [ "${origin:-}" = "$CHECKOUT" ]; then
-                mode=$(checkout_mode "$mode" "$staged")
+            producer=${artifact%"$path"}
+            if [ -n "$producer" ] && [ "$producer" != "$artifact" ] && [ "${origin:-}" != "$CHECKOUT" ]; then
+                # Every file of one producer is in the same place, so the
+                # first one says where.
+                if [ -z "${tree_of[$producer]:-}" ]; then
+                    locate "$artifact" || fail "no input named $artifact"
+                    tree_of[$producer]=$found_in/$producer
+                fi
+                tree_copies[${tree_of[$producer]}]+=${path#/}$'\n'
+                by_mode[$mode]+=$host$'\n'
+            else
+                locate "$artifact" || fail "no input named $artifact"
+                if [ "${origin:-}" = "$CHECKOUT" ]; then
+                    mode=$(checkout_mode "$mode" "$found")
+                fi
+                "$C/install" -D -m "$mode" "$found" "$host" || fail "cannot stage $path"
             fi
-            "$C/chmod" "$mode" "$host"
-            "$C/touch" -d "@$mtime" "$host"
+            by_time[$mtime]+=$host$'\n'
             ;;
         *) fail "unknown entry kind $kind" ;;
     esac
 done < "$manifest"
 
+# Directories first, then the files of each producer, then the symlinks.
+each_batch made_directories "$C/mkdir" -p -- || fail "cannot create the staged directories"
+for tree in "${!tree_copies[@]}"; do
+    each_batch_of_lines "${tree_copies[$tree]}" copy_tree "$tree" || fail "cannot stage the files of $tree"
+done
+if [ ${#links[@]} -gt 0 ]; then
+    while IFS=$FS read -r target host; do
+        "$C/ln" -s "$target" "$host" || fail "cannot stage ${host#"$root"}"
+    done < <(printf '%s\n' "${links[@]}")
+fi
+
+# The recorded modes and mtimes, one command for all the files that share
+# a value.
+for mode in "${!by_mode[@]}"; do
+    each_batch_of_lines "${by_mode[$mode]}" "$C/chmod" "$mode" -- || fail "cannot set modes"
+done
+for mtime in "${!by_time[@]}"; do
+    each_batch_of_lines "${by_time[$mtime]}" "$C/touch" -d "@$mtime" -- || fail "cannot set mtimes"
+done
+for mtime in "${!links_by_time[@]}"; do
+    each_batch_of_lines "${links_by_time[$mtime]}" "$C/touch" -h -d "@$mtime" -- || fail "cannot set mtimes"
+done
+
 # A directory gets its recorded mode and mtime last: the mode can deny the
-# writes that created its children, and those writes move its mtime.
+# writes that created its children, and those writes move its mtime. The
+# deepest directories come first, so that a mode which shuts a directory
+# is set after everything below it is done.
 if [ ${#directories[@]} -gt 0 ]; then
+    declare -A directories_by_time directories_by_mode
+    ordered=()
     while IFS=$FS read -r mode mtime path; do
-        "$C/chmod" "$mode" "$root$path"
-        "$C/touch" -d "@$mtime" "$root$path"
+        directories_by_time[$mtime]+=$root$path$'\n'
+        ordered+=("$mode$FS$root$path")
     done < <(printf '%s\n' "${directories[@]}" | "$C/sort" -t"$FS" -k3,3r)
+    for mtime in "${!directories_by_time[@]}"; do
+        each_batch_of_lines "${directories_by_time[$mtime]}" "$C/touch" -d "@$mtime" -- || fail "cannot set mtimes"
+    done
+
+    # A mode that leaves the owner every right shuts nothing, so all the
+    # directories with it can be changed at once. Any other mode is set
+    # one directory at a time, in order.
+    shutting=()
+    for item in "${ordered[@]}"; do
+        mode=${item%%"$FS"*}
+        if (((8#$mode & OWNER_ALL) == OWNER_ALL)); then
+            directories_by_mode[$mode]+=${item#*"$FS"}$'\n'
+        else
+            shutting+=("$item")
+        fi
+    done
+    for mode in "${!directories_by_mode[@]}"; do
+        each_batch_of_lines "${directories_by_mode[$mode]}" "$C/chmod" "$mode" -- || fail "cannot set modes"
+    done
+    for item in "${shutting[@]}"; do
+        "$C/chmod" "${item%%"$FS"*}" "${item#*"$FS"}" || fail "cannot set modes"
+    done
 fi
 
 # ---- pack: serialize one output path as a NAR -------------------------------
