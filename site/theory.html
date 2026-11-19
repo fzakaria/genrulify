@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Why this works · genrulify</title>
-    <meta name="description" content="How a recorded Nix build becomes a graph of file versions, what the splice dialect represents, and why replayed groups compose." />
+    <meta name="description" content="How genrulify checks one command at a time and why those checks can reproduce a recorded Nix build." />
     <link
       rel="icon"
       href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧬</text></svg>"
@@ -17,7 +17,7 @@
     <meta property="og:title" content="genrulify — the theory behind the genrules" />
     <meta
       property="og:description"
-      content="How a recorded Nix build becomes a graph of file versions, what the splice dialect represents, and why replayed groups compose."
+      content="How genrulify checks one command at a time and why those checks can reproduce a recorded Nix build."
     />
 
     <link rel="stylesheet" href="style.css" />
@@ -57,218 +57,125 @@
     <main class="theory">
       <h1>Why this works</h1>
       <p>
-        A build that has already run is a list of commands and the files that moved between
-        them. Run each command again on the files it had, and you get the files it made.
-        Do that for every command and you get the build. This page says that carefully,
-        proves it, and shows what a generated rule looks like.
-      </p>
-      <nav class="site" aria-label="On this page">
-        <a href="#graph">The graph</a>
-        <a href="#check">The check</a>
-        <a href="#proof">The proof</a>
-        <a href="#passes">The passes</a>
-        <a href="#rules">A generated rule</a>
-        <a href="#limits">What it does not say</a>
-      </nav>
-
-      <h2 id="graph">The graph</h2>
-      <p>
-        <a href="https://rewindvm.dev">Rewind</a> runs the build in a deterministic VM and
-        can go back to any step of it. So for a step \(t\) we can ask what the filesystem
-        held. Call that \(\sigma_t\): a map from paths to <em>entries</em>, where an entry is
-        a file with its bytes and mode, a directory, or a symlink.
-      </p>
-      <p>
-        A <em>group</em> \(G\) is a command, or a pipeline, that ran from step \(a\) to
-        step \(b\). Two sets describe it:
-      </p>
-      <ul>
-        <li>\(R(G)\), the paths it is given, chosen from the paths of \(\sigma_a\);</li>
-        <li>\(W(G) = \{\, p : \sigma_b(p) \neq \sigma_a(p) \,\}\), the paths it changed.</li>
-      </ul>
-      <p>
-        Every changed path gets a new <em>value</em>. A value is one version of one path, so
-        a file written twice has two values and an in-place edit is an ordinary edge. This
-        is single static assignment, on files. In the
-        <code>splice</code> dialect of <a href="https://mlir.llvm.org">MLIR</a> a build that
-        appends to a file looks like this:
-      </p>
-      <pre aria-label="Two operations from the example recording">%dd_735 = splice.exec "dd" at 735(%sandbox_717) -&gt; [
-    #splice.entry&lt;"/build/bundle" file 644 mtime 1 "cb94740a…"&gt;
-]
-%dd_764 = splice.exec "dd" at 764(%sandbox_717, %dd_735) -&gt; [
-    #splice.entry&lt;"/build/bundle" file 644 mtime 1 "50f55425…"&gt;
-]</pre>
-      <p>
-        Both commands write <code>/build/bundle</code>. The second one reads the first
-        one's version, <code>%dd_735</code>, and defines its own.
-        <a href="./?pkg=example">Open this build in the explorer</a>.
-      </p>
-      <table>
-        <caption>The four operations</caption>
-        <thead><tr><th scope="col">Operation</th><th scope="col">Meaning</th></tr></thead>
-        <tbody>
-          <tr><th scope="row"><code>splice.exec</code></th><td>Run a recorded group. Operands are the versions it is given, results are the versions it leaves.</td></tr>
-          <tr><th scope="row"><code>splice.literal</code></th><td>Entries taken from the recording: what Nix put in the sandbox, and what the builder's shell wrote itself.</td></tr>
-          <tr><th scope="row"><code>splice.copy</code></th><td>A file with the bytes of another version, under a new path, mode or time.</td></tr>
-          <tr><th scope="row"><code>splice.output</code></th><td>The final version of every path under a derivation output.</td></tr>
-        </tbody>
-      </table>
-
-      <h2 id="check">The check</h2>
-      <p>
-        Write \(\operatorname{run}(G, F)\) for the filesystem left by starting the recorded
-        processes of \(G\) on a filesystem that holds exactly \(F\). Everything else a
-        process can see is fixed: the store paths, the user, the hostname. Let
-        \(U(G) \subseteq W(G)\) be the paths whose new value something later reads.
-      </p>
-      <p><strong>Check.</strong> A group \(G\) passes when its processes end with their recorded statuses and</p>
-      \[ \operatorname{run}\bigl(G,\ \sigma_a|_{R(G)}\bigr)(p) \;=\; \sigma_b(p) \qquad \text{for every } p \in U(G). \]
-      <p>
-        In words: alone in a sandbox, given only its recorded inputs, the group leaves files
-        with the recorded hashes. <code>genrulify check</code> runs this for every group,
-        twice. A group that fails is given more of the tree, then has single files taken from
-        the recording, and in the last resort becomes a <code>splice.literal</code>.
+        To compile GNU hello, GCC needs <code>hello.c</code> from the tarball and
+        <code>config.h</code> from <code>configure</code>. A recording tells us which
+        version of each file GCC read. Give GCC those files again and we can check whether
+        it produces the same <code>hello.o</code>. genrulify does this for each command
+        that the generated build will run.
       </p>
 
-      <h2 id="proof">The proof</h2>
+      <h2 id="graph">How files connect commands</h2>
       <p>
-        Write \(\operatorname{rec}(v)\) for the entry the recording holds for a value
-        \(v\). The claim is that a build system which runs the graph computes
-        \(\operatorname{rec}(v)\) for every value.
+        <a href="https://rewindvm.dev">Rewind</a> can return to any step in the build.
+        genrulify compares the filesystem before and after a command to see what changed.
+        Commands that share a pipe or overlap in time are checked together.
+        We call the unit we replay a <em>group</em>.
       </p>
       <p>
-        <strong>Theorem 1.</strong> Suppose every <code>splice.exec</code> passes its check
-        and \(\operatorname{run}\) is a function of its inputs. Evaluate the graph in any
-        order that respects its edges. Then every value \(v\) that is used evaluates to
-        \(\operatorname{rec}(v)\). In particular each output is the recorded output, byte
-        for byte.
+        Suppose one command writes a file and a second appends to it. Both write the
+        same path, but the second command needs the version the first one left behind.
+        In the build graph each version gets its own name. The second line in this
+        <a href="./?pkg=example">example recording</a> uses the name from the first.
       </p>
-      <p><em>Proof.</em> By induction along the order. Take the node that defines \(v\).</p>
-      <ul>
-        <li>
-          <code>splice.literal</code>. Its result is \(\operatorname{rec}(v)\) by definition.
-        </li>
-        <li>
-          <code>splice.copy</code> of a value \(u\). The node is only built when
-          \(\operatorname{rec}(v)\) and \(\operatorname{rec}(u)\) have the same bytes. By
-          induction \(u\) evaluates to \(\operatorname{rec}(u)\), so the copy has the
-          bytes of \(\operatorname{rec}(v)\). Its path, mode and time are the recorded
-          ones.
-        </li>
-        <li>
-          <code>splice.exec</code> of a group \(G\). Each operand comes earlier in the
-          order, so it evaluates to its recorded entry. The staged filesystem is therefore
-          \(\sigma_a|_{R(G)}\), the one the check ran on. \(\operatorname{run}\) is a
-          function, so the group leaves what it left during the check:
-          \(\sigma_b(p) = \operatorname{rec}(v)\) for the path \(p\) of \(v\). \(\qquad\blacksquare\)
-        </li>
-      </ul>
+      <pre aria-label="Two versions of /build/bundle">%dd_735 = splice.exec "dd" at 735(%sandbox_717)          -&gt; […]
+%dd_764 = splice.exec "dd" at 764(%sandbox_717, %dd_735) -&gt; […]</pre>
       <p>
-        The proof uses the order and nothing else. Bazel and Buck2 may run independent rules
-        in parallel, cache them or skip them, and the result is the same.
-      </p>
-      <p>
-        <strong>Theorem 2.</strong> Every recording has a graph that satisfies Theorem 1,
-        and <code>check</code> finds one.
-      </p>
-      <p>
-        <em>Proof.</em> Make every group a literal. No check is left to fail. Each time a
-        group fails, <code>check</code> moves it one step closer to that graph, and there
-        are finitely many steps. \(\qquad\blacksquare\)
-      </p>
-      <p>
-        So the conversion cannot fail. What changes from one package to the next is how much
-        of the build is run again and how much is carried as recorded bytes, and the explorer
-        reports that for every package.
+        <code>%dd_735</code> names the first version of <code>/build/bundle</code>.
+        It appears as an input on the second line. Giving each version a name is called
+        <em>single static assignment</em> (SSA).
       </p>
 
-      <h2 id="passes">The passes keep it true</h2>
+      <h2 id="check">What one group has to reproduce</h2>
       <p>
-        Theorem 1 asks one thing of a graph: every node yields the recorded entry when its
-        operands do. A rewrite that keeps that property keeps the theorem.
+        Call the filesystem at step \(t\) \(\sigma_t\). If a group \(G\) starts at step
+        \(a\) and ends at step \(b\), the paths it changed are
       </p>
-      <table>
-        <caption>Why each rewrite is safe</caption>
-        <thead><tr><th scope="col">Rewrite</th><th scope="col">What it does</th><th scope="col">Why the theorem still holds</th></tr></thead>
-        <tbody>
-          <tr><th scope="row">Eliminate dead code</th><td>Deletes a node nothing reads.</td><td>No other node's operands change, so every check stands as it was.</td></tr>
-          <tr><th scope="row">Fold constants</th><td>Moves directories, symlinks and empty files into a literal.</td><td>A literal is the recorded entry by definition. The group has less to reproduce.</td></tr>
-          <tr><th scope="row">Merge, raise, link</th><td>Replaces a result that has the bytes of an existing value with a copy of it.</td><td>The copy case of the proof.</td></tr>
-          <tr><th scope="row">Finer cuts</th><td>Treats a process that only ran other commands as part of the builder.</td><td>The smaller groups are checked like any others.</td></tr>
-        </tbody>
-      </table>
+      \[ W(G) = \{p \mid \sigma_b(p) \ne \sigma_a(p)\}. \]
+      <p>
+        Only changes that feed another group or the final output matter. Call those paths
+        \(U(G)\). For GCC, the linker needs the object file. A scratch file that nobody
+        reads can be ignored.
+      </p>
+      <p>
+        genrulify gives the group a set of input paths \(R(G)\), with the entries they had
+        at step \(a\). It runs the group in a sandbox on a fixed platform \(P\). Each
+        process must exit with its recorded status, and each used result \(p \in U(G)\) must match its recorded entry.
+      </p>
+      \[ \operatorname{run}_P(G,\sigma_a|_{R(G)})(p) = \sigma_b(p). \]
+      <p>
+        The right side is what the recording says should be there. For an object file,
+        that includes its bytes and mode. The checker requires two clean replay passes.
+        If a group needs more files, the checker widens its inputs. If a result keeps
+        changing, such as a timestamped log, the checker can supply the recorded entry.
+        This is called <em>pinning</em>.
+      </p>
 
-      <h2 id="rules">A generated rule</h2>
+      <h2 id="proof"><span id="composition">Why the checks add up</span></h2>
       <p>
-        Each <code>splice.exec</code> becomes one <code>genrule</code>. This one compiles
-        <code>src/hello.c</code> in GNU hello:
+        Suppose every group that will run passes its check. Assume also that giving a group
+        the same inputs and platform always produces the same results. Then any build order
+        that puts each producer before its consumers reproduces the recorded Nix archive (NAR).
       </p>
-      <pre aria-label="The rule that compiles hello.c, shortened">genrule(
+      <p>
+        Follow one file through the graph. A literal starts with the recorded entry. A copy
+        takes bytes from an earlier file and applies the recorded metadata. By the time a
+        command runs, each of its inputs therefore matches the version used in its check.
+        It produces the same result again. Repeating the argument along every edge gives
+        the recorded entries for the final archive. This is induction over the build order.
+      </p>
+      <p>
+        Bazel and Buck2 can run independent commands in parallel. If a group cannot replay
+        at all, the recording can supply all its results. Even a graph made entirely of
+        literals reproduces the archive. The timeline shows how much work each build
+        actually repeats.
+      </p>
+
+      <h2 id="passes">Which commands can be skipped?</h2>
+      <p>
+        A <code>mkdir</code> can become a constant because its directory is fully described
+        by the recorded entry. An <code>install</code> that keeps the bytes of its input
+        can become a copy with a new path and mode. A command whose results never reach
+        the output can disappear. In each case the next reader still gets the same entry.
+      </p>
+
+      <h2 id="rules">What a generated rule looks like</h2>
+      <p>
+        In GNU hello, the rule for <code>hello.o</code> names the rule that unpacked the
+        source and the rule that wrote the configuration header. Here is an excerpt from
+        its <a href="./?pkg=hello">BUILD.bazel file in the explorer</a>.
+      </p>
+      <pre aria-label="Excerpt from the rule that compiles hello.c">cc_object(
     name = "s95245_gcc",
-    srcs = [
-        ":s1375_tar/build/hello-2.12.3/src/hello.c",
-        ":s1375_tar/build/hello-2.12.3/src/system.h",
+    src = ":s1375_tar/build/hello-2.12.3/src/hello.c",
+    hdrs = [
+        …
         ":s4251_bash/build/hello-2.12.3/config.h",
-        ":sandbox.sh",
         …
     ],
-    outs = [
-        "s95245_gcc/build/hello-2.12.3/src/hello.o",
-        "s95245_gcc.ok",
-    ],
-    cmd = " ".join([
-        "./sandbox.sh --in . --in $(RULEDIR) --out $(RULEDIR)",
-        "--name s95245_gcc --timeout 300",
-        "run --cwd /build/hello-2.12.3 --env 62 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 55 --",
-        "/nix/store/5q6bdxkp…-gcc-16.2.0/bin/gcc … -g -O2 -c -o src/hello.o src/hello.c",
-    ]),
-    tags = ["no-remote"],
+    out = "s95245_gcc/build/hello-2.12.3/src/hello.o",
+    …
 )</pre>
       <p>
-        The last line of <code>cmd</code> is the <code>execve</code> that was recorded. The
-        <code>srcs</code> are the file versions the compiler opened, named by the rule that
-        wrote each one: <code>hello.c</code> as <code>tar</code> unpacked it,
-        <code>config.h</code> as <code>configure</code> wrote it. The values of the graph are
-        the labels of the build file.
-      </p>
-      <p>
-        A recorded command only makes sense where it ran. It names <code>/build</code>, and
-        it expects its environment and its file descriptors. <code>sandbox.sh</code> is a
-        shell script that ships in the workspace and puts those back. It copies the inputs
-        to their recorded paths, runs the command, and compares every output with the
-        recorded hash before handing it on. That comparison is the check above, so a rule
-        that stops reproducing the recording fails. genrulify is not needed to build the
-        workspace.
-      </p>
-      <p>
-        <a href="./?pkg=hello">Open hello in the explorer</a>, pick a
-        <code>gcc</code> node and compare its Processes and BUILD.bazel tabs.
+        The rule calls <code>sandbox.sh</code>, which puts the inputs back at the paths
+        GCC expects, runs the recorded command line and checks the resulting object.
       </p>
 
-      <h2 id="limits">What it does not say</h2>
-      <ul>
-        <li>
-          <strong>One build, one graph.</strong> The graph recomputes the build that was
-          recorded. Edit a source file and the compiler may open other headers. That is a
-          new build, and it needs a new recording.
-        </li>
-        <li>
-          <strong>Determinism is assumed, then sampled.</strong> The proof takes
-          \(\operatorname{run}\) to be a function. Two passing replays are evidence for
-          that. Every rule checks its own outputs on every build, so a command that later
-          drifts fails its rule.
-        </li>
-      </ul>
+      <h2 id="limits">What happens when a source changes?</h2>
       <p>
-        The model of tasks, a store and a scheduler is from
+        A recorded workspace checks output hashes when a rule runs. Two successful checks
+        give us evidence that a command is repeatable. A later run can still fail if, for
+        example, the command reads the clock.
+      </p>
+      <p>
+        For a live project, <code>convert --source</code> generates rules that read your
+        checkout and accept new output bytes. If an edit changes which headers GCC needs,
+        record the build again to update the graph.
+        <a href="how-to.html#project">Build and edit the C example</a>.
+      </p>
+      <p>
+        The <a href="https://github.com/fzakaria/genrulify/blob/main/docs/theory.md">technical note</a>
+        gives the trace assumptions and relates file versions to the model in
         <a href="https://doi.org/10.1145/3236774"><cite>Build Systems à la Carte</cite></a>.
-        In its terms, a recording turns a build's dynamic dependencies into static ones,
-        which is why they can be written down as <code>srcs</code>. The
-        <a href="https://github.com/fzakaria/genrulify/blob/main/docs/theory.md">longer note</a>
-        spells that out, and
-        <a href="https://github.com/fzakaria/genrulify/blob/main/src/Splice.td">Splice.td</a>
-        defines the dialect.
       </p>
     </main>
 
