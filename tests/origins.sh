@@ -103,3 +103,21 @@ grep -q '^  /out: written by the builder, in output out$' "$scratch/origins"
 if grep -q 'an edit to the project' "$scratch/origins"; then
     exit 1
 fi
+
+# A command of a project that replay could not reproduce is not run by any
+# rule. When it also left nothing the build reads, nothing of it is in the
+# graph at all, and no rule can notice what it would do after an edit. The
+# report names each such command. Here the recording's verdicts say the
+# dd at step 764 could not be replayed, and the graph has no trace of it.
+# A build that is not a project's is edited by nobody and lists none.
+printf '{"764": {"rung": "literal", "pinned": [], "inputs": [], "traced": false, "fallback": "wide"}}\n' > "$scratch/recording/verdicts.json"
+"$compiler" origins "$scratch/recording" "$scratch/constant.mlir" > "$scratch/origins"
+grep -q '^commands that could not be replayed and are not in the build, so no rule checks what they do after an edit:$' "$scratch/origins"
+grep -q '^  dd at step 764$' "$scratch/origins"
+cp -r "$data/example" "$scratch/plain"
+chmod -R u+w "$scratch/plain"
+cp "$scratch/recording/verdicts.json" "$scratch/plain/"
+"$compiler" origins "$scratch/plain" "$scratch/constant.mlir" > "$scratch/origins"
+if grep -q 'could not be replayed' "$scratch/origins"; then
+    exit 1
+fi

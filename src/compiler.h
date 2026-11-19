@@ -152,6 +152,19 @@ std::vector<FrozenFile> frozenFiles(mlir::ModuleOp module,
 // The list as text under a heading, or nothing when the list is empty.
 std::string frozenText(const std::vector<FrozenFile> &frozen);
 
+// The commands of a project that nothing watches: process groups replay
+// could not reproduce, by the recording's verdicts, of which the graph
+// holds nothing, neither a command nor recorded bytes. A group like that
+// may be one that read a source, and after an edit no rule runs to see
+// what it would now do. Each is given as its label and its step. Empty for
+// a build that is not a project's.
+std::vector<std::string> unwatchedCommands(mlir::ModuleOp module,
+                                           const Recording &recording,
+                                           const Verdicts &verdicts);
+
+// The list as text under a heading, or nothing when the list is empty.
+std::string unwatchedText(const std::vector<std::string> &unwatched);
+
 // The groups the processes of a recording fall into, worked out again
 // from each process's lifetime and descriptors. Recording a run groups
 // its commands this way. The groups come back without their reads.

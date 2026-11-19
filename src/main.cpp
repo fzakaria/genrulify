@@ -296,7 +296,9 @@ void run(std::span<char *> args) {
     llvm::outs() << splice_ir::originsText(
                         splice_ir::outputOrigins(*module, recording))
                  << splice_ir::frozenText(
-                        splice_ir::frozenFiles(*module, recording));
+                        splice_ir::frozenFiles(*module, recording))
+                 << splice_ir::unwatchedText(splice_ir::unwatchedCommands(
+                        *module, recording, splice_ir::loadVerdicts(recording)));
     return;
   }
   if (args.size() == 3 && command == "describe") {

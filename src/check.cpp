@@ -399,11 +399,14 @@ void checkRecording(const Recording &recording,
                           {"commands", file.commands},
                           {"outputs", file.outputs}});
   }
+  // The commands of a project that neither run nor left anything.
+  const auto unwatched = unwatchedCommands(*module, recording, verdicts);
   writeBytes(recording.directory / kReportFile,
              Json{{"passes", names},
                   {"groups", groups},
                   {"outputs", outputs},
-                  {"frozen", frozenList}}
+                  {"frozen", frozenList},
+                  {"unwatched", unwatched}}
                      .dump(kJsonIndent) +
                  "\n");
   const auto dead = recording.groups.size() - replayedSteps.size() -
@@ -414,6 +417,7 @@ void checkRecording(const Recording &recording,
                << " folded to constants, "
                << keptCount << " kept as recorded bytes, " << dead
                << " dead\n"
-               << originsText(origins) << frozenText(frozen);
+               << originsText(origins) << frozenText(frozen)
+               << unwatchedText(unwatched);
 }
 } // namespace splice_ir

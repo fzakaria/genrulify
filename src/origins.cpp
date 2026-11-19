@@ -1,4 +1,5 @@
 #include "absl/strings/str_cat.h"
+#include "action.h"
 #include "compiler.h"
 #include "dialect.h"
 #include <filesystem>
@@ -16,6 +17,9 @@ constexpr std::string_view kPinnedReason =
     "pinned to the recording while its command runs";
 
 // The heading over the recorded files of a project.
+constexpr std::string_view kUnwatchedHeading =
+    "commands that could not be replayed and are not in the build, so no "
+    "rule checks what they do after an edit:\n";
 constexpr std::string_view kFrozenHeading =
     "recorded bytes that an edit to the project will not change:\n";
 
@@ -168,6 +172,49 @@ std::vector<FrozenFile> frozenFiles(mlir::ModuleOp module,
     }
   }
   return frozen;
+}
+
+std::vector<std::string> unwatchedCommands(mlir::ModuleOp module,
+                                           const Recording &recording,
+                                           const Verdicts &verdicts) {
+  std::vector<std::string> unwatched;
+  if (recording.source.empty()) {
+    return unwatched;
+  }
+
+  // The steps the graph still has something of.
+  std::set<uint64_t> present;
+  for (auto &op : module.getBody()->getOperations()) {
+    if (auto exec = llvm::dyn_cast<ExecOp>(op)) {
+      present.insert(exec.getStep());
+    }
+    if (auto literal = llvm::dyn_cast<LiteralOp>(op)) {
+      present.insert(literal.getStep());
+    }
+    if (auto copy = llvm::dyn_cast<CopyOp>(op)) {
+      present.insert(copy.getStep());
+    }
+  }
+  for (const auto &group : recording.groups) {
+    const auto verdict = verdicts.find(group.start);
+    if (verdict != verdicts.end() && verdict->second.rung == Rung::Literal &&
+        !present.contains(group.start)) {
+      unwatched.push_back(
+          absl::StrCat(label(group), " at step ", group.start));
+    }
+  }
+  return unwatched;
+}
+
+std::string unwatchedText(const std::vector<std::string> &unwatched) {
+  if (unwatched.empty()) {
+    return "";
+  }
+  std::string text(kUnwatchedHeading);
+  for (const auto &command : unwatched) {
+    absl::StrAppend(&text, "  ", command, "\n");
+  }
+  return text;
 }
 
 std::string frozenText(const std::vector<FrozenFile> &frozen) {
