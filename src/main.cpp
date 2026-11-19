@@ -15,6 +15,7 @@ namespace {
 constexpr std::string_view kUsage =
     "usage: genrulify convert [--coarse] [--open PROGRAMS] [--source PROJECT] INSTALLABLE DIRECTORY\n"
     "       genrulify record [--coarse] [--source PROJECT] RUN DERIVATION.drv RECORDING [OPEN]\n"
+    "       genrulify groups RECORDING\n"
     "       genrulify same-source TREE DIRECTORY\n"
     "       genrulify cuts [--coarse] [--close PID@STEP]... EVENTS.jsonl TRACE.bin [OPEN]\n"
     "       genrulify accessed STRACE-DIRECTORY\n"
@@ -184,6 +185,20 @@ void run(std::span<char *> args) {
         line["opener"] = {{"pid", cut.opener->pid}, {"step", cut.opener->step}};
       }
       llvm::outs() << line.dump() << "\n";
+    }
+    return;
+  }
+  if (args.size() == 2 && command == "groups") {
+    // One line per group: its first and last step, then the step of each
+    // process in the group. For seeing which commands a recording keeps
+    // together.
+    for (const auto &group :
+         splice_ir::regroup(splice_ir::Recording::load(args[1]))) {
+      llvm::outs() << group.start << " " << group.end;
+      for (const auto &process : group.processes) {
+        llvm::outs() << " " << process.step;
+      }
+      llvm::outs() << "\n";
     }
     return;
   }

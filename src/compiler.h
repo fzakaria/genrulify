@@ -80,6 +80,11 @@ void recordRun(const std::string &run, const std::filesystem::path &drv,
                Granularity granularity = Granularity::Fine,
                const std::optional<std::filesystem::path> &project = {});
 
+// The groups the processes of a recording fall into, worked out again
+// from each process's lifetime and descriptors. Recording a run groups
+// its commands this way. The groups come back without their reads.
+std::vector<Group> regroup(const Recording &recording);
+
 // Checks that a directory holds a source tree: every file of the tree is
 // in the directory with the same bytes, every symlink with the same
 // target, and every directory as a directory. The directory may hold

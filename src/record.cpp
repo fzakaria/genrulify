@@ -524,6 +524,25 @@ void captureBuilderPipes(const Rewind &rewind, std::vector<Group> &groups) {
 }
 } // namespace
 
+std::vector<Group> regroup(const Recording &recording) {
+  // A cut for each process, in the order the processes began, which is
+  // the order the grouping takes them in.
+  std::vector<Process> processes;
+  for (const auto &group : recording.groups) {
+    std::ranges::copy(group.processes, std::back_inserter(processes));
+  }
+  std::ranges::sort(processes, {}, &Process::step);
+  std::vector<Cut> cuts;
+  for (const auto &process : processes) {
+    Cut cut;
+    cut.pid = process.pid;
+    cut.step = process.step;
+    cut.end = process.exit;
+    cuts.push_back(std::move(cut));
+  }
+  return group(std::move(processes), cuts, recording.roots);
+}
+
 void checkSameSource(const fs::path &tree, const fs::path &directory) {
   const auto differs = [&](const fs::path &path, std::string_view how) {
     return std::runtime_error(absl::StrCat(
