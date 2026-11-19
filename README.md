@@ -243,6 +243,8 @@ src/convert.cpp    the whole pipeline as one command
 site/              the explorer
 tests/             CLI tests over a checked-in recording
 tools/validate.sh  convert, build with both systems, compare the NARs
+tools/validate-project.sh
+                   convert the example in place, edit, rebuild with both
 ```
 
 ```console
