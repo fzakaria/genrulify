@@ -1,0 +1,222 @@
+load(":genrulify.buck.bzl", "nix_archive", "recorded")
+
+recorded(
+    name = "s1465_cp",
+    srcs = [
+        "actions/s1465_cp.manifest",
+        "closure.txt",
+        "env/13.env",
+        "platform",
+        "sandbox.sh",
+    ],
+    out = "s1465_cp",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s1465_cp --timeout 1129",
+        "run --cwd /build --env 13 --argv0 cp --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 7 --",
+        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/cp -r --preserve=timestamps --reflink=auto -- /nix/store/47jdk3bjc6wrxl3n7l5b4a6kipc3jvd8-source source",
+    ],
+)
+
+recorded(
+    name = "s1603_cp",
+    srcs = [
+        "actions/s1603_cp.manifest",
+        "closure.txt",
+        "env/13.env",
+        "platform",
+        "sandbox.sh",
+    ],
+    out = "s1603_cp",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s1603_cp --timeout 1129",
+        "run --cwd /build --env 13 --argv0 cp --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 6 --",
+        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/cp -Lr --reflink=auto -- /nix/store/w4frwvv38g8frbmj29368jqii9sjl9sx-hexyl-0.17.0-vendor hexyl-0.17.0-vendor",
+    ],
+)
+
+recorded(
+    name = "s8301_cat",
+    srcs = [
+        "actions/s8301_cat.manifest",
+        "actions/s8301_cat.pipe422.data",
+        "closure.txt",
+        "env/19.env",
+        "glue_8278",
+        "platform",
+        "sandbox.sh",
+    ],
+    out = "s8301_cat",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s8301_cat --timeout 1129",
+        "run --cwd /build --env 19 --argv0 cat --fd 0=data:actions/s8301_cat.pipe422.data --fd 1=file:a:/build/.cargo/config.toml --fd 2=err --status 0 --argc 1 --",
+        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/cat",
+    ],
+)
+
+recorded(
+    name = "s8902_.cargo-wrapped",
+    srcs = [
+        "actions/s8902_.cargo-wrapped.manifest",
+        "closure.txt",
+        "env/29.env",
+        "platform",
+        "sandbox.sh",
+        ":s1465_cp",
+        ":s1603_cp",
+        ":s8301_cat",
+    ],
+    out = "s8902_.cargo-wrapped",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s8902_.cargo-wrapped --timeout 1129",
+        "run --cwd /build/source --env 29 --argv0 /nix/store/gmgfpzc0w2pgby0lmq9r88m39albiyfw-cargo-1.98.1/bin/cargo --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 9 --",
+        "/nix/store/gmgfpzc0w2pgby0lmq9r88m39albiyfw-cargo-1.98.1/bin/.cargo-wrapped build -j 1 --target x86_64-unknown-linux-gnu --offline --profile release",
+    ],
+)
+
+recorded(
+    name = "s40620_pandoc_mkdir_cat",
+    srcs = [
+        "actions/s40620_pandoc_mkdir_cat.manifest",
+        "closure.txt",
+        "env/40.env",
+        "env/43.env",
+        "env/44.env",
+        "platform",
+        "sandbox.sh",
+        ":s1465_cp",
+    ],
+    out = "s40620_pandoc_mkdir_cat",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s40620_pandoc_mkdir_cat --timeout 1129 --pipe 2010:0:1,2:0",
+        "run --cwd /build/source --env 43 --argv0 pandoc --fd 0=null --fd 1=pipe-w:2010 --fd 2=err --status 0 --argc 9 --",
+        "/nix/store/bf911zd8a7h8ps28hw800b5q1y595jgp-pandoc-cli-3.7.0.2/bin/pandoc -s -f markdown -t man -o - doc/hexyl.1.md",
+        "run --cwd /build/source --env 40 --argv0 mkdir --fd 0=null --fd 1=err --fd 2=err --fd 63=pipe-r:2010 --status 0 --argc 3 --",
+        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/mkdir -p /nix/store/przagm88ij4731554f5fa5lcly24gz85-hexyl-0.17.0/share/man/man1/",
+        "run --cwd /build/source --env 44 --argv0 cat --fd 0=null --fd 1=file:w:/nix/store/przagm88ij4731554f5fa5lcly24gz85-hexyl-0.17.0/share/man/man1/hexyl.1 --fd 2=err --fd 63=pipe-r:2010 --after 1 --status 0 --argc 2 --",
+        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/cat /dev/fd/63",
+    ],
+)
+
+recorded(
+    name = "s40806_hexyl_hexyl_hexyl_mkdir__5",
+    srcs = [
+        "actions/s40806_hexyl_hexyl_hexyl_mkdir__5.manifest",
+        "closure.txt",
+        "env/45.env",
+        "env/46.env",
+        "env/47.env",
+        "env/48.env",
+        "env/49.env",
+        "env/50.env",
+        "env/51.env",
+        "platform",
+        "sandbox.sh",
+        ":s8902_.cargo-wrapped",
+    ],
+    out = "s40806_hexyl_hexyl_hexyl_mkdir__5",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s40806_hexyl_hexyl_hexyl_mkdir__5 --timeout 1129 --pipe 2020:0:1,2,3,4,5,6,7,8:0 --pipe 2021:1:2,3,4,5,6,7,8:0 --pipe 2022:2:3,4,5,6,7,8:0",
+        "run --cwd /build/source --env 45 --fd 0=null --fd 1=pipe-w:2020 --fd 2=err --status 0 --argc 3 --",
+        "/nix/store/przagm88ij4731554f5fa5lcly24gz85-hexyl-0.17.0/bin/hexyl --completion bash",
+        "run --cwd /build/source --env 45 --fd 0=null --fd 1=pipe-w:2021 --fd 2=err --fd 63=pipe-r:2020 --after 0 --status 0 --argc 3 --",
+        "/nix/store/przagm88ij4731554f5fa5lcly24gz85-hexyl-0.17.0/bin/hexyl --completion fish",
+        "run --cwd /build/source --env 45 --fd 0=null --fd 1=pipe-w:2022 --fd 2=err --fd 62=pipe-r:2021 --fd 63=pipe-r:2020 --after 0,1 --status 0 --argc 3 --",
+        "/nix/store/przagm88ij4731554f5fa5lcly24gz85-hexyl-0.17.0/bin/hexyl --completion zsh",
+        "run --cwd /build/source --env 46 --argv0 mkdir --fd 0=null --fd 1=err --fd 2=err --fd 61=pipe-r:2022 --fd 62=pipe-r:2021 --fd 63=pipe-r:2020 --after 0,1,2 --status 0 --argc 3 --",
+        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/mkdir -p /nix/store/przagm88ij4731554f5fa5lcly24gz85-hexyl-0.17.0/share/bash-completion/completions",
+        "run --cwd /build/source --env 47 --argv0 cat --fd 0=null --fd 1=file:w:/nix/store/przagm88ij4731554f5fa5lcly24gz85-hexyl-0.17.0/share/bash-completion/completions/hexyl.bash --fd 2=err --fd 61=pipe-r:2022 --fd 62=pipe-r:2021 --fd 63=pipe-r:2020 --after 0,1,2,3 --status 0 --argc 2 --",
+        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/cat /dev/fd/63",
+        "run --cwd /build/source --env 48 --argv0 mkdir --fd 0=null --fd 1=err --fd 2=err --fd 61=pipe-r:2022 --fd 62=pipe-r:2021 --fd 63=pipe-r:2020 --after 0,1,2,3,4 --status 0 --argc 3 --",
+        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/mkdir -p /nix/store/przagm88ij4731554f5fa5lcly24gz85-hexyl-0.17.0/share/fish/vendor_completions.d",
+        "run --cwd /build/source --env 49 --argv0 cat --fd 0=null --fd 1=file:w:/nix/store/przagm88ij4731554f5fa5lcly24gz85-hexyl-0.17.0/share/fish/vendor_completions.d/hexyl.fish --fd 2=err --fd 61=pipe-r:2022 --fd 62=pipe-r:2021 --fd 63=pipe-r:2020 --after 0,1,2,3,4,5 --status 0 --argc 2 --",
+        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/cat /dev/fd/62",
+        "run --cwd /build/source --env 50 --argv0 mkdir --fd 0=null --fd 1=err --fd 2=err --fd 61=pipe-r:2022 --fd 62=pipe-r:2021 --fd 63=pipe-r:2020 --after 0,1,2,3,4,5,6 --status 0 --argc 3 --",
+        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/mkdir -p /nix/store/przagm88ij4731554f5fa5lcly24gz85-hexyl-0.17.0/share/zsh/site-functions",
+        "run --cwd /build/source --env 51 --argv0 cat --fd 0=null --fd 1=file:w:/nix/store/przagm88ij4731554f5fa5lcly24gz85-hexyl-0.17.0/share/zsh/site-functions/_hexyl --fd 2=err --fd 61=pipe-r:2022 --fd 62=pipe-r:2021 --fd 63=pipe-r:2020 --after 0,1,2,3,4,5,6,7 --status 0 --argc 2 --",
+        "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/cat /dev/fd/61",
+    ],
+)
+
+recorded(
+    name = "s41192_find_patchelf",
+    srcs = [
+        "actions/s41192_find_patchelf.manifest",
+        "closure.txt",
+        "env/53.env",
+        "env/54.env",
+        "platform",
+        "sandbox.sh",
+        ":s8902_.cargo-wrapped",
+    ],
+    out = "s41192_find_patchelf",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s41192_find_patchelf --timeout 1129 --pipe 2056:0:1:0",
+        "run --cwd /build/source --env 53 --argv0 find --fd 0=null --fd 1=pipe-w:2056 --fd 2=err --status 0 --argc 5 --",
+        "/nix/store/ycrbcy9sg4knpnik6a01dk70l0m673x7-findutils-4.11.0/bin/find /nix/store/przagm88ij4731554f5fa5lcly24gz85-hexyl-0.17.0 -type f -print0",
+        "run --cwd /build/source --env 54 --argv0 patchelf --fd 0=pipe-r:2056 --fd 1=err --fd 2=err --fd 63=pipe-r:2056 --after 0 --status 0 --argc 3 --",
+        "/nix/store/qcwnw71iksl68k7fipizi6wn0s1xms9v-patchelf-0.15.2/bin/patchelf --shrink-rpath /nix/store/przagm88ij4731554f5fa5lcly24gz85-hexyl-0.17.0/bin/hexyl",
+    ],
+)
+
+recorded(
+    name = "s41515_gzip",
+    srcs = [
+        "actions/s41515_gzip.manifest",
+        "closure.txt",
+        "env/62.env",
+        "platform",
+        "sandbox.sh",
+        ":s40620_pandoc_mkdir_cat",
+    ],
+    out = "s41515_gzip",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s41515_gzip --timeout 1129",
+        "run --cwd /build/source --env 62 --argv0 gzip --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 4 --",
+        "/nix/store/yr6ar7lsk3yfas4d464z1ysaxwcq2gc5-gzip-1.14/bin/gzip -n -f /nix/store/przagm88ij4731554f5fa5lcly24gz85-hexyl-0.17.0/share/man/man1/hexyl.1",
+    ],
+)
+
+recorded(
+    name = "s41755_strip",
+    srcs = [
+        "actions/s41755_strip.manifest",
+        "closure.txt",
+        "const_41649_mktemp",
+        "env/65.env",
+        "platform",
+        "sandbox.sh",
+        ":s41192_find_patchelf",
+    ],
+    out = "s41755_strip",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s41755_strip --timeout 1129",
+        "run --cwd /build/source --env 65 --fd 0=null --fd 1=err --fd 2=file:w:/build/striperr.ZuB8oN --status 0 --argc 5 --",
+        "/nix/store/y5sgl0vvrpbcwgjwpjs60r1hg0gi7i0n-binutils-2.46/bin/strip --enable-deterministic-archives -S -p /nix/store/przagm88ij4731554f5fa5lcly24gz85-hexyl-0.17.0/bin/hexyl",
+    ],
+)
+
+nix_archive(
+    name = "archive",
+    srcs = [
+        "actions/archive.manifest",
+        "sandbox.sh",
+        ":s40806_hexyl_hexyl_hexyl_mkdir__5",
+        ":s41515_gzip",
+        ":s41755_strip",
+    ],
+    out = "archive.nar",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name archive pack /nix/store/przagm88ij4731554f5fa5lcly24gz85-hexyl-0.17.0",
+    ],
+)
+

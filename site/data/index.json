@@ -20,6 +20,16 @@
     "note": "GNU bash 5.3: autotools, 11,847 execve calls, six outputs, 366 rules"
   },
   {
+    "id": "sqlite",
+    "label": "sqlite",
+    "note": "SQLite 3.53.3 with its test phase off: one 9 MB C file, six outputs"
+  },
+  {
+    "id": "hexyl",
+    "label": "hexyl (Rust)",
+    "note": "hexyl 0.17.0: a Rust crate. cargo writes files of its own, so the whole cargo build is one rule"
+  },
+  {
     "id": "ninja",
     "label": "ninja",
     "note": "ninja 1.13.2: bootstrapped by a Python script, then built by itself"

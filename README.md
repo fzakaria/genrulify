@@ -132,6 +132,7 @@ gives the proof.
 | `cowsay-3.8.4` | Makefile, Perl | 147 | 94 | 4 | 5 | 9 | 0 | 6 |
 | `hello-go` | `go build` | 192 | 55 | 3 | 2 | 2 | 0 | 4 |
 | `python3.14-six-1.17.0` | `pyproject-build` | 137 | 107 | 3 | 2 | 2 | 0 | 5 |
+| `hexyl-0.17.0` | Rust, `cargo` | 612 | 82 | 9 | 4 | 3 | 0 | 10 |
 | `ninja-1.13.2` | Python bootstrap, Ninja | 493 | 81 | 9 | 4 | 4 | 0 | 10 |
 | `tinyxml2-11.0.0` | CMake | 275 | 81 | 6 | 2 | 3 | 0 | 7 |
 | `jsoncpp-1.9.8` | CMake | 602 | 137 | 8 | 4 | 6 | 0 | 10 |
@@ -144,6 +145,7 @@ gives the proof.
 | `gawk-5.4.1` | autotools | 6,857 | 1,260 | 145 | 96 | 36 | 0 | 148 |
 | `gnused-4.10` | autotools | 8,848 | 645 | 152 | 84 | 65 | 0 | 154 |
 | `bash-interactive-5.3p15` | autotools, 6 outputs | 11,847 | 1,450 | 360 | 161 | 138 | 0 | 366 |
+| `sqlite-3.53.3`, tests off | `configure`, 6 outputs | 1,121 | 255 | 42 | 15 | 20 | 0 | 48 |
 | `hello-2.12.3`, coarse cuts | autotools | 4,605 | 70 | 9 | 1 | 2 | 0 | 10 |
 | `hello-2.12.3`, 4 jobs | autotools | 4,605 | 125 | 9 | 1 | 2 | 0 | 10 |
 
