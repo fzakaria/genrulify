@@ -1,8 +1,10 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_join.h"
 #include "absl/strings/str_replace.h"
+#include "absl/strings/str_split.h"
 #include "action.h"
 #include "compiler.h"
+#include "llvm/Support/raw_ostream.h"
 #include "rules.h"
 #include "rules_text.h"
 #include <algorithm>
@@ -67,11 +69,15 @@ constexpr std::string_view kStagingDirectory = ".genrulify.staging";
 constexpr std::string_view kOwnershipFile = "GENERATED";
 
 // Where the last support directory is kept while the new one is put in
-// place, and the names the new build files have in the staging directory
-// until then.
+// place.
 constexpr std::string_view kPreviousDirectory = ".genrulify.previous";
-constexpr std::string_view kStagedBazelFile = "build-file.bazel";
-constexpr std::string_view kStagedBuckFile = "build-file.buck";
+
+// The files of the support directory that hold a project's rules, one
+// for each build system, and the function in each that makes them. A
+// build file loads the function and calls it.
+constexpr std::string_view kBazelTargetsFile = "targets.bzl";
+constexpr std::string_view kBuckTargetsFile = "targets.buck.bzl";
+constexpr std::string_view kTargetsFunction = "genrulify_targets";
 
 // The first line of a file genrulify wrote into a project. Converting
 // again replaces a file that starts with these words and no other.
@@ -545,11 +551,23 @@ std::string buildFile(Backend backend, const std::vector<Rule> &rules,
     loaded.push_back(quote(macro));
   }
 
-  // A file written into a project says who wrote it.
-  std::string text(layout.project ? kGeneratedLine : "");
-  absl::StrAppend(&text, "load(", absl::StrJoin(loaded, ", "), ")\n\n");
+  // A recorded build's rules are the build file.
+  const auto load = absl::StrCat("load(", absl::StrJoin(loaded, ", "), ")\n\n");
+  std::string body;
   for (const auto &rule : rules) {
-    text += renderRule(backend, rule, layout);
+    body += renderRule(backend, rule, layout);
+  }
+  if (!layout.project) {
+    return load + body;
+  }
+
+  // A project's rules are the body of a function, so that the build file
+  // that calls the function can be anybody's. A file written into a
+  // project says who wrote it.
+  std::string text = absl::StrCat(kGeneratedLine, load, "def ",
+                                  kTargetsFunction, "():\n");
+  for (const std::string_view line : absl::StrSplit(body, '\n')) {
+    absl::StrAppend(&text, line.empty() ? "" : kAttributeIndent, line, "\n");
   }
   return text;
 }
@@ -560,6 +578,39 @@ bool replaceable(const fs::path &file) {
     return true;
   }
   return readBytes(file).starts_with(kGeneratedMark);
+}
+
+// The label a build file loads a project's rules from.
+std::string targetsLabel(Backend backend) {
+  if (backend == Backend::Bazel) {
+    return absl::StrCat(":", kSupportDirectory, "/", kBazelTargetsFile);
+  }
+  return absl::StrCat("//", kSupportDirectory, ":", kBuckTargetsFile);
+}
+
+// The two lines by which a build file makes a project's rules.
+std::string loadLine(Backend backend) {
+  return absl::StrCat("load(", quote(targetsLabel(backend)), ", ",
+                      quote(kTargetsFunction), ")");
+}
+std::string callLine() { return absl::StrCat(kTargetsFunction, "()"); }
+
+// Gives a project a build file that makes its rules, unless the project
+// has one somebody else wrote. That file is left as it is, and when it
+// does not load the rules the two lines that would are printed.
+void writeLoader(Backend backend, const fs::path &file) {
+  if (replaceable(file)) {
+    writeBytes(file, absl::StrCat(kGeneratedLine, loadLine(backend), "\n\n",
+                                  callLine(), "\n"));
+    return;
+  }
+  if (readBytes(file).find(loadLine(backend)) != std::string::npos) {
+    return;
+  }
+  llvm::errs() << file.string()
+               << " is not genrulify's and was left as it is. To build the "
+                  "converted targets from it, add:\n  "
+               << loadLine(backend) << "\n  " << callLine() << "\n";
 }
 
 // The process groups a recording's report lists without a replay, or none
@@ -592,12 +643,6 @@ void writeArtifact(const Recording &recording, const Entry &entry,
 
 void checkProjectDirectory(const fs::path &project) {
   check(fs::is_directory(project), project.string() + " is not a directory");
-  for (const auto file : {kBazelBuildFile, kBuckBuildFile}) {
-    check(replaceable(project / file),
-          absl::StrCat((project / file).string(),
-                       " was not written by genrulify: move it away, or "
-                       "convert a copy of the project"));
-  }
 
   // The support directory is replaced, and so is what an interrupted
   // conversion left behind. A directory of either name without the mark
@@ -635,6 +680,11 @@ void emitWorkspace(mlir::ModuleOp module, const Recording &recording,
   try {
     if (layout.project) {
       writeBytes(support / kOwnershipFile, std::string(kGeneratedLine));
+
+      // The files of rules are there from the start, so that a source of
+      // the project with either name is noticed like any other clash.
+      writeBytes(support / kBazelTargetsFile, "");
+      writeBytes(support / kBuckTargetsFile, "");
     }
     writeSharedFiles(recording, support);
 
@@ -843,18 +893,17 @@ void emitWorkspace(mlir::ModuleOp module, const Recording &recording,
     writeBytes(support / kBuckRulesFile, kBuckRules);
 
     // A recorded build's directory is new, so its build files are
-    // written where they belong. A project's are staged with the rest,
-    // and the conversion is then put in place by renames alone: the last
-    // support directory moves aside, the new one and the two build files
-    // move in, and the last one is removed. No byte is written while the
-    // project holds files of two conversions, so nothing in that stretch
-    // can fail for want of space, and it lasts four renames.
+    // written where they belong. A project's rules are files of the
+    // support directory, and the conversion is put in place by renames
+    // alone: the last support directory moves aside, the new one moves
+    // in, and the last one is removed. The project's build files only
+    // load the rules, and say the same after every conversion.
     if (!layout.project) {
       writeBytes(destination / kBazelBuildFile, bazelFile);
       writeBytes(destination / kBuckBuildFile, buckFile);
     } else {
-      writeBytes(support / kStagedBazelFile, bazelFile);
-      writeBytes(support / kStagedBuckFile, buckFile);
+      writeBytes(support / kBazelTargetsFile, bazelFile);
+      writeBytes(support / kBuckTargetsFile, buckFile);
       const auto final = destination / kSupportDirectory;
       const auto previous = destination / kPreviousDirectory;
       removeTree(previous);
@@ -862,9 +911,9 @@ void emitWorkspace(mlir::ModuleOp module, const Recording &recording,
         fs::rename(final, previous);
       }
       fs::rename(support, final);
-      fs::rename(final / kStagedBazelFile, destination / kBazelBuildFile);
-      fs::rename(final / kStagedBuckFile, destination / kBuckBuildFile);
       removeTree(previous);
+      writeLoader(Backend::Bazel, destination / kBazelBuildFile);
+      writeLoader(Backend::Buck2, destination / kBuckBuildFile);
     }
 
     // What makes the directory a workspace. A project that already is one

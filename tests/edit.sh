@@ -1,6 +1,6 @@
 # A project is converted so that it can be built again after an edit. The
 # test converts the example as a project whose first dd reads a source
-# file, runs the rules of the generated BUILD.bazel one after another the
+# file, runs the generated rules one after another the
 # way a build system would, edits the source and runs them again. The
 # archive has to follow the edit. Neither Rewind nor Bazel is needed: a
 # rule is one command line, and the rules are written in dependency order.
@@ -47,19 +47,19 @@ if ! genrulify/sandbox.sh --name probe --in genrulify --in "$scratch/probe" --ou
     exit 0
 fi
 
-# Runs every rule of BUILD.bazel in the order the rules are written, with
+# Runs every rule of genrulify/targets.bzl in the order the rules are written, with
 # the directory $1 for all their outputs. A rule's command is the lines of
 # its `cmd`, joined.
 build() {
     awk '
-        /^    cmd = \[$/ { collecting = 1; command = ""; next }
-        collecting && /^    \],$/ { print command; collecting = 0; next }
+        /^ *cmd = \[$/ { collecting = 1; command = ""; next }
+        collecting && /^ *\],$/ { print command; collecting = 0; next }
         collecting {
             sub(/^ *"/, ""); sub(/",$/, "")
             gsub(/\\"/, "\""); gsub(/\\\\/, "\\")
             command = command " " $0
         }
-    ' BUILD.bazel > "$scratch/commands"
+    ' genrulify/targets.bzl > "$scratch/commands"
     while IFS= read -r command; do
         command=${command//'$(RULEDIR)'/$1}
         bash -c "$command"
