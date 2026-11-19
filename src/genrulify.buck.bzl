@@ -129,14 +129,30 @@ def rust_proc_macro(name, srcs = [], deps = [], outs = [], data = [], cmd = []):
 def _named_impl(ctx):
     """Stands for one file of another rule, and runs it when it is a program."""
     providers = [DefaultInfo(default_output = ctx.attrs.file)]
-    if ctx.attrs.runs:
-        providers.append(RunInfo(args = cmd_args(ctx.attrs.file)))
-    return providers
+    if not ctx.attrs.runs:
+        return providers
+    if not ctx.attrs.libs:
+        return providers + [RunInfo(args = cmd_args(ctx.attrs.file))]
+
+    # Each library is linked into one directory under the name the link
+    # knew it by, which is the name the loader asks for, and the program
+    # is started with that directory as LD_LIBRARY_PATH.
+    libraries = ctx.actions.symlinked_dir(
+        ctx.label.name + ".libs",
+        dict(zip(ctx.attrs.lib_names, ctx.attrs.libs)),
+    )
+    return providers + [RunInfo(args = cmd_args(
+        "/usr/bin/env",
+        cmd_args(libraries, format = "LD_LIBRARY_PATH={}"),
+        ctx.attrs.file,
+    ))]
 
 _named = rule(
     impl = _named_impl,
     attrs = {
         "file": attrs.source(),
+        "lib_names": attrs.list(attrs.string(), default = []),
+        "libs": attrs.list(attrs.source(), default = []),
         "runs": attrs.bool(default = False),
     },
 )
@@ -145,13 +161,17 @@ def built_file(name, file):
     """Names a file a rule wrote after the file's place in the build tree."""
     _named(name = name, file = file)
 
-def program(name, file):
+def program(name, file, libs = [], lib_names = []):
     """Names a program a rule linked, for `buck2 run`.
 
-    The program is the recorded build's: it finds its libraries in the
-    Nix store the recording used.
+    The program is the recorded build's: it finds the libraries of other
+    packages in the Nix store the recording used. A shared library its own
+    project built is a file of another rule, so the target is given those,
+    `libs`, with the name the loader asks for each by, `lib_names`. A
+    library the program asks for under a third name, such as a versioned
+    soname the link never read, is not found this way.
     """
-    _named(name = name, file = file, runs = True)
+    _named(name = name, file = file, libs = libs, lib_names = lib_names, runs = True)
 
 def nix_archive(name, srcs, out, cmd):
     """Packs one derivation output as a NAR, the form Nix hashes."""

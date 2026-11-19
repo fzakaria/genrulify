@@ -78,22 +78,55 @@ def built_file(name, file):
     """Names a file a rule wrote after the file's place in the build tree."""
     native.alias(name = name, actual = file)
 
+# The script a program is started through. It puts the directory of the
+# program's shared libraries ahead of the loader's other places and then
+# becomes the program. The files are in the script's runfiles.
+_LAUNCHER = """#!/bin/sh
+root=${{RUNFILES_DIR:-$0.runfiles}}/{workspace}
+LD_LIBRARY_PATH="$root/{libraries}${{LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}}" exec "$root/{program}" "$@"
+"""
+
 def _program_impl(ctx):
-    """Links the program under the rule's name, for `bazel run`."""
-    program = ctx.actions.declare_file(ctx.label.name)
-    ctx.actions.symlink(
-        output = program,
-        target_file = ctx.file.file,
+    """Starts the program with its project's shared libraries, for `bazel run`."""
+    launcher = ctx.actions.declare_file(ctx.label.name)
+
+    # Each library is linked into one directory under the name the link
+    # knew it by, which is the name the loader asks for.
+    libraries = ctx.label.name + ".libs"
+    symlinks = {
+        libraries + "/" + name: library
+        for name, library in zip(ctx.attr.lib_names, ctx.files.libs)
+    }
+    ctx.actions.write(
+        output = launcher,
+        content = _LAUNCHER.format(
+            workspace = ctx.workspace_name,
+            libraries = libraries,
+            program = ctx.file.file.short_path,
+        ),
         is_executable = True,
     )
-    return [DefaultInfo(files = depset([program]), executable = program)]
+    return [DefaultInfo(
+        files = depset([launcher]),
+        executable = launcher,
+        runfiles = ctx.runfiles(files = [ctx.file.file], symlinks = symlinks),
+    )]
 
 # Names a program a rule linked after the program's place in the build
-# tree. The program is the recorded build's: it finds its libraries in the
-# Nix store the recording used.
+# tree, and runs it. The program is the recorded build's: it finds the
+# libraries of other packages in the Nix store the recording used. A
+# shared library its own project built is a file of another rule, so the
+# target is given those, `libs`, with the name the loader asks for each
+# by, `lib_names`, and puts them on the loader's path. A library the
+# program asks for under a third name, such as a versioned soname the
+# link never read, is not found this way.
 program = rule(
     implementation = _program_impl,
-    attrs = {"file": attr.label(allow_single_file = True, mandatory = True)},
+    attrs = {
+        "file": attr.label(allow_single_file = True, mandatory = True),
+        "lib_names": attr.string_list(),
+        "libs": attr.label_list(allow_files = True),
+    },
     executable = True,
 )
 

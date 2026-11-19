@@ -146,6 +146,29 @@ rule BUCK bundle.c | grep -q '^program($'
 test "$(grep -c 'name = "bundle.c"' BUILD.bazel)" = 1
 grep -q '^program = rule($' genrulify.bzl
 grep -q 'RunInfo' genrulify.buck.bzl
+if rule BUILD.bazel bundle.c | grep -q 'libs'; then
+    exit 1
+fi
+
+# A program can load a shared library its own project built, and finds
+# the library beside itself where the build left both. In a build
+# system's tree the two are files of different rules in different
+# places. So the program's target is told the shared libraries the link
+# was given, each with the name the link knew it by, and puts them where
+# the loader looks when the program is run. Here the link reads a file
+# called libbundle.so that the first dd wrote.
+cp -r "$scratch/recording" "$scratch/shared"
+sed -i 's|/build/bundle\.c|/build/libbundle.so|g' "$scratch/shared/recording.json" "$scratch/shared"/states/*.json
+"$compiler" import "$scratch/shared" > "$scratch/shared.mlir"
+"$compiler" opt --recording "$scratch/shared" "$scratch/shared.mlir" > "$scratch/shared.opt.mlir"
+"$compiler" emit "$scratch/shared" "$scratch/shared.opt.mlir" "$scratch/shared-workspace"
+cd "$scratch/shared-workspace"
+rule BUILD.bazel libbundle.so | grep -q '^program($'
+rule BUILD.bazel libbundle.so | grep -A 2 'libs = \[' | grep -q '":s735_dd/build/libbundle.so",'
+rule BUILD.bazel libbundle.so | grep -A 2 'lib_names = \[' | grep -q '"libbundle.so",'
+rule BUCK libbundle.so | grep -A 2 'libs = \[' | grep -q '":s735_dd\[build/libbundle.so\]",'
+grep -q 'LD_LIBRARY_PATH' genrulify.bzl
+grep -q 'LD_LIBRARY_PATH' genrulify.buck.bzl
 cd "$scratch/workspace"
 
 # A rule in the shipped files runs the recorded command and nothing else,

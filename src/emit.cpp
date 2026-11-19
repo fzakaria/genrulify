@@ -154,6 +154,15 @@ struct Input {
   auto operator<=>(const Input &) const = default;
 };
 
+// A shared library a link was given: the name the link knew the library
+// by, which can be the name of a symlink to it, the file that holds the
+// library, and whether another rule wrote that file.
+struct Library {
+  std::string name;
+  Input file;
+  bool generated = false;
+};
+
 // One rule: the files it reads, the files it writes, and the recorded
 // command lines that turn one into the other.
 struct Rule {
@@ -185,6 +194,11 @@ struct Rule {
   // empty.
   std::string writes;
   std::string fileName;
+
+  // The shared libraries of the workspace the command was given. A
+  // program that is run from the build tree needs them where the loader
+  // looks.
+  std::vector<Library> libraries;
 
   std::vector<Arguments> arguments;
 };
@@ -462,15 +476,36 @@ std::string renderRule(Backend backend, const Rule &rule,
   text += ")\n\n";
 
   // The file a typed rule wrote, under a name of its own.
-  if (!rule.fileName.empty()) {
-    absl::StrAppend(
-        &text, fileRuleOf(macro), "(\n", kAttributeIndent,
-        attribute("name", quote(rule.fileName)), ",\n", kAttributeIndent,
-        attribute("file", quote(outputLabel(backend, rule.name,
-                                            rule.outputs.front()))),
-        ",\n)\n\n");
+  if (rule.fileName.empty()) {
+    return text;
   }
-  return text;
+  const auto fileRule = fileRuleOf(macro);
+  absl::StrAppend(&text, fileRule, "(\n", kAttributeIndent,
+                  attribute("name", quote(rule.fileName)), ",\n",
+                  kAttributeIndent,
+                  attribute("file", quote(outputLabel(backend, rule.name,
+                                                      rule.outputs.front()))),
+                  ",\n");
+
+  // A program is told the shared libraries its link was given, and the
+  // name the loader will ask for each by.
+  if (fileRule == kProgramRule && !rule.libraries.empty()) {
+    Arguments labels;
+    Arguments names;
+    for (const auto &library : rule.libraries) {
+      const auto &file = library.file;
+      labels.push_back(library.generated
+                           ? outputLabel(backend, file.target, file.artifact)
+                           : backend == Backend::Bazel
+                                 ? absl::StrCat(":", file.artifact)
+                                 : file.artifact);
+      names.push_back(library.name);
+    }
+    absl::StrAppend(&text, kAttributeIndent, attribute("libs", list(labels)),
+                    ",\n", kAttributeIndent,
+                    attribute("lib_names", list(names)), ",\n");
+  }
+  return text + ")\n\n";
 }
 
 // Gives the file each typed rule writes a name of its own: the file's
@@ -888,6 +923,37 @@ void emitWorkspace(mlir::ModuleOp module, const Recording &recording,
           }
         }
         addOperands(rule, exec.getInputs());
+
+        // The shared libraries among the files the command was given,
+        // under each name the command could have known one by: the
+        // file's own, and that of a symlink to the file.
+        std::map<std::string, Library> files;
+        for (const auto &input : rule.generated) {
+          files[input.path] = {"", input, true};
+        }
+        for (const auto &input : rule.recorded) {
+          if (input.target != kPlatformTarget) {
+            files.emplace(input.path, Library{"", input, false});
+          }
+        }
+        for (const auto &given : action.inputs) {
+          const auto &entry = given.entry;
+          if (!isSharedLibrary(entry.path) ||
+              entry.kind == EntryKind::Directory) {
+            continue;
+          }
+          const fs::path path(entry.path);
+          const auto held =
+              entry.kind == EntryKind::Symlink
+                  ? (path.parent_path() / entry.content).lexically_normal()
+                  : path;
+          if (const auto file = files.find(held.string());
+              file != files.end()) {
+            auto library = file->second;
+            library.name = path.filename().string();
+            rule.libraries.push_back(std::move(library));
+          }
+        }
         for (const auto &result : action.results) {
           if (!result.artifact.empty()) {
             rule.outputs.push_back(result.artifact);
