@@ -88,6 +88,33 @@ fi
 grep -q 'BUILD.bazel was not written by genrulify' "$scratch/error"
 grep -q 'mine' BUILD.bazel
 
+# genrulify keeps its own files in the project's genrulify/ directory and
+# replaces that directory on every conversion. A directory of that name
+# that genrulify did not write is somebody's work and is left alone.
+rm BUILD.bazel
+mkdir "$scratch/taken" "$scratch/taken/genrulify"
+printf 'header\n' > "$scratch/taken/header.txt"
+printf 'mine\n' > "$scratch/taken/genrulify/notes.txt"
+if "$compiler" emit "$scratch/recording" "$scratch/opt.mlir" "$scratch/taken" 2> "$scratch/error"; then
+    exit 1
+fi
+grep -q 'genrulify was not written by genrulify' "$scratch/error"
+test "$(cat "$scratch/taken/genrulify/notes.txt")" = mine
+
+# A rule finds a file by name, among genrulify's files first. A source
+# file with the name of one of those, such as closure.txt, would be read
+# as genrulify's file, so the conversion is refused and names the file.
+cp -r "$scratch/recording" "$scratch/clash"
+sed -i 's|/header.txt|/closure.txt|' "$scratch/clash/recording.json" "$scratch/clash/states/source.json"
+"$compiler" import "$scratch/clash" > "$scratch/clash.mlir"
+"$compiler" opt "$scratch/clash.mlir" > "$scratch/clash.opt.mlir"
+mkdir "$scratch/clashing"
+printf 'header\n' > "$scratch/clashing/closure.txt"
+if "$compiler" emit "$scratch/clash" "$scratch/clash.opt.mlir" "$scratch/clashing" 2> "$scratch/error"; then
+    exit 1
+fi
+grep -q "the project's closure.txt has the name of a file genrulify keeps" "$scratch/error"
+
 # A directory holds a source tree when every file of the tree is in the
 # directory with the same bytes. The directory may hold more. A file that
 # differs or is missing is named.

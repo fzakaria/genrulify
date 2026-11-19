@@ -506,6 +506,15 @@ void checkProjectDirectory(const fs::path &project) {
                        " was not written by genrulify: move it away, or "
                        "convert a copy of the project"));
   }
+
+  // The support directory is removed and written again. A directory of
+  // that name without the file every conversion of a project leaves in
+  // the support directory is the project's own.
+  const auto support = project / kSupportDirectory;
+  check(!fs::exists(support) || fs::exists(support / kSourceFile),
+        absl::StrCat(support.string(),
+                     " was not written by genrulify: move it away, or "
+                     "convert a copy of the project"));
 }
 
 void emitWorkspace(mlir::ModuleOp module, const Recording &recording,
@@ -570,7 +579,18 @@ void emitWorkspace(mlir::ModuleOp module, const Recording &recording,
       if (isSource(original)) {
         check(path.size() > recording.source.size(),
               "a source that is one file cannot be converted in place");
-        return path.substr(recording.source.size() + 1);
+        const auto relative = path.substr(recording.source.size() + 1);
+
+        // The sandbox script looks for a file by name in the support
+        // directory before the project, so a source file with the name of
+        // a support file would be read as the support file.
+        check(!fs::exists(support / relative),
+              absl::StrCat("the project's ", relative,
+                           " has the name of a file genrulify keeps under ",
+                           kSupportDirectory,
+                           "/, and a rule could not tell the two apart: "
+                           "rename the file"));
+        return relative;
       }
       return artifactName(targetName(original.getDefiningOp(), outputCount),
                           path);
