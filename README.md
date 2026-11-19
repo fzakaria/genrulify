@@ -133,6 +133,7 @@ gives the proof.
 | `hello-go` | `go build` | 192 | 55 | 3 | 2 | 2 | 0 | 4 |
 | `python3.14-six-1.17.0` | `pyproject-build` | 137 | 107 | 3 | 2 | 2 | 0 | 5 |
 | `hexyl-0.17.0` | Rust, `cargo` | 612 | 82 | 9 | 4 | 3 | 0 | 10 |
+| `hexyl-0.17.0`, `--open cargo` | Rust, `cargo` | 612 | 164 | 42 | 4 | 3 | 0 | 43 |
 | `ninja-1.13.2` | Python bootstrap, Ninja | 493 | 81 | 9 | 4 | 4 | 0 | 10 |
 | `inih-62`, `--open ninja` | Meson, Ninja | 472 | 121 | 10 | 3 | 4 | 0 | 12 |
 | `tinyxml2-11.0.0` | CMake | 275 | 81 | 6 | 2 | 3 | 0 | 7 |

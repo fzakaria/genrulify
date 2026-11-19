@@ -1,4 +1,4 @@
-load(":genrulify.buck.bzl", "nix_archive", "recorded")
+load(":genrulify.buck.bzl", "nix_archive", "recorded", "rust_library", "rust_proc_macro")
 
 recorded(
     name = "s1465_cp",
@@ -12,7 +12,7 @@ recorded(
     out = "s1465_cp",
     cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name s1465_cp --timeout 1129",
+        "--name s1465_cp --timeout 1023",
         "run --cwd /build --env 13 --argv0 cp --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 7 --",
         "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/cp -r --preserve=timestamps --reflink=auto -- /nix/store/47jdk3bjc6wrxl3n7l5b4a6kipc3jvd8-source source",
     ],
@@ -30,7 +30,7 @@ recorded(
     out = "s1603_cp",
     cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name s1603_cp --timeout 1129",
+        "--name s1603_cp --timeout 1023",
         "run --cwd /build --env 13 --argv0 cp --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 6 --",
         "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/cp -Lr --reflink=auto -- /nix/store/w4frwvv38g8frbmj29368jqii9sjl9sx-hexyl-0.17.0-vendor hexyl-0.17.0-vendor",
     ],
@@ -50,30 +50,786 @@ recorded(
     out = "s8301_cat",
     cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name s8301_cat --timeout 1129",
+        "--name s8301_cat --timeout 1023",
         "run --cwd /build --env 19 --argv0 cat --fd 0=data:actions/s8301_cat.pipe422.data --fd 1=file:a:/build/.cargo/config.toml --fd 2=err --status 0 --argc 1 --",
         "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/cat",
     ],
 )
 
-recorded(
-    name = "s8902_.cargo-wrapped",
+rust_library(
+    name = "s10582_rustc",
     srcs = [
-        "actions/s8902_.cargo-wrapped.manifest",
+        "actions/s10582_rustc.manifest",
         "closure.txt",
-        "env/29.env",
+        "env/32.env",
         "platform",
         "sandbox.sh",
-        ":s1465_cp",
         ":s1603_cp",
-        ":s8301_cat",
     ],
-    out = "s8902_.cargo-wrapped",
+    out = "s10582_rustc",
     cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name s8902_.cargo-wrapped --timeout 1129",
-        "run --cwd /build/source --env 29 --argv0 /nix/store/gmgfpzc0w2pgby0lmq9r88m39albiyfw-cargo-1.98.1/bin/cargo --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 9 --",
-        "/nix/store/gmgfpzc0w2pgby0lmq9r88m39albiyfw-cargo-1.98.1/bin/.cargo-wrapped build -j 1 --target x86_64-unknown-linux-gnu --offline --profile release",
+        "--name s10582_rustc --timeout 1023 --pipe 495:0:0:0",
+        "run --cwd /build/hexyl-0.17.0-vendor/source-registry-0/unicode-ident-1.0.13 --env 32 --fd 0=null --fd 1=null --fd 2=null --fd 3=pipe-r:495 --fd 4=pipe-w:495 --status 0 --argc 30 --",
+        "/nix/store/53lvgpxsb3b9ghkgb4v0jra6zzlnyw8n-rustc-1.98.1/bin/rustc --crate-name unicode_ident --edition=2018 /build/hexyl-0.17.0-vendor/source-registry-0/unicode-ident-1.0.13/src/lib.rs --error-format=json --json=diagnostic-rendered-ansi,artifacts,future-incompat --crate-type lib --emit=dep-info,metadata,link -C embed-bitcode=no -C debug-assertions=off --check-cfg 'cfg(docsrs,test)' --check-cfg 'cfg(feature, values())' -C metadata=11ceacd038212522 -C extra-filename=-14c948833659d03d --out-dir /build/source/target/release/deps -C linker=/nix/store/j1938gsbvbhkyz4kbmvjk56r479mkw3s-gcc-wrapper-16.2.0/bin/cc -L dependency=/build/source/target/release/deps --cap-lints allow",
+    ],
+)
+
+rust_library(
+    name = "s10786_rustc",
+    srcs = [
+        "actions/s10786_rustc.manifest",
+        "closure.txt",
+        "env/33.env",
+        "platform",
+        "sandbox.sh",
+        ":s10582_rustc",
+        ":s1603_cp",
+    ],
+    out = "s10786_rustc",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s10786_rustc --timeout 1023 --pipe 495:0:0:0",
+        "run --cwd /build/hexyl-0.17.0-vendor/source-registry-0/proc-macro2-1.0.89 --env 33 --fd 0=null --fd 1=null --fd 2=null --fd 3=pipe-r:495 --fd 4=pipe-w:495 --status 0 --argc 64 --",
+        "/nix/store/53lvgpxsb3b9ghkgb4v0jra6zzlnyw8n-rustc-1.98.1/bin/rustc --crate-name proc_macro2 --edition=2021 /build/hexyl-0.17.0-vendor/source-registry-0/proc-macro2-1.0.89/src/lib.rs --error-format=json --json=diagnostic-rendered-ansi,artifacts,future-incompat --crate-type lib --emit=dep-info,metadata,link -C embed-bitcode=no -C debug-assertions=off --cfg 'feature=\"default\"' --cfg 'feature=\"proc-macro\"' --check-cfg 'cfg(docsrs,test)' --check-cfg 'cfg(feature, values(\"default\", \"nightly\", \"proc-macro\", \"span-locations\"))' -C metadata=59ab6cea005c2918 -C extra-filename=-fd9102a5f52e6f33 --out-dir /build/source/target/release/deps -C linker=/nix/store/j1938gsbvbhkyz4kbmvjk56r479mkw3s-gcc-wrapper-16.2.0/bin/cc -L dependency=/build/source/target/release/deps --extern unicode_ident=/build/source/target/release/deps/libunicode_ident-14c948833659d03d.rmeta --cap-lints allow --cfg wrap_proc_macro --check-cfg 'cfg(fuzzing)' --check-cfg 'cfg(no_is_available)' --check-cfg 'cfg(no_literal_byte_character)' --check-cfg 'cfg(no_literal_c_string)' --check-cfg 'cfg(no_source_text)' --check-cfg 'cfg(proc_macro_span)' --check-cfg 'cfg(procmacro2_backtrace)' --check-cfg 'cfg(procmacro2_nightly_testing)' --check-cfg 'cfg(procmacro2_semver_exempt)' --check-cfg 'cfg(randomize_layout)' --check-cfg 'cfg(span_locations)' --check-cfg 'cfg(super_unstable)' --check-cfg 'cfg(wrap_proc_macro)'",
+    ],
+)
+
+rust_library(
+    name = "s11170_rustc",
+    srcs = [
+        "actions/s11170_rustc.manifest",
+        "closure.txt",
+        "env/34.env",
+        "platform",
+        "sandbox.sh",
+        ":s10582_rustc",
+        ":s10786_rustc",
+        ":s1603_cp",
+    ],
+    out = "s11170_rustc",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s11170_rustc --timeout 1023 --pipe 495:0:0:0",
+        "run --cwd /build/hexyl-0.17.0-vendor/source-registry-0/quote-1.0.37 --env 34 --fd 0=null --fd 1=null --fd 2=null --fd 3=pipe-r:495 --fd 4=pipe-w:495 --status 0 --argc 36 --",
+        "/nix/store/53lvgpxsb3b9ghkgb4v0jra6zzlnyw8n-rustc-1.98.1/bin/rustc --crate-name quote --edition=2018 /build/hexyl-0.17.0-vendor/source-registry-0/quote-1.0.37/src/lib.rs --error-format=json --json=diagnostic-rendered-ansi,artifacts,future-incompat --crate-type lib --emit=dep-info,metadata,link -C embed-bitcode=no -C debug-assertions=off --cfg 'feature=\"default\"' --cfg 'feature=\"proc-macro\"' --check-cfg 'cfg(docsrs,test)' --check-cfg 'cfg(feature, values(\"default\", \"proc-macro\"))' -C metadata=562e06b0dbcbe2ea -C extra-filename=-5732b170a93f1db9 --out-dir /build/source/target/release/deps -C linker=/nix/store/j1938gsbvbhkyz4kbmvjk56r479mkw3s-gcc-wrapper-16.2.0/bin/cc -L dependency=/build/source/target/release/deps --extern proc_macro2=/build/source/target/release/deps/libproc_macro2-fd9102a5f52e6f33.rmeta --cap-lints allow",
+    ],
+)
+
+rust_library(
+    name = "s12155_rustc",
+    srcs = [
+        "actions/s12155_rustc.manifest",
+        "closure.txt",
+        "env/37.env",
+        "platform",
+        "sandbox.sh",
+        ":s10582_rustc",
+        ":s10786_rustc",
+        ":s11170_rustc",
+        ":s1603_cp",
+    ],
+    out = "s12155_rustc",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s12155_rustc --timeout 1023 --pipe 495:0:0:0",
+        "run --cwd /build/hexyl-0.17.0-vendor/source-registry-0/syn-2.0.85 --env 37 --fd 0=null --fd 1=null --fd 2=null --fd 3=pipe-r:495 --fd 4=pipe-w:495 --status 0 --argc 50 --",
+        "/nix/store/53lvgpxsb3b9ghkgb4v0jra6zzlnyw8n-rustc-1.98.1/bin/rustc --crate-name syn --edition=2021 /build/hexyl-0.17.0-vendor/source-registry-0/syn-2.0.85/src/lib.rs --error-format=json --json=diagnostic-rendered-ansi,artifacts,future-incompat --crate-type lib --emit=dep-info,metadata,link -C embed-bitcode=no -C debug-assertions=off --cfg 'feature=\"clone-impls\"' --cfg 'feature=\"default\"' --cfg 'feature=\"derive\"' --cfg 'feature=\"full\"' --cfg 'feature=\"parsing\"' --cfg 'feature=\"printing\"' --cfg 'feature=\"proc-macro\"' --check-cfg 'cfg(docsrs,test)' --check-cfg 'cfg(feature, values(\"clone-impls\", \"default\", \"derive\", \"extra-traits\", \"fold\", \"full\", \"parsing\", \"printing\", \"proc-macro\", \"test\", \"visit\", \"visit-mut\"))' -C metadata=1cf95cff48683b36 -C extra-filename=-78aeb1020e0af73c --out-dir /build/source/target/release/deps -C linker=/nix/store/j1938gsbvbhkyz4kbmvjk56r479mkw3s-gcc-wrapper-16.2.0/bin/cc -L dependency=/build/source/target/release/deps --extern proc_macro2=/build/source/target/release/deps/libproc_macro2-fd9102a5f52e6f33.rmeta --extern quote=/build/source/target/release/deps/libquote-5732b170a93f1db9.rmeta --extern unicode_ident=/build/source/target/release/deps/libunicode_ident-14c948833659d03d.rmeta --cap-lints allow",
+    ],
+)
+
+rust_library(
+    name = "s12926_rustc",
+    srcs = [
+        "actions/s12926_rustc.manifest",
+        "closure.txt",
+        "env/38.env",
+        "platform",
+        "sandbox.sh",
+        ":s1603_cp",
+    ],
+    out = "s12926_rustc",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s12926_rustc --timeout 1023 --pipe 495:0:0:0",
+        "run --cwd /build/hexyl-0.17.0-vendor/source-registry-0/linux-raw-sys-0.4.14 --env 38 --fd 0=null --fd 1=null --fd 2=null --fd 3=pipe-r:495 --fd 4=pipe-w:495 --status 0 --argc 47 --",
+        "/nix/store/53lvgpxsb3b9ghkgb4v0jra6zzlnyw8n-rustc-1.98.1/bin/rustc --crate-name linux_raw_sys --edition=2021 /build/hexyl-0.17.0-vendor/source-registry-0/linux-raw-sys-0.4.14/src/lib.rs --error-format=json --json=diagnostic-rendered-ansi,artifacts,future-incompat --crate-type lib --emit=dep-info,metadata,link -C opt-level=3 -C linker-plugin-lto -C codegen-units=1 --cfg 'feature=\"elf\"' --cfg 'feature=\"errno\"' --cfg 'feature=\"general\"' --cfg 'feature=\"ioctl\"' --cfg 'feature=\"no_std\"' --check-cfg 'cfg(docsrs,test)' --check-cfg 'cfg(feature, values(\"bootparam\", \"compiler_builtins\", \"core\", \"default\", \"elf\", \"errno\", \"general\", \"if_arp\", \"if_ether\", \"if_packet\", \"io_uring\", \"ioctl\", \"loop_device\", \"mempolicy\", \"net\", \"netlink\", \"no_std\", \"prctl\", \"rustc-dep-of-std\", \"std\", \"system\", \"xdp\"))' -C metadata=25d93dc6c0c978a5 -C extra-filename=-12c5e465304dae80 --out-dir /build/source/target/x86_64-unknown-linux-gnu/release/deps --target x86_64-unknown-linux-gnu -C linker=/nix/store/j1938gsbvbhkyz4kbmvjk56r479mkw3s-gcc-wrapper-16.2.0/bin/cc -L dependency=/build/source/target/x86_64-unknown-linux-gnu/release/deps -L dependency=/build/source/target/release/deps --cap-lints allow -Cforce-frame-pointers=yes",
+    ],
+)
+
+rust_library(
+    name = "s13145_rustc",
+    srcs = [
+        "actions/s13145_rustc.manifest",
+        "closure.txt",
+        "env/39.env",
+        "platform",
+        "sandbox.sh",
+        ":s1603_cp",
+    ],
+    out = "s13145_rustc",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s13145_rustc --timeout 1023 --pipe 495:0:0:0",
+        "run --cwd /build/hexyl-0.17.0-vendor/source-registry-0/bitflags-2.6.0 --env 39 --fd 0=null --fd 1=null --fd 2=null --fd 3=pipe-r:495 --fd 4=pipe-w:495 --status 0 --argc 39 --",
+        "/nix/store/53lvgpxsb3b9ghkgb4v0jra6zzlnyw8n-rustc-1.98.1/bin/rustc --crate-name bitflags --edition=2021 /build/hexyl-0.17.0-vendor/source-registry-0/bitflags-2.6.0/src/lib.rs --error-format=json --json=diagnostic-rendered-ansi,artifacts,future-incompat --crate-type lib --emit=dep-info,metadata,link -C opt-level=3 -C linker-plugin-lto -C codegen-units=1 --cfg 'feature=\"std\"' --check-cfg 'cfg(docsrs,test)' --check-cfg 'cfg(feature, values(\"arbitrary\", \"bytemuck\", \"compiler_builtins\", \"core\", \"example_generated\", \"rustc-dep-of-std\", \"serde\", \"std\"))' -C metadata=403db212f20cbac6 -C extra-filename=-6e09d5efc5dae11b --out-dir /build/source/target/x86_64-unknown-linux-gnu/release/deps --target x86_64-unknown-linux-gnu -C linker=/nix/store/j1938gsbvbhkyz4kbmvjk56r479mkw3s-gcc-wrapper-16.2.0/bin/cc -L dependency=/build/source/target/x86_64-unknown-linux-gnu/release/deps -L dependency=/build/source/target/release/deps --cap-lints allow -Cforce-frame-pointers=yes",
+    ],
+)
+
+rust_library(
+    name = "s13381_rustc",
+    srcs = [
+        "actions/s13381_rustc.manifest",
+        "closure.txt",
+        "env/40.env",
+        "platform",
+        "sandbox.sh",
+        ":s1603_cp",
+    ],
+    out = "s13381_rustc",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s13381_rustc --timeout 1023 --pipe 495:0:0:0",
+        "run --cwd /build/hexyl-0.17.0-vendor/source-registry-0/utf8parse-0.2.2 --env 40 --fd 0=null --fd 1=null --fd 2=null --fd 3=pipe-r:495 --fd 4=pipe-w:495 --status 0 --argc 39 --",
+        "/nix/store/53lvgpxsb3b9ghkgb4v0jra6zzlnyw8n-rustc-1.98.1/bin/rustc --crate-name utf8parse --edition=2018 /build/hexyl-0.17.0-vendor/source-registry-0/utf8parse-0.2.2/src/lib.rs --error-format=json --json=diagnostic-rendered-ansi,artifacts,future-incompat --crate-type lib --emit=dep-info,metadata,link -C opt-level=3 -C linker-plugin-lto -C codegen-units=1 --cfg 'feature=\"default\"' --check-cfg 'cfg(docsrs,test)' --check-cfg 'cfg(feature, values(\"default\", \"nightly\"))' -C metadata=9a0a251fe1001c55 -C extra-filename=-8d8102c38be69e8c --out-dir /build/source/target/x86_64-unknown-linux-gnu/release/deps --target x86_64-unknown-linux-gnu -C linker=/nix/store/j1938gsbvbhkyz4kbmvjk56r479mkw3s-gcc-wrapper-16.2.0/bin/cc -L dependency=/build/source/target/x86_64-unknown-linux-gnu/release/deps -L dependency=/build/source/target/release/deps --cap-lints allow -Cforce-frame-pointers=yes",
+    ],
+)
+
+rust_library(
+    name = "s13576_rustc",
+    srcs = [
+        "actions/s13576_rustc.manifest",
+        "closure.txt",
+        "env/41.env",
+        "platform",
+        "sandbox.sh",
+        ":s13381_rustc",
+        ":s1603_cp",
+    ],
+    out = "s13576_rustc",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s13576_rustc --timeout 1023 --pipe 495:0:0:0",
+        "run --cwd /build/hexyl-0.17.0-vendor/source-registry-0/anstyle-parse-0.2.6 --env 41 --fd 0=null --fd 1=null --fd 2=null --fd 3=pipe-r:495 --fd 4=pipe-w:495 --status 0 --argc 107 --",
+        "/nix/store/53lvgpxsb3b9ghkgb4v0jra6zzlnyw8n-rustc-1.98.1/bin/rustc --crate-name anstyle_parse --edition=2021 /build/hexyl-0.17.0-vendor/source-registry-0/anstyle-parse-0.2.6/src/lib.rs --error-format=json --json=diagnostic-rendered-ansi,artifacts,future-incompat --crate-type lib --emit=dep-info,metadata,link -C opt-level=3 -C linker-plugin-lto -C codegen-units=1 --warn=rust_2018_idioms --warn=clippy::zero_sized_map_values --warn=clippy::wildcard_imports --warn=clippy::verbose_file_reads --warn=unused_qualifications --warn=unused_macro_rules --warn=unused_lifetimes --warn=unsafe_op_in_unsafe_fn --warn=unreachable_pub --warn=clippy::uninlined_format_args --warn=clippy::trait_duplication_in_bounds --warn=clippy::todo --warn=clippy::string_to_string --warn=clippy::string_lit_as_bytes --warn=clippy::string_add_assign --warn=clippy::string_add --warn=clippy::str_to_string --warn=clippy::semicolon_if_nothing_returned --warn=clippy::self_named_module_files --warn=clippy::same_functions_in_if_condition --warn=clippy::rest_pat_in_fully_bound_structs --warn=clippy::ref_option_ref --warn=clippy::redundant_feature_names --warn=clippy::rc_mutex --warn=clippy::ptr_as_ptr --warn=clippy::path_buf_push_overwrite --warn=clippy::negative_feature_names --warn=clippy::needless_for_each --warn=clippy::needless_continue --warn=clippy::mutex_integer --warn=clippy::mem_forget --warn=clippy::macro_use_imports --warn=clippy::lossy_float_literal --warn=clippy::linkedlist --allow=clippy::let_and_return --warn=clippy::large_types_passed_by_value --warn=clippy::large_stack_arrays --warn=clippy::large_digit_groups --warn=clippy::invalid_upcast_comparisons --warn=clippy::infinite_loop --warn=clippy::inefficient_to_string --warn=clippy::inconsistent_struct_constructor --warn=clippy::imprecise_flops --warn=clippy::implicit_clone --allow=clippy::if_same_then_else --warn=clippy::from_iter_instead_of_collect --warn=clippy::fn_params_excessive_bools --warn=clippy::float_cmp_const --warn=clippy::flat_map_option --warn=clippy::filter_map_next --warn=clippy::fallible_impl_from --warn=clippy::explicit_into_iter_loop --warn=clippy::explicit_deref_methods --warn=clippy::expl_impl_clone_on_copy --warn=clippy::enum_glob_use --warn=clippy::empty_enum --warn=clippy::doc_markdown --warn=clippy::debug_assert_with_mut_call --warn=clippy::dbg_macro --warn=clippy::create_dir --allow=clippy::collapsible_else_if --warn=clippy::checked_conversions --allow=clippy::branches_sharing_code --allow=clippy::bool_assert_comparison --cfg 'feature=\"default\"' --cfg 'feature=\"utf8\"' --check-cfg 'cfg(docsrs,test)' --check-cfg 'cfg(feature, values(\"core\", \"default\", \"utf8\"))' -C metadata=3475c702b33731ae -C extra-filename=-2b6e43f4b7fb527c --out-dir /build/source/target/x86_64-unknown-linux-gnu/release/deps --target x86_64-unknown-linux-gnu -C linker=/nix/store/j1938gsbvbhkyz4kbmvjk56r479mkw3s-gcc-wrapper-16.2.0/bin/cc -L dependency=/build/source/target/x86_64-unknown-linux-gnu/release/deps -L dependency=/build/source/target/release/deps --extern utf8parse=/build/source/target/x86_64-unknown-linux-gnu/release/deps/libutf8parse-8d8102c38be69e8c.rmeta --cap-lints allow -Cforce-frame-pointers=yes",
+    ],
+)
+
+rust_library(
+    name = "s13795_rustc",
+    srcs = [
+        "actions/s13795_rustc.manifest",
+        "closure.txt",
+        "env/42.env",
+        "platform",
+        "sandbox.sh",
+        ":s12926_rustc",
+        ":s13145_rustc",
+        ":s1603_cp",
+    ],
+    out = "s13795_rustc",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s13795_rustc --timeout 1023 --pipe 495:0:0:0",
+        "run --cwd /build/hexyl-0.17.0-vendor/source-registry-0/rustix-0.38.38 --env 42 --fd 0=null --fd 1=null --fd 2=null --fd 3=pipe-r:495 --fd 4=pipe-w:495 --status 0 --argc 112 --",
+        "/nix/store/53lvgpxsb3b9ghkgb4v0jra6zzlnyw8n-rustc-1.98.1/bin/rustc --crate-name rustix --edition=2021 /build/hexyl-0.17.0-vendor/source-registry-0/rustix-0.38.38/src/lib.rs --error-format=json --json=diagnostic-rendered-ansi,artifacts,future-incompat --crate-type lib --emit=dep-info,metadata,link -C opt-level=3 -C linker-plugin-lto -C codegen-units=1 --warn=unexpected_cfgs --check-cfg 'cfg(alloc_c_string)' --check-cfg 'cfg(alloc_ffi)' --check-cfg 'cfg(apple)' --check-cfg 'cfg(asm_experimental_arch)' --check-cfg 'cfg(bsd)' --check-cfg 'cfg(core_c_str)' --check-cfg 'cfg(core_ffi_c)' --check-cfg 'cfg(core_intrinsics)' --check-cfg 'cfg(criterion)' --check-cfg 'cfg(document_experimental_runtime_api)' --check-cfg 'cfg(fix_y2038)' --check-cfg 'cfg(freebsdlike)' --check-cfg 'cfg(libc)' --check-cfg 'cfg(linux_kernel)' --check-cfg 'cfg(linux_like)' --check-cfg 'cfg(linux_raw)' --check-cfg 'cfg(netbsdlike)' --check-cfg 'cfg(rustc_attrs)' --check-cfg 'cfg(solarish)' --check-cfg 'cfg(staged_api)' --check-cfg 'cfg(static_assertions)' --check-cfg 'cfg(thumb_mode)' --check-cfg 'cfg(wasi)' --check-cfg 'cfg(wasi_ext)' --check-cfg 'cfg(target_arch, values(\"xtensa\"))' --cfg 'feature=\"alloc\"' --cfg 'feature=\"default\"' --cfg 'feature=\"libc-extra-traits\"' --cfg 'feature=\"std\"' --cfg 'feature=\"termios\"' --cfg 'feature=\"use-libc-auxv\"' --check-cfg 'cfg(docsrs,test)' --check-cfg 'cfg(feature, values(\"all-apis\", \"alloc\", \"cc\", \"compiler_builtins\", \"core\", \"default\", \"event\", \"fs\", \"io_uring\", \"itoa\", \"libc\", \"libc-extra-traits\", \"libc_errno\", \"linux_4_11\", \"linux_latest\", \"mm\", \"mount\", \"net\", \"once_cell\", \"param\", \"pipe\", \"process\", \"procfs\", \"pty\", \"rand\", \"runtime\", \"rustc-dep-of-std\", \"rustc-std-workspace-alloc\", \"shm\", \"std\", \"stdio\", \"system\", \"termios\", \"thread\", \"time\", \"try_close\", \"use-explicitly-provided-auxv\", \"use-libc\", \"use-libc-auxv\"))' -C metadata=7dc57d2a71a71ae4 -C extra-filename=-18b94c2361e8428c --out-dir /build/source/target/x86_64-unknown-linux-gnu/release/deps --target x86_64-unknown-linux-gnu -C linker=/nix/store/j1938gsbvbhkyz4kbmvjk56r479mkw3s-gcc-wrapper-16.2.0/bin/cc -L dependency=/build/source/target/x86_64-unknown-linux-gnu/release/deps -L dependency=/build/source/target/release/deps --extern bitflags=/build/source/target/x86_64-unknown-linux-gnu/release/deps/libbitflags-6e09d5efc5dae11b.rmeta --extern linux_raw_sys=/build/source/target/x86_64-unknown-linux-gnu/release/deps/liblinux_raw_sys-12c5e465304dae80.rmeta --cap-lints allow -Cforce-frame-pointers=yes --cfg static_assertions --cfg linux_raw --cfg linux_like --cfg linux_kernel",
+    ],
+)
+
+rust_library(
+    name = "s14037_rustc",
+    srcs = [
+        "actions/s14037_rustc.manifest",
+        "closure.txt",
+        "env/43.env",
+        "platform",
+        "sandbox.sh",
+        ":s1603_cp",
+    ],
+    out = "s14037_rustc",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s14037_rustc --timeout 1023 --pipe 495:0:0:0",
+        "run --cwd /build/hexyl-0.17.0-vendor/source-registry-0/is_terminal_polyfill-1.70.1 --env 43 --fd 0=null --fd 1=null --fd 2=null --fd 3=pipe-r:495 --fd 4=pipe-w:495 --status 0 --argc 104 --",
+        "/nix/store/53lvgpxsb3b9ghkgb4v0jra6zzlnyw8n-rustc-1.98.1/bin/rustc --crate-name is_terminal_polyfill --edition=2021 /build/hexyl-0.17.0-vendor/source-registry-0/is_terminal_polyfill-1.70.1/src/lib.rs --error-format=json --json=diagnostic-rendered-ansi,artifacts,future-incompat --crate-type lib --emit=dep-info,metadata,link -C opt-level=3 -C linker-plugin-lto -C codegen-units=1 --warn=clippy::zero_sized_map_values --warn=clippy::wildcard_imports --warn=clippy::verbose_file_reads --warn=unused_qualifications --warn=unused_macro_rules --warn=unused_lifetimes --warn=unsafe_op_in_unsafe_fn --warn=unreachable_pub --warn=clippy::trait_duplication_in_bounds --warn=clippy::todo --warn=clippy::string_to_string --warn=clippy::string_lit_as_bytes --warn=clippy::string_add_assign --warn=clippy::string_add --warn=clippy::str_to_string --warn=clippy::single_match_else --warn=clippy::semicolon_if_nothing_returned --warn=clippy::self_named_module_files --warn=clippy::same_functions_in_if_condition --warn=rust_2018_idioms --warn=clippy::rest_pat_in_fully_bound_structs --warn=clippy::ref_option_ref --warn=clippy::redundant_feature_names --warn=clippy::rc_mutex --warn=clippy::ptr_as_ptr --warn=clippy::path_buf_push_overwrite --warn=clippy::negative_feature_names --warn=clippy::needless_for_each --warn=clippy::needless_continue --warn=clippy::mutex_integer --warn=clippy::mem_forget --warn=clippy::match_wildcard_for_single_variants --warn=clippy::macro_use_imports --warn=clippy::lossy_float_literal --warn=clippy::linkedlist --allow=clippy::let_and_return --warn=clippy::large_types_passed_by_value --warn=clippy::large_stack_arrays --warn=clippy::large_digit_groups --warn=clippy::invalid_upcast_comparisons --warn=clippy::infinite_loop --warn=clippy::inefficient_to_string --warn=clippy::inconsistent_struct_constructor --warn=clippy::imprecise_flops --warn=clippy::implicit_clone --allow=clippy::if_same_then_else --warn=clippy::from_iter_instead_of_collect --warn=clippy::fn_params_excessive_bools --warn=clippy::float_cmp_const --warn=clippy::flat_map_option --warn=clippy::filter_map_next --warn=clippy::fallible_impl_from --warn=clippy::explicit_into_iter_loop --warn=clippy::explicit_deref_methods --warn=clippy::expl_impl_clone_on_copy --warn=clippy::enum_glob_use --warn=clippy::empty_enum --warn=clippy::doc_markdown --warn=clippy::debug_assert_with_mut_call --warn=clippy::dbg_macro --warn=clippy::create_dir --allow=clippy::collapsible_else_if --warn=clippy::checked_conversions --allow=clippy::branches_sharing_code --allow=clippy::bool_assert_comparison --cfg 'feature=\"default\"' --check-cfg 'cfg(docsrs,test)' --check-cfg 'cfg(feature, values(\"default\"))' -C metadata=e21668aa1e308ccb -C extra-filename=-e72473dfadefa8d6 --out-dir /build/source/target/x86_64-unknown-linux-gnu/release/deps --target x86_64-unknown-linux-gnu -C linker=/nix/store/j1938gsbvbhkyz4kbmvjk56r479mkw3s-gcc-wrapper-16.2.0/bin/cc -L dependency=/build/source/target/x86_64-unknown-linux-gnu/release/deps -L dependency=/build/source/target/release/deps --cap-lints allow -Cforce-frame-pointers=yes",
+    ],
+)
+
+rust_library(
+    name = "s14224_rustc",
+    srcs = [
+        "actions/s14224_rustc.manifest",
+        "closure.txt",
+        "env/44.env",
+        "platform",
+        "sandbox.sh",
+        ":s1603_cp",
+    ],
+    out = "s14224_rustc",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s14224_rustc --timeout 1023 --pipe 495:0:0:0",
+        "run --cwd /build/hexyl-0.17.0-vendor/source-registry-0/colorchoice-1.0.3 --env 44 --fd 0=null --fd 1=null --fd 2=null --fd 3=pipe-r:495 --fd 4=pipe-w:495 --status 0 --argc 101 --",
+        "/nix/store/53lvgpxsb3b9ghkgb4v0jra6zzlnyw8n-rustc-1.98.1/bin/rustc --crate-name colorchoice --edition=2021 /build/hexyl-0.17.0-vendor/source-registry-0/colorchoice-1.0.3/src/lib.rs --error-format=json --json=diagnostic-rendered-ansi,artifacts,future-incompat --crate-type lib --emit=dep-info,metadata,link -C opt-level=3 -C linker-plugin-lto -C codegen-units=1 --warn=rust_2018_idioms --warn=clippy::zero_sized_map_values --warn=clippy::wildcard_imports --warn=clippy::verbose_file_reads --warn=unused_qualifications --warn=unused_macro_rules --warn=unused_lifetimes --warn=unsafe_op_in_unsafe_fn --warn=unreachable_pub --warn=clippy::uninlined_format_args --warn=clippy::trait_duplication_in_bounds --warn=clippy::todo --warn=clippy::string_to_string --warn=clippy::string_lit_as_bytes --warn=clippy::string_add_assign --warn=clippy::string_add --warn=clippy::str_to_string --warn=clippy::semicolon_if_nothing_returned --warn=clippy::self_named_module_files --warn=clippy::same_functions_in_if_condition --warn=clippy::rest_pat_in_fully_bound_structs --warn=clippy::ref_option_ref --warn=clippy::redundant_feature_names --warn=clippy::rc_mutex --warn=clippy::ptr_as_ptr --warn=clippy::path_buf_push_overwrite --warn=clippy::negative_feature_names --warn=clippy::needless_for_each --warn=clippy::needless_continue --warn=clippy::mutex_integer --warn=clippy::mem_forget --warn=clippy::macro_use_imports --warn=clippy::lossy_float_literal --warn=clippy::linkedlist --allow=clippy::let_and_return --warn=clippy::large_types_passed_by_value --warn=clippy::large_stack_arrays --warn=clippy::large_digit_groups --warn=clippy::invalid_upcast_comparisons --warn=clippy::infinite_loop --warn=clippy::inefficient_to_string --warn=clippy::inconsistent_struct_constructor --warn=clippy::imprecise_flops --warn=clippy::implicit_clone --allow=clippy::if_same_then_else --warn=clippy::from_iter_instead_of_collect --warn=clippy::fn_params_excessive_bools --warn=clippy::float_cmp_const --warn=clippy::flat_map_option --warn=clippy::filter_map_next --warn=clippy::fallible_impl_from --warn=clippy::explicit_into_iter_loop --warn=clippy::explicit_deref_methods --warn=clippy::expl_impl_clone_on_copy --warn=clippy::enum_glob_use --warn=clippy::empty_enum --warn=clippy::doc_markdown --warn=clippy::debug_assert_with_mut_call --warn=clippy::dbg_macro --warn=clippy::create_dir --allow=clippy::collapsible_else_if --warn=clippy::checked_conversions --allow=clippy::branches_sharing_code --allow=clippy::bool_assert_comparison --check-cfg 'cfg(docsrs,test)' --check-cfg 'cfg(feature, values())' -C metadata=5ca247306402be52 -C extra-filename=-50de3ee226226abb --out-dir /build/source/target/x86_64-unknown-linux-gnu/release/deps --target x86_64-unknown-linux-gnu -C linker=/nix/store/j1938gsbvbhkyz4kbmvjk56r479mkw3s-gcc-wrapper-16.2.0/bin/cc -L dependency=/build/source/target/x86_64-unknown-linux-gnu/release/deps -L dependency=/build/source/target/release/deps --cap-lints allow -Cforce-frame-pointers=yes",
+    ],
+)
+
+rust_library(
+    name = "s14428_rustc",
+    srcs = [
+        "actions/s14428_rustc.manifest",
+        "closure.txt",
+        "env/45.env",
+        "platform",
+        "sandbox.sh",
+        ":s1603_cp",
+    ],
+    out = "s14428_rustc",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s14428_rustc --timeout 1023 --pipe 495:0:0:0",
+        "run --cwd /build/hexyl-0.17.0-vendor/source-registry-0/anstyle-query-1.1.2 --env 45 --fd 0=null --fd 1=null --fd 2=null --fd 3=pipe-r:495 --fd 4=pipe-w:495 --status 0 --argc 101 --",
+        "/nix/store/53lvgpxsb3b9ghkgb4v0jra6zzlnyw8n-rustc-1.98.1/bin/rustc --crate-name anstyle_query --edition=2021 /build/hexyl-0.17.0-vendor/source-registry-0/anstyle-query-1.1.2/src/lib.rs --error-format=json --json=diagnostic-rendered-ansi,artifacts,future-incompat --crate-type lib --emit=dep-info,metadata,link -C opt-level=3 -C linker-plugin-lto -C codegen-units=1 --warn=rust_2018_idioms --warn=clippy::zero_sized_map_values --warn=clippy::wildcard_imports --warn=clippy::verbose_file_reads --warn=unused_qualifications --warn=unused_macro_rules --warn=unused_lifetimes --warn=unsafe_op_in_unsafe_fn --warn=unreachable_pub --warn=clippy::uninlined_format_args --warn=clippy::trait_duplication_in_bounds --warn=clippy::todo --warn=clippy::string_to_string --warn=clippy::string_lit_as_bytes --warn=clippy::string_add_assign --warn=clippy::string_add --warn=clippy::str_to_string --warn=clippy::semicolon_if_nothing_returned --warn=clippy::self_named_module_files --warn=clippy::same_functions_in_if_condition --warn=clippy::rest_pat_in_fully_bound_structs --warn=clippy::ref_option_ref --warn=clippy::redundant_feature_names --warn=clippy::rc_mutex --warn=clippy::ptr_as_ptr --warn=clippy::path_buf_push_overwrite --warn=clippy::negative_feature_names --warn=clippy::needless_for_each --warn=clippy::needless_continue --warn=clippy::mutex_integer --warn=clippy::mem_forget --warn=clippy::macro_use_imports --warn=clippy::lossy_float_literal --warn=clippy::linkedlist --allow=clippy::let_and_return --warn=clippy::large_types_passed_by_value --warn=clippy::large_stack_arrays --warn=clippy::large_digit_groups --warn=clippy::invalid_upcast_comparisons --warn=clippy::infinite_loop --warn=clippy::inefficient_to_string --warn=clippy::inconsistent_struct_constructor --warn=clippy::imprecise_flops --warn=clippy::implicit_clone --allow=clippy::if_same_then_else --warn=clippy::from_iter_instead_of_collect --warn=clippy::fn_params_excessive_bools --warn=clippy::float_cmp_const --warn=clippy::flat_map_option --warn=clippy::filter_map_next --warn=clippy::fallible_impl_from --warn=clippy::explicit_into_iter_loop --warn=clippy::explicit_deref_methods --warn=clippy::expl_impl_clone_on_copy --warn=clippy::enum_glob_use --warn=clippy::empty_enum --warn=clippy::doc_markdown --warn=clippy::debug_assert_with_mut_call --warn=clippy::dbg_macro --warn=clippy::create_dir --allow=clippy::collapsible_else_if --warn=clippy::checked_conversions --allow=clippy::branches_sharing_code --allow=clippy::bool_assert_comparison --check-cfg 'cfg(docsrs,test)' --check-cfg 'cfg(feature, values())' -C metadata=b5156b0c953d8783 -C extra-filename=-2f05f1df646dee97 --out-dir /build/source/target/x86_64-unknown-linux-gnu/release/deps --target x86_64-unknown-linux-gnu -C linker=/nix/store/j1938gsbvbhkyz4kbmvjk56r479mkw3s-gcc-wrapper-16.2.0/bin/cc -L dependency=/build/source/target/x86_64-unknown-linux-gnu/release/deps -L dependency=/build/source/target/release/deps --cap-lints allow -Cforce-frame-pointers=yes",
+    ],
+)
+
+rust_library(
+    name = "s14616_rustc",
+    srcs = [
+        "actions/s14616_rustc.manifest",
+        "closure.txt",
+        "env/46.env",
+        "platform",
+        "sandbox.sh",
+        ":s1603_cp",
+    ],
+    out = "s14616_rustc",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s14616_rustc --timeout 1023 --pipe 495:0:0:0",
+        "run --cwd /build/hexyl-0.17.0-vendor/source-registry-0/anstyle-1.0.9 --env 46 --fd 0=null --fd 1=null --fd 2=null --fd 3=pipe-r:495 --fd 4=pipe-w:495 --status 0 --argc 105 --",
+        "/nix/store/53lvgpxsb3b9ghkgb4v0jra6zzlnyw8n-rustc-1.98.1/bin/rustc --crate-name anstyle --edition=2021 /build/hexyl-0.17.0-vendor/source-registry-0/anstyle-1.0.9/src/lib.rs --error-format=json --json=diagnostic-rendered-ansi,artifacts,future-incompat --crate-type lib --emit=dep-info,metadata,link -C opt-level=3 -C linker-plugin-lto -C codegen-units=1 --warn=rust_2018_idioms --warn=clippy::zero_sized_map_values --warn=clippy::wildcard_imports --warn=clippy::verbose_file_reads --warn=unused_qualifications --warn=unused_macro_rules --warn=unused_lifetimes --warn=unsafe_op_in_unsafe_fn --warn=unreachable_pub --warn=clippy::uninlined_format_args --warn=clippy::trait_duplication_in_bounds --warn=clippy::todo --warn=clippy::string_to_string --warn=clippy::string_lit_as_bytes --warn=clippy::string_add_assign --warn=clippy::string_add --warn=clippy::str_to_string --warn=clippy::semicolon_if_nothing_returned --warn=clippy::self_named_module_files --warn=clippy::same_functions_in_if_condition --warn=clippy::rest_pat_in_fully_bound_structs --warn=clippy::ref_option_ref --warn=clippy::redundant_feature_names --warn=clippy::rc_mutex --warn=clippy::ptr_as_ptr --warn=clippy::path_buf_push_overwrite --warn=clippy::negative_feature_names --warn=clippy::needless_for_each --warn=clippy::needless_continue --warn=clippy::mutex_integer --warn=clippy::mem_forget --warn=clippy::macro_use_imports --warn=clippy::lossy_float_literal --warn=clippy::linkedlist --allow=clippy::let_and_return --warn=clippy::large_types_passed_by_value --warn=clippy::large_stack_arrays --warn=clippy::large_digit_groups --warn=clippy::invalid_upcast_comparisons --warn=clippy::infinite_loop --warn=clippy::inefficient_to_string --warn=clippy::inconsistent_struct_constructor --warn=clippy::imprecise_flops --warn=clippy::implicit_clone --allow=clippy::if_same_then_else --warn=clippy::from_iter_instead_of_collect --warn=clippy::fn_params_excessive_bools --warn=clippy::float_cmp_const --warn=clippy::flat_map_option --warn=clippy::filter_map_next --warn=clippy::fallible_impl_from --warn=clippy::explicit_into_iter_loop --warn=clippy::explicit_deref_methods --warn=clippy::expl_impl_clone_on_copy --warn=clippy::enum_glob_use --warn=clippy::empty_enum --warn=clippy::doc_markdown --warn=clippy::debug_assert_with_mut_call --warn=clippy::dbg_macro --warn=clippy::create_dir --allow=clippy::collapsible_else_if --warn=clippy::checked_conversions --allow=clippy::branches_sharing_code --allow=clippy::bool_assert_comparison --cfg 'feature=\"default\"' --cfg 'feature=\"std\"' --check-cfg 'cfg(docsrs,test)' --check-cfg 'cfg(feature, values(\"default\", \"std\"))' -C metadata=7959eba9fc08888c -C extra-filename=-2ab88b335e2b9912 --out-dir /build/source/target/x86_64-unknown-linux-gnu/release/deps --target x86_64-unknown-linux-gnu -C linker=/nix/store/j1938gsbvbhkyz4kbmvjk56r479mkw3s-gcc-wrapper-16.2.0/bin/cc -L dependency=/build/source/target/x86_64-unknown-linux-gnu/release/deps -L dependency=/build/source/target/release/deps --cap-lints allow -Cforce-frame-pointers=yes",
+    ],
+)
+
+rust_library(
+    name = "s14858_rustc",
+    srcs = [
+        "actions/s14858_rustc.manifest",
+        "closure.txt",
+        "env/47.env",
+        "platform",
+        "sandbox.sh",
+        ":s13381_rustc",
+        ":s13576_rustc",
+        ":s14037_rustc",
+        ":s14224_rustc",
+        ":s14428_rustc",
+        ":s14616_rustc",
+        ":s1603_cp",
+    ],
+    out = "s14858_rustc",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s14858_rustc --timeout 1023 --pipe 495:0:0:0",
+        "run --cwd /build/hexyl-0.17.0-vendor/source-registry-0/anstream-0.6.17 --env 47 --fd 0=null --fd 1=null --fd 2=null --fd 3=pipe-r:495 --fd 4=pipe-w:495 --status 0 --argc 119 --",
+        "/nix/store/53lvgpxsb3b9ghkgb4v0jra6zzlnyw8n-rustc-1.98.1/bin/rustc --crate-name anstream --edition=2021 /build/hexyl-0.17.0-vendor/source-registry-0/anstream-0.6.17/src/lib.rs --error-format=json --json=diagnostic-rendered-ansi,artifacts,future-incompat --crate-type lib --emit=dep-info,metadata,link -C opt-level=3 -C linker-plugin-lto -C codegen-units=1 --warn=rust_2018_idioms --warn=clippy::zero_sized_map_values --warn=clippy::wildcard_imports --warn=clippy::verbose_file_reads --warn=unused_qualifications --warn=unused_macro_rules --warn=unused_lifetimes --warn=unsafe_op_in_unsafe_fn --warn=unreachable_pub --warn=clippy::uninlined_format_args --warn=clippy::trait_duplication_in_bounds --warn=clippy::todo --warn=clippy::string_to_string --warn=clippy::string_lit_as_bytes --warn=clippy::string_add_assign --warn=clippy::string_add --warn=clippy::str_to_string --warn=clippy::semicolon_if_nothing_returned --warn=clippy::self_named_module_files --warn=clippy::same_functions_in_if_condition --warn=clippy::rest_pat_in_fully_bound_structs --warn=clippy::ref_option_ref --warn=clippy::redundant_feature_names --warn=clippy::rc_mutex --warn=clippy::ptr_as_ptr --warn=clippy::path_buf_push_overwrite --warn=clippy::negative_feature_names --warn=clippy::needless_for_each --warn=clippy::needless_continue --warn=clippy::mutex_integer --warn=clippy::mem_forget --warn=clippy::macro_use_imports --warn=clippy::lossy_float_literal --warn=clippy::linkedlist --allow=clippy::let_and_return --warn=clippy::large_types_passed_by_value --warn=clippy::large_stack_arrays --warn=clippy::large_digit_groups --warn=clippy::invalid_upcast_comparisons --warn=clippy::infinite_loop --warn=clippy::inefficient_to_string --warn=clippy::inconsistent_struct_constructor --warn=clippy::imprecise_flops --warn=clippy::implicit_clone --allow=clippy::if_same_then_else --warn=clippy::from_iter_instead_of_collect --warn=clippy::fn_params_excessive_bools --warn=clippy::float_cmp_const --warn=clippy::flat_map_option --warn=clippy::filter_map_next --warn=clippy::fallible_impl_from --warn=clippy::explicit_into_iter_loop --warn=clippy::explicit_deref_methods --warn=clippy::expl_impl_clone_on_copy --warn=clippy::enum_glob_use --warn=clippy::empty_enum --warn=clippy::doc_markdown --warn=clippy::debug_assert_with_mut_call --warn=clippy::dbg_macro --warn=clippy::create_dir --allow=clippy::collapsible_else_if --warn=clippy::checked_conversions --allow=clippy::branches_sharing_code --allow=clippy::bool_assert_comparison --cfg 'feature=\"auto\"' --cfg 'feature=\"default\"' --cfg 'feature=\"wincon\"' --check-cfg 'cfg(docsrs,test)' --check-cfg 'cfg(feature, values(\"auto\", \"default\", \"test\", \"wincon\"))' -C metadata=ff5f1b2db3cb0e4b -C extra-filename=-9cb5d12977a07c57 --out-dir /build/source/target/x86_64-unknown-linux-gnu/release/deps --target x86_64-unknown-linux-gnu -C linker=/nix/store/j1938gsbvbhkyz4kbmvjk56r479mkw3s-gcc-wrapper-16.2.0/bin/cc -L dependency=/build/source/target/x86_64-unknown-linux-gnu/release/deps -L dependency=/build/source/target/release/deps --extern anstyle=/build/source/target/x86_64-unknown-linux-gnu/release/deps/libanstyle-2ab88b335e2b9912.rmeta --extern anstyle_parse=/build/source/target/x86_64-unknown-linux-gnu/release/deps/libanstyle_parse-2b6e43f4b7fb527c.rmeta --extern anstyle_query=/build/source/target/x86_64-unknown-linux-gnu/release/deps/libanstyle_query-2f05f1df646dee97.rmeta --extern colorchoice=/build/source/target/x86_64-unknown-linux-gnu/release/deps/libcolorchoice-50de3ee226226abb.rmeta --extern is_terminal_polyfill=/build/source/target/x86_64-unknown-linux-gnu/release/deps/libis_terminal_polyfill-e72473dfadefa8d6.rmeta --extern utf8parse=/build/source/target/x86_64-unknown-linux-gnu/release/deps/libutf8parse-8d8102c38be69e8c.rmeta --cap-lints allow -Cforce-frame-pointers=yes",
+    ],
+)
+
+rust_library(
+    name = "s15094_rustc",
+    srcs = [
+        "actions/s15094_rustc.manifest",
+        "closure.txt",
+        "env/48.env",
+        "platform",
+        "sandbox.sh",
+        ":s12926_rustc",
+        ":s13145_rustc",
+        ":s13795_rustc",
+        ":s1603_cp",
+    ],
+    out = "s15094_rustc",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s15094_rustc --timeout 1023 --pipe 495:0:0:0",
+        "run --cwd /build/hexyl-0.17.0-vendor/source-registry-0/terminal_size-0.4.0 --env 48 --fd 0=null --fd 1=null --fd 2=null --fd 3=pipe-r:495 --fd 4=pipe-w:495 --status 0 --argc 39 --",
+        "/nix/store/53lvgpxsb3b9ghkgb4v0jra6zzlnyw8n-rustc-1.98.1/bin/rustc --crate-name terminal_size --edition=2021 /build/hexyl-0.17.0-vendor/source-registry-0/terminal_size-0.4.0/src/lib.rs --error-format=json --json=diagnostic-rendered-ansi,artifacts,future-incompat --crate-type lib --emit=dep-info,metadata,link -C opt-level=3 -C linker-plugin-lto -C codegen-units=1 --check-cfg 'cfg(docsrs,test)' --check-cfg 'cfg(feature, values())' -C metadata=2edcbf5ac4fc76da -C extra-filename=-6d6fc87d68fc9de4 --out-dir /build/source/target/x86_64-unknown-linux-gnu/release/deps --target x86_64-unknown-linux-gnu -C linker=/nix/store/j1938gsbvbhkyz4kbmvjk56r479mkw3s-gcc-wrapper-16.2.0/bin/cc -L dependency=/build/source/target/x86_64-unknown-linux-gnu/release/deps -L dependency=/build/source/target/release/deps --extern rustix=/build/source/target/x86_64-unknown-linux-gnu/release/deps/librustix-18b94c2361e8428c.rmeta --cap-lints allow -Cforce-frame-pointers=yes",
+    ],
+)
+
+rust_library(
+    name = "s15305_rustc",
+    srcs = [
+        "actions/s15305_rustc.manifest",
+        "closure.txt",
+        "env/49.env",
+        "platform",
+        "sandbox.sh",
+        ":s1603_cp",
+    ],
+    out = "s15305_rustc",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s15305_rustc --timeout 1023 --pipe 495:0:0:0",
+        "run --cwd /build/hexyl-0.17.0-vendor/source-registry-0/strsim-0.11.1 --env 49 --fd 0=null --fd 1=null --fd 2=null --fd 3=pipe-r:495 --fd 4=pipe-w:495 --status 0 --argc 37 --",
+        "/nix/store/53lvgpxsb3b9ghkgb4v0jra6zzlnyw8n-rustc-1.98.1/bin/rustc --crate-name strsim --edition=2015 /build/hexyl-0.17.0-vendor/source-registry-0/strsim-0.11.1/src/lib.rs --error-format=json --json=diagnostic-rendered-ansi,artifacts,future-incompat --crate-type lib --emit=dep-info,metadata,link -C opt-level=3 -C linker-plugin-lto -C codegen-units=1 --check-cfg 'cfg(docsrs,test)' --check-cfg 'cfg(feature, values())' -C metadata=a642e332979f8c64 -C extra-filename=-a26648a2cf052db4 --out-dir /build/source/target/x86_64-unknown-linux-gnu/release/deps --target x86_64-unknown-linux-gnu -C linker=/nix/store/j1938gsbvbhkyz4kbmvjk56r479mkw3s-gcc-wrapper-16.2.0/bin/cc -L dependency=/build/source/target/x86_64-unknown-linux-gnu/release/deps -L dependency=/build/source/target/release/deps --cap-lints allow -Cforce-frame-pointers=yes",
+    ],
+)
+
+rust_library(
+    name = "s15529_rustc",
+    srcs = [
+        "actions/s15529_rustc.manifest",
+        "closure.txt",
+        "env/50.env",
+        "platform",
+        "sandbox.sh",
+        ":s1603_cp",
+    ],
+    out = "s15529_rustc",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s15529_rustc --timeout 1023 --pipe 495:0:0:0",
+        "run --cwd /build/hexyl-0.17.0-vendor/source-registry-0/heck-0.5.0 --env 50 --fd 0=null --fd 1=null --fd 2=null --fd 3=pipe-r:495 --fd 4=pipe-w:495 --status 0 --argc 30 --",
+        "/nix/store/53lvgpxsb3b9ghkgb4v0jra6zzlnyw8n-rustc-1.98.1/bin/rustc --crate-name heck --edition=2021 /build/hexyl-0.17.0-vendor/source-registry-0/heck-0.5.0/src/lib.rs --error-format=json --json=diagnostic-rendered-ansi,artifacts,future-incompat --crate-type lib --emit=dep-info,metadata,link -C embed-bitcode=no -C debug-assertions=off --check-cfg 'cfg(docsrs,test)' --check-cfg 'cfg(feature, values())' -C metadata=fd40d22efe300d30 -C extra-filename=-d8fa8dc6c5b38fe6 --out-dir /build/source/target/release/deps -C linker=/nix/store/j1938gsbvbhkyz4kbmvjk56r479mkw3s-gcc-wrapper-16.2.0/bin/cc -L dependency=/build/source/target/release/deps --cap-lints allow",
+    ],
+)
+
+rust_library(
+    name = "s15757_rustc",
+    srcs = [
+        "actions/s15757_rustc.manifest",
+        "closure.txt",
+        "env/51.env",
+        "platform",
+        "sandbox.sh",
+        ":s1603_cp",
+    ],
+    out = "s15757_rustc",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s15757_rustc --timeout 1023 --pipe 495:0:0:0",
+        "run --cwd /build/hexyl-0.17.0-vendor/source-registry-0/clap_lex-0.7.2 --env 51 --fd 0=null --fd 1=null --fd 2=null --fd 3=pipe-r:495 --fd 4=pipe-w:495 --status 0 --argc 100 --",
+        "/nix/store/53lvgpxsb3b9ghkgb4v0jra6zzlnyw8n-rustc-1.98.1/bin/rustc --crate-name clap_lex --edition=2021 /build/hexyl-0.17.0-vendor/source-registry-0/clap_lex-0.7.2/src/lib.rs --error-format=json --json=diagnostic-rendered-ansi,artifacts,future-incompat --crate-type lib --emit=dep-info,metadata,link -C opt-level=3 -C linker-plugin-lto -C codegen-units=1 --warn=clippy::zero_sized_map_values --warn=clippy::verbose_file_reads --warn=unused_qualifications --warn=unused_macro_rules --warn=unused_lifetimes --warn=unsafe_op_in_unsafe_fn --warn=unreachable_pub --warn=clippy::trait_duplication_in_bounds --warn=clippy::todo --warn=clippy::string_lit_as_bytes --warn=clippy::string_add_assign --warn=clippy::semicolon_if_nothing_returned --warn=clippy::self_named_module_files --warn=clippy::same_functions_in_if_condition --warn=rust_2018_idioms --warn=clippy::rest_pat_in_fully_bound_structs --warn=clippy::ref_option_ref --warn=clippy::redundant_feature_names --warn=clippy::rc_mutex --warn=clippy::ptr_as_ptr --warn=clippy::path_buf_push_overwrite --warn=clippy::negative_feature_names --warn=clippy::needless_for_each --warn=clippy::needless_continue --warn=clippy::mutex_integer --allow=clippy::multiple_bound_locations --warn=clippy::mem_forget --warn=clippy::match_wildcard_for_single_variants --warn=clippy::macro_use_imports --warn=clippy::lossy_float_literal --warn=clippy::linkedlist --allow=clippy::let_and_return --warn=clippy::large_types_passed_by_value --warn=clippy::large_stack_arrays --warn=clippy::large_digit_groups --warn=clippy::invalid_upcast_comparisons --warn=clippy::infinite_loop --warn=clippy::inefficient_to_string --warn=clippy::inconsistent_struct_constructor --warn=clippy::imprecise_flops --warn=clippy::implicit_clone --allow=clippy::if_same_then_else --warn=clippy::from_iter_instead_of_collect --warn=clippy::fn_params_excessive_bools --warn=clippy::float_cmp_const --warn=clippy::flat_map_option --warn=clippy::filter_map_next --warn=clippy::fallible_impl_from --warn=clippy::explicit_into_iter_loop --warn=clippy::explicit_deref_methods --warn=clippy::expl_impl_clone_on_copy --warn=clippy::enum_glob_use --warn=clippy::empty_enum --warn=clippy::doc_markdown --warn=clippy::debug_assert_with_mut_call --warn=clippy::dbg_macro --warn=clippy::create_dir --allow=clippy::collapsible_else_if --warn=clippy::checked_conversions --allow=clippy::branches_sharing_code --allow=clippy::bool_assert_comparison --allow=clippy::blocks_in_conditions --allow=clippy::assigning_clones --check-cfg 'cfg(docsrs,test)' --check-cfg 'cfg(feature, values())' -C metadata=abdc8be7a7833cb4 -C extra-filename=-97fee11f49e4972c --out-dir /build/source/target/x86_64-unknown-linux-gnu/release/deps --target x86_64-unknown-linux-gnu -C linker=/nix/store/j1938gsbvbhkyz4kbmvjk56r479mkw3s-gcc-wrapper-16.2.0/bin/cc -L dependency=/build/source/target/x86_64-unknown-linux-gnu/release/deps -L dependency=/build/source/target/release/deps --cap-lints allow -Cforce-frame-pointers=yes",
+    ],
+)
+
+rust_library(
+    name = "s15983_rustc",
+    srcs = [
+        "actions/s15983_rustc.manifest",
+        "closure.txt",
+        "env/52.env",
+        "platform",
+        "sandbox.sh",
+        ":s12926_rustc",
+        ":s13145_rustc",
+        ":s13381_rustc",
+        ":s13576_rustc",
+        ":s13795_rustc",
+        ":s14037_rustc",
+        ":s14224_rustc",
+        ":s14428_rustc",
+        ":s14616_rustc",
+        ":s14858_rustc",
+        ":s15094_rustc",
+        ":s15305_rustc",
+        ":s15757_rustc",
+        ":s1603_cp",
+    ],
+    out = "s15983_rustc",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s15983_rustc --timeout 1023 --pipe 495:0:0:0",
+        "run --cwd /build/hexyl-0.17.0-vendor/source-registry-0/clap_builder-4.5.20 --env 52 --fd 0=null --fd 1=null --fd 2=null --fd 3=pipe-r:495 --fd 4=pipe-w:495 --status 0 --argc 124 --",
+        "/nix/store/53lvgpxsb3b9ghkgb4v0jra6zzlnyw8n-rustc-1.98.1/bin/rustc --crate-name clap_builder --edition=2021 /build/hexyl-0.17.0-vendor/source-registry-0/clap_builder-4.5.20/src/lib.rs --error-format=json --json=diagnostic-rendered-ansi,artifacts,future-incompat --crate-type lib --emit=dep-info,metadata,link -C opt-level=3 -C linker-plugin-lto -C codegen-units=1 --warn=rust_2018_idioms --warn=clippy::zero_sized_map_values --warn=clippy::verbose_file_reads --warn=unused_qualifications --warn=unused_macro_rules --warn=unused_lifetimes --warn=unsafe_op_in_unsafe_fn --warn=unreachable_pub --warn=clippy::uninlined_format_args --warn=clippy::trait_duplication_in_bounds --warn=clippy::todo --warn=clippy::string_lit_as_bytes --warn=clippy::string_add_assign --warn=clippy::semicolon_if_nothing_returned --warn=clippy::self_named_module_files --warn=clippy::same_functions_in_if_condition --warn=clippy::rest_pat_in_fully_bound_structs --warn=clippy::ref_option_ref --warn=clippy::redundant_feature_names --warn=clippy::rc_mutex --warn=clippy::ptr_as_ptr --warn=clippy::path_buf_push_overwrite --warn=clippy::negative_feature_names --warn=clippy::needless_for_each --warn=clippy::needless_continue --warn=clippy::mutex_integer --allow=clippy::multiple_bound_locations --warn=clippy::mem_forget --warn=clippy::macro_use_imports --warn=clippy::lossy_float_literal --warn=clippy::linkedlist --allow=clippy::let_and_return --warn=clippy::large_types_passed_by_value --warn=clippy::large_stack_arrays --warn=clippy::large_digit_groups --warn=clippy::invalid_upcast_comparisons --warn=clippy::infinite_loop --warn=clippy::inefficient_to_string --warn=clippy::inconsistent_struct_constructor --warn=clippy::imprecise_flops --warn=clippy::implicit_clone --allow=clippy::if_same_then_else --warn=clippy::from_iter_instead_of_collect --warn=clippy::fn_params_excessive_bools --warn=clippy::float_cmp_const --warn=clippy::flat_map_option --warn=clippy::filter_map_next --warn=clippy::fallible_impl_from --warn=clippy::explicit_into_iter_loop --warn=clippy::explicit_deref_methods --warn=clippy::expl_impl_clone_on_copy --warn=clippy::enum_glob_use --warn=clippy::empty_enum --warn=clippy::doc_markdown --warn=clippy::debug_assert_with_mut_call --warn=clippy::dbg_macro --warn=clippy::create_dir --allow=clippy::collapsible_else_if --warn=clippy::checked_conversions --allow=clippy::branches_sharing_code --allow=clippy::bool_assert_comparison --allow=clippy::blocks_in_conditions --allow=clippy::assigning_clones --cfg 'feature=\"color\"' --cfg 'feature=\"error-context\"' --cfg 'feature=\"help\"' --cfg 'feature=\"std\"' --cfg 'feature=\"suggestions\"' --cfg 'feature=\"usage\"' --cfg 'feature=\"wrap_help\"' --check-cfg 'cfg(docsrs,test)' --check-cfg 'cfg(feature, values(\"cargo\", \"color\", \"debug\", \"default\", \"deprecated\", \"env\", \"error-context\", \"help\", \"std\", \"string\", \"suggestions\", \"unicode\", \"unstable-doc\", \"unstable-ext\", \"unstable-styles\", \"unstable-v5\", \"usage\", \"wrap_help\"))' -C metadata=4c17103cc3871c42 -C extra-filename=-c91d0d345f1766e0 --out-dir /build/source/target/x86_64-unknown-linux-gnu/release/deps --target x86_64-unknown-linux-gnu -C linker=/nix/store/j1938gsbvbhkyz4kbmvjk56r479mkw3s-gcc-wrapper-16.2.0/bin/cc -L dependency=/build/source/target/x86_64-unknown-linux-gnu/release/deps -L dependency=/build/source/target/release/deps --extern anstream=/build/source/target/x86_64-unknown-linux-gnu/release/deps/libanstream-9cb5d12977a07c57.rmeta --extern anstyle=/build/source/target/x86_64-unknown-linux-gnu/release/deps/libanstyle-2ab88b335e2b9912.rmeta --extern clap_lex=/build/source/target/x86_64-unknown-linux-gnu/release/deps/libclap_lex-97fee11f49e4972c.rmeta --extern strsim=/build/source/target/x86_64-unknown-linux-gnu/release/deps/libstrsim-a26648a2cf052db4.rmeta --extern terminal_size=/build/source/target/x86_64-unknown-linux-gnu/release/deps/libterminal_size-6d6fc87d68fc9de4.rmeta --cap-lints allow -Cforce-frame-pointers=yes",
+    ],
+)
+
+rust_proc_macro(
+    name = "s16250_rustc",
+    srcs = [
+        "actions/s16250_rustc.manifest",
+        "closure.txt",
+        "env/53.env",
+        "platform",
+        "sandbox.sh",
+        ":s10582_rustc",
+        ":s10786_rustc",
+        ":s11170_rustc",
+        ":s12155_rustc",
+        ":s15529_rustc",
+        ":s1603_cp",
+    ],
+    out = "s16250_rustc",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s16250_rustc --timeout 1023 --pipe 495:0:0:0",
+        "run --cwd /build/hexyl-0.17.0-vendor/source-registry-0/clap_derive-4.5.18 --env 53 --fd 0=null --fd 1=null --fd 2=null --fd 3=pipe-r:495 --fd 4=pipe-w:495 --status 0 --argc 106 --",
+        "/nix/store/53lvgpxsb3b9ghkgb4v0jra6zzlnyw8n-rustc-1.98.1/bin/rustc --crate-name clap_derive --edition=2021 /build/hexyl-0.17.0-vendor/source-registry-0/clap_derive-4.5.18/src/lib.rs --error-format=json --json=diagnostic-rendered-ansi,artifacts,future-incompat --crate-type proc-macro --emit=dep-info,link -C prefer-dynamic -C embed-bitcode=no --warn=rust_2018_idioms --warn=clippy::zero_sized_map_values --warn=clippy::verbose_file_reads --warn=unused_qualifications --warn=unused_macro_rules --warn=unused_lifetimes --warn=unsafe_op_in_unsafe_fn --warn=unreachable_pub --warn=clippy::trait_duplication_in_bounds --warn=clippy::todo --warn=clippy::string_lit_as_bytes --warn=clippy::string_add_assign --warn=clippy::semicolon_if_nothing_returned --warn=clippy::self_named_module_files --warn=clippy::same_functions_in_if_condition --warn=clippy::rest_pat_in_fully_bound_structs --warn=clippy::ref_option_ref --warn=clippy::redundant_feature_names --warn=clippy::rc_mutex --warn=clippy::ptr_as_ptr --warn=clippy::path_buf_push_overwrite --warn=clippy::negative_feature_names --warn=clippy::needless_for_each --warn=clippy::needless_continue --warn=clippy::mutex_integer --allow=clippy::multiple_bound_locations --warn=clippy::mem_forget --warn=clippy::macro_use_imports --warn=clippy::lossy_float_literal --warn=clippy::linkedlist --allow=clippy::let_and_return --warn=clippy::large_types_passed_by_value --warn=clippy::large_stack_arrays --warn=clippy::large_digit_groups --warn=clippy::invalid_upcast_comparisons --warn=clippy::infinite_loop --warn=clippy::inefficient_to_string --warn=clippy::inconsistent_struct_constructor --warn=clippy::imprecise_flops --warn=clippy::implicit_clone --allow=clippy::if_same_then_else --warn=clippy::from_iter_instead_of_collect --warn=clippy::fn_params_excessive_bools --warn=clippy::float_cmp_const --warn=clippy::flat_map_option --warn=clippy::filter_map_next --warn=clippy::fallible_impl_from --warn=clippy::explicit_into_iter_loop --warn=clippy::explicit_deref_methods --warn=clippy::expl_impl_clone_on_copy --warn=clippy::enum_glob_use --warn=clippy::empty_enum --warn=clippy::doc_markdown --warn=clippy::debug_assert_with_mut_call --warn=clippy::dbg_macro --warn=clippy::create_dir --allow=clippy::collapsible_else_if --warn=clippy::checked_conversions --allow=clippy::branches_sharing_code --allow=clippy::bool_assert_comparison --allow=clippy::blocks_in_conditions --allow=clippy::assigning_clones -C debug-assertions=off --cfg 'feature=\"default\"' --check-cfg 'cfg(docsrs,test)' --check-cfg 'cfg(feature, values(\"debug\", \"default\", \"deprecated\", \"raw-deprecated\", \"unstable-v5\"))' -C metadata=f2c9166c495c4e3d -C extra-filename=-2eda517cca7e7fc5 --out-dir /build/source/target/release/deps -C linker=/nix/store/j1938gsbvbhkyz4kbmvjk56r479mkw3s-gcc-wrapper-16.2.0/bin/cc -L dependency=/build/source/target/release/deps --extern heck=/build/source/target/release/deps/libheck-d8fa8dc6c5b38fe6.rlib --extern proc_macro2=/build/source/target/release/deps/libproc_macro2-fd9102a5f52e6f33.rlib --extern quote=/build/source/target/release/deps/libquote-5732b170a93f1db9.rlib --extern syn=/build/source/target/release/deps/libsyn-78aeb1020e0af73c.rlib --extern proc_macro --cap-lints allow",
+    ],
+)
+
+rust_library(
+    name = "s17812_rustc",
+    srcs = [
+        "actions/s17812_rustc.manifest",
+        "closure.txt",
+        "env/55.env",
+        "platform",
+        "sandbox.sh",
+        ":s1603_cp",
+    ],
+    out = "s17812_rustc",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s17812_rustc --timeout 1023 --pipe 495:0:0:0",
+        "run --cwd /build/hexyl-0.17.0-vendor/source-registry-0/unicode-xid-0.2.6 --env 55 --fd 0=null --fd 1=null --fd 2=null --fd 3=pipe-r:495 --fd 4=pipe-w:495 --status 0 --argc 32 --",
+        "/nix/store/53lvgpxsb3b9ghkgb4v0jra6zzlnyw8n-rustc-1.98.1/bin/rustc --crate-name unicode_xid --edition=2015 /build/hexyl-0.17.0-vendor/source-registry-0/unicode-xid-0.2.6/src/lib.rs --error-format=json --json=diagnostic-rendered-ansi,artifacts,future-incompat --crate-type lib --emit=dep-info,metadata,link -C embed-bitcode=no -C debug-assertions=off --cfg 'feature=\"default\"' --check-cfg 'cfg(docsrs,test)' --check-cfg 'cfg(feature, values(\"bench\", \"default\", \"no_std\"))' -C metadata=d2a043f3a8fe096e -C extra-filename=-972f100367cd8034 --out-dir /build/source/target/release/deps -C linker=/nix/store/j1938gsbvbhkyz4kbmvjk56r479mkw3s-gcc-wrapper-16.2.0/bin/cc -L dependency=/build/source/target/release/deps --cap-lints allow",
+    ],
+)
+
+rust_proc_macro(
+    name = "s20300_rustc",
+    srcs = [
+        "actions/s20300_rustc.manifest",
+        "closure.txt",
+        "env/62.env",
+        "platform",
+        "sandbox.sh",
+        ":s10582_rustc",
+        ":s10786_rustc",
+        ":s11170_rustc",
+        ":s1603_cp",
+        ":s17812_rustc",
+    ],
+    out = "s20300_rustc",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s20300_rustc --timeout 1023 --pipe 495:0:0:0",
+        "run --cwd /build/hexyl-0.17.0-vendor/source-registry-0/const_format_proc_macros-0.2.33 --env 62 --fd 0=null --fd 1=null --fd 2=null --fd 3=pipe-r:495 --fd 4=pipe-w:495 --status 0 --argc 42 --",
+        "/nix/store/53lvgpxsb3b9ghkgb4v0jra6zzlnyw8n-rustc-1.98.1/bin/rustc --crate-name const_format_proc_macros --edition=2021 /build/hexyl-0.17.0-vendor/source-registry-0/const_format_proc_macros-0.2.33/src/lib.rs --error-format=json --json=diagnostic-rendered-ansi,artifacts,future-incompat --crate-type proc-macro --emit=dep-info,link -C prefer-dynamic -C embed-bitcode=no -C debug-assertions=off --cfg 'feature=\"default\"' --check-cfg 'cfg(docsrs,test)' --check-cfg 'cfg(feature, values(\"all\", \"debug\", \"default\", \"derive\", \"syn\"))' -C metadata=68359eca66721d7a -C extra-filename=-cef55fec8ef8c570 --out-dir /build/source/target/release/deps -C linker=/nix/store/j1938gsbvbhkyz4kbmvjk56r479mkw3s-gcc-wrapper-16.2.0/bin/cc -L dependency=/build/source/target/release/deps --extern proc_macro2=/build/source/target/release/deps/libproc_macro2-fd9102a5f52e6f33.rlib --extern quote=/build/source/target/release/deps/libquote-5732b170a93f1db9.rlib --extern unicode_xid=/build/source/target/release/deps/libunicode_xid-972f100367cd8034.rlib --extern proc_macro --cap-lints allow",
+    ],
+)
+
+rust_library(
+    name = "s21171_rustc",
+    srcs = [
+        "actions/s21171_rustc.manifest",
+        "closure.txt",
+        "env/64.env",
+        "platform",
+        "sandbox.sh",
+        ":s12926_rustc",
+        ":s13145_rustc",
+        ":s13381_rustc",
+        ":s13576_rustc",
+        ":s13795_rustc",
+        ":s14037_rustc",
+        ":s14224_rustc",
+        ":s14428_rustc",
+        ":s14616_rustc",
+        ":s14858_rustc",
+        ":s15094_rustc",
+        ":s15305_rustc",
+        ":s15757_rustc",
+        ":s15983_rustc",
+        ":s1603_cp",
+        ":s16250_rustc",
+    ],
+    out = "s21171_rustc",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s21171_rustc --timeout 1023 --pipe 495:0:0:0",
+        "run --cwd /build/hexyl-0.17.0-vendor/source-registry-0/clap-4.5.20 --env 64 --fd 0=null --fd 1=null --fd 2=null --fd 3=pipe-r:495 --fd 4=pipe-w:495 --status 0 --argc 122 --",
+        "/nix/store/53lvgpxsb3b9ghkgb4v0jra6zzlnyw8n-rustc-1.98.1/bin/rustc --crate-name clap --edition=2021 /build/hexyl-0.17.0-vendor/source-registry-0/clap-4.5.20/src/lib.rs --error-format=json --json=diagnostic-rendered-ansi,artifacts,future-incompat --crate-type lib --emit=dep-info,metadata,link -C opt-level=3 -C linker-plugin-lto -C codegen-units=1 --warn=rust_2018_idioms --warn=clippy::zero_sized_map_values --warn=clippy::verbose_file_reads --warn=unused_qualifications --warn=unused_macro_rules --warn=unused_lifetimes --warn=unsafe_op_in_unsafe_fn --warn=unreachable_pub --warn=clippy::uninlined_format_args --warn=clippy::trait_duplication_in_bounds --warn=clippy::todo --warn=clippy::string_lit_as_bytes --warn=clippy::string_add_assign --warn=clippy::semicolon_if_nothing_returned --warn=clippy::self_named_module_files --warn=clippy::same_functions_in_if_condition --warn=clippy::rest_pat_in_fully_bound_structs --warn=clippy::ref_option_ref --warn=clippy::redundant_feature_names --warn=clippy::rc_mutex --warn=clippy::ptr_as_ptr --warn=clippy::path_buf_push_overwrite --warn=clippy::negative_feature_names --warn=clippy::needless_for_each --warn=clippy::needless_continue --warn=clippy::mutex_integer --allow=clippy::multiple_bound_locations --warn=clippy::mem_forget --warn=clippy::macro_use_imports --warn=clippy::lossy_float_literal --warn=clippy::linkedlist --allow=clippy::let_and_return --warn=clippy::large_types_passed_by_value --warn=clippy::large_stack_arrays --warn=clippy::large_digit_groups --warn=clippy::invalid_upcast_comparisons --warn=clippy::infinite_loop --warn=clippy::inefficient_to_string --warn=clippy::inconsistent_struct_constructor --warn=clippy::imprecise_flops --warn=clippy::implicit_clone --allow=clippy::if_same_then_else --warn=clippy::from_iter_instead_of_collect --warn=clippy::fn_params_excessive_bools --warn=clippy::float_cmp_const --warn=clippy::flat_map_option --warn=clippy::filter_map_next --warn=clippy::fallible_impl_from --warn=clippy::explicit_into_iter_loop --warn=clippy::explicit_deref_methods --warn=clippy::expl_impl_clone_on_copy --warn=clippy::enum_glob_use --warn=clippy::empty_enum --warn=clippy::doc_markdown --warn=clippy::debug_assert_with_mut_call --warn=clippy::dbg_macro --warn=clippy::create_dir --allow=clippy::collapsible_else_if --warn=clippy::checked_conversions --allow=clippy::branches_sharing_code --allow=clippy::bool_assert_comparison --allow=clippy::blocks_in_conditions --allow=clippy::assigning_clones --cfg 'feature=\"color\"' --cfg 'feature=\"default\"' --cfg 'feature=\"derive\"' --cfg 'feature=\"error-context\"' --cfg 'feature=\"help\"' --cfg 'feature=\"std\"' --cfg 'feature=\"suggestions\"' --cfg 'feature=\"usage\"' --cfg 'feature=\"wrap_help\"' --check-cfg 'cfg(docsrs,test)' --check-cfg 'cfg(feature, values(\"cargo\", \"color\", \"debug\", \"default\", \"deprecated\", \"derive\", \"env\", \"error-context\", \"help\", \"std\", \"string\", \"suggestions\", \"unicode\", \"unstable-derive-ui-tests\", \"unstable-doc\", \"unstable-ext\", \"unstable-styles\", \"unstable-v5\", \"usage\", \"wrap_help\"))' -C metadata=533f4558b1405f5a -C extra-filename=-35c3cb50fbbea2bb --out-dir /build/source/target/x86_64-unknown-linux-gnu/release/deps --target x86_64-unknown-linux-gnu -C linker=/nix/store/j1938gsbvbhkyz4kbmvjk56r479mkw3s-gcc-wrapper-16.2.0/bin/cc -L dependency=/build/source/target/x86_64-unknown-linux-gnu/release/deps -L dependency=/build/source/target/release/deps --extern clap_builder=/build/source/target/x86_64-unknown-linux-gnu/release/deps/libclap_builder-c91d0d345f1766e0.rmeta --extern clap_derive=/build/source/target/release/deps/libclap_derive-2eda517cca7e7fc5.so --cap-lints allow -Cforce-frame-pointers=yes",
+    ],
+)
+
+rust_proc_macro(
+    name = "s21359_rustc",
+    srcs = [
+        "actions/s21359_rustc.manifest",
+        "closure.txt",
+        "env/65.env",
+        "platform",
+        "sandbox.sh",
+        ":s10582_rustc",
+        ":s10786_rustc",
+        ":s11170_rustc",
+        ":s12155_rustc",
+        ":s1603_cp",
+    ],
+    out = "s21359_rustc",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s21359_rustc --timeout 1023 --pipe 495:0:0:0",
+        "run --cwd /build/hexyl-0.17.0-vendor/source-registry-0/thiserror-impl-1.0.65 --env 65 --fd 0=null --fd 1=null --fd 2=null --fd 3=pipe-r:495 --fd 4=pipe-w:495 --status 0 --argc 40 --",
+        "/nix/store/53lvgpxsb3b9ghkgb4v0jra6zzlnyw8n-rustc-1.98.1/bin/rustc --crate-name thiserror_impl --edition=2021 /build/hexyl-0.17.0-vendor/source-registry-0/thiserror-impl-1.0.65/src/lib.rs --error-format=json --json=diagnostic-rendered-ansi,artifacts,future-incompat --crate-type proc-macro --emit=dep-info,link -C prefer-dynamic -C embed-bitcode=no -C debug-assertions=off --check-cfg 'cfg(docsrs,test)' --check-cfg 'cfg(feature, values())' -C metadata=cc660b2c7651f069 -C extra-filename=-fde1436d876d21ef --out-dir /build/source/target/release/deps -C linker=/nix/store/j1938gsbvbhkyz4kbmvjk56r479mkw3s-gcc-wrapper-16.2.0/bin/cc -L dependency=/build/source/target/release/deps --extern proc_macro2=/build/source/target/release/deps/libproc_macro2-fd9102a5f52e6f33.rlib --extern quote=/build/source/target/release/deps/libquote-5732b170a93f1db9.rlib --extern syn=/build/source/target/release/deps/libsyn-78aeb1020e0af73c.rlib --extern proc_macro --cap-lints allow",
+    ],
+)
+
+rust_library(
+    name = "s22285_rustc",
+    srcs = [
+        "actions/s22285_rustc.manifest",
+        "closure.txt",
+        "env/66.env",
+        "platform",
+        "sandbox.sh",
+        ":s1603_cp",
+    ],
+    out = "s22285_rustc",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s22285_rustc --timeout 1023 --pipe 495:0:0:0",
+        "run --cwd /build/hexyl-0.17.0-vendor/source-registry-0/is_ci-1.2.0 --env 66 --fd 0=null --fd 1=null --fd 2=null --fd 3=pipe-r:495 --fd 4=pipe-w:495 --status 0 --argc 37 --",
+        "/nix/store/53lvgpxsb3b9ghkgb4v0jra6zzlnyw8n-rustc-1.98.1/bin/rustc --crate-name is_ci --edition=2018 /build/hexyl-0.17.0-vendor/source-registry-0/is_ci-1.2.0/src/lib.rs --error-format=json --json=diagnostic-rendered-ansi,artifacts,future-incompat --crate-type lib --emit=dep-info,metadata,link -C opt-level=3 -C linker-plugin-lto -C codegen-units=1 --check-cfg 'cfg(docsrs,test)' --check-cfg 'cfg(feature, values())' -C metadata=3ec6526f45b90e0e -C extra-filename=-2f6aa3e28df30904 --out-dir /build/source/target/x86_64-unknown-linux-gnu/release/deps --target x86_64-unknown-linux-gnu -C linker=/nix/store/j1938gsbvbhkyz4kbmvjk56r479mkw3s-gcc-wrapper-16.2.0/bin/cc -L dependency=/build/source/target/x86_64-unknown-linux-gnu/release/deps -L dependency=/build/source/target/release/deps --cap-lints allow -Cforce-frame-pointers=yes",
+    ],
+)
+
+rust_library(
+    name = "s22498_rustc",
+    srcs = [
+        "actions/s22498_rustc.manifest",
+        "closure.txt",
+        "env/67.env",
+        "platform",
+        "sandbox.sh",
+        ":s1603_cp",
+        ":s22285_rustc",
+    ],
+    out = "s22498_rustc",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s22498_rustc --timeout 1023 --pipe 495:0:0:0",
+        "run --cwd /build/hexyl-0.17.0-vendor/source-registry-0/supports-color-3.0.1 --env 67 --fd 0=null --fd 1=null --fd 2=null --fd 3=pipe-r:495 --fd 4=pipe-w:495 --status 0 --argc 39 --",
+        "/nix/store/53lvgpxsb3b9ghkgb4v0jra6zzlnyw8n-rustc-1.98.1/bin/rustc --crate-name supports_color --edition=2018 /build/hexyl-0.17.0-vendor/source-registry-0/supports-color-3.0.1/src/lib.rs --error-format=json --json=diagnostic-rendered-ansi,artifacts,future-incompat --crate-type lib --emit=dep-info,metadata,link -C opt-level=3 -C linker-plugin-lto -C codegen-units=1 --check-cfg 'cfg(docsrs,test)' --check-cfg 'cfg(feature, values())' -C metadata=d8f457402d75858b -C extra-filename=-d47f21a5c5acb2ae --out-dir /build/source/target/x86_64-unknown-linux-gnu/release/deps --target x86_64-unknown-linux-gnu -C linker=/nix/store/j1938gsbvbhkyz4kbmvjk56r479mkw3s-gcc-wrapper-16.2.0/bin/cc -L dependency=/build/source/target/x86_64-unknown-linux-gnu/release/deps -L dependency=/build/source/target/release/deps --extern is_ci=/build/source/target/x86_64-unknown-linux-gnu/release/deps/libis_ci-2f6aa3e28df30904.rmeta --cap-lints allow -Cforce-frame-pointers=yes",
+    ],
+)
+
+rust_library(
+    name = "s22715_rustc",
+    srcs = [
+        "actions/s22715_rustc.manifest",
+        "closure.txt",
+        "env/68.env",
+        "platform",
+        "sandbox.sh",
+        ":s1603_cp",
+        ":s21359_rustc",
+    ],
+    out = "s22715_rustc",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s22715_rustc --timeout 1023 --pipe 495:0:0:0",
+        "run --cwd /build/hexyl-0.17.0-vendor/source-registry-0/thiserror-1.0.65 --env 68 --fd 0=null --fd 1=null --fd 2=null --fd 3=pipe-r:495 --fd 4=pipe-w:495 --status 0 --argc 43 --",
+        "/nix/store/53lvgpxsb3b9ghkgb4v0jra6zzlnyw8n-rustc-1.98.1/bin/rustc --crate-name thiserror --edition=2021 /build/hexyl-0.17.0-vendor/source-registry-0/thiserror-1.0.65/src/lib.rs --error-format=json --json=diagnostic-rendered-ansi,artifacts,future-incompat --crate-type lib --emit=dep-info,metadata,link -C opt-level=3 -C linker-plugin-lto -C codegen-units=1 --check-cfg 'cfg(docsrs,test)' --check-cfg 'cfg(feature, values())' -C metadata=c11314aaca8c9104 -C extra-filename=-3c1ac2a4ca958566 --out-dir /build/source/target/x86_64-unknown-linux-gnu/release/deps --target x86_64-unknown-linux-gnu -C linker=/nix/store/j1938gsbvbhkyz4kbmvjk56r479mkw3s-gcc-wrapper-16.2.0/bin/cc -L dependency=/build/source/target/x86_64-unknown-linux-gnu/release/deps -L dependency=/build/source/target/release/deps --extern thiserror_impl=/build/source/target/release/deps/libthiserror_impl-fde1436d876d21ef.so --cap-lints allow -Cforce-frame-pointers=yes --check-cfg 'cfg(error_generic_member_access)' --check-cfg 'cfg(thiserror_nightly_testing)'",
+    ],
+)
+
+rust_library(
+    name = "s22906_rustc",
+    srcs = [
+        "actions/s22906_rustc.manifest",
+        "closure.txt",
+        "env/69.env",
+        "platform",
+        "sandbox.sh",
+        ":s12926_rustc",
+        ":s13145_rustc",
+        ":s13381_rustc",
+        ":s13576_rustc",
+        ":s13795_rustc",
+        ":s14037_rustc",
+        ":s14224_rustc",
+        ":s14428_rustc",
+        ":s14616_rustc",
+        ":s14858_rustc",
+        ":s15094_rustc",
+        ":s15305_rustc",
+        ":s15757_rustc",
+        ":s15983_rustc",
+        ":s1603_cp",
+        ":s16250_rustc",
+        ":s21171_rustc",
+    ],
+    out = "s22906_rustc",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s22906_rustc --timeout 1023 --pipe 495:0:0:0",
+        "run --cwd /build/hexyl-0.17.0-vendor/source-registry-0/clap_complete-4.5.55 --env 69 --fd 0=null --fd 1=null --fd 2=null --fd 3=pipe-r:495 --fd 4=pipe-w:495 --status 0 --argc 106 --",
+        "/nix/store/53lvgpxsb3b9ghkgb4v0jra6zzlnyw8n-rustc-1.98.1/bin/rustc --crate-name clap_complete --edition=2021 /build/hexyl-0.17.0-vendor/source-registry-0/clap_complete-4.5.55/src/lib.rs --error-format=json --json=diagnostic-rendered-ansi,artifacts,future-incompat --crate-type lib --emit=dep-info,metadata,link -C opt-level=3 -C linker-plugin-lto -C codegen-units=1 --warn=rust_2018_idioms --warn=clippy::zero_sized_map_values --warn=clippy::verbose_file_reads --warn=unused_qualifications --warn=unused_macro_rules --warn=unused_lifetimes --warn=unsafe_op_in_unsafe_fn --warn=unreachable_pub --allow=unnameable_types --warn=clippy::uninlined_format_args --warn=clippy::trait_duplication_in_bounds --warn=clippy::todo --warn=clippy::string_lit_as_bytes --warn=clippy::string_add_assign --warn=clippy::semicolon_if_nothing_returned --warn=clippy::self_named_module_files --warn=clippy::same_functions_in_if_condition --allow=clippy::result_large_err --warn=clippy::rest_pat_in_fully_bound_structs --warn=clippy::ref_option_ref --warn=clippy::redundant_feature_names --warn=clippy::rc_mutex --warn=clippy::ptr_as_ptr --warn=clippy::path_buf_push_overwrite --warn=clippy::negative_feature_names --warn=clippy::needless_for_each --allow=clippy::needless_continue --warn=clippy::mutex_integer --allow=clippy::multiple_bound_locations --warn=clippy::mem_forget --warn=clippy::macro_use_imports --warn=clippy::lossy_float_literal --warn=clippy::linkedlist --allow=clippy::let_and_return --warn=clippy::large_types_passed_by_value --warn=clippy::large_stack_arrays --warn=clippy::large_digit_groups --warn=clippy::invalid_upcast_comparisons --warn=clippy::infinite_loop --warn=clippy::inefficient_to_string --warn=clippy::inconsistent_struct_constructor --warn=clippy::imprecise_flops --warn=clippy::implicit_clone --allow=clippy::if_same_then_else --warn=clippy::from_iter_instead_of_collect --warn=clippy::fn_params_excessive_bools --warn=clippy::float_cmp_const --warn=clippy::flat_map_option --warn=clippy::filter_map_next --warn=clippy::fallible_impl_from --warn=clippy::explicit_into_iter_loop --warn=clippy::explicit_deref_methods --warn=clippy::expl_impl_clone_on_copy --warn=clippy::enum_glob_use --warn=clippy::empty_enum --warn=clippy::doc_markdown --warn=clippy::debug_assert_with_mut_call --warn=clippy::dbg_macro --warn=clippy::create_dir --allow=clippy::collapsible_else_if --warn=clippy::checked_conversions --allow=clippy::branches_sharing_code --allow=clippy::bool_assert_comparison --allow=clippy::blocks_in_conditions --allow=clippy::assigning_clones --cfg 'feature=\"default\"' --check-cfg 'cfg(docsrs,test)' --check-cfg 'cfg(feature, values(\"debug\", \"default\", \"unstable-doc\", \"unstable-dynamic\", \"unstable-shell-tests\"))' -C metadata=23e68cc7bba35a8c -C extra-filename=-2eac0a4564123444 --out-dir /build/source/target/x86_64-unknown-linux-gnu/release/deps --target x86_64-unknown-linux-gnu -C linker=/nix/store/j1938gsbvbhkyz4kbmvjk56r479mkw3s-gcc-wrapper-16.2.0/bin/cc -L dependency=/build/source/target/x86_64-unknown-linux-gnu/release/deps -L dependency=/build/source/target/release/deps --extern clap=/build/source/target/x86_64-unknown-linux-gnu/release/deps/libclap-35c3cb50fbbea2bb.rmeta --cap-lints allow -Cforce-frame-pointers=yes",
+    ],
+)
+
+rust_library(
+    name = "s23157_rustc",
+    srcs = [
+        "actions/s23157_rustc.manifest",
+        "closure.txt",
+        "env/70.env",
+        "platform",
+        "sandbox.sh",
+        ":s1603_cp",
+        ":s20300_rustc",
+    ],
+    out = "s23157_rustc",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s23157_rustc --timeout 1023 --pipe 495:0:0:0",
+        "run --cwd /build/hexyl-0.17.0-vendor/source-registry-0/const_format-0.2.33 --env 70 --fd 0=null --fd 1=null --fd 2=null --fd 3=pipe-r:495 --fd 4=pipe-w:495 --status 0 --argc 41 --",
+        "/nix/store/53lvgpxsb3b9ghkgb4v0jra6zzlnyw8n-rustc-1.98.1/bin/rustc --crate-name const_format --edition=2021 /build/hexyl-0.17.0-vendor/source-registry-0/const_format-0.2.33/src/lib.rs --error-format=json --json=diagnostic-rendered-ansi,artifacts,future-incompat --crate-type lib --emit=dep-info,metadata,link -C opt-level=3 -C linker-plugin-lto -C codegen-units=1 --cfg 'feature=\"default\"' --check-cfg 'cfg(docsrs,test)' --check-cfg 'cfg(feature, values(\"__debug\", \"__docsrs\", \"__only_new_tests\", \"__test\", \"all\", \"assert\", \"assertc\", \"assertcp\", \"const_generics\", \"constant_time_as_str\", \"default\", \"derive\", \"fmt\", \"konst\", \"more_str_macros\", \"nightly_const_generics\", \"rust_1_51\", \"rust_1_64\"))' -C metadata=0ea7ec44a37854e1 -C extra-filename=-da931ebd5c0606f3 --out-dir /build/source/target/x86_64-unknown-linux-gnu/release/deps --target x86_64-unknown-linux-gnu -C linker=/nix/store/j1938gsbvbhkyz4kbmvjk56r479mkw3s-gcc-wrapper-16.2.0/bin/cc -L dependency=/build/source/target/x86_64-unknown-linux-gnu/release/deps -L dependency=/build/source/target/release/deps --extern const_format_proc_macros=/build/source/target/release/deps/libconst_format_proc_macros-cef55fec8ef8c570.so --cap-lints allow -Cforce-frame-pointers=yes",
+    ],
+)
+
+rust_library(
+    name = "s23404_rustc",
+    srcs = [
+        "actions/s23404_rustc.manifest",
+        "closure.txt",
+        "env/71.env",
+        "platform",
+        "sandbox.sh",
+        ":s1603_cp",
+    ],
+    out = "s23404_rustc",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s23404_rustc --timeout 1023 --pipe 495:0:0:0",
+        "run --cwd /build/hexyl-0.17.0-vendor/source-registry-0/anyhow-1.0.91 --env 71 --fd 0=null --fd 1=null --fd 2=null --fd 3=pipe-r:495 --fd 4=pipe-w:495 --status 0 --argc 59 --",
+        "/nix/store/53lvgpxsb3b9ghkgb4v0jra6zzlnyw8n-rustc-1.98.1/bin/rustc --crate-name anyhow --edition=2018 /build/hexyl-0.17.0-vendor/source-registry-0/anyhow-1.0.91/src/lib.rs --error-format=json --json=diagnostic-rendered-ansi,artifacts,future-incompat --crate-type lib --emit=dep-info,metadata,link -C opt-level=3 -C linker-plugin-lto -C codegen-units=1 --cfg 'feature=\"default\"' --cfg 'feature=\"std\"' --check-cfg 'cfg(docsrs,test)' --check-cfg 'cfg(feature, values(\"backtrace\", \"default\", \"std\"))' -C metadata=bdace2766c4597c4 -C extra-filename=-8b643486c0e4ad15 --out-dir /build/source/target/x86_64-unknown-linux-gnu/release/deps --target x86_64-unknown-linux-gnu -C linker=/nix/store/j1938gsbvbhkyz4kbmvjk56r479mkw3s-gcc-wrapper-16.2.0/bin/cc -L dependency=/build/source/target/x86_64-unknown-linux-gnu/release/deps -L dependency=/build/source/target/release/deps --cap-lints allow -Cforce-frame-pointers=yes --cfg std_backtrace --check-cfg 'cfg(anyhow_nightly_testing)' --check-cfg 'cfg(anyhow_no_core_error)' --check-cfg 'cfg(anyhow_no_core_unwind_safe)' --check-cfg 'cfg(anyhow_no_fmt_arguments_as_str)' --check-cfg 'cfg(anyhow_no_ptr_addr_of)' --check-cfg 'cfg(anyhow_no_unsafe_op_in_unsafe_fn_lint)' --check-cfg 'cfg(error_generic_member_access)' --check-cfg 'cfg(std_backtrace)'",
+    ],
+)
+
+rust_library(
+    name = "s23634_rustc",
+    srcs = [
+        "actions/s23634_rustc.manifest",
+        "closure.txt",
+        "env/72.env",
+        "platform",
+        "sandbox.sh",
+        ":s1603_cp",
+    ],
+    out = "s23634_rustc",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s23634_rustc --timeout 1023 --pipe 495:0:0:0",
+        "run --cwd /build/hexyl-0.17.0-vendor/source-registry-0/libc-0.2.161 --env 72 --fd 0=null --fd 1=null --fd 2=null --fd 3=pipe-r:495 --fd 4=pipe-w:495 --status 0 --argc 125 --",
+        "/nix/store/53lvgpxsb3b9ghkgb4v0jra6zzlnyw8n-rustc-1.98.1/bin/rustc --crate-name libc --edition=2015 /build/hexyl-0.17.0-vendor/source-registry-0/libc-0.2.161/src/lib.rs --error-format=json --json=diagnostic-rendered-ansi,artifacts,future-incompat --crate-type lib --emit=dep-info,metadata,link -C opt-level=3 -C linker-plugin-lto -C codegen-units=1 --cfg 'feature=\"default\"' --cfg 'feature=\"std\"' --check-cfg 'cfg(docsrs,test)' --check-cfg 'cfg(feature, values(\"align\", \"const-extern-fn\", \"default\", \"extra_traits\", \"rustc-dep-of-std\", \"rustc-std-workspace-core\", \"std\", \"use_std\"))' -C metadata=6af8aa3f32d06573 -C extra-filename=-45aaca1ebeea68fa --out-dir /build/source/target/x86_64-unknown-linux-gnu/release/deps --target x86_64-unknown-linux-gnu -C linker=/nix/store/j1938gsbvbhkyz4kbmvjk56r479mkw3s-gcc-wrapper-16.2.0/bin/cc -L dependency=/build/source/target/x86_64-unknown-linux-gnu/release/deps -L dependency=/build/source/target/release/deps --cap-lints allow -Cforce-frame-pointers=yes --cfg freebsd11 --cfg libc_priv_mod_use --cfg libc_union --cfg libc_const_size_of --cfg libc_align --cfg libc_int128 --cfg libc_core_cvoid --cfg libc_packedN --cfg libc_cfg_target_vendor --cfg libc_non_exhaustive --cfg libc_long_array --cfg libc_ptr_addr_of --cfg libc_underscore_const_names --cfg libc_const_extern_fn --check-cfg 'cfg(emscripten_new_stat_abi)' --check-cfg 'cfg(espidf_time64)' --check-cfg 'cfg(freebsd10)' --check-cfg 'cfg(freebsd11)' --check-cfg 'cfg(freebsd12)' --check-cfg 'cfg(freebsd13)' --check-cfg 'cfg(freebsd14)' --check-cfg 'cfg(freebsd15)' --check-cfg 'cfg(libc_align)' --check-cfg 'cfg(libc_cfg_target_vendor)' --check-cfg 'cfg(libc_const_extern_fn)' --check-cfg 'cfg(libc_const_extern_fn_unstable)' --check-cfg 'cfg(libc_const_size_of)' --check-cfg 'cfg(libc_core_cvoid)' --check-cfg 'cfg(libc_deny_warnings)' --check-cfg 'cfg(libc_int128)' --check-cfg 'cfg(libc_long_array)' --check-cfg 'cfg(libc_non_exhaustive)' --check-cfg 'cfg(libc_packedN)' --check-cfg 'cfg(libc_priv_mod_use)' --check-cfg 'cfg(libc_ptr_addr_of)' --check-cfg 'cfg(libc_thread_local)' --check-cfg 'cfg(libc_underscore_const_names)' --check-cfg 'cfg(libc_union)' --check-cfg 'cfg(libc_ctest)' --check-cfg 'cfg(target_os,values(\"switch\",\"aix\",\"ohos\",\"hurd\",\"rtems\",\"visionos\",\"nuttx\"))' --check-cfg 'cfg(target_env,values(\"illumos\",\"wasi\",\"aix\",\"ohos\"))' --check-cfg 'cfg(target_arch,values(\"loongarch64\",\"mips32r6\",\"mips64r6\",\"csky\"))'",
+    ],
+)
+
+rust_library(
+    name = "s23850_rustc",
+    srcs = [
+        "actions/s23850_rustc.manifest",
+        "closure.txt",
+        "env/73.env",
+        "platform",
+        "sandbox.sh",
+        ":s1603_cp",
+    ],
+    out = "s23850_rustc",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s23850_rustc --timeout 1023 --pipe 495:0:0:0",
+        "run --cwd /build/hexyl-0.17.0-vendor/source-registry-0/owo-colors-4.1.0 --env 73 --fd 0=null --fd 1=null --fd 2=null --fd 3=pipe-r:495 --fd 4=pipe-w:495 --status 0 --argc 39 --",
+        "/nix/store/53lvgpxsb3b9ghkgb4v0jra6zzlnyw8n-rustc-1.98.1/bin/rustc --crate-name owo_colors --edition=2021 /build/hexyl-0.17.0-vendor/source-registry-0/owo-colors-4.1.0/src/lib.rs --error-format=json --json=diagnostic-rendered-ansi,artifacts,future-incompat --crate-type lib --emit=dep-info,metadata,link -C opt-level=3 -C linker-plugin-lto -C codegen-units=1 --check-cfg 'cfg(docsrs,test)' --check-cfg 'cfg(feature, values(\"alloc\", \"supports-color\", \"supports-colors\"))' -C metadata=a5eedefe529d9207 -C extra-filename=-9c8eba4285e63806 --out-dir /build/source/target/x86_64-unknown-linux-gnu/release/deps --target x86_64-unknown-linux-gnu -C linker=/nix/store/j1938gsbvbhkyz4kbmvjk56r479mkw3s-gcc-wrapper-16.2.0/bin/cc -L dependency=/build/source/target/x86_64-unknown-linux-gnu/release/deps -L dependency=/build/source/target/release/deps --cap-lints allow -Cforce-frame-pointers=yes --check-cfg 'cfg(doc_cfg)'",
+    ],
+)
+
+rust_library(
+    name = "s24113_rustc",
+    srcs = [
+        "actions/s24113_rustc.manifest",
+        "closure.txt",
+        "env/74.env",
+        "platform",
+        "sandbox.sh",
+        ":s12926_rustc",
+        ":s13145_rustc",
+        ":s13381_rustc",
+        ":s13576_rustc",
+        ":s13795_rustc",
+        ":s14037_rustc",
+        ":s14224_rustc",
+        ":s14428_rustc",
+        ":s14616_rustc",
+        ":s1465_cp",
+        ":s14858_rustc",
+        ":s15094_rustc",
+        ":s15305_rustc",
+        ":s15757_rustc",
+        ":s15983_rustc",
+        ":s16250_rustc",
+        ":s21171_rustc",
+        ":s23634_rustc",
+        ":s23850_rustc",
+    ],
+    out = "s24113_rustc",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s24113_rustc --timeout 1023 --pipe 495:0:0:0",
+        "run --cwd /build/source --env 74 --fd 0=null --fd 1=null --fd 2=null --fd 3=pipe-r:495 --fd 4=pipe-w:495 --status 0 --argc 53 --",
+        "/nix/store/53lvgpxsb3b9ghkgb4v0jra6zzlnyw8n-rustc-1.98.1/bin/rustc --crate-name hexyl --edition=2021 src/lib.rs --error-format=json --json=diagnostic-rendered-ansi,artifacts,future-incompat --crate-type lib --emit=dep-info,metadata,link -C opt-level=3 -C linker-plugin-lto -C codegen-units=1 --check-cfg 'cfg(docsrs,test)' --check-cfg 'cfg(feature, values())' -C metadata=8596c275d90ef7f2 -C extra-filename=-0b6269328d5a76ea --out-dir /build/source/target/x86_64-unknown-linux-gnu/release/deps --target x86_64-unknown-linux-gnu -C linker=/nix/store/j1938gsbvbhkyz4kbmvjk56r479mkw3s-gcc-wrapper-16.2.0/bin/cc -L dependency=/build/source/target/x86_64-unknown-linux-gnu/release/deps -L dependency=/build/source/target/release/deps --extern anyhow=/build/source/target/x86_64-unknown-linux-gnu/release/deps/libanyhow-8b643486c0e4ad15.rmeta --extern clap=/build/source/target/x86_64-unknown-linux-gnu/release/deps/libclap-35c3cb50fbbea2bb.rmeta --extern clap_complete=/build/source/target/x86_64-unknown-linux-gnu/release/deps/libclap_complete-2eac0a4564123444.rmeta --extern const_format=/build/source/target/x86_64-unknown-linux-gnu/release/deps/libconst_format-da931ebd5c0606f3.rmeta --extern libc=/build/source/target/x86_64-unknown-linux-gnu/release/deps/liblibc-45aaca1ebeea68fa.rmeta --extern owo_colors=/build/source/target/x86_64-unknown-linux-gnu/release/deps/libowo_colors-9c8eba4285e63806.rmeta --extern supports_color=/build/source/target/x86_64-unknown-linux-gnu/release/deps/libsupports_color-d47f21a5c5acb2ae.rmeta --extern terminal_size=/build/source/target/x86_64-unknown-linux-gnu/release/deps/libterminal_size-6d6fc87d68fc9de4.rmeta --extern thiserror=/build/source/target/x86_64-unknown-linux-gnu/release/deps/libthiserror-3c1ac2a4ca958566.rmeta -Cforce-frame-pointers=yes",
+    ],
+)
+
+recorded(
+    name = "s24327_cargo-auditable",
+    srcs = [
+        "actions/s24327_cargo-auditable.manifest",
+        "closure.txt",
+        "env/75.env",
+        "platform",
+        "sandbox.sh",
+        ":s10582_rustc",
+        ":s10786_rustc",
+        ":s11170_rustc",
+        ":s12155_rustc",
+        ":s12926_rustc",
+        ":s13145_rustc",
+        ":s13381_rustc",
+        ":s13576_rustc",
+        ":s13795_rustc",
+        ":s14037_rustc",
+        ":s14224_rustc",
+        ":s14428_rustc",
+        ":s14616_rustc",
+        ":s1465_cp",
+        ":s14858_rustc",
+        ":s15094_rustc",
+        ":s15305_rustc",
+        ":s15529_rustc",
+        ":s15757_rustc",
+        ":s15983_rustc",
+        ":s1603_cp",
+        ":s16250_rustc",
+        ":s17812_rustc",
+        ":s20300_rustc",
+        ":s21171_rustc",
+        ":s21359_rustc",
+        ":s22285_rustc",
+        ":s22498_rustc",
+        ":s22715_rustc",
+        ":s22906_rustc",
+        ":s23157_rustc",
+        ":s23404_rustc",
+        ":s23634_rustc",
+        ":s23850_rustc",
+        ":s24113_rustc",
+        ":s8301_cat",
+    ],
+    out = "s24327_cargo-auditable",
+    cmd = [
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "--name s24327_cargo-auditable --timeout 1023 --pipe 495:0:0:0",
+        "run --cwd /build/source --env 75 --fd 0=null --fd 1=null --fd 2=null --fd 3=pipe-r:495 --fd 4=pipe-w:495 --status 0 --argc 56 --",
+        "/nix/store/hlb5ksyq1hf2zps2fvl4hjzhh6nd6j17-cargo-auditable-0.7.5/bin/cargo-auditable rustc --crate-name hexyl --edition=2021 src/main.rs --error-format=json --json=diagnostic-rendered-ansi,artifacts,future-incompat --crate-type bin --emit=dep-info,link -C opt-level=3 -C lto -C codegen-units=1 --check-cfg 'cfg(docsrs,test)' --check-cfg 'cfg(feature, values())' -C metadata=1cb0b641bc36c0b4 -C extra-filename=-1c83e9c9415f07c1 --out-dir /build/source/target/x86_64-unknown-linux-gnu/release/deps --target x86_64-unknown-linux-gnu -C linker=/nix/store/j1938gsbvbhkyz4kbmvjk56r479mkw3s-gcc-wrapper-16.2.0/bin/cc -L dependency=/build/source/target/x86_64-unknown-linux-gnu/release/deps -L dependency=/build/source/target/release/deps --extern anyhow=/build/source/target/x86_64-unknown-linux-gnu/release/deps/libanyhow-8b643486c0e4ad15.rlib --extern clap=/build/source/target/x86_64-unknown-linux-gnu/release/deps/libclap-35c3cb50fbbea2bb.rlib --extern clap_complete=/build/source/target/x86_64-unknown-linux-gnu/release/deps/libclap_complete-2eac0a4564123444.rlib --extern const_format=/build/source/target/x86_64-unknown-linux-gnu/release/deps/libconst_format-da931ebd5c0606f3.rlib --extern hexyl=/build/source/target/x86_64-unknown-linux-gnu/release/deps/libhexyl-0b6269328d5a76ea.rlib --extern libc=/build/source/target/x86_64-unknown-linux-gnu/release/deps/liblibc-45aaca1ebeea68fa.rlib --extern owo_colors=/build/source/target/x86_64-unknown-linux-gnu/release/deps/libowo_colors-9c8eba4285e63806.rlib --extern supports_color=/build/source/target/x86_64-unknown-linux-gnu/release/deps/libsupports_color-d47f21a5c5acb2ae.rlib --extern terminal_size=/build/source/target/x86_64-unknown-linux-gnu/release/deps/libterminal_size-6d6fc87d68fc9de4.rlib --extern thiserror=/build/source/target/x86_64-unknown-linux-gnu/release/deps/libthiserror-3c1ac2a4ca958566.rlib -Cforce-frame-pointers=yes",
     ],
 )
 
@@ -82,9 +838,9 @@ recorded(
     srcs = [
         "actions/s40620_pandoc_mkdir_cat.manifest",
         "closure.txt",
-        "env/40.env",
-        "env/43.env",
-        "env/44.env",
+        "env/116.env",
+        "env/119.env",
+        "env/120.env",
         "platform",
         "sandbox.sh",
         ":s1465_cp",
@@ -92,12 +848,12 @@ recorded(
     out = "s40620_pandoc_mkdir_cat",
     cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name s40620_pandoc_mkdir_cat --timeout 1129 --pipe 2010:0:1,2:0",
-        "run --cwd /build/source --env 43 --argv0 pandoc --fd 0=null --fd 1=pipe-w:2010 --fd 2=err --status 0 --argc 9 --",
+        "--name s40620_pandoc_mkdir_cat --timeout 1023 --pipe 2010:0:1,2:0",
+        "run --cwd /build/source --env 119 --argv0 pandoc --fd 0=null --fd 1=pipe-w:2010 --fd 2=err --status 0 --argc 9 --",
         "/nix/store/bf911zd8a7h8ps28hw800b5q1y595jgp-pandoc-cli-3.7.0.2/bin/pandoc -s -f markdown -t man -o - doc/hexyl.1.md",
-        "run --cwd /build/source --env 40 --argv0 mkdir --fd 0=null --fd 1=err --fd 2=err --fd 63=pipe-r:2010 --status 0 --argc 3 --",
+        "run --cwd /build/source --env 116 --argv0 mkdir --fd 0=null --fd 1=err --fd 2=err --fd 63=pipe-r:2010 --status 0 --argc 3 --",
         "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/mkdir -p /nix/store/przagm88ij4731554f5fa5lcly24gz85-hexyl-0.17.0/share/man/man1/",
-        "run --cwd /build/source --env 44 --argv0 cat --fd 0=null --fd 1=file:w:/nix/store/przagm88ij4731554f5fa5lcly24gz85-hexyl-0.17.0/share/man/man1/hexyl.1 --fd 2=err --fd 63=pipe-r:2010 --after 1 --status 0 --argc 2 --",
+        "run --cwd /build/source --env 120 --argv0 cat --fd 0=null --fd 1=file:w:/nix/store/przagm88ij4731554f5fa5lcly24gz85-hexyl-0.17.0/share/man/man1/hexyl.1 --fd 2=err --fd 63=pipe-r:2010 --after 1 --status 0 --argc 2 --",
         "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/cat /dev/fd/63",
     ],
 )
@@ -107,38 +863,38 @@ recorded(
     srcs = [
         "actions/s40806_hexyl_hexyl_hexyl_mkdir__5.manifest",
         "closure.txt",
-        "env/45.env",
-        "env/46.env",
-        "env/47.env",
-        "env/48.env",
-        "env/49.env",
-        "env/50.env",
-        "env/51.env",
+        "env/121.env",
+        "env/122.env",
+        "env/123.env",
+        "env/124.env",
+        "env/125.env",
+        "env/126.env",
+        "env/127.env",
         "platform",
         "sandbox.sh",
-        ":s8902_.cargo-wrapped",
+        ":s24327_cargo-auditable",
     ],
     out = "s40806_hexyl_hexyl_hexyl_mkdir__5",
     cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name s40806_hexyl_hexyl_hexyl_mkdir__5 --timeout 1129 --pipe 2020:0:1,2,3,4,5,6,7,8:0 --pipe 2021:1:2,3,4,5,6,7,8:0 --pipe 2022:2:3,4,5,6,7,8:0",
-        "run --cwd /build/source --env 45 --fd 0=null --fd 1=pipe-w:2020 --fd 2=err --status 0 --argc 3 --",
+        "--name s40806_hexyl_hexyl_hexyl_mkdir__5 --timeout 1023 --pipe 2020:0:1,2,3,4,5,6,7,8:0 --pipe 2021:1:2,3,4,5,6,7,8:0 --pipe 2022:2:3,4,5,6,7,8:0",
+        "run --cwd /build/source --env 121 --fd 0=null --fd 1=pipe-w:2020 --fd 2=err --status 0 --argc 3 --",
         "/nix/store/przagm88ij4731554f5fa5lcly24gz85-hexyl-0.17.0/bin/hexyl --completion bash",
-        "run --cwd /build/source --env 45 --fd 0=null --fd 1=pipe-w:2021 --fd 2=err --fd 63=pipe-r:2020 --after 0 --status 0 --argc 3 --",
+        "run --cwd /build/source --env 121 --fd 0=null --fd 1=pipe-w:2021 --fd 2=err --fd 63=pipe-r:2020 --after 0 --status 0 --argc 3 --",
         "/nix/store/przagm88ij4731554f5fa5lcly24gz85-hexyl-0.17.0/bin/hexyl --completion fish",
-        "run --cwd /build/source --env 45 --fd 0=null --fd 1=pipe-w:2022 --fd 2=err --fd 62=pipe-r:2021 --fd 63=pipe-r:2020 --after 0,1 --status 0 --argc 3 --",
+        "run --cwd /build/source --env 121 --fd 0=null --fd 1=pipe-w:2022 --fd 2=err --fd 62=pipe-r:2021 --fd 63=pipe-r:2020 --after 0,1 --status 0 --argc 3 --",
         "/nix/store/przagm88ij4731554f5fa5lcly24gz85-hexyl-0.17.0/bin/hexyl --completion zsh",
-        "run --cwd /build/source --env 46 --argv0 mkdir --fd 0=null --fd 1=err --fd 2=err --fd 61=pipe-r:2022 --fd 62=pipe-r:2021 --fd 63=pipe-r:2020 --after 0,1,2 --status 0 --argc 3 --",
+        "run --cwd /build/source --env 122 --argv0 mkdir --fd 0=null --fd 1=err --fd 2=err --fd 61=pipe-r:2022 --fd 62=pipe-r:2021 --fd 63=pipe-r:2020 --after 0,1,2 --status 0 --argc 3 --",
         "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/mkdir -p /nix/store/przagm88ij4731554f5fa5lcly24gz85-hexyl-0.17.0/share/bash-completion/completions",
-        "run --cwd /build/source --env 47 --argv0 cat --fd 0=null --fd 1=file:w:/nix/store/przagm88ij4731554f5fa5lcly24gz85-hexyl-0.17.0/share/bash-completion/completions/hexyl.bash --fd 2=err --fd 61=pipe-r:2022 --fd 62=pipe-r:2021 --fd 63=pipe-r:2020 --after 0,1,2,3 --status 0 --argc 2 --",
+        "run --cwd /build/source --env 123 --argv0 cat --fd 0=null --fd 1=file:w:/nix/store/przagm88ij4731554f5fa5lcly24gz85-hexyl-0.17.0/share/bash-completion/completions/hexyl.bash --fd 2=err --fd 61=pipe-r:2022 --fd 62=pipe-r:2021 --fd 63=pipe-r:2020 --after 0,1,2,3 --status 0 --argc 2 --",
         "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/cat /dev/fd/63",
-        "run --cwd /build/source --env 48 --argv0 mkdir --fd 0=null --fd 1=err --fd 2=err --fd 61=pipe-r:2022 --fd 62=pipe-r:2021 --fd 63=pipe-r:2020 --after 0,1,2,3,4 --status 0 --argc 3 --",
+        "run --cwd /build/source --env 124 --argv0 mkdir --fd 0=null --fd 1=err --fd 2=err --fd 61=pipe-r:2022 --fd 62=pipe-r:2021 --fd 63=pipe-r:2020 --after 0,1,2,3,4 --status 0 --argc 3 --",
         "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/mkdir -p /nix/store/przagm88ij4731554f5fa5lcly24gz85-hexyl-0.17.0/share/fish/vendor_completions.d",
-        "run --cwd /build/source --env 49 --argv0 cat --fd 0=null --fd 1=file:w:/nix/store/przagm88ij4731554f5fa5lcly24gz85-hexyl-0.17.0/share/fish/vendor_completions.d/hexyl.fish --fd 2=err --fd 61=pipe-r:2022 --fd 62=pipe-r:2021 --fd 63=pipe-r:2020 --after 0,1,2,3,4,5 --status 0 --argc 2 --",
+        "run --cwd /build/source --env 125 --argv0 cat --fd 0=null --fd 1=file:w:/nix/store/przagm88ij4731554f5fa5lcly24gz85-hexyl-0.17.0/share/fish/vendor_completions.d/hexyl.fish --fd 2=err --fd 61=pipe-r:2022 --fd 62=pipe-r:2021 --fd 63=pipe-r:2020 --after 0,1,2,3,4,5 --status 0 --argc 2 --",
         "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/cat /dev/fd/62",
-        "run --cwd /build/source --env 50 --argv0 mkdir --fd 0=null --fd 1=err --fd 2=err --fd 61=pipe-r:2022 --fd 62=pipe-r:2021 --fd 63=pipe-r:2020 --after 0,1,2,3,4,5,6 --status 0 --argc 3 --",
+        "run --cwd /build/source --env 126 --argv0 mkdir --fd 0=null --fd 1=err --fd 2=err --fd 61=pipe-r:2022 --fd 62=pipe-r:2021 --fd 63=pipe-r:2020 --after 0,1,2,3,4,5,6 --status 0 --argc 3 --",
         "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/mkdir -p /nix/store/przagm88ij4731554f5fa5lcly24gz85-hexyl-0.17.0/share/zsh/site-functions",
-        "run --cwd /build/source --env 51 --argv0 cat --fd 0=null --fd 1=file:w:/nix/store/przagm88ij4731554f5fa5lcly24gz85-hexyl-0.17.0/share/zsh/site-functions/_hexyl --fd 2=err --fd 61=pipe-r:2022 --fd 62=pipe-r:2021 --fd 63=pipe-r:2020 --after 0,1,2,3,4,5,6,7 --status 0 --argc 2 --",
+        "run --cwd /build/source --env 127 --argv0 cat --fd 0=null --fd 1=file:w:/nix/store/przagm88ij4731554f5fa5lcly24gz85-hexyl-0.17.0/share/zsh/site-functions/_hexyl --fd 2=err --fd 61=pipe-r:2022 --fd 62=pipe-r:2021 --fd 63=pipe-r:2020 --after 0,1,2,3,4,5,6,7 --status 0 --argc 2 --",
         "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/cat /dev/fd/61",
     ],
 )
@@ -148,19 +904,19 @@ recorded(
     srcs = [
         "actions/s41192_find_patchelf.manifest",
         "closure.txt",
-        "env/53.env",
-        "env/54.env",
+        "env/129.env",
+        "env/130.env",
         "platform",
         "sandbox.sh",
-        ":s8902_.cargo-wrapped",
+        ":s24327_cargo-auditable",
     ],
     out = "s41192_find_patchelf",
     cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name s41192_find_patchelf --timeout 1129 --pipe 2056:0:1:0",
-        "run --cwd /build/source --env 53 --argv0 find --fd 0=null --fd 1=pipe-w:2056 --fd 2=err --status 0 --argc 5 --",
+        "--name s41192_find_patchelf --timeout 1023 --pipe 2056:0:1:0",
+        "run --cwd /build/source --env 129 --argv0 find --fd 0=null --fd 1=pipe-w:2056 --fd 2=err --status 0 --argc 5 --",
         "/nix/store/ycrbcy9sg4knpnik6a01dk70l0m673x7-findutils-4.11.0/bin/find /nix/store/przagm88ij4731554f5fa5lcly24gz85-hexyl-0.17.0 -type f -print0",
-        "run --cwd /build/source --env 54 --argv0 patchelf --fd 0=pipe-r:2056 --fd 1=err --fd 2=err --fd 63=pipe-r:2056 --after 0 --status 0 --argc 3 --",
+        "run --cwd /build/source --env 130 --argv0 patchelf --fd 0=pipe-r:2056 --fd 1=err --fd 2=err --fd 63=pipe-r:2056 --after 0 --status 0 --argc 3 --",
         "/nix/store/qcwnw71iksl68k7fipizi6wn0s1xms9v-patchelf-0.15.2/bin/patchelf --shrink-rpath /nix/store/przagm88ij4731554f5fa5lcly24gz85-hexyl-0.17.0/bin/hexyl",
     ],
 )
@@ -170,7 +926,7 @@ recorded(
     srcs = [
         "actions/s41515_gzip.manifest",
         "closure.txt",
-        "env/62.env",
+        "env/138.env",
         "platform",
         "sandbox.sh",
         ":s40620_pandoc_mkdir_cat",
@@ -178,8 +934,8 @@ recorded(
     out = "s41515_gzip",
     cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name s41515_gzip --timeout 1129",
-        "run --cwd /build/source --env 62 --argv0 gzip --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 4 --",
+        "--name s41515_gzip --timeout 1023",
+        "run --cwd /build/source --env 138 --argv0 gzip --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 4 --",
         "/nix/store/yr6ar7lsk3yfas4d464z1ysaxwcq2gc5-gzip-1.14/bin/gzip -n -f /nix/store/przagm88ij4731554f5fa5lcly24gz85-hexyl-0.17.0/share/man/man1/hexyl.1",
     ],
 )
@@ -190,7 +946,7 @@ recorded(
         "actions/s41755_strip.manifest",
         "closure.txt",
         "const_41649_mktemp",
-        "env/65.env",
+        "env/141.env",
         "platform",
         "sandbox.sh",
         ":s41192_find_patchelf",
@@ -198,8 +954,8 @@ recorded(
     out = "s41755_strip",
     cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name s41755_strip --timeout 1129",
-        "run --cwd /build/source --env 65 --fd 0=null --fd 1=err --fd 2=file:w:/build/striperr.ZuB8oN --status 0 --argc 5 --",
+        "--name s41755_strip --timeout 1023",
+        "run --cwd /build/source --env 141 --fd 0=null --fd 1=err --fd 2=file:w:/build/striperr.ZuB8oN --status 0 --argc 5 --",
         "/nix/store/y5sgl0vvrpbcwgjwpjs60r1hg0gi7i0n-binutils-2.46/bin/strip --enable-deterministic-archives -S -p /nix/store/przagm88ij4731554f5fa5lcly24gz85-hexyl-0.17.0/bin/hexyl",
     ],
 )

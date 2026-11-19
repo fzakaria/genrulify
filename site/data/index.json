@@ -26,8 +26,8 @@
   },
   {
     "id": "hexyl",
-    "label": "hexyl (Rust)",
-    "note": "hexyl 0.17.0: a Rust crate. cargo writes files of its own, so the whole cargo build is one rule"
+    "label": "hexyl (Rust, cargo)",
+    "note": "hexyl 0.17.0: a Rust crate, converted with --open cargo. Each crate cargo compiled is a rust_library or rust_proc_macro rule"
   },
   {
     "id": "ninja",
