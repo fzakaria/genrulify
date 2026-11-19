@@ -80,6 +80,55 @@ void recordRun(const std::string &run, const std::filesystem::path &drv,
                Granularity granularity = Granularity::Fine,
                const std::optional<std::filesystem::path> &project = {});
 
+// A number of files and how many bytes they hold together.
+struct FileCount {
+  size_t files = 0;
+  uint64_t bytes = 0;
+
+  FileCount &operator+=(const FileCount &other) {
+    files += other.files;
+    bytes += other.bytes;
+    return *this;
+  }
+};
+
+// Where the entries of one derivation output come from in a graph. The
+// counts of process groups do not say: a file the builder's shell wrote
+// is in no group, and one command can write most of an output.
+struct OutputOrigins {
+  // The output's name, such as `out`, and its store path.
+  std::string name;
+  std::string path;
+
+  // Files a command that runs wrote, and copies of those.
+  FileCount computed;
+
+  // Files of a project's own source tree.
+  FileCount source;
+
+  // Files carried as recorded bytes: what the builder wrote itself, and
+  // what a command that is not run wrote.
+  FileCount recorded;
+
+  // Each recorded file's path and why the file is recorded.
+  std::vector<std::pair<std::string, std::string>> recordedFiles;
+
+  // Directories, symlinks and empty files.
+  size_t withoutBytes = 0;
+};
+
+// How many recorded files a report names for one output before saying how
+// many more there are.
+inline constexpr size_t kListedOrigins = 20;
+
+// The origins of every output of a graph, in the order of the outputs.
+std::vector<OutputOrigins> outputOrigins(mlir::ModuleOp module,
+                                         const Recording &recording);
+
+// The origins as text: a line for each output, and under the line the
+// files that were carried as recorded bytes.
+std::string originsText(const std::vector<OutputOrigins> &outputs);
+
 // The groups the processes of a recording fall into, worked out again
 // from each process's lifetime and descriptors. Recording a run groups
 // its commands this way. The groups come back without their reads.

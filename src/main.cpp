@@ -16,6 +16,7 @@ constexpr std::string_view kUsage =
     "usage: genrulify convert [--coarse] [--open PROGRAMS] [--source PROJECT] INSTALLABLE DIRECTORY\n"
     "       genrulify record [--coarse] [--source PROJECT] RUN DERIVATION.drv RECORDING [OPEN]\n"
     "       genrulify groups RECORDING\n"
+    "       genrulify origins RECORDING GRAPH.mlir\n"
     "       genrulify same-source TREE DIRECTORY\n"
     "       genrulify cuts [--coarse] [--close PID@STEP]... EVENTS.jsonl TRACE.bin [OPEN]\n"
     "       genrulify accessed STRACE-DIRECTORY\n"
@@ -258,6 +259,13 @@ void run(std::span<char *> args) {
     auto module = parse(context, args[1]);
     splice_ir::optimize(*module, passesFrom(args.subspan(2)));
     print(*module);
+    return;
+  }
+  if (args.size() == 3 && command == "origins") {
+    // Where the files of each output come from in a graph.
+    auto module = parse(context, args[2]);
+    llvm::outs() << splice_ir::originsText(splice_ir::outputOrigins(
+        *module, splice_ir::Recording::load(args[1])));
     return;
   }
   if (args.size() == 3 && command == "describe") {

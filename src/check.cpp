@@ -361,8 +361,29 @@ void checkRecording(const Recording &recording,
   for (const auto pass : passes) {
     names.push_back(passName(pass));
   }
+  // Where the files of each output come from, which the group counts do
+  // not say.
+  const auto origins = outputOrigins(*module, recording);
+  Json outputs = Json::array();
+  for (const auto &output : origins) {
+    const auto count = [](const FileCount &files) {
+      return Json{{"files", files.files}, {"bytes", files.bytes}};
+    };
+    Json recordedFiles = Json::array();
+    for (const auto &[path, reason] : output.recordedFiles) {
+      recordedFiles.push_back({{"path", path}, {"reason", reason}});
+    }
+    outputs.push_back({{"name", output.name},
+                       {"path", output.path},
+                       {"computed", count(output.computed)},
+                       {"source", count(output.source)},
+                       {"recorded", count(output.recorded)},
+                       {"recordedFiles", recordedFiles},
+                       {"withoutBytes", output.withoutBytes}});
+  }
   writeBytes(recording.directory / kReportFile,
-             Json{{"passes", names}, {"groups", groups}}.dump(kJsonIndent) +
+             Json{{"passes", names}, {"groups", groups}, {"outputs", outputs}}
+                     .dump(kJsonIndent) +
                  "\n");
   const auto dead = recording.groups.size() - replayedSteps.size() -
                     keptCount - copiedCount - foldedCount;
@@ -371,6 +392,7 @@ void checkRecording(const Recording &recording,
                << copiedCount << " raised to copies, " << foldedCount
                << " folded to constants, "
                << keptCount << " kept as recorded bytes, " << dead
-               << " dead\n";
+               << " dead\n"
+               << originsText(origins);
 }
 } // namespace splice_ir
