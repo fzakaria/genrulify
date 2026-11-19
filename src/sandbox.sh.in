@@ -636,10 +636,9 @@ if [ ${#problems[@]} -gt 0 ]; then
 fi
 
 # Every rule writes a stamp, so a step whose results are all directories
-# still has a file for the build system to track. Buck2 tracks the
-# directory of the step's files instead, so that directory always exists.
-# The stamp of a trusted step says what the step left.
-"$C/mkdir" -p "$out/$name"
+# still has a file for the build system to track. The stamp of a trusted
+# step says what the step left.
+"$C/mkdir" -p "$out"
 if [ ${#left[@]} -gt 0 ]; then
     printf '%s\n' "${left[@]}" > "$out/$name$STAMP"
 else

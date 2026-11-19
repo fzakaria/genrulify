@@ -118,9 +118,13 @@ rule BUILD.bazel s764_dd | grep -q 'if=.*-body.txt of=bundle -c bundle.c status=
 rule BUILD.bazel s735_dd | grep -q '^recorded($'
 rule BUILD.bazel archive | grep -q '^nix_archive($'
 rule BUCK s764_dd | grep -q '^cc_object($'
-rule BUCK s764_dd | grep -q 'out = "s764_dd",'
+rule BUCK s764_dd | grep -q 'src = ":s735_dd\[build/bundle.c\]",'
+rule BUCK s764_dd | grep -q 'out = "s764_dd/build/bundle.c",'
 
-# A rule in the shipped files runs a genrule and nothing else, so a kind
-# cannot change what is run.
+# A rule in the shipped files runs the recorded command and nothing else,
+# so a kind cannot change what is run. Bazel's rules are all one genrule.
+# Buck2's are all one rule of the file's own, which every kind calls
+# through the same function.
 grep -q 'native.genrule(' genrulify.bzl
-grep -q 'native.genrule(' genrulify.buck.bzl
+test "$(grep -c '^    _run(' genrulify.buck.bzl)" = 8
+test "$(grep -c '    _step(' genrulify.buck.bzl)" = 2

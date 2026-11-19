@@ -36,13 +36,13 @@ constexpr std::string_view kBuckToolchains =
     "system_demo_toolchains()\n";
 
 // How a rule calls the sandbox script. Bazel runs a command in the
-// workspace's root with other rules' outputs under RULEDIR. Buck2 links
-// every source under SRCDIR and expects the output at OUT, which is named
-// after the rule, so the script is pointed at the directory OUT is in.
+// workspace's root with other rules' outputs under RULEDIR. A Buck2 rule
+// links everything it reads under SRCDIR, at the names Bazel would use,
+// and is told the directory its outputs go to as OUTDIR.
 constexpr std::string_view kBazelInvocation =
     "./sandbox.sh --in . --in $(RULEDIR) --out $(RULEDIR)";
 constexpr std::string_view kBuckInvocation =
-    "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}";
+    "$SRCDIR/sandbox.sh --in $SRCDIR --out $OUTDIR";
 
 // The same for a project converted in place. What genrulify wrote is in
 // its own directory, which the script looks in first, and the project's
@@ -52,7 +52,7 @@ constexpr std::string_view kBazelProjectInvocation =
     "$(RULEDIR)";
 constexpr std::string_view kBuckProjectInvocation =
     "$SRCDIR/genrulify/sandbox.sh --in $SRCDIR/genrulify --in $SRCDIR --out "
-    "${OUT%/*}";
+    "$OUTDIR";
 
 // The directory of a project that holds everything genrulify wrote other
 // than the build files themselves, so that the project's root stays the
@@ -125,14 +125,12 @@ constexpr std::string_view kItemIndent = "        ";
 
 // A file a rule reads: the target the file belongs to, which is the rule
 // that wrote the file or the name recorded bytes are stored under, the
-// file in the build system's tree, the path the command sees the file at,
-// and what Buck2 lists to have the file, which is a directory of recorded
-// bytes or a file of the project.
+// file in the build system's tree, and the path the command sees the file
+// at.
 struct Input {
   std::string target;
   std::string artifact;
   std::string path;
-  std::string bundle;
   auto operator<=>(const Input &) const = default;
 };
 
@@ -189,8 +187,10 @@ std::string shellQuote(const std::string &argument) {
                       "'");
 }
 
-// One line of a rule's command: recorded arguments, quoted for the shell
-// and then for the build system, which gives `$` a meaning of its own.
+// One line of a rule's command: recorded arguments, quoted for the shell.
+// Bazel gives `$` a meaning of its own in a genrule's command, so there
+// the line is quoted once more. A Buck2 rule writes its lines into a
+// script as they are.
 std::string commandLine(Backend backend, const Arguments &arguments) {
   Arguments words;
   for (const auto &argument : arguments) {
@@ -200,7 +200,7 @@ std::string commandLine(Backend backend, const Arguments &arguments) {
   if (backend == Backend::Bazel) {
     return absl::StrReplaceAll(line, {{"$", "$$"}});
   }
-  return absl::StrReplaceAll(line, {{"$(", "\\$("}});
+  return line;
 }
 
 std::string stampFile(std::string_view target) {
@@ -258,24 +258,47 @@ std::string commandLines(Backend backend, const Rule &rule,
   return list(lines);
 }
 
-// The attributes of a Bazel rule. Bazel is given each file: a workspace
-// file by its path, and a file from another rule as that rule's output.
+// The attributes of a rule, which are the same in both build files but
+// for how a file is named. A file of the workspace is `:path` to Bazel and
+// `path` to Buck2. A file another rule wrote is that rule's output file
+// to Bazel, `:rule/path`, and a sub-target of the rule to Buck2,
+// `:rule[path]`. A rule's stamp is `:rule.ok` to Bazel and the rule
+// itself to Buck2. Each build system is given each file, so that a rule
+// runs again only when a file it reads has changed.
+//
 // A typed rule names the inputs its kind is about, and puts the rest in
 // `data`: the manifest, the environment, the closure, the sandbox script,
 // the guest's /bin and /etc, and the stamps of the rules whose
 // directories the command uses.
-std::vector<std::string> bazelAttributes(const Rule &rule,
-                                         std::string_view macro,
-                                         const Layout &layout) {
+std::vector<std::string> ruleAttributes(Backend backend, const Rule &rule,
+                                        std::string_view macro,
+                                        const Layout &layout) {
+  const auto workspaceLabel = [&](const std::string &file) {
+    return backend == Backend::Bazel ? absl::StrCat(":", file) : file;
+  };
+  const auto generatedLabel = [&](const Input &input) {
+    if (backend == Backend::Bazel) {
+      return absl::StrCat(":", input.artifact);
+    }
+
+    // An artifact is named after its rule and then its path.
+    return absl::StrCat(":", input.target, "[",
+                        input.artifact.substr(input.target.size() + 1), "]");
+  };
+  const auto stampLabel = [&](const std::string &target) {
+    return backend == Backend::Bazel ? absl::StrCat(":", stampFile(target))
+                                     : absl::StrCat(":", target);
+  };
+
   // The files the command was given, as labels with the paths it sees
   // them at, and what the command needs besides.
   std::vector<std::pair<std::string, std::string>> given;
   Arguments data;
   for (const auto &file : rule.sources) {
-    data.push_back(absl::StrCat(":", file));
+    data.push_back(workspaceLabel(file));
   }
   for (const auto &input : rule.recorded) {
-    const auto label = absl::StrCat(":", input.artifact);
+    const auto label = workspaceLabel(input.artifact);
     if (input.target == kPlatformTarget) {
       data.push_back(label);
     } else {
@@ -284,16 +307,16 @@ std::vector<std::string> bazelAttributes(const Rule &rule,
   }
   std::ranges::sort(data);
   for (const auto &input : rule.generated) {
-    given.emplace_back(absl::StrCat(":", input.artifact), input.path);
+    given.emplace_back(generatedLabel(input), input.path);
   }
   Arguments stamps;
   for (const auto &target : rule.stamps) {
-    stamps.push_back(absl::StrCat(":", stampFile(target)));
+    stamps.push_back(stampLabel(target));
   }
 
   // A command can see one file at several paths, when copies of the file
   // were raised. The file is one label however many paths it has, and
-  // Bazel rejects a label listed twice, so the first path stands for it.
+  // a label is listed once, so the first path stands for it.
   std::set<std::string> listed;
   std::erase_if(given, [&](const auto &input) {
     return !listed.insert(input.first).second;
@@ -386,45 +409,15 @@ std::vector<std::string> bazelAttributes(const Rule &rule,
     attributes.push_back(attribute("srcs", list(rest())));
     attributes.push_back(attribute("outs", list(rule.outputs)));
   }
-  attributes.push_back(
-      attribute("cmd", commandLines(Backend::Bazel, rule, layout)));
+  attributes.push_back(attribute("cmd", commandLines(backend, rule, layout)));
   return attributes;
-}
-
-// The attributes of a Buck2 rule. Buck2 hands a command all of its
-// sources in one environment variable, which the kernel caps at 128 KiB,
-// and a rule that reads a few thousand files does not fit. So a Buck2
-// rule depends on whole directories: the one each rule writes, and the
-// one each set of recorded bytes is stored in. The manifest names the
-// files either way. With directories for inputs every kind of rule has
-// the same attributes.
-std::vector<std::string> buckAttributes(const Rule &rule,
-                                        const Layout &layout) {
-  std::set<std::string> listed(rule.sources.begin(), rule.sources.end());
-  for (const auto &input : rule.recorded) {
-    listed.insert(input.bundle);
-  }
-  Arguments sources(listed.begin(), listed.end());
-  for (const auto &target : rule.stamps) {
-    sources.push_back(absl::StrCat(":", target));
-  }
-
-  // A replay rule writes the directory that holds its files, and an
-  // archive rule its NAR.
-  const auto output = rule.archive ? absl::StrCat(rule.name, kArchiveExtension)
-                                   : rule.name;
-  return {attribute("name", quote(rule.name)),
-          attribute("srcs", list(sources)), attribute("out", quote(output)),
-          attribute("cmd", commandLines(Backend::Buck2, rule, layout))};
 }
 
 std::string renderRule(Backend backend, const Rule &rule,
                        const Layout &layout) {
   const auto macro = macroOf(rule);
   std::string text = absl::StrCat(macro, "(\n");
-  for (const auto &line : backend == Backend::Bazel
-                              ? bazelAttributes(rule, macro, layout)
-                              : buckAttributes(rule, layout)) {
+  for (const auto &line : ruleAttributes(backend, rule, macro, layout)) {
     absl::StrAppend(&text, kAttributeIndent, line, ",\n");
   }
   return text + ")\n\n";
@@ -557,8 +550,7 @@ void emitWorkspace(mlir::ModuleOp module, const Recording &recording,
         const auto artifact = platformArtifact(entry);
         writeArtifact(recording, entry, support / artifact);
         platformFiles.insert(
-            {std::string(kPlatformTarget), layout.prefix() + artifact, path,
-             absl::StrCat(layout.prefix(), kPlatformTarget)});
+            {std::string(kPlatformTarget), layout.prefix() + artifact, path});
       }
     }
 
@@ -646,17 +638,15 @@ void emitWorkspace(mlir::ModuleOp module, const Recording &recording,
           // The project has its own files where they are. Recorded bytes
           // are with the rest of what genrulify wrote.
           const auto artifact = artifactOf(value);
-          if (isSource(original)) {
-            rule.recorded.insert({target, artifact, path, artifact});
-          } else {
-            rule.recorded.insert({target, layout.prefix() + artifact, path,
-                                  layout.prefix() + target});
-          }
+          rule.recorded.insert(
+              {target,
+               isSource(original) ? artifact : layout.prefix() + artifact,
+               path});
           continue;
         }
         rule.stamps.insert(target);
         if (file) {
-          rule.generated.insert({target, artifactOf(value), path, target});
+          rule.generated.insert({target, artifactOf(value), path});
         }
       }
     };

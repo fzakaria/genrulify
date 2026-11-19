@@ -61,7 +61,8 @@ rule BUILD.bazel s764_dd | grep -q '":s735_dd/build/bundle",'
 rule BUILD.bazel s764_dd | grep -q '":genrulify/actions/s764_dd.manifest",'
 rule BUILD.bazel s764_dd | grep -q '"./genrulify/sandbox.sh --in genrulify --in . --in $(RULEDIR) --out $(RULEDIR)"'
 rule BUCK s735_dd | grep -q '"header.txt",'
-rule BUCK s764_dd | grep -q '"\$SRCDIR/genrulify/sandbox.sh --in \$SRCDIR/genrulify --in \$SRCDIR --out \${OUT%/\*}"'
+rule BUCK s764_dd | grep -q '":s735_dd\[build/bundle\]",'
+rule BUCK s764_dd | grep -q '"\$SRCDIR/genrulify/sandbox.sh --in \$SRCDIR/genrulify --in \$SRCDIR --out \$OUTDIR"'
 test -x genrulify/sandbox.sh
 test "$(cat genrulify/source.txt)" = "$source"
 test ! -e sandbox.sh

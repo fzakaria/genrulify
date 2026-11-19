@@ -35,14 +35,15 @@ rule BUILD.bazel s764_dd | grep -q '":s735_dd/build/bundle"'
 rule BUILD.bazel s764_dd | grep -q '"s764_dd/build/bundle"'
 rule BUILD.bazel s764_dd | grep -q '"./sandbox.sh --in . --in $(RULEDIR) --out $(RULEDIR)"'
 
-# Buck2 hands a command all of its sources in one environment variable,
-# which the kernel caps, so a Buck2 rule writes one directory and reads the
-# directories of the rules and of the recorded bytes it uses. The manifest
-# still names each file.
+# A Buck2 rule reads the same files. A file of the workspace is named by
+# its path, the file another rule wrote is that rule's sub-target, and the
+# rule itself is its stamp. Each file the rule writes is an output of its
+# own, so that a reader of one runs again only when that one changes.
+rule BUCK s764_dd | grep -q '":s735_dd\[build/bundle\]",'
 rule BUCK s764_dd | grep -q '":s735_dd",'
-rule BUCK s764_dd | grep -q '"platform",'
-rule BUCK s764_dd | grep -q 'out = "s764_dd",'
-rule BUCK s764_dd | grep -q '"\$SRCDIR/sandbox.sh --in \$SRCDIR --out \${OUT%/\*}"'
+rule BUCK s764_dd | grep -q '"platform/etc/passwd",'
+rule BUCK s764_dd | grep -q '"s764_dd/build/bundle",'
+rule BUCK s764_dd | grep -q '"\$SRCDIR/sandbox.sh --in \$SRCDIR --out \$OUTDIR"'
 rule BUCK archive | grep -q 'out = "archive.nar",'
 
 # The archive rule takes the last dd's file and writes a NAR.

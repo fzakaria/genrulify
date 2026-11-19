@@ -4,63 +4,128 @@ Every rule in this file runs one recorded command, or one recorded
 pipeline, through sandbox.sh, and fails unless each output has the hash
 the recording saw. In a project converted in place, a command that reads
 the project's sources is run with --trust and its outputs are taken as
-they come. The rules have the names of the ones in genrulify.bzl,
-and a command was given its kind the same way, by reading its recorded
-command line. A kind is a label: every rule here does the same thing.
+they come. The rules have the names and the attributes of the ones in
+genrulify.bzl, and a command was given its kind the same way, by reading
+its recorded command line. A kind is a label: every rule here does the
+same thing.
 
-The attributes are plainer than Bazel's. Buck2 hands a command all of
-its sources in one environment variable, which the kernel caps at 128
-KiB, so a rule cannot list a few thousand files. A rule here writes one
-directory, named after itself, and its `srcs` are the directories of the
-rules and of the recorded bytes it reads. Which files it reads from them
-is in its manifest. With directories for inputs there is no source to
-tell from a header, so every rule takes `srcs`, `out` and `cmd`.
+A rule declares each file its command writes as an output of its own. The
+rule itself stands for its stamp, the file written once every output has
+checked out, and `:rule[path]` is one of its files. A rule that reads one
+file of another rule depends on that file alone, and runs again only when
+the file changes.
+
+Buck2's own genrule is not used. It hands a command all of its sources in
+one environment variable, which the kernel caps at 128 KiB, and its one
+output is a directory, so a reader of any file in it runs again when any
+other file in it changes.
 """
 
-def _run(name, srcs, out, cmd):
+# The extension of the file a rule writes once every output has checked
+# out. A rule whose results are all directories has no other file.
+_STAMP = ".ok"
+
+# The names a step gives the directory of its inputs and its script, which
+# no rule has: a rule's name starts with a letter.
+_SOURCES = "__srcs"
+_SCRIPT = "__run.sh"
+
+def _step_impl(ctx):
     """Runs the recorded command lines of one step."""
-    native.genrule(
-        name = name,
-        srcs = srcs,
-        out = out,
-        cmd = " ".join(cmd),
-        # The command reads the host's Nix store, which a remote worker
-        # may not have.
-        remote = False,
+
+    # The file the step is known by, and every other file it writes. They
+    # are all below one directory, which the command is told as OUTDIR.
+    main = ctx.actions.declare_output(ctx.attrs.main)
+    files = {path: ctx.actions.declare_output(path) for path in ctx.attrs.outs}
+
+    # Everything the step reads, linked under the names sandbox.sh looks
+    # files up by: a file of the workspace by its path, and a file of
+    # another rule by that rule's name and then the file's path.
+    sources = ctx.actions.symlinked_dir(
+        _SOURCES,
+        {source.short_path: source for source in ctx.attrs.srcs},
     )
 
-def recorded(name, srcs, out, cmd):
+    # The lines go into a script, because a long pipeline does not fit in
+    # one argument.
+    script = ctx.actions.write(_SCRIPT, " ".join(ctx.attrs.cmd) + "\n")
+    ctx.actions.run(
+        cmd_args(
+            ["/usr/bin/env", "bash", "-e", script],
+            hidden = [sources, main.as_output()] +
+                     [file.as_output() for file in files.values()],
+        ),
+        env = {
+            "OUTDIR": cmd_args(main.as_output(), parent = 1),
+            "SRCDIR": sources,
+        },
+        category = "recorded",
+
+        # The command reads the host's Nix store, which a remote worker
+        # may not have.
+        local_only = True,
+    )
+
+    # A file is named `rule/path`, and is the rule's sub-target `path`.
+    prefix = ctx.label.name + "/"
+    return [DefaultInfo(
+        default_output = main,
+        sub_targets = {
+            path.removeprefix(prefix): [DefaultInfo(default_output = file)]
+            for path, file in files.items()
+        },
+    )]
+
+_step = rule(
+    impl = _step_impl,
+    attrs = {
+        "cmd": attrs.list(attrs.string()),
+        "main": attrs.string(),
+        "outs": attrs.list(attrs.string(), default = []),
+        "srcs": attrs.list(attrs.source(), default = []),
+    },
+)
+
+def _run(name, srcs, outs, cmd):
+    """One step, known by its stamp."""
+    _step(name = name, srcs = srcs, main = name + _STAMP, outs = outs, cmd = cmd)
+
+def _outputs(out, outs):
+    """The files a rule writes: the one it names, or the several."""
+    return ([out] if out else []) + outs
+
+def recorded(name, srcs = [], outs = [], cmd = []):
     """A recorded command or pipeline of no particular kind."""
-    _run(name, srcs, out, cmd)
+    _run(name, srcs, outs, cmd)
 
-def cc_object(name, srcs, out, cmd):
-    """A C or C++ compile, to an object."""
-    _run(name, srcs, out, cmd)
+def cc_object(name, src, hdrs = [], out = None, outs = [], data = [], cmd = []):
+    """A C or C++ compile: one source and the headers it opened, to an object."""
+    _run(name, [src] + hdrs + data, _outputs(out, outs), cmd)
 
-def cc_library(name, srcs, out, cmd):
+def cc_library(name, objs = [], out = None, outs = [], data = [], cmd = []):
     """An `ar` that collects objects into a static library."""
-    _run(name, srcs, out, cmd)
+    _run(name, objs + data, _outputs(out, outs), cmd)
 
-def cc_binary(name, srcs, out, cmd):
+def cc_binary(name, objs = [], deps = [], out = None, outs = [], data = [], cmd = []):
     """A link of objects and libraries into a program."""
-    _run(name, srcs, out, cmd)
+    _run(name, objs + deps + data, _outputs(out, outs), cmd)
 
-def cc_shared_library(name, srcs, out, cmd):
+def cc_shared_library(name, objs = [], deps = [], out = None, outs = [], data = [], cmd = []):
     """A link of objects and libraries into a shared library."""
-    _run(name, srcs, out, cmd)
+    _run(name, objs + deps + data, _outputs(out, outs), cmd)
 
-def rust_library(name, srcs, out, cmd):
+def rust_library(name, srcs = [], deps = [], outs = [], data = [], cmd = []):
     """A rustc invocation that builds a library crate."""
-    _run(name, srcs, out, cmd)
+    _run(name, srcs + deps + data, outs, cmd)
 
-def rust_binary(name, srcs, out, cmd):
+def rust_binary(name, srcs = [], deps = [], outs = [], data = [], cmd = []):
     """A rustc invocation that builds a program."""
-    _run(name, srcs, out, cmd)
+    _run(name, srcs + deps + data, outs, cmd)
 
-def rust_proc_macro(name, srcs, out, cmd):
+def rust_proc_macro(name, srcs = [], deps = [], outs = [], data = [], cmd = []):
     """A rustc invocation that builds a procedural macro."""
-    _run(name, srcs, out, cmd)
+    _run(name, srcs + deps + data, outs, cmd)
 
 def nix_archive(name, srcs, out, cmd):
     """Packs one derivation output as a NAR, the form Nix hashes."""
-    _run(name, srcs, out, cmd)
+    _step(name = name, srcs = srcs, main = out, cmd = cmd)
