@@ -49,6 +49,13 @@ rule BUCK archive | grep -q 'out = "archive.nar",'
 rule BUILD.bazel archive | grep -q '"archive.nar"'
 rule BUILD.bazel archive | grep -q 'pack /nix/store/l1dx8g9mr73bdp8y6i2yp92xprmz8xzg-genrulify-example'
 
+# The archive rule of a recorded build is given the digest of the recorded
+# output, so the rule fails unless the build reproduced the output.
+"$compiler" reference "$data/example" out "$scratch/reference.nar"
+recorded=$(sha256sum < "$scratch/reference.nar" | cut -d' ' -f1)
+rule BUILD.bazel archive | grep -q "pack /nix/store/l1dx8g9mr73bdp8y6i2yp92xprmz8xzg-genrulify-example $recorded\""
+rule BUCK archive | grep -q "pack /nix/store/l1dx8g9mr73bdp8y6i2yp92xprmz8xzg-genrulify-example $recorded\""
+
 # The workspace carries what the commands refer to by name: the script, the
 # closure, the environment, the guest's /etc and each rule's manifest, which
 # holds the entry the rule must reproduce.

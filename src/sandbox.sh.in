@@ -14,7 +14,7 @@
 # usage: sandbox.sh --name NAME --in DIR... --out DIR [--timeout SECONDS] [--trust]
 #                   [--pipe ID:LAST_WRITER:READERS:BROKE]...
 #                   (run OPTIONS --argc N -- PROGRAM ARG...)...
-#        sandbox.sh --name NAME --in DIR... --out DIR pack GUEST_PATH
+#        sandbox.sh --name NAME --in DIR... --out DIR pack GUEST_PATH [SHA256]
 #
 # Files are looked up by name under each --in directory:
 #   actions/NAME.manifest   the entries to stage and the results to expect
@@ -202,9 +202,24 @@ fi
 
 if [ "${1:-}" = pack ]; then
     guest=$2
+    expected=${3:-}
+    archive=$out/$name.nar
     [ -e "$root$guest" ] || [ -L "$root$guest" ] || fail "nothing was published at $guest"
     "$C/mkdir" -p "$out"
-    "$NIX_STORE" --dump "$root$guest" > "$out/$name.nar" || fail "cannot archive $guest"
+    "$NIX_STORE" --dump "$root$guest" > "$archive" || fail "cannot archive $guest"
+
+    # A recorded build names the digest its archive must have. An archive
+    # with another digest is removed, so that no later step can use it.
+    if [ -n "$expected" ]; then
+        actual=$("$C/sha256sum" < "$archive")
+        actual=${actual%% *}
+        if [ "$actual" != "$expected" ]; then
+            "$C/rm" -f "$archive"
+            echo "$name$NOT_REPRODUCED" >&2
+            echo "  the archive of $guest is sha256:$actual, recorded sha256:$expected" >&2
+            exit 1
+        fi
+    fi
     exit 0
 fi
 

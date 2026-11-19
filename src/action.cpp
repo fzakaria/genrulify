@@ -466,8 +466,11 @@ std::vector<Arguments> actionArguments(const Action &action,
                                        const Recording &recording) {
   std::vector<Arguments> lines;
   if (!action.output.empty()) {
-    lines.push_back(
-        words({kNameOption, action.name, kPackCommand, action.output}));
+    auto pack = words({kNameOption, action.name, kPackCommand, action.output});
+    if (!action.archiveDigest.empty()) {
+      pack.push_back(action.archiveDigest);
+    }
+    lines.push_back(std::move(pack));
     return lines;
   }
 

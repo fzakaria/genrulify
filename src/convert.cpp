@@ -27,6 +27,9 @@ constexpr std::string_view kDigestPrefix = "sha256:";
 // How Rewind says a build ran to the end and succeeded.
 constexpr std::string_view kSuccessfulEnding = "exited:0";
 
+// The file an output is packed into to compare its digest with Rewind's.
+constexpr std::string_view kReferenceFile = "reference.nar";
+
 // The store path of the derivation a conversion was asked for: the
 // argument itself, or what Nix evaluates a flake installable to.
 std::string derivationOf(const std::string &installable) {
@@ -87,8 +90,24 @@ void convert(const std::string &installable, const fs::path &directory,
       if (digest.starts_with(kDigestPrefix)) {
         digest.remove_prefix(kDigestPrefix.size());
       }
-      llvm::outs() << digest << "  "
-                   << output.at("path").get<std::string>() << "\n";
+      const std::string path = output.at("path");
+
+      // The archive rule is held to the output as the recording saw it.
+      // That has to be the output Rewind built and hashed, or the
+      // workspace would reproduce something else.
+      for (const auto &[name, recordedPath] : recording.outputs) {
+        if (recordedPath != path) {
+          continue;
+        }
+        Scratch scratch;
+        const auto reference = scratch.path / kReferenceFile;
+        writeReference(recording, name, reference);
+        const auto seen = splice_ir::digest(reference);
+        check(seen == digest,
+              absl::StrCat("the recording has ", path, " as sha256:", seen,
+                           ", and Rewind built sha256:", digest));
+      }
+      llvm::outs() << digest << "  " << path << "\n";
     }
   } catch (...) {
     removeTree(directory);

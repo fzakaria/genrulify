@@ -29,6 +29,10 @@ struct Action {
 
   // For a pack step, the store path to serialize as a NAR.
   std::string output;
+
+  // For a pack step, the sha256 the archive must have, in hex. Empty when
+  // the archive may be anything, as for a project someone is editing.
+  std::string archiveDigest;
 };
 
 // Whether a descriptor is open for reading or for writing, from the

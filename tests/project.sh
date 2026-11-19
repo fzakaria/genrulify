@@ -61,6 +61,10 @@ test "$(cat genrulify/source.txt)" = "$source"
 test ! -e sandbox.sh
 test ! -e actions
 
+# A project's archive is whatever the sources now give, so its rule is
+# given no digest to hold the archive to.
+rule BUILD.bazel archive | grep -q 'pack /nix/store/[a-z0-9]*-genrulify-example"'
+
 # The manifest stages the project's file where the command read it.
 grep -q "/build/bundle.*header.txt$" genrulify/actions/s764_dd.manifest
 

@@ -107,6 +107,21 @@ fi
 "$compiler" verify "$scratch/out/tree.nar" "$scratch/out/tree.nar" > /dev/null
 grep -q symlink "$scratch/out/tree.nar"
 
+# Given the digest an archive must have, packing checks it. The right
+# digest passes. Another one fails, says both, and leaves no archive for
+# a later rule to pick up.
+packed=$(sha256sum < "$scratch/out/tree.nar" | cut -d' ' -f1)
+rm "$scratch/out/tree.nar"
+"$script" --name tree --in "$scratch" --in "$data/example" --out "$scratch/out" pack /out "$packed"
+test -e "$scratch/out/tree.nar"
+rm "$scratch/out/tree.nar"
+if "$script" --name tree --in "$scratch" --in "$data/example" --out "$scratch/out" pack /out "$bundle" 2> "$scratch/error"; then
+    exit 1
+fi
+grep -q '^tree did not reproduce the recording:$' "$scratch/error"
+grep -q "^  the archive of /out is sha256:$packed, recorded sha256:$bundle\$" "$scratch/error"
+test ! -e "$scratch/out/tree.nar"
+
 # The rest starts processes, which needs bubblewrap and user namespaces.
 # A build sandbox may have neither, so try one command and stop here when
 # it cannot run. The commands are the coreutils the example was recorded

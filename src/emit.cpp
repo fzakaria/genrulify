@@ -78,6 +78,9 @@ constexpr std::string_view kVerifyLine = "\n_TRUST = False\n";
 constexpr std::string_view kTrustLine = "\n_TRUST = True\n";
 
 // The files a workspace needs besides its build files.
+// The file an output is packed into to learn the digest its archive must
+// have.
+constexpr std::string_view kReferenceArchive = "reference.nar";
 constexpr std::string_view kBazelBuildFile = "BUILD.bazel";
 constexpr std::string_view kBuckBuildFile = "BUCK";
 constexpr std::string_view kBazelWorkspaceFile = "WORKSPACE";
@@ -697,6 +700,17 @@ void emitWorkspace(mlir::ModuleOp module, const Recording &recording,
       } else if (auto output = llvm::dyn_cast<OutputOp>(op)) {
         action = outputAction(output, outputCount, artifactOf);
         rule.archive = true;
+
+        // A recorded build has one right answer for each output, which is
+        // the output as the recording saw it. The archive rule is given
+        // that digest and fails on any other archive, so one target says
+        // whether every rule, literal and copy below it came out right.
+        if (!layout.project) {
+          Scratch scratch;
+          const auto reference = scratch.path / kReferenceArchive;
+          writeReference(recording, output.getName().str(), reference);
+          action.archiveDigest = digest(reference);
+        }
         addOperands(rule, output.getEntries());
       } else {
         throw std::runtime_error("unsupported operation: " +
