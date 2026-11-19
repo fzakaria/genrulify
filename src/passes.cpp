@@ -33,6 +33,42 @@ std::vector<ExecOp> processGroups(mlir::ModuleOp module) {
   return groups;
 }
 
+// The operations of a project's graph that depend on the project's source
+// tree: the literal that holds the tree, and every operation given a file
+// or a symlink one of those defines. A directory does not carry the
+// dependence on: that a command made the directory is not a matter of
+// what any source holds.
+//
+// A project is built again after its sources are edited, with the same
+// commands. What a command that read a source left behind was computed
+// from the bytes the source had on the day of the recording. That a result
+// had the bytes of an input, or was empty, is a fact about those bytes and
+// not about the command: `sort` of a sorted file leaves its input. So no
+// pass may replace such a result on the strength of its bytes.
+//
+// A graph without a source tree depends on nothing that changes, and
+// nothing in it is in the set.
+std::set<mlir::Operation *> dependsOnSource(mlir::ModuleOp module) {
+  std::set<mlir::Operation *> dependent;
+
+  // Operations are in the order of their steps, so every operand is
+  // defined above its use and one walk is enough.
+  for (auto &op : module.getBody()->getOperations()) {
+    auto literal = llvm::dyn_cast<LiteralOp>(&op);
+    bool depends = literal && literal.getName().str() == kSourceName &&
+                   !literal.getDemoted() && !literal.getFolded();
+    for (const auto operand : op.getOperands()) {
+      depends = depends ||
+                (entryOf(operand)->kind != EntryKind::Directory &&
+                 dependent.contains(operand.getDefiningOp()));
+    }
+    if (depends) {
+      dependent.insert(&op);
+    }
+  }
+  return dependent;
+}
+
 // Constant folding. A directory, a symlink and an empty file are known in
 // full from their entry: there are no bytes for a process to compute. The
 // pass moves every such result that something reads into a splice.literal
@@ -43,6 +79,11 @@ std::vector<ExecOp> processGroups(mlir::ModuleOp module) {
 // The rewrite is sound for the reason demotion is: a literal has the
 // recorded entry by definition, so every reader is given what it was
 // given before.
+//
+// Of a command that read a project's source, only the directories are
+// folded. That the command makes the directory does not depend on what a
+// source holds. That a file came out empty, or where a symlink points,
+// can.
 struct FoldConstants
     : mlir::PassWrapper<FoldConstants, mlir::OperationPass<mlir::ModuleOp>> {
   llvm::StringRef getArgument() const final { return "splice-fold-constants"; }
@@ -52,13 +93,18 @@ struct FoldConstants
 
   void runOnOperation() final {
     auto *context = &getContext();
+    const auto dependent = dependsOnSource(getOperation());
     for (auto exec : processGroups(getOperation())) {
       // Find the constant results that have a reader.
+      const bool readsSource = dependent.contains(exec.getOperation());
       std::vector<mlir::Value> constants;
       std::vector<Entry> entries;
       for (const auto result : exec->getResults()) {
         const auto entry = *entryOf(result);
         if (result.use_empty() || !isConstant(entry)) {
+          continue;
+        }
+        if (readsSource && entry.kind != EntryKind::Directory) {
           continue;
         }
         constants.push_back(result);
@@ -196,7 +242,13 @@ struct RaiseCopies
 
   void runOnOperation() final {
     auto *context = &getContext();
+    const auto dependent = dependsOnSource(getOperation());
     for (auto exec : processGroups(getOperation())) {
+      // A command that read a project's source may leave other bytes
+      // once the source is edited, so the command is kept.
+      if (dependent.contains(exec.getOperation())) {
+        continue;
+      }
       mlir::OpBuilder builder(exec);
       for (mlir::Value result : exec->getResults()) {
         const auto entry = *entryOf(result);

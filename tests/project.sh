@@ -32,13 +32,18 @@ JSON
 grep -q '%source_717:2 = splice.literal "source" at 717' "$scratch/graph.mlir"
 grep -q 'splice.exec "dd" at 735(%sandbox_717, %source_717#0, %source_717#1)' "$scratch/graph.mlir"
 
-# The first dd wrote the header's bytes to another path, which is a copy of
-# the source file. No pass had to learn about sources for that.
+# The first dd wrote the header's bytes to another path. In a recorded
+# build that makes the dd a copy. Here the header is a source someone may
+# edit, and what the dd writes then is for the dd to say, so the passes
+# leave the command in.
 "$compiler" opt "$scratch/graph.mlir" > "$scratch/opt.mlir"
-grep -q 'splice.copy "dd" at 735(%source_717#1) -> <"/build/bundle"' "$scratch/opt.mlir"
+grep -q 'splice.exec "dd" at 735(%sandbox_717, %source_717#0, %source_717#1)' "$scratch/opt.mlir"
+if grep -q 'splice.copy "dd" at 735' "$scratch/opt.mlir"; then
+    exit 1
+fi
 
-# Build files are written into the project. A rule lists the project's own
-# file where a recorded build would list a copy, everything else genrulify
+# Build files are written into the project. The rule of the command that
+# read the header lists the project's own file, everything else genrulify
 # wrote is under genrulify/, and the files say who wrote them.
 mkdir "$scratch/project"
 printf 'header\n' > "$scratch/project/header.txt"
@@ -51,10 +56,11 @@ grep -q 'load("//genrulify:genrulify.buck.bzl"' BUCK
 rule() {
     sed -n "/name = \"$2\"/,/^)/p" "$1"
 }
-rule BUILD.bazel s764_dd | grep -q '":header.txt",'
+rule BUILD.bazel s735_dd | grep -q '":header.txt",'
+rule BUILD.bazel s764_dd | grep -q '":s735_dd/build/bundle",'
 rule BUILD.bazel s764_dd | grep -q '":genrulify/actions/s764_dd.manifest",'
 rule BUILD.bazel s764_dd | grep -q '"./genrulify/sandbox.sh --in genrulify --in . --in $(RULEDIR) --out $(RULEDIR)"'
-rule BUCK s764_dd | grep -q '"header.txt",'
+rule BUCK s735_dd | grep -q '"header.txt",'
 rule BUCK s764_dd | grep -q '"\$SRCDIR/genrulify/sandbox.sh --in \$SRCDIR/genrulify --in \$SRCDIR --out \${OUT%/\*}"'
 test -x genrulify/sandbox.sh
 test "$(cat genrulify/source.txt)" = "$source"
@@ -65,8 +71,9 @@ test ! -e actions
 # given no digest to hold the archive to.
 rule BUILD.bazel archive | grep -q 'pack /nix/store/[a-z0-9]*-genrulify-example"'
 
-# The manifest stages the project's file where the command read it.
-grep -q "/build/bundle.*header.txt$" genrulify/actions/s764_dd.manifest
+# The manifest stages the project's file where the command read it, at
+# the path the header had in the store.
+grep -q "$source/header.txt.*header.txt$" genrulify/actions/s735_dd.manifest
 
 # An edited source must not fail a rule, so the rules of a project trust
 # what a command leaves. The rules of a recorded build do not.

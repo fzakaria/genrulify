@@ -121,3 +121,45 @@ grep -q 'splice.copy "glue" at 4(%rustc_2) -> <"/out/again"' "$scratch/opt.mlir"
 if "$compiler" opt "$scratch/build.mlir" inline 2> /dev/null; then
     exit 1
 fi
+
+# A project's graph holds its source tree, and its rules have to stay
+# right when a source is edited. A command that read a source and left the
+# bytes of its input, or an empty file, did so for the bytes the source
+# had when the build was recorded. `sort` of a sorted file is the example.
+# Such a command stays a command. A directory it made is still folded,
+# and a command that read no source is rewritten as before. So is a
+# command that was given only a directory such a command made: a
+# directory has no bytes for the edit to change. Here that is a mktemp.
+cat > "$scratch/project.mlir" <<'MLIR'
+module {
+  %0 = splice.literal "sandbox" at 1 -> [#splice.entry<"/build" dir 700 mtime 1>]
+  %1:2 = splice.literal "source" at 1 -> [
+      #splice.entry<"/nix/store/source" dir 555 mtime 1>,
+      #splice.entry<"/nix/store/source/names" file 444 mtime 1 "aa">]
+  %2:3 = splice.exec "sort" at 2(%0, %1#0, %1#1) -> [
+      #splice.entry<"/out" dir 755 mtime 2>,
+      #splice.entry<"/out/sorted" file 644 mtime 2 "aa">,
+      #splice.entry<"/out/errors" file 644 mtime 2 "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855">]
+  %3 = splice.exec "cc" at 3(%0) -> [#splice.entry<"/build/prog" file 755 mtime 3 "cc">]
+  %4 = splice.exec "install" at 4(%0, %3) -> [#splice.entry<"/out/prog" file 755 mtime 4 "cc">]
+  %5 = splice.exec "mktemp" at 5(%2#0) -> [#splice.entry<"/out/tmp.x" file 600 mtime 5 "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855">]
+  splice.output "out" "/out"(%2#0, %2#1, %2#2, %4, %5)
+}
+MLIR
+"$compiler" opt "$scratch/project.mlir" > "$scratch/opt.mlir"
+if grep -q 'splice.exec "mktemp"' "$scratch/opt.mlir"; then
+    exit 1
+fi
+grep -q 'splice.exec "sort" at 2' "$scratch/opt.mlir"
+grep -q 'splice.copy "install" at 4(%cc_3)' "$scratch/opt.mlir"
+if grep -q 'splice.exec "install"' "$scratch/opt.mlir"; then
+    exit 1
+fi
+if grep -q 'splice.copy "sort"' "$scratch/opt.mlir"; then
+    exit 1
+fi
+sed -n '/splice.literal "sort" at 2 folded/,/\]/p' "$scratch/opt.mlir" > "$scratch/folded"
+grep -q '"/out" dir' "$scratch/folded"
+if grep -q '/out/errors' "$scratch/folded"; then
+    exit 1
+fi
