@@ -101,6 +101,15 @@ fi
 grep -q 'genrulify was not written by genrulify' "$scratch/error"
 test "$(cat "$scratch/taken/genrulify/notes.txt")" = mine
 
+# A file with the name of one genrulify writes does not make the directory
+# genrulify's. Only the mark genrulify leaves in the directory does.
+printf '/nix/store/mine\n' > "$scratch/taken/genrulify/source.txt"
+if "$compiler" emit "$scratch/recording" "$scratch/opt.mlir" "$scratch/taken" 2> "$scratch/error"; then
+    exit 1
+fi
+grep -q 'genrulify was not written by genrulify' "$scratch/error"
+test "$(cat "$scratch/taken/genrulify/notes.txt")" = mine
+
 # A rule finds a file by name, among genrulify's files first. A source
 # file with the name of one of those, such as closure.txt, would be read
 # as genrulify's file, so the conversion is refused and names the file.
@@ -114,6 +123,21 @@ if "$compiler" emit "$scratch/clash" "$scratch/clash.opt.mlir" "$scratch/clashin
     exit 1
 fi
 grep -q "the project's closure.txt has the name of a file genrulify keeps" "$scratch/error"
+
+# A conversion that fails leaves the last one working: the files genrulify
+# wrote before are all still there, and so are the build files that name
+# them. Here the converted project is given the recording that is refused.
+cd "$scratch/project"
+"$compiler" emit "$scratch/recording" "$scratch/opt.mlir" "$scratch/project"
+cp BUILD.bazel "$scratch/BUILD.before"
+printf 'header\n' > closure.txt
+if "$compiler" emit "$scratch/clash" "$scratch/clash.opt.mlir" "$scratch/project" 2> "$scratch/error"; then
+    exit 1
+fi
+test -x genrulify/sandbox.sh
+test -e genrulify/actions/s764_dd.manifest
+cmp BUILD.bazel "$scratch/BUILD.before"
+test "$(find . -maxdepth 1 -name '*staging*' | wc -l)" = 0
 
 # A directory holds a source tree when every file of the tree is in the
 # directory with the same bytes. The directory may hold more. A file that
