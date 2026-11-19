@@ -39,6 +39,36 @@ std::string derivationOf(const std::string &installable) {
   return capture({std::string(kNix), "eval", "--raw",
                   absl::StrCat(installable, kDerivationAttribute)});
 }
+
+// The digest and the path of each output Rewind built, after checking that
+// the recording holds the same output. The archive rule is held to the
+// output as the recording saw it. That has to be the output Rewind built
+// and hashed, or the workspace would reproduce something else.
+std::vector<std::pair<std::string, std::string>> builtOutputs(
+    const Recording &recording, const Json &run) {
+  std::vector<std::pair<std::string, std::string>> built;
+  for (const auto &output : run.at("outputs")) {
+    std::string_view digest = output.at("hash").get_ref<const std::string &>();
+    if (digest.starts_with(kDigestPrefix)) {
+      digest.remove_prefix(kDigestPrefix.size());
+    }
+    const std::string path = output.at("path");
+    for (const auto &[name, recordedPath] : recording.outputs) {
+      if (recordedPath != path) {
+        continue;
+      }
+      Scratch scratch;
+      const auto reference = scratch.path / kReferenceFile;
+      writeReference(recording, name, reference);
+      const auto seen = splice_ir::digest(reference);
+      check(seen == digest,
+            absl::StrCat("the recording has ", path, " as sha256:", seen,
+                         ", and Rewind built sha256:", digest));
+    }
+    built.emplace_back(digest, path);
+  }
+  return built;
+}
 } // namespace
 
 void convert(const std::string &installable, const fs::path &directory,
@@ -65,6 +95,12 @@ void convert(const std::string &installable, const fs::path &directory,
     const auto recorded = directory / kRecordingDirectory;
     recordRun(run.at("id"), drv, recorded, open, granularity, project);
     const auto recording = Recording::load(recorded);
+
+    // Nothing is written for a build system until the recording is known
+    // to hold the build Rewind hashed. A project's build files replace the
+    // ones of its last conversion, and a conversion that is then rejected
+    // must not have touched them.
+    const auto built = builtOutputs(recording, run);
     checkRecording(recording);
 
     // Write the optimized graph and the workspace it lowers to.
@@ -85,28 +121,7 @@ void convert(const std::string &installable, const fs::path &directory,
 
     // Say what the build has to reproduce, as sha256sum would print it:
     // the digest in hex with nothing in front, then the path.
-    for (const auto &output : run.at("outputs")) {
-      std::string_view digest = output.at("hash").get_ref<const std::string &>();
-      if (digest.starts_with(kDigestPrefix)) {
-        digest.remove_prefix(kDigestPrefix.size());
-      }
-      const std::string path = output.at("path");
-
-      // The archive rule is held to the output as the recording saw it.
-      // That has to be the output Rewind built and hashed, or the
-      // workspace would reproduce something else.
-      for (const auto &[name, recordedPath] : recording.outputs) {
-        if (recordedPath != path) {
-          continue;
-        }
-        Scratch scratch;
-        const auto reference = scratch.path / kReferenceFile;
-        writeReference(recording, name, reference);
-        const auto seen = splice_ir::digest(reference);
-        check(seen == digest,
-              absl::StrCat("the recording has ", path, " as sha256:", seen,
-                           ", and Rewind built sha256:", digest));
-      }
+    for (const auto &[digest, path] : built) {
       llvm::outs() << digest << "  " << path << "\n";
     }
   } catch (...) {
