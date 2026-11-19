@@ -1,4 +1,4 @@
-load(":genrulify.bzl", "cc_binary", "cc_library", "cc_object", "nix_archive", "recorded")
+load(":genrulify.bzl", "built_file", "cc_binary", "cc_library", "cc_object", "nix_archive", "program", "recorded")
 
 recorded(
     name = "s1348_tar_xz",
@@ -3225,6 +3225,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "sed/sed-compile.o",
+    file = ":s170169_gcc/build/sed-4.10/sed/sed-compile.o",
+)
+
 cc_object(
     name = "s170288_gcc",
     src = ":s1348_tar_xz/build/sed-4.10/sed/debug.c",
@@ -3286,6 +3291,11 @@ cc_object(
         "run --cwd /build/sed-4.10 --env 71 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 40 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -DHAVE_CONFIG_H -I. -I. -I./lib -I./lib -I./sed '-DLOCALEDIR=\"/nix/store/1ggxndc1gd5061j5hqprhnhx9p30yilv-gnused-4.10/share/locale\"' -g -O2 -c -o sed/sed-debug.o sed/debug.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=1ggxndc1gd",
     ],
+)
+
+built_file(
+    name = "sed/sed-debug.o",
+    file = ":s170288_gcc/build/sed-4.10/sed/sed-debug.o",
 )
 
 cc_object(
@@ -3370,6 +3380,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "sed/sed-execute.o",
+    file = ":s170397_gcc/build/sed-4.10/sed/sed-execute.o",
+)
+
 cc_object(
     name = "s170521_gcc",
     src = ":s1348_tar_xz/build/sed-4.10/sed/mbcs.c",
@@ -3430,6 +3445,11 @@ cc_object(
         "run --cwd /build/sed-4.10 --env 71 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 40 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -DHAVE_CONFIG_H -I. -I. -I./lib -I./lib -I./sed '-DLOCALEDIR=\"/nix/store/1ggxndc1gd5061j5hqprhnhx9p30yilv-gnused-4.10/share/locale\"' -g -O2 -c -o sed/sed-mbcs.o sed/mbcs.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=1ggxndc1gd",
     ],
+)
+
+built_file(
+    name = "sed/sed-mbcs.o",
+    file = ":s170521_gcc/build/sed-4.10/sed/sed-mbcs.o",
 )
 
 cc_object(
@@ -3495,6 +3515,11 @@ cc_object(
         "run --cwd /build/sed-4.10 --env 71 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 40 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -DHAVE_CONFIG_H -I. -I. -I./lib -I./lib -I./sed '-DLOCALEDIR=\"/nix/store/1ggxndc1gd5061j5hqprhnhx9p30yilv-gnused-4.10/share/locale\"' -g -O2 -c -o sed/sed-regexp.o sed/regexp.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=1ggxndc1gd",
     ],
+)
+
+built_file(
+    name = "sed/sed-regexp.o",
+    file = ":s170626_gcc/build/sed-4.10/sed/sed-regexp.o",
 )
 
 cc_object(
@@ -3571,6 +3596,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "sed/sed-sed.o",
+    file = ":s170739_gcc/build/sed-4.10/sed/sed-sed.o",
+)
+
 cc_object(
     name = "s170858_gcc",
     src = ":s1348_tar_xz/build/sed-4.10/sed/utils.c",
@@ -3639,6 +3669,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "sed/sed-utils.o",
+    file = ":s170858_gcc/build/sed-4.10/sed/sed-utils.o",
+)
+
 cc_object(
     name = "s171029_gcc",
     src = ":s1348_tar_xz/build/sed-4.10/lib/copy-acl.c",
@@ -3689,6 +3724,11 @@ cc_object(
         "run --cwd /build/sed-4.10 --env 71 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 54 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -DHAVE_CONFIG_H -I. -I. -I./lib -I./lib -I./sed -Wno-cast-qual -Wno-conversion -Wno-float-equal -Wno-sign-compare -Wno-undef -Wno-unused-function -Wno-unused-parameter -Wno-float-conversion -Wimplicit-fallthrough -Wno-pedantic -Wno-sign-conversion -Wno-type-limits -Wno-unused-const-variable -Wno-unsuffixed-float-constants -Wno-error -g -O2 -c -o lib/libsed_a-copy-acl.o lib/copy-acl.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=1ggxndc1gd",
     ],
+)
+
+built_file(
+    name = "lib/libsed_a-copy-acl.o",
+    file = ":s171029_gcc/build/sed-4.10/lib/libsed_a-copy-acl.o",
 )
 
 cc_object(
@@ -3743,6 +3783,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "lib/libsed_a-set-acl.o",
+    file = ":s171142_gcc/build/sed-4.10/lib/libsed_a-set-acl.o",
+)
+
 cc_object(
     name = "s171254_gcc",
     src = ":s1348_tar_xz/build/sed-4.10/lib/acl-errno-valid.c",
@@ -3777,6 +3822,11 @@ cc_object(
         "run --cwd /build/sed-4.10 --env 71 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 54 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -DHAVE_CONFIG_H -I. -I. -I./lib -I./lib -I./sed -Wno-cast-qual -Wno-conversion -Wno-float-equal -Wno-sign-compare -Wno-undef -Wno-unused-function -Wno-unused-parameter -Wno-float-conversion -Wimplicit-fallthrough -Wno-pedantic -Wno-sign-conversion -Wno-type-limits -Wno-unused-const-variable -Wno-unsuffixed-float-constants -Wno-error -g -O2 -c -o lib/libsed_a-acl-errno-valid.o lib/acl-errno-valid.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=1ggxndc1gd",
     ],
+)
+
+built_file(
+    name = "lib/libsed_a-acl-errno-valid.o",
+    file = ":s171254_gcc/build/sed-4.10/lib/libsed_a-acl-errno-valid.o",
 )
 
 cc_object(
@@ -3822,6 +3872,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "lib/libsed_a-acl-internal.o",
+    file = ":s171360_gcc/build/sed-4.10/lib/libsed_a-acl-internal.o",
+)
+
 cc_object(
     name = "s171472_gcc",
     src = ":s1348_tar_xz/build/sed-4.10/lib/get-permissions.c",
@@ -3865,6 +3920,11 @@ cc_object(
         "run --cwd /build/sed-4.10 --env 71 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 54 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -DHAVE_CONFIG_H -I. -I. -I./lib -I./lib -I./sed -Wno-cast-qual -Wno-conversion -Wno-float-equal -Wno-sign-compare -Wno-undef -Wno-unused-function -Wno-unused-parameter -Wno-float-conversion -Wimplicit-fallthrough -Wno-pedantic -Wno-sign-conversion -Wno-type-limits -Wno-unused-const-variable -Wno-unsuffixed-float-constants -Wno-error -g -O2 -c -o lib/libsed_a-get-permissions.o lib/get-permissions.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=1ggxndc1gd",
     ],
+)
+
+built_file(
+    name = "lib/libsed_a-get-permissions.o",
+    file = ":s171472_gcc/build/sed-4.10/lib/libsed_a-get-permissions.o",
 )
 
 cc_object(
@@ -3917,6 +3977,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "lib/libsed_a-set-permissions.o",
+    file = ":s171578_gcc/build/sed-4.10/lib/libsed_a-set-permissions.o",
+)
+
 cc_object(
     name = "s171688_gcc",
     src = ":s1348_tar_xz/build/sed-4.10/lib/basename-lgpl.c",
@@ -3948,6 +4013,11 @@ cc_object(
         "run --cwd /build/sed-4.10 --env 71 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 54 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -DHAVE_CONFIG_H -I. -I. -I./lib -I./lib -I./sed -Wno-cast-qual -Wno-conversion -Wno-float-equal -Wno-sign-compare -Wno-undef -Wno-unused-function -Wno-unused-parameter -Wno-float-conversion -Wimplicit-fallthrough -Wno-pedantic -Wno-sign-conversion -Wno-type-limits -Wno-unused-const-variable -Wno-unsuffixed-float-constants -Wno-error -g -O2 -c -o lib/libsed_a-basename-lgpl.o lib/basename-lgpl.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=1ggxndc1gd",
     ],
+)
+
+built_file(
+    name = "lib/libsed_a-basename-lgpl.o",
+    file = ":s171688_gcc/build/sed-4.10/lib/libsed_a-basename-lgpl.o",
 )
 
 cc_object(
@@ -3984,6 +4054,11 @@ cc_object(
         "run --cwd /build/sed-4.10 --env 71 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 54 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -DHAVE_CONFIG_H -I. -I. -I./lib -I./lib -I./sed -Wno-cast-qual -Wno-conversion -Wno-float-equal -Wno-sign-compare -Wno-undef -Wno-unused-function -Wno-unused-parameter -Wno-float-conversion -Wimplicit-fallthrough -Wno-pedantic -Wno-sign-conversion -Wno-type-limits -Wno-unused-const-variable -Wno-unsuffixed-float-constants -Wno-error -g -O2 -c -o lib/libsed_a-binary-io.o lib/binary-io.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=1ggxndc1gd",
     ],
+)
+
+built_file(
+    name = "lib/libsed_a-binary-io.o",
+    file = ":s171793_gcc/build/sed-4.10/lib/libsed_a-binary-io.o",
 )
 
 cc_object(
@@ -4027,6 +4102,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "lib/libsed_a-btowc.o",
+    file = ":s171905_gcc/build/sed-4.10/lib/libsed_a-btowc.o",
+)
+
 cc_object(
     name = "s172013_gcc",
     src = ":s1348_tar_xz/build/sed-4.10/lib/c-ctype.c",
@@ -4053,6 +4133,11 @@ cc_object(
         "run --cwd /build/sed-4.10 --env 71 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 54 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -DHAVE_CONFIG_H -I. -I. -I./lib -I./lib -I./sed -Wno-cast-qual -Wno-conversion -Wno-float-equal -Wno-sign-compare -Wno-undef -Wno-unused-function -Wno-unused-parameter -Wno-float-conversion -Wimplicit-fallthrough -Wno-pedantic -Wno-sign-conversion -Wno-type-limits -Wno-unused-const-variable -Wno-unsuffixed-float-constants -Wno-error -g -O2 -c -o lib/libsed_a-c-ctype.o lib/c-ctype.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=1ggxndc1gd",
     ],
+)
+
+built_file(
+    name = "lib/libsed_a-c-ctype.o",
+    file = ":s172013_gcc/build/sed-4.10/lib/libsed_a-c-ctype.o",
 )
 
 cc_object(
@@ -4086,6 +4171,11 @@ cc_object(
         "run --cwd /build/sed-4.10 --env 71 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 54 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -DHAVE_CONFIG_H -I. -I. -I./lib -I./lib -I./sed -Wno-cast-qual -Wno-conversion -Wno-float-equal -Wno-sign-compare -Wno-undef -Wno-unused-function -Wno-unused-parameter -Wno-float-conversion -Wimplicit-fallthrough -Wno-pedantic -Wno-sign-conversion -Wno-type-limits -Wno-unused-const-variable -Wno-unsuffixed-float-constants -Wno-error -g -O2 -c -o lib/libsed_a-c-strcasecmp.o lib/c-strcasecmp.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=1ggxndc1gd",
     ],
+)
+
+built_file(
+    name = "lib/libsed_a-c-strcasecmp.o",
+    file = ":s172117_gcc/build/sed-4.10/lib/libsed_a-c-strcasecmp.o",
 )
 
 cc_object(
@@ -4130,6 +4220,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "lib/libsed_a-c32isprint.o",
+    file = ":s172223_gcc/build/sed-4.10/lib/libsed_a-c32isprint.o",
+)
+
 cc_object(
     name = "s172333_gcc",
     src = ":s1348_tar_xz/build/sed-4.10/lib/c32isspace.c",
@@ -4172,6 +4267,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "lib/libsed_a-c32isspace.o",
+    file = ":s172333_gcc/build/sed-4.10/lib/libsed_a-c32isspace.o",
+)
+
 cc_object(
     name = "s172443_gcc",
     src = ":s1348_tar_xz/build/sed-4.10/lib/c32tob.c",
@@ -4211,6 +4311,11 @@ cc_object(
         "run --cwd /build/sed-4.10 --env 71 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 54 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -DHAVE_CONFIG_H -I. -I. -I./lib -I./lib -I./sed -Wno-cast-qual -Wno-conversion -Wno-float-equal -Wno-sign-compare -Wno-undef -Wno-unused-function -Wno-unused-parameter -Wno-float-conversion -Wimplicit-fallthrough -Wno-pedantic -Wno-sign-conversion -Wno-type-limits -Wno-unused-const-variable -Wno-unsuffixed-float-constants -Wno-error -g -O2 -c -o lib/libsed_a-c32tob.o lib/c32tob.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=1ggxndc1gd",
     ],
+)
+
+built_file(
+    name = "lib/libsed_a-c32tob.o",
+    file = ":s172443_gcc/build/sed-4.10/lib/libsed_a-c32tob.o",
 )
 
 cc_object(
@@ -4257,6 +4362,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "lib/libsed_a-c32tolower.o",
+    file = ":s172546_gcc/build/sed-4.10/lib/libsed_a-c32tolower.o",
+)
+
 cc_object(
     name = "s172655_gcc",
     src = ":s1348_tar_xz/build/sed-4.10/lib/c32toupper.c",
@@ -4301,6 +4411,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "lib/libsed_a-c32toupper.o",
+    file = ":s172655_gcc/build/sed-4.10/lib/libsed_a-c32toupper.o",
+)
+
 cc_object(
     name = "s172767_gcc",
     src = ":s1348_tar_xz/build/sed-4.10/lib/cloexec.c",
@@ -4335,6 +4450,11 @@ cc_object(
         "run --cwd /build/sed-4.10 --env 71 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 54 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -DHAVE_CONFIG_H -I. -I. -I./lib -I./lib -I./sed -Wno-cast-qual -Wno-conversion -Wno-float-equal -Wno-sign-compare -Wno-undef -Wno-unused-function -Wno-unused-parameter -Wno-float-conversion -Wimplicit-fallthrough -Wno-pedantic -Wno-sign-conversion -Wno-type-limits -Wno-unused-const-variable -Wno-unsuffixed-float-constants -Wno-error -g -O2 -c -o lib/libsed_a-cloexec.o lib/cloexec.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=1ggxndc1gd",
     ],
+)
+
+built_file(
+    name = "lib/libsed_a-cloexec.o",
+    file = ":s172767_gcc/build/sed-4.10/lib/libsed_a-cloexec.o",
 )
 
 cc_object(
@@ -4398,6 +4518,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "lib/libsed_a-dfa.o",
+    file = ":s172870_gcc/build/sed-4.10/lib/libsed_a-dfa.o",
+)
+
 cc_object(
     name = "s172993_gcc",
     src = ":s1348_tar_xz/build/sed-4.10/lib/localeinfo.c",
@@ -4448,6 +4573,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "lib/libsed_a-localeinfo.o",
+    file = ":s172993_gcc/build/sed-4.10/lib/libsed_a-localeinfo.o",
+)
+
 cc_object(
     name = "s173107_gcc",
     src = ":s1348_tar_xz/build/sed-4.10/lib/dirname-lgpl.c",
@@ -4486,6 +4616,11 @@ cc_object(
         "run --cwd /build/sed-4.10 --env 71 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 54 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -DHAVE_CONFIG_H -I. -I. -I./lib -I./lib -I./sed -Wno-cast-qual -Wno-conversion -Wno-float-equal -Wno-sign-compare -Wno-undef -Wno-unused-function -Wno-unused-parameter -Wno-float-conversion -Wimplicit-fallthrough -Wno-pedantic -Wno-sign-conversion -Wno-type-limits -Wno-unused-const-variable -Wno-unsuffixed-float-constants -Wno-error -g -O2 -c -o lib/libsed_a-dirname-lgpl.o lib/dirname-lgpl.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=1ggxndc1gd",
     ],
+)
+
+built_file(
+    name = "lib/libsed_a-dirname-lgpl.o",
+    file = ":s173107_gcc/build/sed-4.10/lib/libsed_a-dirname-lgpl.o",
 )
 
 cc_object(
@@ -4528,6 +4663,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "lib/libsed_a-stripslash.o",
+    file = ":s173212_gcc/build/sed-4.10/lib/libsed_a-stripslash.o",
+)
+
 cc_object(
     name = "s173318_gcc",
     src = ":s1348_tar_xz/build/sed-4.10/lib/exitfail.c",
@@ -4562,6 +4702,11 @@ cc_object(
         "run --cwd /build/sed-4.10 --env 71 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 54 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -DHAVE_CONFIG_H -I. -I. -I./lib -I./lib -I./sed -Wno-cast-qual -Wno-conversion -Wno-float-equal -Wno-sign-compare -Wno-undef -Wno-unused-function -Wno-unused-parameter -Wno-float-conversion -Wimplicit-fallthrough -Wno-pedantic -Wno-sign-conversion -Wno-type-limits -Wno-unused-const-variable -Wno-unsuffixed-float-constants -Wno-error -g -O2 -c -o lib/libsed_a-exitfail.o lib/exitfail.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=1ggxndc1gd",
     ],
+)
+
+built_file(
+    name = "lib/libsed_a-exitfail.o",
+    file = ":s173318_gcc/build/sed-4.10/lib/libsed_a-exitfail.o",
 )
 
 cc_object(
@@ -4605,6 +4750,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "lib/libsed_a-fcntl.o",
+    file = ":s173431_gcc/build/sed-4.10/lib/libsed_a-fcntl.o",
+)
+
 cc_object(
     name = "s173552_gcc",
     src = ":s1348_tar_xz/build/sed-4.10/lib/fd-hook.c",
@@ -4639,6 +4789,11 @@ cc_object(
         "run --cwd /build/sed-4.10 --env 71 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 54 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -DHAVE_CONFIG_H -I. -I. -I./lib -I./lib -I./sed -Wno-cast-qual -Wno-conversion -Wno-float-equal -Wno-sign-compare -Wno-undef -Wno-unused-function -Wno-unused-parameter -Wno-float-conversion -Wimplicit-fallthrough -Wno-pedantic -Wno-sign-conversion -Wno-type-limits -Wno-unused-const-variable -Wno-unsuffixed-float-constants -Wno-error -g -O2 -c -o lib/libsed_a-fd-hook.o lib/fd-hook.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=1ggxndc1gd",
     ],
+)
+
+built_file(
+    name = "lib/libsed_a-fd-hook.o",
+    file = ":s173552_gcc/build/sed-4.10/lib/libsed_a-fd-hook.o",
 )
 
 cc_object(
@@ -4696,6 +4851,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "lib/libsed_a-file-has-acl.o",
+    file = ":s173649_gcc/build/sed-4.10/lib/libsed_a-file-has-acl.o",
+)
+
 cc_object(
     name = "s173772_gcc",
     src = ":s1348_tar_xz/build/sed-4.10/lib/fseterr.c",
@@ -4729,6 +4889,11 @@ cc_object(
         "run --cwd /build/sed-4.10 --env 71 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 54 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -DHAVE_CONFIG_H -I. -I. -I./lib -I./lib -I./sed -Wno-cast-qual -Wno-conversion -Wno-float-equal -Wno-sign-compare -Wno-undef -Wno-unused-function -Wno-unused-parameter -Wno-float-conversion -Wimplicit-fallthrough -Wno-pedantic -Wno-sign-conversion -Wno-type-limits -Wno-unused-const-variable -Wno-unsuffixed-float-constants -Wno-error -g -O2 -c -o lib/libsed_a-fseterr.o lib/fseterr.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=1ggxndc1gd",
     ],
+)
+
+built_file(
+    name = "lib/libsed_a-fseterr.o",
+    file = ":s173772_gcc/build/sed-4.10/lib/libsed_a-fseterr.o",
 )
 
 cc_object(
@@ -4765,6 +4930,11 @@ cc_object(
         "run --cwd /build/sed-4.10 --env 71 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 54 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -DHAVE_CONFIG_H -I. -I. -I./lib -I./lib -I./sed -Wno-cast-qual -Wno-conversion -Wno-float-equal -Wno-sign-compare -Wno-undef -Wno-unused-function -Wno-unused-parameter -Wno-float-conversion -Wimplicit-fallthrough -Wno-pedantic -Wno-sign-conversion -Wno-type-limits -Wno-unused-const-variable -Wno-unsuffixed-float-constants -Wno-error -g -O2 -c -o lib/libsed_a-getprogname.o lib/getprogname.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=1ggxndc1gd",
     ],
+)
+
+built_file(
+    name = "lib/libsed_a-getprogname.o",
+    file = ":s173885_gcc/build/sed-4.10/lib/libsed_a-getprogname.o",
 )
 
 cc_object(
@@ -4809,6 +4979,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "lib/malloc/libsed_a-dynarray_at_failure.o",
+    file = ":s174050_gcc/build/sed-4.10/lib/malloc/libsed_a-dynarray_at_failure.o",
+)
+
 cc_object(
     name = "s174156_gcc",
     src = ":s1348_tar_xz/build/sed-4.10/lib/malloc/dynarray_emplace_enlarge.c",
@@ -4851,6 +5026,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "lib/malloc/libsed_a-dynarray_emplace_enlarge.o",
+    file = ":s174156_gcc/build/sed-4.10/lib/malloc/libsed_a-dynarray_emplace_enlarge.o",
+)
+
 cc_object(
     name = "s174268_gcc",
     src = ":s1348_tar_xz/build/sed-4.10/lib/malloc/dynarray_finalize.c",
@@ -4889,6 +5069,11 @@ cc_object(
         "run --cwd /build/sed-4.10 --env 71 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 54 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -DHAVE_CONFIG_H -I. -I. -I./lib -I./lib -I./sed -Wno-cast-qual -Wno-conversion -Wno-float-equal -Wno-sign-compare -Wno-undef -Wno-unused-function -Wno-unused-parameter -Wno-float-conversion -Wimplicit-fallthrough -Wno-pedantic -Wno-sign-conversion -Wno-type-limits -Wno-unused-const-variable -Wno-unsuffixed-float-constants -Wno-error -g -O2 -c -o lib/malloc/libsed_a-dynarray_finalize.o lib/malloc/dynarray_finalize.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=1ggxndc1gd",
     ],
+)
+
+built_file(
+    name = "lib/malloc/libsed_a-dynarray_finalize.o",
+    file = ":s174268_gcc/build/sed-4.10/lib/malloc/libsed_a-dynarray_finalize.o",
 )
 
 cc_object(
@@ -4933,6 +5118,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "lib/malloc/libsed_a-dynarray_resize.o",
+    file = ":s174374_gcc/build/sed-4.10/lib/malloc/libsed_a-dynarray_resize.o",
+)
+
 cc_object(
     name = "s174488_gcc",
     src = ":s1348_tar_xz/build/sed-4.10/lib/malloc/dynarray_resize_clear.c",
@@ -4965,6 +5155,11 @@ cc_object(
         "run --cwd /build/sed-4.10 --env 71 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 54 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -DHAVE_CONFIG_H -I. -I. -I./lib -I./lib -I./sed -Wno-cast-qual -Wno-conversion -Wno-float-equal -Wno-sign-compare -Wno-undef -Wno-unused-function -Wno-unused-parameter -Wno-float-conversion -Wimplicit-fallthrough -Wno-pedantic -Wno-sign-conversion -Wno-type-limits -Wno-unused-const-variable -Wno-unsuffixed-float-constants -Wno-error -g -O2 -c -o lib/malloc/libsed_a-dynarray_resize_clear.o lib/malloc/dynarray_resize_clear.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=1ggxndc1gd",
     ],
+)
+
+built_file(
+    name = "lib/malloc/libsed_a-dynarray_resize_clear.o",
+    file = ":s174488_gcc/build/sed-4.10/lib/malloc/libsed_a-dynarray_resize_clear.o",
 )
 
 cc_object(
@@ -5004,6 +5199,11 @@ cc_object(
         "run --cwd /build/sed-4.10 --env 71 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 54 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -DHAVE_CONFIG_H -I. -I. -I./lib -I./lib -I./sed -Wno-cast-qual -Wno-conversion -Wno-float-equal -Wno-sign-compare -Wno-undef -Wno-unused-function -Wno-unused-parameter -Wno-float-conversion -Wimplicit-fallthrough -Wno-pedantic -Wno-sign-conversion -Wno-type-limits -Wno-unused-const-variable -Wno-unsuffixed-float-constants -Wno-error -g -O2 -c -o lib/malloc/libsed_a-scratch_buffer_grow.o lib/malloc/scratch_buffer_grow.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=1ggxndc1gd",
     ],
+)
+
+built_file(
+    name = "lib/malloc/libsed_a-scratch_buffer_grow.o",
+    file = ":s174600_gcc/build/sed-4.10/lib/malloc/libsed_a-scratch_buffer_grow.o",
 )
 
 cc_object(
@@ -5047,6 +5247,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "lib/malloc/libsed_a-scratch_buffer_grow_preserve.o",
+    file = ":s174719_gcc/build/sed-4.10/lib/malloc/libsed_a-scratch_buffer_grow_preserve.o",
+)
+
 cc_object(
     name = "s174816_gcc",
     src = ":s1348_tar_xz/build/sed-4.10/lib/malloc/scratch_buffer_set_array_size.c",
@@ -5086,6 +5291,11 @@ cc_object(
         "run --cwd /build/sed-4.10 --env 71 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 54 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -DHAVE_CONFIG_H -I. -I. -I./lib -I./lib -I./sed -Wno-cast-qual -Wno-conversion -Wno-float-equal -Wno-sign-compare -Wno-undef -Wno-unused-function -Wno-unused-parameter -Wno-float-conversion -Wimplicit-fallthrough -Wno-pedantic -Wno-sign-conversion -Wno-type-limits -Wno-unused-const-variable -Wno-unsuffixed-float-constants -Wno-error -g -O2 -c -o lib/malloc/libsed_a-scratch_buffer_set_array_size.o lib/malloc/scratch_buffer_set_array_size.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=1ggxndc1gd",
     ],
+)
+
+built_file(
+    name = "lib/malloc/libsed_a-scratch_buffer_set_array_size.o",
+    file = ":s174816_gcc/build/sed-4.10/lib/malloc/libsed_a-scratch_buffer_set_array_size.o",
 )
 
 cc_object(
@@ -5130,6 +5340,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "lib/libsed_a-hard-locale.o",
+    file = ":s174921_gcc/build/sed-4.10/lib/libsed_a-hard-locale.o",
+)
+
 cc_object(
     name = "s175026_gcc",
     src = ":s1348_tar_xz/build/sed-4.10/lib/ialloc.c",
@@ -5167,6 +5382,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "lib/libsed_a-ialloc.o",
+    file = ":s175026_gcc/build/sed-4.10/lib/libsed_a-ialloc.o",
+)
+
 cc_object(
     name = "s175139_gcc",
     src = ":s1348_tar_xz/build/sed-4.10/lib/issymlink.c",
@@ -5201,6 +5421,11 @@ cc_object(
         "run --cwd /build/sed-4.10 --env 71 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 54 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -DHAVE_CONFIG_H -I. -I. -I./lib -I./lib -I./sed -Wno-cast-qual -Wno-conversion -Wno-float-equal -Wno-sign-compare -Wno-undef -Wno-unused-function -Wno-unused-parameter -Wno-float-conversion -Wimplicit-fallthrough -Wno-pedantic -Wno-sign-conversion -Wno-type-limits -Wno-unused-const-variable -Wno-unsuffixed-float-constants -Wno-error -g -O2 -c -o lib/libsed_a-issymlink.o lib/issymlink.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=1ggxndc1gd",
     ],
+)
+
+built_file(
+    name = "lib/libsed_a-issymlink.o",
+    file = ":s175139_gcc/build/sed-4.10/lib/libsed_a-issymlink.o",
 )
 
 cc_object(
@@ -5245,6 +5470,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "lib/libsed_a-localcharset.o",
+    file = ":s175244_gcc/build/sed-4.10/lib/libsed_a-localcharset.o",
+)
+
 cc_object(
     name = "s175414_gcc",
     src = ":s1348_tar_xz/build/sed-4.10/lib/glthread/lock.c",
@@ -5279,6 +5509,11 @@ cc_object(
         "run --cwd /build/sed-4.10 --env 71 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 54 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -DHAVE_CONFIG_H -I. -I. -I./lib -I./lib -I./sed -Wno-cast-qual -Wno-conversion -Wno-float-equal -Wno-sign-compare -Wno-undef -Wno-unused-function -Wno-unused-parameter -Wno-float-conversion -Wimplicit-fallthrough -Wno-pedantic -Wno-sign-conversion -Wno-type-limits -Wno-unused-const-variable -Wno-unsuffixed-float-constants -Wno-error -g -O2 -c -o lib/glthread/libsed_a-lock.o lib/glthread/lock.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=1ggxndc1gd",
     ],
+)
+
+built_file(
+    name = "lib/glthread/libsed_a-lock.o",
+    file = ":s175414_gcc/build/sed-4.10/lib/glthread/libsed_a-lock.o",
 )
 
 cc_object(
@@ -5319,6 +5554,11 @@ cc_object(
         "run --cwd /build/sed-4.10 --env 71 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 54 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -DHAVE_CONFIG_H -I. -I. -I./lib -I./lib -I./sed -Wno-cast-qual -Wno-conversion -Wno-float-equal -Wno-sign-compare -Wno-undef -Wno-unused-function -Wno-unused-parameter -Wno-float-conversion -Wimplicit-fallthrough -Wno-pedantic -Wno-sign-conversion -Wno-type-limits -Wno-unused-const-variable -Wno-unsuffixed-float-constants -Wno-error -g -O2 -c -o lib/libsed_a-malloca.o lib/malloca.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=1ggxndc1gd",
     ],
+)
+
+built_file(
+    name = "lib/libsed_a-malloca.o",
+    file = ":s175521_gcc/build/sed-4.10/lib/libsed_a-malloca.o",
 )
 
 cc_object(
@@ -5372,6 +5612,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "lib/libsed_a-mbrtoc32.o",
+    file = ":s175632_gcc/build/sed-4.10/lib/libsed_a-mbrtoc32.o",
+)
+
 cc_object(
     name = "s175739_gcc",
     src = ":s1348_tar_xz/build/sed-4.10/lib/mbrtowc.c",
@@ -5419,6 +5664,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "lib/libsed_a-mbrtowc.o",
+    file = ":s175739_gcc/build/sed-4.10/lib/libsed_a-mbrtowc.o",
+)
+
 cc_object(
     name = "s175850_gcc",
     src = ":s1348_tar_xz/build/sed-4.10/lib/mbszero.c",
@@ -5452,6 +5702,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "lib/libsed_a-mbszero.o",
+    file = ":s175850_gcc/build/sed-4.10/lib/libsed_a-mbszero.o",
+)
+
 cc_object(
     name = "s175956_gcc",
     src = ":s1348_tar_xz/build/sed-4.10/lib/memeq.c",
@@ -5481,6 +5736,11 @@ cc_object(
         "run --cwd /build/sed-4.10 --env 71 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 54 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -DHAVE_CONFIG_H -I. -I. -I./lib -I./lib -I./sed -Wno-cast-qual -Wno-conversion -Wno-float-equal -Wno-sign-compare -Wno-undef -Wno-unused-function -Wno-unused-parameter -Wno-float-conversion -Wimplicit-fallthrough -Wno-pedantic -Wno-sign-conversion -Wno-type-limits -Wno-unused-const-variable -Wno-unsuffixed-float-constants -Wno-error -g -O2 -c -o lib/libsed_a-memeq.o lib/memeq.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=1ggxndc1gd",
     ],
+)
+
+built_file(
+    name = "lib/libsed_a-memeq.o",
+    file = ":s175956_gcc/build/sed-4.10/lib/libsed_a-memeq.o",
 )
 
 cc_object(
@@ -5524,6 +5784,11 @@ cc_object(
         "run --cwd /build/sed-4.10 --env 71 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 54 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -DHAVE_CONFIG_H -I. -I. -I./lib -I./lib -I./sed -Wno-cast-qual -Wno-conversion -Wno-float-equal -Wno-sign-compare -Wno-undef -Wno-unused-function -Wno-unused-parameter -Wno-float-conversion -Wimplicit-fallthrough -Wno-pedantic -Wno-sign-conversion -Wno-type-limits -Wno-unused-const-variable -Wno-unsuffixed-float-constants -Wno-error -g -O2 -c -o lib/libsed_a-nl_langinfo.o lib/nl_langinfo.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=1ggxndc1gd",
     ],
+)
+
+built_file(
+    name = "lib/libsed_a-nl_langinfo.o",
+    file = ":s176068_gcc/build/sed-4.10/lib/libsed_a-nl_langinfo.o",
 )
 
 cc_object(
@@ -5576,6 +5841,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "lib/libsed_a-obstack.o",
+    file = ":s176175_gcc/build/sed-4.10/lib/libsed_a-obstack.o",
+)
+
 cc_object(
     name = "s176298_gcc",
     src = ":s1348_tar_xz/build/sed-4.10/lib/glthread/once.c",
@@ -5612,6 +5882,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "lib/glthread/libsed_a-once.o",
+    file = ":s176298_gcc/build/sed-4.10/lib/glthread/libsed_a-once.o",
+)
+
 cc_object(
     name = "s176410_gcc",
     src = ":s1348_tar_xz/build/sed-4.10/lib/progname.c",
@@ -5643,6 +5918,11 @@ cc_object(
         "run --cwd /build/sed-4.10 --env 71 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 54 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -DHAVE_CONFIG_H -I. -I. -I./lib -I./lib -I./sed -Wno-cast-qual -Wno-conversion -Wno-float-equal -Wno-sign-compare -Wno-undef -Wno-unused-function -Wno-unused-parameter -Wno-float-conversion -Wimplicit-fallthrough -Wno-pedantic -Wno-sign-conversion -Wno-type-limits -Wno-unused-const-variable -Wno-unsuffixed-float-constants -Wno-error -g -O2 -c -o lib/libsed_a-progname.o lib/progname.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=1ggxndc1gd",
     ],
+)
+
+built_file(
+    name = "lib/libsed_a-progname.o",
+    file = ":s176410_gcc/build/sed-4.10/lib/libsed_a-progname.o",
 )
 
 cc_object(
@@ -5688,6 +5968,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "lib/libsed_a-qcopy-acl.o",
+    file = ":s176520_gcc/build/sed-4.10/lib/libsed_a-qcopy-acl.o",
+)
+
 cc_object(
     name = "s176626_gcc",
     src = ":s1348_tar_xz/build/sed-4.10/lib/qset-acl.c",
@@ -5731,6 +6016,11 @@ cc_object(
         "run --cwd /build/sed-4.10 --env 71 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 54 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -DHAVE_CONFIG_H -I. -I. -I./lib -I./lib -I./sed -Wno-cast-qual -Wno-conversion -Wno-float-equal -Wno-sign-compare -Wno-undef -Wno-unused-function -Wno-unused-parameter -Wno-float-conversion -Wimplicit-fallthrough -Wno-pedantic -Wno-sign-conversion -Wno-type-limits -Wno-unused-const-variable -Wno-unsuffixed-float-constants -Wno-error -g -O2 -c -o lib/libsed_a-qset-acl.o lib/qset-acl.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=1ggxndc1gd",
     ],
+)
+
+built_file(
+    name = "lib/libsed_a-qset-acl.o",
+    file = ":s176626_gcc/build/sed-4.10/lib/libsed_a-qset-acl.o",
 )
 
 cc_object(
@@ -5798,6 +6088,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "lib/libsed_a-quotearg.o",
+    file = ":s176739_gcc/build/sed-4.10/lib/libsed_a-quotearg.o",
+)
+
 cc_object(
     name = "s176858_gcc",
     src = ":s1348_tar_xz/build/sed-4.10/lib/realloc.c",
@@ -5833,6 +6128,11 @@ cc_object(
         "run --cwd /build/sed-4.10 --env 71 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 54 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -DHAVE_CONFIG_H -I. -I. -I./lib -I./lib -I./sed -Wno-cast-qual -Wno-conversion -Wno-float-equal -Wno-sign-compare -Wno-undef -Wno-unused-function -Wno-unused-parameter -Wno-float-conversion -Wimplicit-fallthrough -Wno-pedantic -Wno-sign-conversion -Wno-type-limits -Wno-unused-const-variable -Wno-unsuffixed-float-constants -Wno-error -g -O2 -c -o lib/libsed_a-realloc.o lib/realloc.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=1ggxndc1gd",
     ],
+)
+
+built_file(
+    name = "lib/libsed_a-realloc.o",
+    file = ":s176858_gcc/build/sed-4.10/lib/libsed_a-realloc.o",
 )
 
 cc_object(
@@ -5872,6 +6172,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "lib/libsed_a-reallocarray.o",
+    file = ":s176970_gcc/build/sed-4.10/lib/libsed_a-reallocarray.o",
+)
+
 cc_object(
     name = "s177093_gcc",
     src = ":s1348_tar_xz/build/sed-4.10/lib/same-inode.c",
@@ -5908,6 +6213,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "lib/libsed_a-same-inode.o",
+    file = ":s177093_gcc/build/sed-4.10/lib/libsed_a-same-inode.o",
+)
+
 cc_object(
     name = "s177189_gcc",
     src = ":s1348_tar_xz/build/sed-4.10/lib/se-context.c",
@@ -5935,6 +6245,11 @@ cc_object(
         "run --cwd /build/sed-4.10 --env 71 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 54 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -DHAVE_CONFIG_H -I. -I. -I./lib -I./lib -I./sed -Wno-cast-qual -Wno-conversion -Wno-float-equal -Wno-sign-compare -Wno-undef -Wno-unused-function -Wno-unused-parameter -Wno-float-conversion -Wimplicit-fallthrough -Wno-pedantic -Wno-sign-conversion -Wno-type-limits -Wno-unused-const-variable -Wno-unsuffixed-float-constants -Wno-error -g -O2 -c -o lib/libsed_a-se-context.o lib/se-context.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=1ggxndc1gd",
     ],
+)
+
+built_file(
+    name = "lib/libsed_a-se-context.o",
+    file = ":s177189_gcc/build/sed-4.10/lib/libsed_a-se-context.o",
 )
 
 cc_object(
@@ -5972,6 +6287,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "lib/libsed_a-se-label.o",
+    file = ":s177310_gcc/build/sed-4.10/lib/libsed_a-se-label.o",
+)
+
 cc_object(
     name = "s177415_gcc",
     src = ":s1348_tar_xz/build/sed-4.10/lib/se-selinux.c",
@@ -6003,6 +6323,11 @@ cc_object(
         "run --cwd /build/sed-4.10 --env 71 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 54 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -DHAVE_CONFIG_H -I. -I. -I./lib -I./lib -I./sed -Wno-cast-qual -Wno-conversion -Wno-float-equal -Wno-sign-compare -Wno-undef -Wno-unused-function -Wno-unused-parameter -Wno-float-conversion -Wimplicit-fallthrough -Wno-pedantic -Wno-sign-conversion -Wno-type-limits -Wno-unused-const-variable -Wno-unsuffixed-float-constants -Wno-error -g -O2 -c -o lib/libsed_a-se-selinux.o lib/se-selinux.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=1ggxndc1gd",
     ],
+)
+
+built_file(
+    name = "lib/libsed_a-se-selinux.o",
+    file = ":s177415_gcc/build/sed-4.10/lib/libsed_a-se-selinux.o",
 )
 
 cc_object(
@@ -6046,6 +6371,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "lib/libsed_a-setlocale_null.o",
+    file = ":s177528_gcc/build/sed-4.10/lib/libsed_a-setlocale_null.o",
+)
+
 cc_object(
     name = "s177633_gcc",
     src = ":s1348_tar_xz/build/sed-4.10/lib/setlocale_null-unlocked.c",
@@ -6079,6 +6409,11 @@ cc_object(
         "run --cwd /build/sed-4.10 --env 71 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 54 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -DHAVE_CONFIG_H -I. -I. -I./lib -I./lib -I./sed -Wno-cast-qual -Wno-conversion -Wno-float-equal -Wno-sign-compare -Wno-undef -Wno-unused-function -Wno-unused-parameter -Wno-float-conversion -Wimplicit-fallthrough -Wno-pedantic -Wno-sign-conversion -Wno-type-limits -Wno-unused-const-variable -Wno-unsuffixed-float-constants -Wno-error -g -O2 -c -o lib/libsed_a-setlocale_null-unlocked.o lib/setlocale_null-unlocked.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=1ggxndc1gd",
     ],
+)
+
+built_file(
+    name = "lib/libsed_a-setlocale_null-unlocked.o",
+    file = ":s177633_gcc/build/sed-4.10/lib/libsed_a-setlocale_null-unlocked.o",
 )
 
 cc_object(
@@ -6119,6 +6454,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "lib/libsed_a-stat-time.o",
+    file = ":s177745_gcc/build/sed-4.10/lib/libsed_a-stat-time.o",
+)
+
 cc_object(
     name = "s177852_gcc",
     src = ":s1348_tar_xz/build/sed-4.10/lib/stdlib.c",
@@ -6154,6 +6494,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "lib/libsed_a-stdlib.o",
+    file = ":s177852_gcc/build/sed-4.10/lib/libsed_a-stdlib.o",
+)
+
 cc_object(
     name = "s177959_gcc",
     src = ":s1348_tar_xz/build/sed-4.10/lib/streq.c",
@@ -6185,6 +6530,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "lib/libsed_a-streq.o",
+    file = ":s177959_gcc/build/sed-4.10/lib/libsed_a-streq.o",
+)
+
 cc_object(
     name = "s178056_gcc",
     src = ":s1348_tar_xz/build/sed-4.10/lib/strnul.c",
@@ -6214,6 +6564,11 @@ cc_object(
         "run --cwd /build/sed-4.10 --env 71 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 54 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -DHAVE_CONFIG_H -I. -I. -I./lib -I./lib -I./sed -Wno-cast-qual -Wno-conversion -Wno-float-equal -Wno-sign-compare -Wno-undef -Wno-unused-function -Wno-unused-parameter -Wno-float-conversion -Wimplicit-fallthrough -Wno-pedantic -Wno-sign-conversion -Wno-type-limits -Wno-unused-const-variable -Wno-unsuffixed-float-constants -Wno-error -g -O2 -c -o lib/libsed_a-strnul.o lib/strnul.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=1ggxndc1gd",
     ],
+)
+
+built_file(
+    name = "lib/libsed_a-strnul.o",
+    file = ":s178056_gcc/build/sed-4.10/lib/libsed_a-strnul.o",
 )
 
 cc_object(
@@ -6265,6 +6620,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "lib/libsed_a-tempname.o",
+    file = ":s178168_gcc/build/sed-4.10/lib/libsed_a-tempname.o",
+)
+
 cc_object(
     name = "s178291_gcc",
     src = ":s1348_tar_xz/build/sed-4.10/lib/glthread/threadlib.c",
@@ -6290,6 +6650,11 @@ cc_object(
         "run --cwd /build/sed-4.10 --env 71 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 54 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -DHAVE_CONFIG_H -I. -I. -I./lib -I./lib -I./sed -Wno-cast-qual -Wno-conversion -Wno-float-equal -Wno-sign-compare -Wno-undef -Wno-unused-function -Wno-unused-parameter -Wno-float-conversion -Wimplicit-fallthrough -Wno-pedantic -Wno-sign-conversion -Wno-type-limits -Wno-unused-const-variable -Wno-unsuffixed-float-constants -Wno-error -g -O2 -c -o lib/glthread/libsed_a-threadlib.o lib/glthread/threadlib.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=1ggxndc1gd",
     ],
+)
+
+built_file(
+    name = "lib/glthread/libsed_a-threadlib.o",
+    file = ":s178291_gcc/build/sed-4.10/lib/glthread/libsed_a-threadlib.o",
 )
 
 cc_object(
@@ -6329,6 +6694,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "lib/unicase/libsed_a-tolower.o",
+    file = ":s178453_gcc/build/sed-4.10/lib/unicase/libsed_a-tolower.o",
+)
+
 cc_object(
     name = "s178557_gcc",
     src = ":s1348_tar_xz/build/sed-4.10/lib/unicase/toupper.c",
@@ -6366,6 +6736,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "lib/unicase/libsed_a-toupper.o",
+    file = ":s178557_gcc/build/sed-4.10/lib/unicase/libsed_a-toupper.o",
+)
+
 cc_object(
     name = "s178733_gcc",
     src = ":s1348_tar_xz/build/sed-4.10/lib/unictype/ctype_print.c",
@@ -6399,6 +6774,11 @@ cc_object(
         "run --cwd /build/sed-4.10 --env 71 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 54 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -DHAVE_CONFIG_H -I. -I. -I./lib -I./lib -I./sed -Wno-cast-qual -Wno-conversion -Wno-float-equal -Wno-sign-compare -Wno-undef -Wno-unused-function -Wno-unused-parameter -Wno-float-conversion -Wimplicit-fallthrough -Wno-pedantic -Wno-sign-conversion -Wno-type-limits -Wno-unused-const-variable -Wno-unsuffixed-float-constants -Wno-error -g -O2 -c -o lib/unictype/libsed_a-ctype_print.o lib/unictype/ctype_print.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=1ggxndc1gd",
     ],
+)
+
+built_file(
+    name = "lib/unictype/libsed_a-ctype_print.o",
+    file = ":s178733_gcc/build/sed-4.10/lib/unictype/libsed_a-ctype_print.o",
 )
 
 cc_object(
@@ -6436,6 +6816,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "lib/unictype/libsed_a-ctype_space.o",
+    file = ":s178844_gcc/build/sed-4.10/lib/unictype/libsed_a-ctype_space.o",
+)
+
 cc_object(
     name = "s178949_gcc",
     src = ":s1348_tar_xz/build/sed-4.10/lib/unistd.c",
@@ -6469,6 +6854,11 @@ cc_object(
         "run --cwd /build/sed-4.10 --env 71 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 54 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -DHAVE_CONFIG_H -I. -I. -I./lib -I./lib -I./sed -Wno-cast-qual -Wno-conversion -Wno-float-equal -Wno-sign-compare -Wno-undef -Wno-unused-function -Wno-unused-parameter -Wno-float-conversion -Wimplicit-fallthrough -Wno-pedantic -Wno-sign-conversion -Wno-type-limits -Wno-unused-const-variable -Wno-unsuffixed-float-constants -Wno-error -g -O2 -c -o lib/libsed_a-unistd.o lib/unistd.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=1ggxndc1gd",
     ],
+)
+
+built_file(
+    name = "lib/libsed_a-unistd.o",
+    file = ":s178949_gcc/build/sed-4.10/lib/libsed_a-unistd.o",
 )
 
 cc_object(
@@ -6517,6 +6907,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "lib/libsed_a-version-etc.o",
+    file = ":s179069_gcc/build/sed-4.10/lib/libsed_a-version-etc.o",
+)
+
 cc_object(
     name = "s179174_gcc",
     src = ":s1348_tar_xz/build/sed-4.10/lib/version-etc-fsf.c",
@@ -6549,6 +6944,11 @@ cc_object(
         "run --cwd /build/sed-4.10 --env 71 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 54 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -DHAVE_CONFIG_H -I. -I. -I./lib -I./lib -I./sed -Wno-cast-qual -Wno-conversion -Wno-float-equal -Wno-sign-compare -Wno-undef -Wno-unused-function -Wno-unused-parameter -Wno-float-conversion -Wimplicit-fallthrough -Wno-pedantic -Wno-sign-conversion -Wno-type-limits -Wno-unused-const-variable -Wno-unsuffixed-float-constants -Wno-error -g -O2 -c -o lib/libsed_a-version-etc-fsf.o lib/version-etc-fsf.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=1ggxndc1gd",
     ],
+)
+
+built_file(
+    name = "lib/libsed_a-version-etc-fsf.o",
+    file = ":s179174_gcc/build/sed-4.10/lib/libsed_a-version-etc-fsf.o",
 )
 
 cc_object(
@@ -6584,6 +6984,11 @@ cc_object(
         "run --cwd /build/sed-4.10 --env 71 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 54 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -DHAVE_CONFIG_H -I. -I. -I./lib -I./lib -I./sed -Wno-cast-qual -Wno-conversion -Wno-float-equal -Wno-sign-compare -Wno-undef -Wno-unused-function -Wno-unused-parameter -Wno-float-conversion -Wimplicit-fallthrough -Wno-pedantic -Wno-sign-conversion -Wno-type-limits -Wno-unused-const-variable -Wno-unsuffixed-float-constants -Wno-error -g -O2 -c -o lib/libsed_a-wctype-h.o lib/wctype-h.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=1ggxndc1gd",
     ],
+)
+
+built_file(
+    name = "lib/libsed_a-wctype-h.o",
+    file = ":s179279_gcc/build/sed-4.10/lib/libsed_a-wctype-h.o",
 )
 
 cc_object(
@@ -6635,6 +7040,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "lib/libsed_a-xmalloc.o",
+    file = ":s179383_gcc/build/sed-4.10/lib/libsed_a-xmalloc.o",
+)
+
 cc_object(
     name = "s179509_gcc",
     src = ":s1348_tar_xz/build/sed-4.10/lib/xalloc-die.c",
@@ -6682,6 +7092,11 @@ cc_object(
         "run --cwd /build/sed-4.10 --env 71 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 54 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -DHAVE_CONFIG_H -I. -I. -I./lib -I./lib -I./sed -Wno-cast-qual -Wno-conversion -Wno-float-equal -Wno-sign-compare -Wno-undef -Wno-unused-function -Wno-unused-parameter -Wno-float-conversion -Wimplicit-fallthrough -Wno-pedantic -Wno-sign-conversion -Wno-type-limits -Wno-unused-const-variable -Wno-unsuffixed-float-constants -Wno-error -g -O2 -c -o lib/libsed_a-xalloc-die.o lib/xalloc-die.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=1ggxndc1gd",
     ],
+)
+
+built_file(
+    name = "lib/libsed_a-xalloc-die.o",
+    file = ":s179509_gcc/build/sed-4.10/lib/libsed_a-xalloc-die.o",
 )
 
 cc_library(
@@ -6859,6 +7274,11 @@ cc_library(
     ],
 )
 
+built_file(
+    name = "lib/libsed.a",
+    file = ":s179620_ar/build/sed-4.10/lib/libsed.a",
+)
+
 cc_object(
     name = "s179685_gcc",
     src = ":s169581_bash/build/sed-4.10/sed/version.ct",
@@ -6886,6 +7306,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "sed/version.o",
+    file = ":s179685_gcc/build/sed-4.10/sed/version.o",
+)
+
 cc_library(
     name = "s179789_ar",
     objs = [
@@ -6909,6 +7334,11 @@ cc_library(
         "run --cwd /build/sed-4.10 --env 73 --argv0 ar --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 4 --",
         "/nix/store/4f6lpwn65y6k7hc7xaqh6iajglh6rj3r-bootstrap-stage4-gcc-wrapper-16.2.0/bin/ar cr sed/libver.a sed/version.o",
     ],
+)
+
+built_file(
+    name = "sed/libver.a",
+    file = ":s179789_ar/build/sed-4.10/sed/libver.a",
 )
 
 cc_binary(
@@ -6952,6 +7382,11 @@ cc_binary(
         "run --cwd /build/sed-4.10 --env 75 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 47 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -Wl,-dynamic-linker=/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ld-linux-x86-64.so.2 -g -O2 -o sed/sed sed/sed-compile.o sed/sed-debug.o sed/sed-execute.o sed/sed-mbcs.o sed/sed-regexp.o sed/sed-sed.o sed/sed-utils.o sed/libver.a lib/libsed.a -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=1ggxndc1gd -Wl,-rpath -Wl,/nix/store/1ggxndc1gd5061j5hqprhnhx9p30yilv-gnused-4.10/lib -L/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib -L/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0 -L/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -L/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib",
     ],
+)
+
+program(
+    name = "sed/sed",
+    file = ":s179915_gcc/build/sed-4.10/sed/sed",
 )
 
 recorded(

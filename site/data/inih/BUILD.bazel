@@ -1,4 +1,4 @@
-load(":genrulify.bzl", "cc_object", "cc_shared_library", "nix_archive", "recorded")
+load(":genrulify.bzl", "built_file", "cc_object", "cc_shared_library", "nix_archive", "recorded")
 
 recorded(
     name = "s1698_cp",
@@ -132,6 +132,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "build/libinih.so.0.p/ini.c.o",
+    file = ":s9378_gcc/build/source/build/libinih.so.0.p/ini.c.o",
+)
+
 cc_shared_library(
     name = "s9559_gcc",
     objs = [
@@ -156,6 +161,11 @@ cc_shared_library(
         "run --cwd /build/source/build --env 13 --fd 0=null --fd 1=null --fd 2=null --status 0 --argc 41 --",
         "/nix/store/pkb2bibhgwnnnjcngk6h95db9mjfy7k0-gcc-15.3.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -Wl,-dynamic-linker=/nix/store/pagq7gjgxqbi09g0091x2cxwq2kwxyx8-glibc-2.42-103/lib/ld-linux-x86-64.so.2 -o libinih.so.0 libinih.so.0.p/ini.c.o -Wl,--as-needed -Wl,--no-undefined -shared -fPIC -Wl,-soname,libinih.so.0 -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/pagq7gjgxqbi09g0091x2cxwq2kwxyx8-glibc-2.42-103/lib/ -idirafter /nix/store/cb7d4q7zpd9mhr3mr4a32845cqj8nqdy-glibc-2.42-103-dev/include -idirafter /nix/store/pkb2bibhgwnnnjcngk6h95db9mjfy7k0-gcc-15.3.0/lib/gcc/x86_64-unknown-linux-gnu/15.3.0/include-fixed -B/nix/store/zsxcf54ml6jr2wjqh29a30lh46h166wi-gcc-15.3.0-lib/lib -frandom-seed=bgdzq5lb4w -Wl,-rpath -Wl,/nix/store/bgdzq5lb4ws5q6bmg07j5bgdqwdb4f4d-inih-62/lib -L/nix/store/pagq7gjgxqbi09g0091x2cxwq2kwxyx8-glibc-2.42-103/lib -L/nix/store/pkb2bibhgwnnnjcngk6h95db9mjfy7k0-gcc-15.3.0/lib/gcc/x86_64-unknown-linux-gnu/15.3.0 -L/nix/store/zsxcf54ml6jr2wjqh29a30lh46h166wi-gcc-15.3.0-lib/lib -L/nix/store/zsxcf54ml6jr2wjqh29a30lh46h166wi-gcc-15.3.0-lib/lib",
     ],
+)
+
+built_file(
+    name = "build/libinih.so.0",
+    file = ":s9559_gcc/build/source/build/libinih.so.0",
 )
 
 cc_object(
@@ -185,6 +195,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "build/libINIReader.so.0.p/cpp_INIReader.cpp.o",
+    file = ":s14608_g__/build/source/build/libINIReader.so.0.p/cpp_INIReader.cpp.o",
+)
+
 cc_shared_library(
     name = "s18177_g__",
     objs = [
@@ -212,6 +227,11 @@ cc_shared_library(
         "run --cwd /build/source/build --env 16 --fd 0=null --fd 1=null --fd 2=null --status 0 --argc 43 --",
         "/nix/store/pkb2bibhgwnnnjcngk6h95db9mjfy7k0-gcc-15.3.0/bin/g++ -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -Wl,-dynamic-linker=/nix/store/pagq7gjgxqbi09g0091x2cxwq2kwxyx8-glibc-2.42-103/lib/ld-linux-x86-64.so.2 -o libINIReader.so.0 libINIReader.so.0.p/cpp_INIReader.cpp.o -Wl,--as-needed -Wl,--no-undefined -shared -fPIC -Wl,-soname,libINIReader.so.0 '-Wl,-rpath,$$ORIGIN/' libinih.so.0 -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/pagq7gjgxqbi09g0091x2cxwq2kwxyx8-glibc-2.42-103/lib/ -idirafter /nix/store/cb7d4q7zpd9mhr3mr4a32845cqj8nqdy-glibc-2.42-103-dev/include -idirafter /nix/store/pkb2bibhgwnnnjcngk6h95db9mjfy7k0-gcc-15.3.0/lib/gcc/x86_64-unknown-linux-gnu/15.3.0/include-fixed -B/nix/store/zsxcf54ml6jr2wjqh29a30lh46h166wi-gcc-15.3.0-lib/lib -frandom-seed=bgdzq5lb4w -Wl,-rpath -Wl,/nix/store/bgdzq5lb4ws5q6bmg07j5bgdqwdb4f4d-inih-62/lib -L/nix/store/pagq7gjgxqbi09g0091x2cxwq2kwxyx8-glibc-2.42-103/lib -L/nix/store/pkb2bibhgwnnnjcngk6h95db9mjfy7k0-gcc-15.3.0/lib/gcc/x86_64-unknown-linux-gnu/15.3.0 -L/nix/store/zsxcf54ml6jr2wjqh29a30lh46h166wi-gcc-15.3.0-lib/lib -L/nix/store/zsxcf54ml6jr2wjqh29a30lh46h166wi-gcc-15.3.0-lib/lib",
     ],
+)
+
+built_file(
+    name = "build/libINIReader.so.0",
+    file = ":s18177_g__/build/source/build/libINIReader.so.0",
 )
 
 recorded(

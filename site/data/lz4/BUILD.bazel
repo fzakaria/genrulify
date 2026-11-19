@@ -1,4 +1,4 @@
-load(":genrulify.bzl", "cc_binary", "cc_object", "cc_shared_library", "nix_archive", "recorded")
+load(":genrulify.bzl", "built_file", "cc_binary", "cc_object", "cc_shared_library", "nix_archive", "program", "recorded")
 
 recorded(
     name = "s2139_cp",
@@ -1863,6 +1863,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "build-dist/CMakeFiles/lz4cli.dir/build/source/programs/lz4io.c.o",
+    file = ":s17456_gcc/build/source/build-dist/CMakeFiles/lz4cli.dir/build/source/programs/lz4io.c.o",
+)
+
 cc_object(
     name = "s17624_gcc",
     src = ":s2139_cp/build/source/programs/threadpool.c",
@@ -1890,6 +1895,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "build-dist/CMakeFiles/lz4cli.dir/build/source/programs/threadpool.c.o",
+    file = ":s17624_gcc/build/source/build-dist/CMakeFiles/lz4cli.dir/build/source/programs/threadpool.c.o",
+)
+
 cc_object(
     name = "s17782_gcc",
     src = ":s2139_cp/build/source/programs/timefn.c",
@@ -1914,6 +1924,11 @@ cc_object(
         "run --cwd /build/source/build-dist --env 31 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 39 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -I/build/source/build/cmake/../../lib -O3 -DNDEBUG -MD -MT CMakeFiles/lz4cli.dir/build/source/programs/timefn.c.o -MF CMakeFiles/lz4cli.dir/build/source/programs/timefn.c.o.d -o CMakeFiles/lz4cli.dir/build/source/programs/timefn.c.o -c /build/source/programs/timefn.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=dk9wf8nnmm",
     ],
+)
+
+built_file(
+    name = "build-dist/CMakeFiles/lz4cli.dir/build/source/programs/timefn.c.o",
+    file = ":s17782_gcc/build/source/build-dist/CMakeFiles/lz4cli.dir/build/source/programs/timefn.c.o",
 )
 
 cc_object(
@@ -1943,6 +1958,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "build-dist/CMakeFiles/lz4cli.dir/build/source/programs/util.c.o",
+    file = ":s17947_gcc/build/source/build-dist/CMakeFiles/lz4cli.dir/build/source/programs/util.c.o",
+)
+
 cc_object(
     name = "s18096_gcc",
     src = ":s2139_cp/build/source/lib/lz4.c",
@@ -1967,6 +1987,11 @@ cc_object(
         "run --cwd /build/source/build-dist --env 31 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 39 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -I/build/source/build/cmake/../../lib -O3 -DNDEBUG -MD -MT CMakeFiles/lz4cli.dir/build/source/lib/lz4.c.o -MF CMakeFiles/lz4cli.dir/build/source/lib/lz4.c.o.d -o CMakeFiles/lz4cli.dir/build/source/lib/lz4.c.o -c /build/source/lib/lz4.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=dk9wf8nnmm",
     ],
+)
+
+built_file(
+    name = "build-dist/CMakeFiles/lz4cli.dir/build/source/lib/lz4.c.o",
+    file = ":s18096_gcc/build/source/build-dist/CMakeFiles/lz4cli.dir/build/source/lib/lz4.c.o",
 )
 
 cc_object(
@@ -1996,6 +2021,11 @@ cc_object(
         "run --cwd /build/source/build-dist --env 31 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 39 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -I/build/source/build/cmake/../../lib -O3 -DNDEBUG -MD -MT CMakeFiles/lz4cli.dir/build/source/lib/lz4file.c.o -MF CMakeFiles/lz4cli.dir/build/source/lib/lz4file.c.o.d -o CMakeFiles/lz4cli.dir/build/source/lib/lz4file.c.o -c /build/source/lib/lz4file.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=dk9wf8nnmm",
     ],
+)
+
+built_file(
+    name = "build-dist/CMakeFiles/lz4cli.dir/build/source/lib/lz4file.c.o",
+    file = ":s18267_gcc/build/source/build-dist/CMakeFiles/lz4cli.dir/build/source/lib/lz4file.c.o",
 )
 
 cc_object(
@@ -2028,6 +2058,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "build-dist/CMakeFiles/lz4cli.dir/build/source/lib/lz4frame.c.o",
+    file = ":s18437_gcc/build/source/build-dist/CMakeFiles/lz4cli.dir/build/source/lib/lz4frame.c.o",
+)
+
 cc_object(
     name = "s18607_gcc",
     src = ":s2139_cp/build/source/lib/lz4hc.c",
@@ -2056,6 +2091,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "build-dist/CMakeFiles/lz4cli.dir/build/source/lib/lz4hc.c.o",
+    file = ":s18607_gcc/build/source/build-dist/CMakeFiles/lz4cli.dir/build/source/lib/lz4hc.c.o",
+)
+
 cc_object(
     name = "s18767_gcc",
     src = ":s2139_cp/build/source/lib/xxhash.c",
@@ -2080,6 +2120,11 @@ cc_object(
         "run --cwd /build/source/build-dist --env 31 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 39 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -I/build/source/build/cmake/../../lib -O3 -DNDEBUG -MD -MT CMakeFiles/lz4cli.dir/build/source/lib/xxhash.c.o -MF CMakeFiles/lz4cli.dir/build/source/lib/xxhash.c.o.d -o CMakeFiles/lz4cli.dir/build/source/lib/xxhash.c.o -c /build/source/lib/xxhash.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=dk9wf8nnmm",
     ],
+)
+
+built_file(
+    name = "build-dist/CMakeFiles/lz4cli.dir/build/source/lib/xxhash.c.o",
+    file = ":s18767_gcc/build/source/build-dist/CMakeFiles/lz4cli.dir/build/source/lib/xxhash.c.o",
 )
 
 cc_binary(
@@ -2130,6 +2175,11 @@ cc_binary(
         "run --cwd /build/source/build-dist --env 32 --fd 0=null --fd 1=err --fd 2=err --fd 3=file:r@775:/build/source/build-dist/CMakeFiles/lz4cli.dir/link.txt --status 0 --argc 51 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -Wl,-dynamic-linker=/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ld-linux-x86-64.so.2 -O3 -DNDEBUG -Wl,--dependency-file=CMakeFiles/lz4cli.dir/link.d CMakeFiles/lz4cli.dir/build/source/programs/bench.c.o CMakeFiles/lz4cli.dir/build/source/programs/lorem.c.o CMakeFiles/lz4cli.dir/build/source/programs/lz4cli.c.o CMakeFiles/lz4cli.dir/build/source/programs/lz4io.c.o CMakeFiles/lz4cli.dir/build/source/programs/threadpool.c.o CMakeFiles/lz4cli.dir/build/source/programs/timefn.c.o CMakeFiles/lz4cli.dir/build/source/programs/util.c.o CMakeFiles/lz4cli.dir/build/source/lib/lz4.c.o CMakeFiles/lz4cli.dir/build/source/lib/lz4file.c.o CMakeFiles/lz4cli.dir/build/source/lib/lz4frame.c.o CMakeFiles/lz4cli.dir/build/source/lib/lz4hc.c.o CMakeFiles/lz4cli.dir/build/source/lib/xxhash.c.o -o lz4 -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=dk9wf8nnmm -Wl,-rpath -Wl,/nix/store/8327b5r0l5k48fpcqiaias8p2m7h52n5-lz4-1.10.0-lib/lib -L/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib -L/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0 -L/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -L/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib",
     ],
+)
+
+program(
+    name = "build-dist/lz4",
+    file = ":s19006_gcc/build/source/build-dist/lz4",
 )
 
 recorded(

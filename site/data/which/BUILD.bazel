@@ -1,4 +1,4 @@
-load(":genrulify.bzl", "cc_binary", "cc_object", "nix_archive", "recorded")
+load(":genrulify.bzl", "built_file", "cc_binary", "cc_object", "nix_archive", "program", "recorded")
 
 recorded(
     name = "s1374_tar",
@@ -277,6 +277,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "getopt.o",
+    file = ":s28238_gcc/build/which-2.25/getopt.o",
+)
+
 cc_object(
     name = "s28342_gcc",
     src = ":s1374_tar/build/which-2.25/getopt1.c",
@@ -302,6 +307,11 @@ cc_object(
         "run --cwd /build/which-2.25 --env 38 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 35 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -DHAVE_CONFIG_H -I. -g -O2 -c -o getopt1.o getopt1.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=mdwxdimw26",
     ],
+)
+
+built_file(
+    name = "getopt1.o",
+    file = ":s28342_gcc/build/which-2.25/getopt1.o",
 )
 
 cc_object(
@@ -332,6 +342,11 @@ cc_object(
         "run --cwd /build/which-2.25 --env 38 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 35 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -DHAVE_CONFIG_H -I. -g -O2 -c -o bash.o bash.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=mdwxdimw26",
     ],
+)
+
+built_file(
+    name = "bash.o",
+    file = ":s28453_gcc/build/which-2.25/bash.o",
 )
 
 cc_object(
@@ -365,6 +380,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "which.o",
+    file = ":s28586_gcc/build/which-2.25/which.o",
+)
+
 cc_object(
     name = "s28718_gcc",
     src = ":s1374_tar/build/which-2.25/tilde.c",
@@ -392,6 +412,11 @@ cc_object(
         "run --cwd /build/which-2.25 --env 38 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 35 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -DHAVE_CONFIG_H -I. -g -O2 -c -o tilde.o tilde.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=mdwxdimw26",
     ],
+)
+
+built_file(
+    name = "tilde.o",
+    file = ":s28718_gcc/build/which-2.25/tilde.o",
 )
 
 cc_binary(
@@ -426,6 +451,11 @@ cc_binary(
         "run --cwd /build/which-2.25 --env 40 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 43 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -Wl,-dynamic-linker=/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ld-linux-x86-64.so.2 -g -O2 -o which getopt.o getopt1.o bash.o which.o tilde.o -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=mdwxdimw26 -Wl,-rpath -Wl,/nix/store/mdwxdimw26b72k7wign651n8clh4jzii-which-2.25/lib -L/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib -L/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0 -L/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -L/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib",
     ],
+)
+
+program(
+    name = "which",
+    file = ":s28915_gcc/build/which-2.25/which",
 )
 
 recorded(

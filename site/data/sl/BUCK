@@ -1,4 +1,4 @@
-load(":genrulify.buck.bzl", "cc_binary", "nix_archive", "recorded")
+load(":genrulify.buck.bzl", "cc_binary", "nix_archive", "program", "recorded")
 
 recorded(
     name = "s2098_cp",
@@ -6,12 +6,20 @@ recorded(
         "actions/s2098_cp.manifest",
         "closure.txt",
         "env/13.env",
-        "platform",
+        "platform/bin/sh",
+        "platform/etc/group",
+        "platform/etc/hosts",
+        "platform/etc/passwd",
         "sandbox.sh",
     ],
-    out = "s2098_cp",
+    outs = [
+        "s2098_cp/build/source/sl.1",
+        "s2098_cp/build/source/sl.1.ja",
+        "s2098_cp/build/source/sl.c",
+        "s2098_cp/build/source/sl.h",
+    ],
     cmd = [
-        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out $OUTDIR",
         "--name s2098_cp --timeout 300",
         "run --cwd /build --env 13 --argv0 cp --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 7 --",
         "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/cp -r --preserve=timestamps --reflink=auto -- /nix/store/pyyddwilxjwq3n7065zd6xpk8r01hqjm-source source",
@@ -20,21 +28,33 @@ recorded(
 
 cc_binary(
     name = "s2853_gcc",
-    srcs = [
+    objs = [],
+    deps = [],
+    out = "s2853_gcc/build/source/sl",
+    data = [
         "actions/s2853_gcc.manifest",
         "closure.txt",
         "env/25.env",
-        "platform",
+        "platform/bin/sh",
+        "platform/etc/group",
+        "platform/etc/hosts",
+        "platform/etc/passwd",
         "sandbox.sh",
+        ":s2098_cp[build/source/sl.c]",
+        ":s2098_cp[build/source/sl.h]",
         ":s2098_cp",
     ],
-    out = "s2853_gcc",
     cmd = [
-        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out $OUTDIR",
         "--name s2853_gcc --timeout 300",
         "run --cwd /build/source --env 25 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 46 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -Wl,-dynamic-linker=/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ld-linux-x86-64.so.2 -O3 -Wall -o sl sl.c -lncurses -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=0n7j2s7faw -isystem /nix/store/dgvn2c174c1fy0lcfyx0hzq76qn6jmnn-ncurses-6.6-dev/include -isystem /nix/store/dgvn2c174c1fy0lcfyx0hzq76qn6jmnn-ncurses-6.6-dev/include -Wl,-rpath -Wl,/nix/store/0n7j2s7fawm2m7m3zmqapsjwv8xlq3yf-sl-5.05/lib -L/nix/store/hzqwc6pv8sb9qrwivc4h42cr811gs1mk-ncurses-6.6/lib -L/nix/store/hzqwc6pv8sb9qrwivc4h42cr811gs1mk-ncurses-6.6/lib -L/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib -L/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0 -L/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -L/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib",
     ],
+)
+
+program(
+    name = "sl",
+    file = ":s2853_gcc[build/source/sl]",
 )
 
 recorded(
@@ -44,13 +64,19 @@ recorded(
         "closure.txt",
         "env/28.env",
         "env/29.env",
-        "platform",
+        "platform/bin/sh",
+        "platform/etc/group",
+        "platform/etc/hosts",
+        "platform/etc/passwd",
         "sandbox.sh",
+        ":s2853_gcc[build/source/sl]",
         ":s2853_gcc",
     ],
-    out = "s3609_find_patchelf",
+    outs = [
+        "s3609_find_patchelf/nix/store/0n7j2s7fawm2m7m3zmqapsjwv8xlq3yf-sl-5.05/bin/sl",
+    ],
     cmd = [
-        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out $OUTDIR",
         "--name s3609_find_patchelf --timeout 300 --pipe 488:0:1:0",
         "run --cwd /build/source --env 28 --argv0 find --fd 0=null --fd 1=pipe-w:488 --fd 2=err --status 0 --argc 5 --",
         "/nix/store/ycrbcy9sg4knpnik6a01dk70l0m673x7-findutils-4.11.0/bin/find /nix/store/0n7j2s7fawm2m7m3zmqapsjwv8xlq3yf-sl-5.05 -type f -print0",
@@ -65,13 +91,19 @@ recorded(
         "actions/s3933_gzip.manifest",
         "closure.txt",
         "env/37.env",
-        "platform",
+        "platform/bin/sh",
+        "platform/etc/group",
+        "platform/etc/hosts",
+        "platform/etc/passwd",
         "sandbox.sh",
+        ":s2098_cp[build/source/sl.1.ja]",
         ":s2098_cp",
     ],
-    out = "s3933_gzip",
+    outs = [
+        "s3933_gzip/nix/store/0n7j2s7fawm2m7m3zmqapsjwv8xlq3yf-sl-5.05/share/man/man1/sl.1.ja.gz",
+    ],
     cmd = [
-        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out $OUTDIR",
         "--name s3933_gzip --timeout 300",
         "run --cwd /build/source --env 37 --argv0 gzip --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 4 --",
         "/nix/store/yr6ar7lsk3yfas4d464z1ysaxwcq2gc5-gzip-1.14/bin/gzip -n -f /nix/store/0n7j2s7fawm2m7m3zmqapsjwv8xlq3yf-sl-5.05/share/man/man1/sl.1.ja",
@@ -84,13 +116,19 @@ recorded(
         "actions/s3959_gzip.manifest",
         "closure.txt",
         "env/37.env",
-        "platform",
+        "platform/bin/sh",
+        "platform/etc/group",
+        "platform/etc/hosts",
+        "platform/etc/passwd",
         "sandbox.sh",
+        ":s2098_cp[build/source/sl.1]",
         ":s2098_cp",
     ],
-    out = "s3959_gzip",
+    outs = [
+        "s3959_gzip/nix/store/0n7j2s7fawm2m7m3zmqapsjwv8xlq3yf-sl-5.05/share/man/man1/sl.1.gz",
+    ],
     cmd = [
-        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out $OUTDIR",
         "--name s3959_gzip --timeout 300",
         "run --cwd /build/source --env 37 --argv0 gzip --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 4 --",
         "/nix/store/yr6ar7lsk3yfas4d464z1ysaxwcq2gc5-gzip-1.14/bin/gzip -n -f /nix/store/0n7j2s7fawm2m7m3zmqapsjwv8xlq3yf-sl-5.05/share/man/man1/sl.1",
@@ -102,15 +140,21 @@ recorded(
     srcs = [
         "actions/s4198_strip.manifest",
         "closure.txt",
-        "const_4092_mktemp",
         "env/40.env",
-        "platform",
+        "platform/bin/sh",
+        "platform/etc/group",
+        "platform/etc/hosts",
+        "platform/etc/passwd",
         "sandbox.sh",
+        "const_4092_mktemp/build/striperr.lHyxAi",
+        ":s3609_find_patchelf[nix/store/0n7j2s7fawm2m7m3zmqapsjwv8xlq3yf-sl-5.05/bin/sl]",
         ":s3609_find_patchelf",
     ],
-    out = "s4198_strip",
+    outs = [
+        "s4198_strip/nix/store/0n7j2s7fawm2m7m3zmqapsjwv8xlq3yf-sl-5.05/bin/sl",
+    ],
     cmd = [
-        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out $OUTDIR",
         "--name s4198_strip --timeout 300",
         "run --cwd /build/source --env 40 --fd 0=null --fd 1=err --fd 2=file:w:/build/striperr.lHyxAi --status 0 --argc 5 --",
         "/nix/store/y5sgl0vvrpbcwgjwpjs60r1hg0gi7i0n-binutils-2.46/bin/strip --enable-deterministic-archives -S -p /nix/store/0n7j2s7fawm2m7m3zmqapsjwv8xlq3yf-sl-5.05/bin/sl",
@@ -122,13 +166,16 @@ nix_archive(
     srcs = [
         "actions/archive.manifest",
         "sandbox.sh",
+        ":s3933_gzip[nix/store/0n7j2s7fawm2m7m3zmqapsjwv8xlq3yf-sl-5.05/share/man/man1/sl.1.ja.gz]",
+        ":s3959_gzip[nix/store/0n7j2s7fawm2m7m3zmqapsjwv8xlq3yf-sl-5.05/share/man/man1/sl.1.gz]",
+        ":s4198_strip[nix/store/0n7j2s7fawm2m7m3zmqapsjwv8xlq3yf-sl-5.05/bin/sl]",
         ":s3933_gzip",
         ":s3959_gzip",
         ":s4198_strip",
     ],
     out = "archive.nar",
     cmd = [
-        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out $OUTDIR",
         "--name archive pack /nix/store/0n7j2s7fawm2m7m3zmqapsjwv8xlq3yf-sl-5.05 3131f69a8db011343806307f88b1d851b22dd780029f8599d63c891d67b55d01",
     ],
 )

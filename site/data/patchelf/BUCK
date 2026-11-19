@@ -1,4 +1,4 @@
-load(":genrulify.buck.bzl", "cc_binary", "cc_object", "nix_archive", "recorded")
+load(":genrulify.buck.bzl", "built_file", "cc_binary", "cc_object", "nix_archive", "program", "recorded")
 
 recorded(
     name = "s1274_tar",
@@ -6,12 +6,21 @@ recorded(
         "actions/s1274_tar.manifest",
         "closure.txt",
         "env/12.env",
-        "platform",
+        "platform/bin/sh",
+        "platform/etc/group",
+        "platform/etc/hosts",
+        "platform/etc/passwd",
         "sandbox.sh",
     ],
-    out = "s1274_tar",
+    outs = [
+        "s1274_tar/build/patchelf-0.15.2/README.md",
+        "s1274_tar/build/patchelf-0.15.2/patchelf.1",
+        "s1274_tar/build/patchelf-0.15.2/src/elf.h",
+        "s1274_tar/build/patchelf-0.15.2/src/patchelf.cc",
+        "s1274_tar/build/patchelf-0.15.2/src/patchelf.h",
+    ],
     cmd = [
-        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out $OUTDIR",
         "--name s1274_tar --timeout 300",
         "run --cwd /build --env 12 --argv0 tar --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 5 --",
         "/nix/store/5ixf6i3kxcs512kl5glglb0y51rdgaar-gnutar-static-1.35/bin/tar xf /nix/store/9bangizlrzva6iv0ldyk51dq0j95d1ix-patchelf-0.15.2.tar.bz2 --mode=+w --warning=no-timestamp",
@@ -20,40 +29,65 @@ recorded(
 
 cc_object(
     name = "s9299_g__",
-    srcs = [
+    src = ":s1274_tar[build/patchelf-0.15.2/src/patchelf.cc]",
+    hdrs = [
+        ":s1274_tar[build/patchelf-0.15.2/src/elf.h]",
+        ":s1274_tar[build/patchelf-0.15.2/src/patchelf.h]",
+    ],
+    out = "s9299_g__/build/patchelf-0.15.2/src/patchelf.o",
+    data = [
         "actions/s9299_g__.manifest",
         "closure.txt",
         "env/33.env",
-        "platform",
+        "platform/bin/sh",
+        "platform/etc/group",
+        "platform/etc/hosts",
+        "platform/etc/passwd",
         "sandbox.sh",
         ":s1274_tar",
     ],
-    out = "s9299_g__",
     cmd = [
-        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out $OUTDIR",
         "--name s9299_g__ --timeout 300",
         "run --cwd /build/patchelf-0.15.2/src --env 33 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 50 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/g++ -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -std=gnu++11 -std=c++17 '-DPACKAGE_NAME=\"patchelf\"' '-DPACKAGE_TARNAME=\"patchelf\"' '-DPACKAGE_VERSION=\"0.15.2\"' '-DPACKAGE_STRING=\"patchelf 0.15.2\"' '-DPACKAGE_BUGREPORT=\"\"' '-DPACKAGE_URL=\"\"' '-DPACKAGE=\"patchelf\"' '-DVERSION=\"0.15.2\"' -DHAVE_CXX17=1 -I. -Wall -Wextra -Wcast-qual -std=c++17 -D_FILE_OFFSET_BITS=64 -g -O2 -c -o patchelf.o patchelf.cc -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=qcwnw71iks",
     ],
 )
 
+built_file(
+    name = "src/patchelf.o",
+    file = ":s9299_g__[build/patchelf-0.15.2/src/patchelf.o]",
+)
+
 cc_binary(
     name = "s9472_g__",
-    srcs = [
+    objs = [
+        ":s9299_g__[build/patchelf-0.15.2/src/patchelf.o]",
+    ],
+    deps = [],
+    out = "s9472_g__/build/patchelf-0.15.2/src/patchelf",
+    data = [
         "actions/s9472_g__.manifest",
         "closure.txt",
         "env/35.env",
-        "platform",
+        "platform/bin/sh",
+        "platform/etc/group",
+        "platform/etc/hosts",
+        "platform/etc/passwd",
         "sandbox.sh",
         ":s9299_g__",
     ],
-    out = "s9472_g__",
     cmd = [
-        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out $OUTDIR",
         "--name s9472_g__ --timeout 300",
         "run --cwd /build/patchelf-0.15.2/src --env 35 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 46 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/g++ -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -Wl,-dynamic-linker=/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ld-linux-x86-64.so.2 -std=gnu++11 -std=c++17 -Wall -Wextra -Wcast-qual -std=c++17 -D_FILE_OFFSET_BITS=64 -g -O2 -o patchelf patchelf.o -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=qcwnw71iks -Wl,-rpath -Wl,/nix/store/qcwnw71iksl68k7fipizi6wn0s1xms9v-patchelf-0.15.2/lib -L/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib -L/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0 -L/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -L/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib",
     ],
+)
+
+program(
+    name = "src/patchelf",
+    file = ":s9472_g__[build/patchelf-0.15.2/src/patchelf]",
 )
 
 recorded(
@@ -63,13 +97,19 @@ recorded(
         "closure.txt",
         "env/48.env",
         "env/49.env",
-        "platform",
+        "platform/bin/sh",
+        "platform/etc/group",
+        "platform/etc/hosts",
+        "platform/etc/passwd",
         "sandbox.sh",
+        ":s9472_g__[build/patchelf-0.15.2/src/patchelf]",
         ":s9472_g__",
     ],
-    out = "s10498_find_patchelf",
+    outs = [
+        "s10498_find_patchelf/nix/store/qcwnw71iksl68k7fipizi6wn0s1xms9v-patchelf-0.15.2/bin/patchelf",
+    ],
     cmd = [
-        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out $OUTDIR",
         "--name s10498_find_patchelf --timeout 300 --pipe 819:0:1:0",
         "run --cwd /build/patchelf-0.15.2 --env 48 --argv0 find --fd 0=null --fd 1=pipe-w:819 --fd 2=err --status 0 --argc 5 --",
         "/nix/store/kvb0b2rhgripxnbnckzinlisghg0yrrg-findutils-static-4.11.0/bin/find /nix/store/qcwnw71iksl68k7fipizi6wn0s1xms9v-patchelf-0.15.2 -type f -print0",
@@ -84,13 +124,19 @@ recorded(
         "actions/s10709_gzip.manifest",
         "closure.txt",
         "env/57.env",
-        "platform",
+        "platform/bin/sh",
+        "platform/etc/group",
+        "platform/etc/hosts",
+        "platform/etc/passwd",
         "sandbox.sh",
+        ":s1274_tar[build/patchelf-0.15.2/patchelf.1]",
         ":s1274_tar",
     ],
-    out = "s10709_gzip",
+    outs = [
+        "s10709_gzip/nix/store/qcwnw71iksl68k7fipizi6wn0s1xms9v-patchelf-0.15.2/share/man/man1/patchelf.1.gz",
+    ],
     cmd = [
-        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out $OUTDIR",
         "--name s10709_gzip --timeout 300",
         "run --cwd /build/patchelf-0.15.2 --env 57 --argv0 gzip --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 4 --",
         "/nix/store/1bgh8202bdz32ya2x4yp7lvccpq16bxl-gzip-static-1.14/bin/gzip -n -f /nix/store/qcwnw71iksl68k7fipizi6wn0s1xms9v-patchelf-0.15.2/share/man/man1/patchelf.1",
@@ -102,15 +148,21 @@ recorded(
     srcs = [
         "actions/s10832_strip.manifest",
         "closure.txt",
-        "const_10784_mktemp",
         "env/57.env",
-        "platform",
+        "platform/bin/sh",
+        "platform/etc/group",
+        "platform/etc/hosts",
+        "platform/etc/passwd",
         "sandbox.sh",
+        "const_10784_mktemp/build/striperr.KozZsF",
+        ":s10498_find_patchelf[nix/store/qcwnw71iksl68k7fipizi6wn0s1xms9v-patchelf-0.15.2/bin/patchelf]",
         ":s10498_find_patchelf",
     ],
-    out = "s10832_strip",
+    outs = [
+        "s10832_strip/nix/store/qcwnw71iksl68k7fipizi6wn0s1xms9v-patchelf-0.15.2/bin/patchelf",
+    ],
     cmd = [
-        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out $OUTDIR",
         "--name s10832_strip --timeout 300",
         "run --cwd /build/patchelf-0.15.2 --env 57 --argv0 strip --fd 0=null --fd 1=err --fd 2=file:w:/build/striperr.KozZsF --status 0 --argc 4 --",
         "/nix/store/wdjg34rmvz8hhnd5m5bkblzlbpv5hrwm-binutils-patchelfed-ld-2.46/bin/strip -S -p /nix/store/qcwnw71iksl68k7fipizi6wn0s1xms9v-patchelf-0.15.2/bin/patchelf",
@@ -121,15 +173,18 @@ nix_archive(
     name = "archive",
     srcs = [
         "actions/archive.manifest",
-        "glue_10934",
         "sandbox.sh",
+        "glue_10934/nix/store/qcwnw71iksl68k7fipizi6wn0s1xms9v-patchelf-0.15.2/nix-support/setup-hook",
+        ":s10709_gzip[nix/store/qcwnw71iksl68k7fipizi6wn0s1xms9v-patchelf-0.15.2/share/man/man1/patchelf.1.gz]",
+        ":s10832_strip[nix/store/qcwnw71iksl68k7fipizi6wn0s1xms9v-patchelf-0.15.2/bin/patchelf]",
+        ":s1274_tar[build/patchelf-0.15.2/README.md]",
         ":s10709_gzip",
         ":s10832_strip",
         ":s1274_tar",
     ],
     out = "archive.nar",
     cmd = [
-        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out $OUTDIR",
         "--name archive pack /nix/store/qcwnw71iksl68k7fipizi6wn0s1xms9v-patchelf-0.15.2 648dab1d082040477f02d2f6d796bc19086d86b03a664cf6fb19678413a3ca84",
     ],
 )

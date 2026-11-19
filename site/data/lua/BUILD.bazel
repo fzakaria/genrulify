@@ -1,4 +1,4 @@
-load(":genrulify.bzl", "cc_binary", "cc_library", "cc_object", "cc_shared_library", "nix_archive", "recorded")
+load(":genrulify.bzl", "built_file", "cc_binary", "cc_library", "cc_object", "cc_shared_library", "nix_archive", "program", "recorded")
 
 recorded(
     name = "s1421_tar",
@@ -186,6 +186,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "src/lapi.o",
+    file = ":s2566_gcc/build/lua-5.2.4/src/lapi.o",
+)
+
 cc_object(
     name = "s2697_gcc",
     src = ":s1421_tar/build/lua-5.2.4/src/lcode.c",
@@ -230,6 +235,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "src/lcode.o",
+    file = ":s2697_gcc/build/lua-5.2.4/src/lcode.o",
+)
+
 cc_object(
     name = "s2832_gcc",
     src = ":s1421_tar/build/lua-5.2.4/src/lctype.c",
@@ -258,6 +268,11 @@ cc_object(
         "run --cwd /build/lua-5.2.4/src --env 24 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 39 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -O2 -fPIC -DLUA_COMPAT_ALL -DLUA_USE_LINUX -c -o lctype.o lctype.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=ngrfxya6ba -isystem /nix/store/nx9j3q419nwyaamffff9qnw25wmn3p5b-readline-8.3p3-dev/include -isystem /nix/store/dgvn2c174c1fy0lcfyx0hzq76qn6jmnn-ncurses-6.6-dev/include",
     ],
+)
+
+built_file(
+    name = "src/lctype.o",
+    file = ":s2832_gcc/build/lua-5.2.4/src/lctype.o",
 )
 
 cc_object(
@@ -306,6 +321,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "src/ldebug.o",
+    file = ":s2939_gcc/build/lua-5.2.4/src/ldebug.o",
+)
+
 cc_object(
     name = "s3053_gcc",
     src = ":s1421_tar/build/lua-5.2.4/src/ldo.c",
@@ -351,6 +371,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "src/ldo.o",
+    file = ":s3053_gcc/build/lua-5.2.4/src/ldo.o",
+)
+
 cc_object(
     name = "s3175_gcc",
     src = ":s1421_tar/build/lua-5.2.4/src/ldump.c",
@@ -384,6 +409,11 @@ cc_object(
         "run --cwd /build/lua-5.2.4/src --env 24 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 39 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -O2 -fPIC -DLUA_COMPAT_ALL -DLUA_USE_LINUX -c -o ldump.o ldump.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=ngrfxya6ba -isystem /nix/store/nx9j3q419nwyaamffff9qnw25wmn3p5b-readline-8.3p3-dev/include -isystem /nix/store/dgvn2c174c1fy0lcfyx0hzq76qn6jmnn-ncurses-6.6-dev/include",
     ],
+)
+
+built_file(
+    name = "src/ldump.o",
+    file = ":s3175_gcc/build/lua-5.2.4/src/ldump.o",
 )
 
 cc_object(
@@ -420,6 +450,11 @@ cc_object(
         "run --cwd /build/lua-5.2.4/src --env 24 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 39 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -O2 -fPIC -DLUA_COMPAT_ALL -DLUA_USE_LINUX -c -o lfunc.o lfunc.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=ngrfxya6ba -isystem /nix/store/nx9j3q419nwyaamffff9qnw25wmn3p5b-readline-8.3p3-dev/include -isystem /nix/store/dgvn2c174c1fy0lcfyx0hzq76qn6jmnn-ncurses-6.6-dev/include",
     ],
+)
+
+built_file(
+    name = "src/lfunc.o",
+    file = ":s3296_gcc/build/lua-5.2.4/src/lfunc.o",
 )
 
 cc_object(
@@ -460,6 +495,11 @@ cc_object(
         "run --cwd /build/lua-5.2.4/src --env 24 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 39 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -O2 -fPIC -DLUA_COMPAT_ALL -DLUA_USE_LINUX -c -o lgc.o lgc.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=ngrfxya6ba -isystem /nix/store/nx9j3q419nwyaamffff9qnw25wmn3p5b-readline-8.3p3-dev/include -isystem /nix/store/dgvn2c174c1fy0lcfyx0hzq76qn6jmnn-ncurses-6.6-dev/include",
     ],
+)
+
+built_file(
+    name = "src/lgc.o",
+    file = ":s3422_gcc/build/lua-5.2.4/src/lgc.o",
 )
 
 cc_object(
@@ -503,6 +543,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "src/llex.o",
+    file = ":s3539_gcc/build/lua-5.2.4/src/llex.o",
+)
+
 cc_object(
     name = "s3670_gcc",
     src = ":s1421_tar/build/lua-5.2.4/src/lmem.c",
@@ -538,6 +583,11 @@ cc_object(
         "run --cwd /build/lua-5.2.4/src --env 24 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 39 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -O2 -fPIC -DLUA_COMPAT_ALL -DLUA_USE_LINUX -c -o lmem.o lmem.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=ngrfxya6ba -isystem /nix/store/nx9j3q419nwyaamffff9qnw25wmn3p5b-readline-8.3p3-dev/include -isystem /nix/store/dgvn2c174c1fy0lcfyx0hzq76qn6jmnn-ncurses-6.6-dev/include",
     ],
+)
+
+built_file(
+    name = "src/lmem.o",
+    file = ":s3670_gcc/build/lua-5.2.4/src/lmem.o",
 )
 
 cc_object(
@@ -580,6 +630,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "src/lobject.o",
+    file = ":s3801_gcc/build/lua-5.2.4/src/lobject.o",
+)
+
 cc_object(
     name = "s3913_gcc",
     src = ":s1421_tar/build/lua-5.2.4/src/lopcodes.c",
@@ -608,6 +663,11 @@ cc_object(
         "run --cwd /build/lua-5.2.4/src --env 24 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 39 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -O2 -fPIC -DLUA_COMPAT_ALL -DLUA_USE_LINUX -c -o lopcodes.o lopcodes.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=ngrfxya6ba -isystem /nix/store/nx9j3q419nwyaamffff9qnw25wmn3p5b-readline-8.3p3-dev/include -isystem /nix/store/dgvn2c174c1fy0lcfyx0hzq76qn6jmnn-ncurses-6.6-dev/include",
     ],
+)
+
+built_file(
+    name = "src/lopcodes.o",
+    file = ":s3913_gcc/build/lua-5.2.4/src/lopcodes.o",
 )
 
 cc_object(
@@ -655,6 +715,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "src/lparser.o",
+    file = ":s4031_gcc/build/lua-5.2.4/src/lparser.o",
+)
+
 cc_object(
     name = "s4153_gcc",
     src = ":s1421_tar/build/lua-5.2.4/src/lstate.c",
@@ -697,6 +762,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "src/lstate.o",
+    file = ":s4153_gcc/build/lua-5.2.4/src/lstate.o",
+)
+
 cc_object(
     name = "s4266_gcc",
     src = ":s1421_tar/build/lua-5.2.4/src/lstring.c",
@@ -731,6 +801,11 @@ cc_object(
         "run --cwd /build/lua-5.2.4/src --env 24 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 39 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -O2 -fPIC -DLUA_COMPAT_ALL -DLUA_USE_LINUX -c -o lstring.o lstring.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=ngrfxya6ba -isystem /nix/store/nx9j3q419nwyaamffff9qnw25wmn3p5b-readline-8.3p3-dev/include -isystem /nix/store/dgvn2c174c1fy0lcfyx0hzq76qn6jmnn-ncurses-6.6-dev/include",
     ],
+)
+
+built_file(
+    name = "src/lstring.o",
+    file = ":s4266_gcc/build/lua-5.2.4/src/lstring.o",
 )
 
 cc_object(
@@ -773,6 +848,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "src/ltable.o",
+    file = ":s4398_gcc/build/lua-5.2.4/src/ltable.o",
+)
+
 cc_object(
     name = "s4520_gcc",
     src = ":s1421_tar/build/lua-5.2.4/src/ltm.c",
@@ -808,6 +888,11 @@ cc_object(
         "run --cwd /build/lua-5.2.4/src --env 24 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 39 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -O2 -fPIC -DLUA_COMPAT_ALL -DLUA_USE_LINUX -c -o ltm.o ltm.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=ngrfxya6ba -isystem /nix/store/nx9j3q419nwyaamffff9qnw25wmn3p5b-readline-8.3p3-dev/include -isystem /nix/store/dgvn2c174c1fy0lcfyx0hzq76qn6jmnn-ncurses-6.6-dev/include",
     ],
+)
+
+built_file(
+    name = "src/ltm.o",
+    file = ":s4520_gcc/build/lua-5.2.4/src/ltm.o",
 )
 
 cc_object(
@@ -848,6 +933,11 @@ cc_object(
         "run --cwd /build/lua-5.2.4/src --env 24 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 39 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -O2 -fPIC -DLUA_COMPAT_ALL -DLUA_USE_LINUX -c -o lundump.o lundump.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=ngrfxya6ba -isystem /nix/store/nx9j3q419nwyaamffff9qnw25wmn3p5b-readline-8.3p3-dev/include -isystem /nix/store/dgvn2c174c1fy0lcfyx0hzq76qn6jmnn-ncurses-6.6-dev/include",
     ],
+)
+
+built_file(
+    name = "src/lundump.o",
+    file = ":s4632_gcc/build/lua-5.2.4/src/lundump.o",
 )
 
 cc_object(
@@ -892,6 +982,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "src/lvm.o",
+    file = ":s4754_gcc/build/lua-5.2.4/src/lvm.o",
+)
+
 cc_object(
     name = "s4876_gcc",
     src = ":s1421_tar/build/lua-5.2.4/src/lzio.c",
@@ -926,6 +1021,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "src/lzio.o",
+    file = ":s4876_gcc/build/lua-5.2.4/src/lzio.o",
+)
+
 cc_object(
     name = "s4993_gcc",
     src = ":s1421_tar/build/lua-5.2.4/src/lauxlib.c",
@@ -953,6 +1053,11 @@ cc_object(
         "run --cwd /build/lua-5.2.4/src --env 24 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 39 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -O2 -fPIC -DLUA_COMPAT_ALL -DLUA_USE_LINUX -c -o lauxlib.o lauxlib.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=ngrfxya6ba -isystem /nix/store/nx9j3q419nwyaamffff9qnw25wmn3p5b-readline-8.3p3-dev/include -isystem /nix/store/dgvn2c174c1fy0lcfyx0hzq76qn6jmnn-ncurses-6.6-dev/include",
     ],
+)
+
+built_file(
+    name = "src/lauxlib.o",
+    file = ":s4993_gcc/build/lua-5.2.4/src/lauxlib.o",
 )
 
 cc_object(
@@ -985,6 +1090,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "src/lbaselib.o",
+    file = ":s5125_gcc/build/lua-5.2.4/src/lbaselib.o",
+)
+
 cc_object(
     name = "s5247_gcc",
     src = ":s1421_tar/build/lua-5.2.4/src/lbitlib.c",
@@ -1013,6 +1123,11 @@ cc_object(
         "run --cwd /build/lua-5.2.4/src --env 24 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 39 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -O2 -fPIC -DLUA_COMPAT_ALL -DLUA_USE_LINUX -c -o lbitlib.o lbitlib.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=ngrfxya6ba -isystem /nix/store/nx9j3q419nwyaamffff9qnw25wmn3p5b-readline-8.3p3-dev/include -isystem /nix/store/dgvn2c174c1fy0lcfyx0hzq76qn6jmnn-ncurses-6.6-dev/include",
     ],
+)
+
+built_file(
+    name = "src/lbitlib.o",
+    file = ":s5247_gcc/build/lua-5.2.4/src/lbitlib.o",
 )
 
 cc_object(
@@ -1045,6 +1160,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "src/lcorolib.o",
+    file = ":s5368_gcc/build/lua-5.2.4/src/lcorolib.o",
+)
+
 cc_object(
     name = "s5489_gcc",
     src = ":s1421_tar/build/lua-5.2.4/src/ldblib.c",
@@ -1073,6 +1193,11 @@ cc_object(
         "run --cwd /build/lua-5.2.4/src --env 24 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 39 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -O2 -fPIC -DLUA_COMPAT_ALL -DLUA_USE_LINUX -c -o ldblib.o ldblib.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=ngrfxya6ba -isystem /nix/store/nx9j3q419nwyaamffff9qnw25wmn3p5b-readline-8.3p3-dev/include -isystem /nix/store/dgvn2c174c1fy0lcfyx0hzq76qn6jmnn-ncurses-6.6-dev/include",
     ],
+)
+
+built_file(
+    name = "src/ldblib.o",
+    file = ":s5489_gcc/build/lua-5.2.4/src/ldblib.o",
 )
 
 cc_object(
@@ -1105,6 +1230,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "src/liolib.o",
+    file = ":s5614_gcc/build/lua-5.2.4/src/liolib.o",
+)
+
 cc_object(
     name = "s5738_gcc",
     src = ":s1421_tar/build/lua-5.2.4/src/lmathlib.c",
@@ -1133,6 +1263,11 @@ cc_object(
         "run --cwd /build/lua-5.2.4/src --env 24 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 39 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -O2 -fPIC -DLUA_COMPAT_ALL -DLUA_USE_LINUX -c -o lmathlib.o lmathlib.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=ngrfxya6ba -isystem /nix/store/nx9j3q419nwyaamffff9qnw25wmn3p5b-readline-8.3p3-dev/include -isystem /nix/store/dgvn2c174c1fy0lcfyx0hzq76qn6jmnn-ncurses-6.6-dev/include",
     ],
+)
+
+built_file(
+    name = "src/lmathlib.o",
+    file = ":s5738_gcc/build/lua-5.2.4/src/lmathlib.o",
 )
 
 cc_object(
@@ -1165,6 +1300,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "src/loslib.o",
+    file = ":s5861_gcc/build/lua-5.2.4/src/loslib.o",
+)
+
 cc_object(
     name = "s5974_gcc",
     src = ":s1421_tar/build/lua-5.2.4/src/lstrlib.c",
@@ -1193,6 +1333,11 @@ cc_object(
         "run --cwd /build/lua-5.2.4/src --env 24 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 39 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -O2 -fPIC -DLUA_COMPAT_ALL -DLUA_USE_LINUX -c -o lstrlib.o lstrlib.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=ngrfxya6ba -isystem /nix/store/nx9j3q419nwyaamffff9qnw25wmn3p5b-readline-8.3p3-dev/include -isystem /nix/store/dgvn2c174c1fy0lcfyx0hzq76qn6jmnn-ncurses-6.6-dev/include",
     ],
+)
+
+built_file(
+    name = "src/lstrlib.o",
+    file = ":s5974_gcc/build/lua-5.2.4/src/lstrlib.o",
 )
 
 cc_object(
@@ -1225,6 +1370,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "src/ltablib.o",
+    file = ":s6105_gcc/build/lua-5.2.4/src/ltablib.o",
+)
+
 cc_object(
     name = "s6227_gcc",
     src = ":s1421_tar/build/lua-5.2.4/src/loadlib.c",
@@ -1255,6 +1405,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "src/loadlib.o",
+    file = ":s6227_gcc/build/lua-5.2.4/src/loadlib.o",
+)
+
 cc_object(
     name = "s6348_gcc",
     src = ":s1421_tar/build/lua-5.2.4/src/linit.c",
@@ -1283,6 +1438,11 @@ cc_object(
         "run --cwd /build/lua-5.2.4/src --env 24 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 39 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -O2 -fPIC -DLUA_COMPAT_ALL -DLUA_USE_LINUX -c -o linit.o linit.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=ngrfxya6ba -isystem /nix/store/nx9j3q419nwyaamffff9qnw25wmn3p5b-readline-8.3p3-dev/include -isystem /nix/store/dgvn2c174c1fy0lcfyx0hzq76qn6jmnn-ncurses-6.6-dev/include",
     ],
+)
+
+built_file(
+    name = "src/linit.o",
+    file = ":s6348_gcc/build/lua-5.2.4/src/linit.o",
 )
 
 cc_shared_library(
@@ -1373,6 +1533,11 @@ cc_shared_library(
     ],
 )
 
+built_file(
+    name = "src/liblua.so.5.2.4",
+    file = ":s6519_gcc/build/lua-5.2.4/src/liblua.so.5.2.4",
+)
+
 cc_library(
     name = "s6940_ar",
     objs = [
@@ -1460,6 +1625,11 @@ cc_library(
     ],
 )
 
+built_file(
+    name = "src/liblua.a",
+    file = ":s6940_ar/build/lua-5.2.4/src/liblua.a",
+)
+
 cc_object(
     name = "s7039_gcc",
     src = ":s1421_tar/build/lua-5.2.4/src/lua.c",
@@ -1490,6 +1660,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "src/lua.o",
+    file = ":s7039_gcc/build/lua-5.2.4/src/lua.o",
+)
+
 cc_binary(
     name = "s7200_gcc",
     objs = [
@@ -1517,6 +1692,11 @@ cc_binary(
         "run --cwd /build/lua-5.2.4/src --env 25 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 50 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -Wl,-dynamic-linker=/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ld-linux-x86-64.so.2 -o lua -fPIC lua.o liblua.a -lm -Wl,-E -ldl -lreadline -lncurses -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=ngrfxya6ba -isystem /nix/store/nx9j3q419nwyaamffff9qnw25wmn3p5b-readline-8.3p3-dev/include -isystem /nix/store/dgvn2c174c1fy0lcfyx0hzq76qn6jmnn-ncurses-6.6-dev/include -Wl,-rpath -Wl,/nix/store/ngrfxya6bawfbkyd0mi4wz4x54ykwx3z-lua-5.2.4/lib -L/nix/store/hzqwc6pv8sb9qrwivc4h42cr811gs1mk-ncurses-6.6/lib -L/nix/store/xnam05aa3vc7aqbbdixpwcdb8dpv71xn-readline-8.3p3/lib -L/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib -L/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0 -L/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -L/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib",
     ],
+)
+
+program(
+    name = "src/lua",
+    file = ":s7200_gcc/build/lua-5.2.4/src/lua",
 )
 
 cc_object(
@@ -1557,6 +1737,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "src/luac.o",
+    file = ":s7564_gcc/build/lua-5.2.4/src/luac.o",
+)
+
 cc_binary(
     name = "s7728_gcc",
     objs = [
@@ -1584,6 +1769,11 @@ cc_binary(
         "run --cwd /build/lua-5.2.4/src --env 25 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 50 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -Wl,-dynamic-linker=/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ld-linux-x86-64.so.2 -o luac -fPIC luac.o liblua.a -lm -Wl,-E -ldl -lreadline -lncurses -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=ngrfxya6ba -isystem /nix/store/nx9j3q419nwyaamffff9qnw25wmn3p5b-readline-8.3p3-dev/include -isystem /nix/store/dgvn2c174c1fy0lcfyx0hzq76qn6jmnn-ncurses-6.6-dev/include -Wl,-rpath -Wl,/nix/store/ngrfxya6bawfbkyd0mi4wz4x54ykwx3z-lua-5.2.4/lib -L/nix/store/hzqwc6pv8sb9qrwivc4h42cr811gs1mk-ncurses-6.6/lib -L/nix/store/xnam05aa3vc7aqbbdixpwcdb8dpv71xn-readline-8.3p3/lib -L/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib -L/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0 -L/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -L/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib",
     ],
+)
+
+program(
+    name = "src/luac",
+    file = ":s7728_gcc/build/lua-5.2.4/src/luac",
 )
 
 recorded(

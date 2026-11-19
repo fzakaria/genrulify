@@ -1,4 +1,4 @@
-load(":genrulify.bzl", "cc_library", "cc_object", "nix_archive", "recorded")
+load(":genrulify.bzl", "built_file", "cc_library", "cc_object", "nix_archive", "recorded")
 
 recorded(
     name = "s1268_tar",
@@ -162,6 +162,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "adler32.o",
+    file = ":s6451_gcc/build/zlib-1.3.2/adler32.o",
+)
+
 cc_object(
     name = "s6552_gcc",
     src = ":s1268_tar/build/zlib-1.3.2/crc32.c",
@@ -192,6 +197,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "crc32.o",
+    file = ":s6552_gcc/build/zlib-1.3.2/crc32.o",
+)
+
 cc_object(
     name = "s6663_gcc",
     src = ":s1268_tar/build/zlib-1.3.2/deflate.c",
@@ -220,6 +230,11 @@ cc_object(
         "run --cwd /build/zlib-1.3.2 --env 35 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 37 --",
         "/nix/store/xg9jq55qj9k603jabx1j5wwsgq7ma1bq-xgcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -O3 -fPIC -D_LARGEFILE64_SOURCE=1 -DHAVE_HIDDEN -c -o deflate.o deflate.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/xg9jq55qj9k603jabx1j5wwsgq7ma1bq-xgcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/95yczsn7hjc6lkh3zg1nhz6zcgfn97ck-xgcc-16.2.0-lib/lib --sysroot=/nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev -static-libgcc -frandom-seed=wgw25d181h",
     ],
+)
+
+built_file(
+    name = "deflate.o",
+    file = ":s6663_gcc/build/zlib-1.3.2/deflate.o",
 )
 
 cc_object(
@@ -254,6 +269,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "infback.o",
+    file = ":s6765_gcc/build/zlib-1.3.2/infback.o",
+)
+
 cc_object(
     name = "s6868_gcc",
     src = ":s1268_tar/build/zlib-1.3.2/inffast.c",
@@ -284,6 +304,11 @@ cc_object(
         "run --cwd /build/zlib-1.3.2 --env 35 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 37 --",
         "/nix/store/xg9jq55qj9k603jabx1j5wwsgq7ma1bq-xgcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -O3 -fPIC -D_LARGEFILE64_SOURCE=1 -DHAVE_HIDDEN -c -o inffast.o inffast.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/xg9jq55qj9k603jabx1j5wwsgq7ma1bq-xgcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/95yczsn7hjc6lkh3zg1nhz6zcgfn97ck-xgcc-16.2.0-lib/lib --sysroot=/nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev -static-libgcc -frandom-seed=wgw25d181h",
     ],
+)
+
+built_file(
+    name = "inffast.o",
+    file = ":s6868_gcc/build/zlib-1.3.2/inffast.o",
 )
 
 cc_object(
@@ -318,6 +343,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "inflate.o",
+    file = ":s6970_gcc/build/zlib-1.3.2/inflate.o",
+)
+
 cc_object(
     name = "s7079_gcc",
     src = ":s1268_tar/build/zlib-1.3.2/inftrees.c",
@@ -348,6 +378,11 @@ cc_object(
         "run --cwd /build/zlib-1.3.2 --env 35 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 37 --",
         "/nix/store/xg9jq55qj9k603jabx1j5wwsgq7ma1bq-xgcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -O3 -fPIC -D_LARGEFILE64_SOURCE=1 -DHAVE_HIDDEN -c -o inftrees.o inftrees.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/xg9jq55qj9k603jabx1j5wwsgq7ma1bq-xgcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/95yczsn7hjc6lkh3zg1nhz6zcgfn97ck-xgcc-16.2.0-lib/lib --sysroot=/nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev -static-libgcc -frandom-seed=wgw25d181h",
     ],
+)
+
+built_file(
+    name = "inftrees.o",
+    file = ":s7079_gcc/build/zlib-1.3.2/inftrees.o",
 )
 
 cc_object(
@@ -381,6 +416,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "trees.o",
+    file = ":s7172_gcc/build/zlib-1.3.2/trees.o",
+)
+
 cc_object(
     name = "s7284_gcc",
     src = ":s1268_tar/build/zlib-1.3.2/zutil.c",
@@ -411,6 +451,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "zutil.o",
+    file = ":s7284_gcc/build/zlib-1.3.2/zutil.o",
+)
+
 cc_object(
     name = "s7384_gcc",
     src = ":s1268_tar/build/zlib-1.3.2/compress.c",
@@ -439,6 +484,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "compress.o",
+    file = ":s7384_gcc/build/zlib-1.3.2/compress.o",
+)
+
 cc_object(
     name = "s7486_gcc",
     src = ":s1268_tar/build/zlib-1.3.2/uncompr.c",
@@ -465,6 +515,11 @@ cc_object(
         "run --cwd /build/zlib-1.3.2 --env 35 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 37 --",
         "/nix/store/xg9jq55qj9k603jabx1j5wwsgq7ma1bq-xgcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -O3 -fPIC -D_LARGEFILE64_SOURCE=1 -DHAVE_HIDDEN -c -o uncompr.o uncompr.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/xg9jq55qj9k603jabx1j5wwsgq7ma1bq-xgcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/95yczsn7hjc6lkh3zg1nhz6zcgfn97ck-xgcc-16.2.0-lib/lib --sysroot=/nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev -static-libgcc -frandom-seed=wgw25d181h",
     ],
+)
+
+built_file(
+    name = "uncompr.o",
+    file = ":s7486_gcc/build/zlib-1.3.2/uncompr.o",
 )
 
 cc_object(
@@ -496,6 +551,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "gzclose.o",
+    file = ":s7586_gcc/build/zlib-1.3.2/gzclose.o",
+)
+
 cc_object(
     name = "s7688_gcc",
     src = ":s1268_tar/build/zlib-1.3.2/gzlib.c",
@@ -523,6 +583,11 @@ cc_object(
         "run --cwd /build/zlib-1.3.2 --env 35 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 37 --",
         "/nix/store/xg9jq55qj9k603jabx1j5wwsgq7ma1bq-xgcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -O3 -fPIC -D_LARGEFILE64_SOURCE=1 -DHAVE_HIDDEN -c -o gzlib.o gzlib.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/xg9jq55qj9k603jabx1j5wwsgq7ma1bq-xgcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/95yczsn7hjc6lkh3zg1nhz6zcgfn97ck-xgcc-16.2.0-lib/lib --sysroot=/nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev -static-libgcc -frandom-seed=wgw25d181h",
     ],
+)
+
+built_file(
+    name = "gzlib.o",
+    file = ":s7688_gcc/build/zlib-1.3.2/gzlib.o",
 )
 
 cc_object(
@@ -554,6 +619,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "gzread.o",
+    file = ":s7789_gcc/build/zlib-1.3.2/gzread.o",
+)
+
 cc_object(
     name = "s7892_gcc",
     src = ":s1268_tar/build/zlib-1.3.2/gzwrite.c",
@@ -581,6 +651,11 @@ cc_object(
         "run --cwd /build/zlib-1.3.2 --env 35 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 37 --",
         "/nix/store/xg9jq55qj9k603jabx1j5wwsgq7ma1bq-xgcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -O3 -fPIC -D_LARGEFILE64_SOURCE=1 -DHAVE_HIDDEN -c -o gzwrite.o gzwrite.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/xg9jq55qj9k603jabx1j5wwsgq7ma1bq-xgcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/95yczsn7hjc6lkh3zg1nhz6zcgfn97ck-xgcc-16.2.0-lib/lib --sysroot=/nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev -static-libgcc -frandom-seed=wgw25d181h",
     ],
+)
+
+built_file(
+    name = "gzwrite.o",
+    file = ":s7892_gcc/build/zlib-1.3.2/gzwrite.o",
 )
 
 cc_library(
@@ -636,6 +711,11 @@ cc_library(
     ],
 )
 
+built_file(
+    name = "libz.a",
+    file = ":s7989_ar/build/zlib-1.3.2/libz.a",
+)
+
 cc_object(
     name = "s8715_gcc",
     src = ":s1268_tar/build/zlib-1.3.2/adler32.c",
@@ -663,6 +743,11 @@ cc_object(
         "run --cwd /build/zlib-1.3.2 --env 35 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 38 --",
         "/nix/store/xg9jq55qj9k603jabx1j5wwsgq7ma1bq-xgcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -O3 -fPIC -D_LARGEFILE64_SOURCE=1 -DHAVE_HIDDEN -DPIC -c -o objs/adler32.o adler32.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/xg9jq55qj9k603jabx1j5wwsgq7ma1bq-xgcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/95yczsn7hjc6lkh3zg1nhz6zcgfn97ck-xgcc-16.2.0-lib/lib --sysroot=/nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev -static-libgcc -frandom-seed=wgw25d181h",
     ],
+)
+
+built_file(
+    name = "objs/adler32.o",
+    file = ":s8715_gcc/build/zlib-1.3.2/objs/adler32.o",
 )
 
 cc_object(
@@ -695,6 +780,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "objs/crc32.o",
+    file = ":s8854_gcc/build/zlib-1.3.2/objs/crc32.o",
+)
+
 cc_object(
     name = "s8993_gcc",
     src = ":s1268_tar/build/zlib-1.3.2/deflate.c",
@@ -723,6 +813,11 @@ cc_object(
         "run --cwd /build/zlib-1.3.2 --env 35 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 38 --",
         "/nix/store/xg9jq55qj9k603jabx1j5wwsgq7ma1bq-xgcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -O3 -fPIC -D_LARGEFILE64_SOURCE=1 -DHAVE_HIDDEN -DPIC -c -o objs/deflate.o deflate.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/xg9jq55qj9k603jabx1j5wwsgq7ma1bq-xgcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/95yczsn7hjc6lkh3zg1nhz6zcgfn97ck-xgcc-16.2.0-lib/lib --sysroot=/nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev -static-libgcc -frandom-seed=wgw25d181h",
     ],
+)
+
+built_file(
+    name = "objs/deflate.o",
+    file = ":s8993_gcc/build/zlib-1.3.2/objs/deflate.o",
 )
 
 cc_object(
@@ -757,6 +852,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "objs/infback.o",
+    file = ":s9136_gcc/build/zlib-1.3.2/objs/infback.o",
+)
+
 cc_object(
     name = "s9275_gcc",
     src = ":s1268_tar/build/zlib-1.3.2/inffast.c",
@@ -787,6 +887,11 @@ cc_object(
         "run --cwd /build/zlib-1.3.2 --env 35 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 38 --",
         "/nix/store/xg9jq55qj9k603jabx1j5wwsgq7ma1bq-xgcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -O3 -fPIC -D_LARGEFILE64_SOURCE=1 -DHAVE_HIDDEN -DPIC -c -o objs/inffast.o inffast.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/xg9jq55qj9k603jabx1j5wwsgq7ma1bq-xgcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/95yczsn7hjc6lkh3zg1nhz6zcgfn97ck-xgcc-16.2.0-lib/lib --sysroot=/nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev -static-libgcc -frandom-seed=wgw25d181h",
     ],
+)
+
+built_file(
+    name = "objs/inffast.o",
+    file = ":s9275_gcc/build/zlib-1.3.2/objs/inffast.o",
 )
 
 cc_object(
@@ -821,6 +926,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "objs/inflate.o",
+    file = ":s9419_gcc/build/zlib-1.3.2/objs/inflate.o",
+)
+
 cc_object(
     name = "s9559_gcc",
     src = ":s1268_tar/build/zlib-1.3.2/inftrees.c",
@@ -851,6 +961,11 @@ cc_object(
         "run --cwd /build/zlib-1.3.2 --env 35 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 38 --",
         "/nix/store/xg9jq55qj9k603jabx1j5wwsgq7ma1bq-xgcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -O3 -fPIC -D_LARGEFILE64_SOURCE=1 -DHAVE_HIDDEN -DPIC -c -o objs/inftrees.o inftrees.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/xg9jq55qj9k603jabx1j5wwsgq7ma1bq-xgcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/95yczsn7hjc6lkh3zg1nhz6zcgfn97ck-xgcc-16.2.0-lib/lib --sysroot=/nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev -static-libgcc -frandom-seed=wgw25d181h",
     ],
+)
+
+built_file(
+    name = "objs/inftrees.o",
+    file = ":s9559_gcc/build/zlib-1.3.2/objs/inftrees.o",
 )
 
 cc_object(
@@ -884,6 +999,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "objs/trees.o",
+    file = ":s9702_gcc/build/zlib-1.3.2/objs/trees.o",
+)
+
 cc_object(
     name = "s9856_gcc",
     src = ":s1268_tar/build/zlib-1.3.2/zutil.c",
@@ -914,6 +1034,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "objs/zutil.o",
+    file = ":s9856_gcc/build/zlib-1.3.2/objs/zutil.o",
+)
+
 cc_object(
     name = "s10000_gcc",
     src = ":s1268_tar/build/zlib-1.3.2/compress.c",
@@ -942,6 +1067,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "objs/compress.o",
+    file = ":s10000_gcc/build/zlib-1.3.2/objs/compress.o",
+)
+
 cc_object(
     name = "s10134_gcc",
     src = ":s1268_tar/build/zlib-1.3.2/uncompr.c",
@@ -968,6 +1098,11 @@ cc_object(
         "run --cwd /build/zlib-1.3.2 --env 35 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 38 --",
         "/nix/store/xg9jq55qj9k603jabx1j5wwsgq7ma1bq-xgcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -O3 -fPIC -D_LARGEFILE64_SOURCE=1 -DHAVE_HIDDEN -DPIC -c -o objs/uncompr.o uncompr.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/xg9jq55qj9k603jabx1j5wwsgq7ma1bq-xgcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/95yczsn7hjc6lkh3zg1nhz6zcgfn97ck-xgcc-16.2.0-lib/lib --sysroot=/nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev -static-libgcc -frandom-seed=wgw25d181h",
     ],
+)
+
+built_file(
+    name = "objs/uncompr.o",
+    file = ":s10134_gcc/build/zlib-1.3.2/objs/uncompr.o",
 )
 
 cc_object(
@@ -999,6 +1134,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "objs/gzclose.o",
+    file = ":s10272_gcc/build/zlib-1.3.2/objs/gzclose.o",
+)
+
 cc_object(
     name = "s10415_gcc",
     src = ":s1268_tar/build/zlib-1.3.2/gzlib.c",
@@ -1026,6 +1166,11 @@ cc_object(
         "run --cwd /build/zlib-1.3.2 --env 35 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 38 --",
         "/nix/store/xg9jq55qj9k603jabx1j5wwsgq7ma1bq-xgcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -O3 -fPIC -D_LARGEFILE64_SOURCE=1 -DHAVE_HIDDEN -DPIC -c -o objs/gzlib.o gzlib.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/xg9jq55qj9k603jabx1j5wwsgq7ma1bq-xgcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/95yczsn7hjc6lkh3zg1nhz6zcgfn97ck-xgcc-16.2.0-lib/lib --sysroot=/nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev -static-libgcc -frandom-seed=wgw25d181h",
     ],
+)
+
+built_file(
+    name = "objs/gzlib.o",
+    file = ":s10415_gcc/build/zlib-1.3.2/objs/gzlib.o",
 )
 
 cc_object(
@@ -1057,6 +1202,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "objs/gzread.o",
+    file = ":s10553_gcc/build/zlib-1.3.2/objs/gzread.o",
+)
+
 cc_object(
     name = "s10706_gcc",
     src = ":s1268_tar/build/zlib-1.3.2/gzwrite.c",
@@ -1084,6 +1234,11 @@ cc_object(
         "run --cwd /build/zlib-1.3.2 --env 35 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 38 --",
         "/nix/store/xg9jq55qj9k603jabx1j5wwsgq7ma1bq-xgcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -O3 -fPIC -D_LARGEFILE64_SOURCE=1 -DHAVE_HIDDEN -DPIC -c -o objs/gzwrite.o gzwrite.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/xg9jq55qj9k603jabx1j5wwsgq7ma1bq-xgcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/95yczsn7hjc6lkh3zg1nhz6zcgfn97ck-xgcc-16.2.0-lib/lib --sysroot=/nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev -static-libgcc -frandom-seed=wgw25d181h",
     ],
+)
+
+built_file(
+    name = "objs/gzwrite.o",
+    file = ":s10706_gcc/build/zlib-1.3.2/objs/gzwrite.o",
 )
 
 recorded(

@@ -1,4 +1,4 @@
-load(":genrulify.bzl", "cc_binary", "cc_library", "cc_object", "nix_archive", "recorded")
+load(":genrulify.bzl", "built_file", "cc_binary", "cc_library", "cc_object", "nix_archive", "program", "recorded")
 
 recorded(
     name = "s1378_tar",
@@ -1706,6 +1706,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "src/hello.o",
+    file = ":s95823_gcc/build/hello-2.12.3/src/hello.o",
+)
+
 cc_object(
     name = "s96075_gcc",
     src = ":s1378_tar/build/hello-2.12.3/lib/basename-lgpl.c",
@@ -1739,6 +1744,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "lib/libhello_a-basename-lgpl.o",
+    file = ":s96075_gcc/build/hello-2.12.3/lib/libhello_a-basename-lgpl.o",
+)
+
 cc_object(
     name = "s96200_gcc",
     src = ":s1378_tar/build/hello-2.12.3/lib/c-ctype.c",
@@ -1765,6 +1775,11 @@ cc_object(
         "run --cwd /build/hello-2.12.3 --env 62 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 55 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 '-DLOCALEDIR=\"/nix/store/5z2yp3ysx8476c8g5w25b0smlgkjvaq3-hello-2.12.3/share/locale\"' -DHAVE_CONFIG_H -I. -Ilib -I./lib -Isrc -I./src -Wno-cast-qual -Wno-conversion -Wno-float-equal -Wno-sign-compare -Wno-undef -Wno-unused-function -Wno-unused-parameter -Wno-float-conversion -Wimplicit-fallthrough -Wno-pedantic -Wno-sign-conversion -Wno-type-limits -Wno-unused-const-variable -Wno-unsuffixed-float-constants -Wno-error -g -O2 -c -o lib/libhello_a-c-ctype.o lib/c-ctype.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=5z2yp3ysx8",
     ],
+)
+
+built_file(
+    name = "lib/libhello_a-c-ctype.o",
+    file = ":s96200_gcc/build/hello-2.12.3/lib/libhello_a-c-ctype.o",
 )
 
 cc_object(
@@ -1798,6 +1813,11 @@ cc_object(
         "run --cwd /build/hello-2.12.3 --env 62 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 55 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 '-DLOCALEDIR=\"/nix/store/5z2yp3ysx8476c8g5w25b0smlgkjvaq3-hello-2.12.3/share/locale\"' -DHAVE_CONFIG_H -I. -Ilib -I./lib -Isrc -I./src -Wno-cast-qual -Wno-conversion -Wno-float-equal -Wno-sign-compare -Wno-undef -Wno-unused-function -Wno-unused-parameter -Wno-float-conversion -Wimplicit-fallthrough -Wno-pedantic -Wno-sign-conversion -Wno-type-limits -Wno-unused-const-variable -Wno-unsuffixed-float-constants -Wno-error -g -O2 -c -o lib/libhello_a-c-strcasecmp.o lib/c-strcasecmp.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=5z2yp3ysx8",
     ],
+)
+
+built_file(
+    name = "lib/libhello_a-c-strcasecmp.o",
+    file = ":s96329_gcc/build/hello-2.12.3/lib/libhello_a-c-strcasecmp.o",
 )
 
 cc_object(
@@ -1842,6 +1862,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "lib/libhello_a-c32isalnum.o",
+    file = ":s96454_gcc/build/hello-2.12.3/lib/libhello_a-c32isalnum.o",
+)
+
 cc_object(
     name = "s96588_gcc",
     src = ":s1378_tar/build/hello-2.12.3/lib/c32isalpha.c",
@@ -1882,6 +1907,11 @@ cc_object(
         "run --cwd /build/hello-2.12.3 --env 62 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 55 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 '-DLOCALEDIR=\"/nix/store/5z2yp3ysx8476c8g5w25b0smlgkjvaq3-hello-2.12.3/share/locale\"' -DHAVE_CONFIG_H -I. -Ilib -I./lib -Isrc -I./src -Wno-cast-qual -Wno-conversion -Wno-float-equal -Wno-sign-compare -Wno-undef -Wno-unused-function -Wno-unused-parameter -Wno-float-conversion -Wimplicit-fallthrough -Wno-pedantic -Wno-sign-conversion -Wno-type-limits -Wno-unused-const-variable -Wno-unsuffixed-float-constants -Wno-error -g -O2 -c -o lib/libhello_a-c32isalpha.o lib/c32isalpha.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=5z2yp3ysx8",
     ],
+)
+
+built_file(
+    name = "lib/libhello_a-c32isalpha.o",
+    file = ":s96588_gcc/build/hello-2.12.3/lib/libhello_a-c32isalpha.o",
 )
 
 cc_object(
@@ -1926,6 +1956,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "lib/libhello_a-c32isblank.o",
+    file = ":s96719_gcc/build/hello-2.12.3/lib/libhello_a-c32isblank.o",
+)
+
 cc_object(
     name = "s96845_gcc",
     src = ":s1378_tar/build/hello-2.12.3/lib/c32iscntrl.c",
@@ -1966,6 +2001,11 @@ cc_object(
         "run --cwd /build/hello-2.12.3 --env 62 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 55 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 '-DLOCALEDIR=\"/nix/store/5z2yp3ysx8476c8g5w25b0smlgkjvaq3-hello-2.12.3/share/locale\"' -DHAVE_CONFIG_H -I. -Ilib -I./lib -Isrc -I./src -Wno-cast-qual -Wno-conversion -Wno-float-equal -Wno-sign-compare -Wno-undef -Wno-unused-function -Wno-unused-parameter -Wno-float-conversion -Wimplicit-fallthrough -Wno-pedantic -Wno-sign-conversion -Wno-type-limits -Wno-unused-const-variable -Wno-unsuffixed-float-constants -Wno-error -g -O2 -c -o lib/libhello_a-c32iscntrl.o lib/c32iscntrl.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=5z2yp3ysx8",
     ],
+)
+
+built_file(
+    name = "lib/libhello_a-c32iscntrl.o",
+    file = ":s96845_gcc/build/hello-2.12.3/lib/libhello_a-c32iscntrl.o",
 )
 
 cc_object(
@@ -2010,6 +2050,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "lib/libhello_a-c32isdigit.o",
+    file = ":s96961_gcc/build/hello-2.12.3/lib/libhello_a-c32isdigit.o",
+)
+
 cc_object(
     name = "s97088_gcc",
     src = ":s1378_tar/build/hello-2.12.3/lib/c32isgraph.c",
@@ -2050,6 +2095,11 @@ cc_object(
         "run --cwd /build/hello-2.12.3 --env 62 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 55 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 '-DLOCALEDIR=\"/nix/store/5z2yp3ysx8476c8g5w25b0smlgkjvaq3-hello-2.12.3/share/locale\"' -DHAVE_CONFIG_H -I. -Ilib -I./lib -Isrc -I./src -Wno-cast-qual -Wno-conversion -Wno-float-equal -Wno-sign-compare -Wno-undef -Wno-unused-function -Wno-unused-parameter -Wno-float-conversion -Wimplicit-fallthrough -Wno-pedantic -Wno-sign-conversion -Wno-type-limits -Wno-unused-const-variable -Wno-unsuffixed-float-constants -Wno-error -g -O2 -c -o lib/libhello_a-c32isgraph.o lib/c32isgraph.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=5z2yp3ysx8",
     ],
+)
+
+built_file(
+    name = "lib/libhello_a-c32isgraph.o",
+    file = ":s97088_gcc/build/hello-2.12.3/lib/libhello_a-c32isgraph.o",
 )
 
 cc_object(
@@ -2094,6 +2144,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "lib/libhello_a-c32islower.o",
+    file = ":s97221_gcc/build/hello-2.12.3/lib/libhello_a-c32islower.o",
+)
+
 cc_object(
     name = "s97339_gcc",
     src = ":s1378_tar/build/hello-2.12.3/lib/c32isprint.c",
@@ -2134,6 +2189,11 @@ cc_object(
         "run --cwd /build/hello-2.12.3 --env 62 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 55 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 '-DLOCALEDIR=\"/nix/store/5z2yp3ysx8476c8g5w25b0smlgkjvaq3-hello-2.12.3/share/locale\"' -DHAVE_CONFIG_H -I. -Ilib -I./lib -Isrc -I./src -Wno-cast-qual -Wno-conversion -Wno-float-equal -Wno-sign-compare -Wno-undef -Wno-unused-function -Wno-unused-parameter -Wno-float-conversion -Wimplicit-fallthrough -Wno-pedantic -Wno-sign-conversion -Wno-type-limits -Wno-unused-const-variable -Wno-unsuffixed-float-constants -Wno-error -g -O2 -c -o lib/libhello_a-c32isprint.o lib/c32isprint.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=5z2yp3ysx8",
     ],
+)
+
+built_file(
+    name = "lib/libhello_a-c32isprint.o",
+    file = ":s97339_gcc/build/hello-2.12.3/lib/libhello_a-c32isprint.o",
 )
 
 cc_object(
@@ -2178,6 +2238,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "lib/libhello_a-c32ispunct.o",
+    file = ":s97467_gcc/build/hello-2.12.3/lib/libhello_a-c32ispunct.o",
+)
+
 cc_object(
     name = "s97594_gcc",
     src = ":s1378_tar/build/hello-2.12.3/lib/c32isspace.c",
@@ -2218,6 +2283,11 @@ cc_object(
         "run --cwd /build/hello-2.12.3 --env 62 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 55 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 '-DLOCALEDIR=\"/nix/store/5z2yp3ysx8476c8g5w25b0smlgkjvaq3-hello-2.12.3/share/locale\"' -DHAVE_CONFIG_H -I. -Ilib -I./lib -Isrc -I./src -Wno-cast-qual -Wno-conversion -Wno-float-equal -Wno-sign-compare -Wno-undef -Wno-unused-function -Wno-unused-parameter -Wno-float-conversion -Wimplicit-fallthrough -Wno-pedantic -Wno-sign-conversion -Wno-type-limits -Wno-unused-const-variable -Wno-unsuffixed-float-constants -Wno-error -g -O2 -c -o lib/libhello_a-c32isspace.o lib/c32isspace.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=5z2yp3ysx8",
     ],
+)
+
+built_file(
+    name = "lib/libhello_a-c32isspace.o",
+    file = ":s97594_gcc/build/hello-2.12.3/lib/libhello_a-c32isspace.o",
 )
 
 cc_object(
@@ -2262,6 +2332,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "lib/libhello_a-c32isupper.o",
+    file = ":s97727_gcc/build/hello-2.12.3/lib/libhello_a-c32isupper.o",
+)
+
 cc_object(
     name = "s97844_gcc",
     src = ":s1378_tar/build/hello-2.12.3/lib/c32isxdigit.c",
@@ -2302,6 +2377,11 @@ cc_object(
         "run --cwd /build/hello-2.12.3 --env 62 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 55 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 '-DLOCALEDIR=\"/nix/store/5z2yp3ysx8476c8g5w25b0smlgkjvaq3-hello-2.12.3/share/locale\"' -DHAVE_CONFIG_H -I. -Ilib -I./lib -Isrc -I./src -Wno-cast-qual -Wno-conversion -Wno-float-equal -Wno-sign-compare -Wno-undef -Wno-unused-function -Wno-unused-parameter -Wno-float-conversion -Wimplicit-fallthrough -Wno-pedantic -Wno-sign-conversion -Wno-type-limits -Wno-unused-const-variable -Wno-unsuffixed-float-constants -Wno-error -g -O2 -c -o lib/libhello_a-c32isxdigit.o lib/c32isxdigit.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=5z2yp3ysx8",
     ],
+)
+
+built_file(
+    name = "lib/libhello_a-c32isxdigit.o",
+    file = ":s97844_gcc/build/hello-2.12.3/lib/libhello_a-c32isxdigit.o",
 )
 
 cc_object(
@@ -2348,6 +2428,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "lib/libhello_a-c32tolower.o",
+    file = ":s97972_gcc/build/hello-2.12.3/lib/libhello_a-c32tolower.o",
+)
+
 cc_object(
     name = "s98099_gcc",
     src = ":s1378_tar/build/hello-2.12.3/lib/c32width.c",
@@ -2390,6 +2475,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "lib/libhello_a-c32width.o",
+    file = ":s98099_gcc/build/hello-2.12.3/lib/libhello_a-c32width.o",
+)
+
 cc_object(
     name = "s98231_gcc",
     src = ":s1378_tar/build/hello-2.12.3/lib/cloexec.c",
@@ -2426,6 +2516,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "lib/libhello_a-cloexec.o",
+    file = ":s98231_gcc/build/hello-2.12.3/lib/libhello_a-cloexec.o",
+)
+
 cc_object(
     name = "s98348_gcc",
     src = ":s1378_tar/build/hello-2.12.3/lib/close-stream.c",
@@ -2459,6 +2554,11 @@ cc_object(
         "run --cwd /build/hello-2.12.3 --env 62 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 55 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 '-DLOCALEDIR=\"/nix/store/5z2yp3ysx8476c8g5w25b0smlgkjvaq3-hello-2.12.3/share/locale\"' -DHAVE_CONFIG_H -I. -Ilib -I./lib -Isrc -I./src -Wno-cast-qual -Wno-conversion -Wno-float-equal -Wno-sign-compare -Wno-undef -Wno-unused-function -Wno-unused-parameter -Wno-float-conversion -Wimplicit-fallthrough -Wno-pedantic -Wno-sign-conversion -Wno-type-limits -Wno-unused-const-variable -Wno-unsuffixed-float-constants -Wno-error -g -O2 -c -o lib/libhello_a-close-stream.o lib/close-stream.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=5z2yp3ysx8",
     ],
+)
+
+built_file(
+    name = "lib/libhello_a-close-stream.o",
+    file = ":s98348_gcc/build/hello-2.12.3/lib/libhello_a-close-stream.o",
 )
 
 cc_object(
@@ -2515,6 +2615,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "lib/libhello_a-closeout.o",
+    file = ":s98474_gcc/build/hello-2.12.3/lib/libhello_a-closeout.o",
+)
+
 cc_object(
     name = "s98608_gcc",
     src = ":s1378_tar/build/hello-2.12.3/lib/dirname.c",
@@ -2555,6 +2660,11 @@ cc_object(
         "run --cwd /build/hello-2.12.3 --env 62 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 55 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 '-DLOCALEDIR=\"/nix/store/5z2yp3ysx8476c8g5w25b0smlgkjvaq3-hello-2.12.3/share/locale\"' -DHAVE_CONFIG_H -I. -Ilib -I./lib -Isrc -I./src -Wno-cast-qual -Wno-conversion -Wno-float-equal -Wno-sign-compare -Wno-undef -Wno-unused-function -Wno-unused-parameter -Wno-float-conversion -Wimplicit-fallthrough -Wno-pedantic -Wno-sign-conversion -Wno-type-limits -Wno-unused-const-variable -Wno-unsuffixed-float-constants -Wno-error -g -O2 -c -o lib/libhello_a-dirname.o lib/dirname.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=5z2yp3ysx8",
     ],
+)
+
+built_file(
+    name = "lib/libhello_a-dirname.o",
+    file = ":s98608_gcc/build/hello-2.12.3/lib/libhello_a-dirname.o",
 )
 
 cc_object(
@@ -2599,6 +2709,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "lib/libhello_a-basename.o",
+    file = ":s98732_gcc/build/hello-2.12.3/lib/libhello_a-basename.o",
+)
+
 cc_object(
     name = "s98865_gcc",
     src = ":s1378_tar/build/hello-2.12.3/lib/dirname-lgpl.c",
@@ -2637,6 +2752,11 @@ cc_object(
         "run --cwd /build/hello-2.12.3 --env 62 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 55 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 '-DLOCALEDIR=\"/nix/store/5z2yp3ysx8476c8g5w25b0smlgkjvaq3-hello-2.12.3/share/locale\"' -DHAVE_CONFIG_H -I. -Ilib -I./lib -Isrc -I./src -Wno-cast-qual -Wno-conversion -Wno-float-equal -Wno-sign-compare -Wno-undef -Wno-unused-function -Wno-unused-parameter -Wno-float-conversion -Wimplicit-fallthrough -Wno-pedantic -Wno-sign-conversion -Wno-type-limits -Wno-unused-const-variable -Wno-unsuffixed-float-constants -Wno-error -g -O2 -c -o lib/libhello_a-dirname-lgpl.o lib/dirname-lgpl.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=5z2yp3ysx8",
     ],
+)
+
+built_file(
+    name = "lib/libhello_a-dirname-lgpl.o",
+    file = ":s98865_gcc/build/hello-2.12.3/lib/libhello_a-dirname-lgpl.o",
 )
 
 cc_object(
@@ -2679,6 +2799,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "lib/libhello_a-stripslash.o",
+    file = ":s98985_gcc/build/hello-2.12.3/lib/libhello_a-stripslash.o",
+)
+
 cc_object(
     name = "s99109_gcc",
     src = ":s1378_tar/build/hello-2.12.3/lib/exitfail.c",
@@ -2713,6 +2838,11 @@ cc_object(
         "run --cwd /build/hello-2.12.3 --env 62 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 55 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 '-DLOCALEDIR=\"/nix/store/5z2yp3ysx8476c8g5w25b0smlgkjvaq3-hello-2.12.3/share/locale\"' -DHAVE_CONFIG_H -I. -Ilib -I./lib -Isrc -I./src -Wno-cast-qual -Wno-conversion -Wno-float-equal -Wno-sign-compare -Wno-undef -Wno-unused-function -Wno-unused-parameter -Wno-float-conversion -Wimplicit-fallthrough -Wno-pedantic -Wno-sign-conversion -Wno-type-limits -Wno-unused-const-variable -Wno-unsuffixed-float-constants -Wno-error -g -O2 -c -o lib/libhello_a-exitfail.o lib/exitfail.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=5z2yp3ysx8",
     ],
+)
+
+built_file(
+    name = "lib/libhello_a-exitfail.o",
+    file = ":s99109_gcc/build/hello-2.12.3/lib/libhello_a-exitfail.o",
 )
 
 cc_object(
@@ -2756,6 +2886,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "lib/libhello_a-fcntl.o",
+    file = ":s99234_gcc/build/hello-2.12.3/lib/libhello_a-fcntl.o",
+)
+
 cc_object(
     name = "s99367_gcc",
     src = ":s1378_tar/build/hello-2.12.3/lib/fd-hook.c",
@@ -2790,6 +2925,11 @@ cc_object(
         "run --cwd /build/hello-2.12.3 --env 62 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 55 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 '-DLOCALEDIR=\"/nix/store/5z2yp3ysx8476c8g5w25b0smlgkjvaq3-hello-2.12.3/share/locale\"' -DHAVE_CONFIG_H -I. -Ilib -I./lib -Isrc -I./src -Wno-cast-qual -Wno-conversion -Wno-float-equal -Wno-sign-compare -Wno-undef -Wno-unused-function -Wno-unused-parameter -Wno-float-conversion -Wimplicit-fallthrough -Wno-pedantic -Wno-sign-conversion -Wno-type-limits -Wno-unused-const-variable -Wno-unsuffixed-float-constants -Wno-error -g -O2 -c -o lib/libhello_a-fd-hook.o lib/fd-hook.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=5z2yp3ysx8",
     ],
+)
+
+built_file(
+    name = "lib/libhello_a-fd-hook.o",
+    file = ":s99367_gcc/build/hello-2.12.3/lib/libhello_a-fd-hook.o",
 )
 
 cc_object(
@@ -2827,6 +2967,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "lib/libhello_a-fseterr.o",
+    file = ":s99492_gcc/build/hello-2.12.3/lib/libhello_a-fseterr.o",
+)
+
 cc_object(
     name = "s99620_gcc",
     src = ":s1378_tar/build/hello-2.12.3/lib/getprogname.c",
@@ -2861,6 +3006,11 @@ cc_object(
         "run --cwd /build/hello-2.12.3 --env 62 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 55 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 '-DLOCALEDIR=\"/nix/store/5z2yp3ysx8476c8g5w25b0smlgkjvaq3-hello-2.12.3/share/locale\"' -DHAVE_CONFIG_H -I. -Ilib -I./lib -Isrc -I./src -Wno-cast-qual -Wno-conversion -Wno-float-equal -Wno-sign-compare -Wno-undef -Wno-unused-function -Wno-unused-parameter -Wno-float-conversion -Wimplicit-fallthrough -Wno-pedantic -Wno-sign-conversion -Wno-type-limits -Wno-unused-const-variable -Wno-unsuffixed-float-constants -Wno-error -g -O2 -c -o lib/libhello_a-getprogname.o lib/getprogname.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=5z2yp3ysx8",
     ],
+)
+
+built_file(
+    name = "lib/libhello_a-getprogname.o",
+    file = ":s99620_gcc/build/hello-2.12.3/lib/libhello_a-getprogname.o",
 )
 
 cc_object(
@@ -2905,6 +3055,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "lib/libhello_a-hard-locale.o",
+    file = ":s99752_gcc/build/hello-2.12.3/lib/libhello_a-hard-locale.o",
+)
+
 cc_object(
     name = "s99878_gcc",
     src = ":s1378_tar/build/hello-2.12.3/lib/ialloc.c",
@@ -2940,6 +3095,11 @@ cc_object(
         "run --cwd /build/hello-2.12.3 --env 62 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 55 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 '-DLOCALEDIR=\"/nix/store/5z2yp3ysx8476c8g5w25b0smlgkjvaq3-hello-2.12.3/share/locale\"' -DHAVE_CONFIG_H -I. -Ilib -I./lib -Isrc -I./src -Wno-cast-qual -Wno-conversion -Wno-float-equal -Wno-sign-compare -Wno-undef -Wno-unused-function -Wno-unused-parameter -Wno-float-conversion -Wimplicit-fallthrough -Wno-pedantic -Wno-sign-conversion -Wno-type-limits -Wno-unused-const-variable -Wno-unsuffixed-float-constants -Wno-error -g -O2 -c -o lib/libhello_a-ialloc.o lib/ialloc.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=5z2yp3ysx8",
     ],
+)
+
+built_file(
+    name = "lib/libhello_a-ialloc.o",
+    file = ":s99878_gcc/build/hello-2.12.3/lib/libhello_a-ialloc.o",
 )
 
 cc_object(
@@ -2982,6 +3142,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "lib/libhello_a-localcharset.o",
+    file = ":s99995_gcc/build/hello-2.12.3/lib/libhello_a-localcharset.o",
+)
+
 cc_object(
     name = "s100138_gcc",
     src = ":s1378_tar/build/hello-2.12.3/lib/malloca.c",
@@ -3022,6 +3187,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "lib/libhello_a-malloca.o",
+    file = ":s100138_gcc/build/hello-2.12.3/lib/libhello_a-malloca.o",
+)
+
 cc_object(
     name = "s100261_gcc",
     src = ":s1378_tar/build/hello-2.12.3/lib/mbchar.c",
@@ -3060,6 +3230,11 @@ cc_object(
         "run --cwd /build/hello-2.12.3 --env 62 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 55 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 '-DLOCALEDIR=\"/nix/store/5z2yp3ysx8476c8g5w25b0smlgkjvaq3-hello-2.12.3/share/locale\"' -DHAVE_CONFIG_H -I. -Ilib -I./lib -Isrc -I./src -Wno-cast-qual -Wno-conversion -Wno-float-equal -Wno-sign-compare -Wno-undef -Wno-unused-function -Wno-unused-parameter -Wno-float-conversion -Wimplicit-fallthrough -Wno-pedantic -Wno-sign-conversion -Wno-type-limits -Wno-unused-const-variable -Wno-unsuffixed-float-constants -Wno-error -g -O2 -c -o lib/libhello_a-mbchar.o lib/mbchar.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=5z2yp3ysx8",
     ],
+)
+
+built_file(
+    name = "lib/libhello_a-mbchar.o",
+    file = ":s100261_gcc/build/hello-2.12.3/lib/libhello_a-mbchar.o",
 )
 
 cc_object(
@@ -3113,6 +3288,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "lib/libhello_a-mbrtoc32.o",
+    file = ":s100386_gcc/build/hello-2.12.3/lib/libhello_a-mbrtoc32.o",
+)
+
 cc_object(
     name = "s100517_gcc",
     src = ":s1378_tar/build/hello-2.12.3/lib/mbrtowc.c",
@@ -3149,6 +3329,11 @@ cc_object(
         "run --cwd /build/hello-2.12.3 --env 62 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 55 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 '-DLOCALEDIR=\"/nix/store/5z2yp3ysx8476c8g5w25b0smlgkjvaq3-hello-2.12.3/share/locale\"' -DHAVE_CONFIG_H -I. -Ilib -I./lib -Isrc -I./src -Wno-cast-qual -Wno-conversion -Wno-float-equal -Wno-sign-compare -Wno-undef -Wno-unused-function -Wno-unused-parameter -Wno-float-conversion -Wimplicit-fallthrough -Wno-pedantic -Wno-sign-conversion -Wno-type-limits -Wno-unused-const-variable -Wno-unsuffixed-float-constants -Wno-error -g -O2 -c -o lib/libhello_a-mbrtowc.o lib/mbrtowc.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=5z2yp3ysx8",
     ],
+)
+
+built_file(
+    name = "lib/libhello_a-mbrtowc.o",
+    file = ":s100517_gcc/build/hello-2.12.3/lib/libhello_a-mbrtowc.o",
 )
 
 cc_object(
@@ -3197,6 +3382,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "lib/libhello_a-mbslen.o",
+    file = ":s100642_gcc/build/hello-2.12.3/lib/libhello_a-mbslen.o",
+)
+
 cc_object(
     name = "s100786_gcc",
     src = ":s1378_tar/build/hello-2.12.3/lib/mbsrtowcs.c",
@@ -3238,6 +3428,11 @@ cc_object(
         "run --cwd /build/hello-2.12.3 --env 62 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 55 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 '-DLOCALEDIR=\"/nix/store/5z2yp3ysx8476c8g5w25b0smlgkjvaq3-hello-2.12.3/share/locale\"' -DHAVE_CONFIG_H -I. -Ilib -I./lib -Isrc -I./src -Wno-cast-qual -Wno-conversion -Wno-float-equal -Wno-sign-compare -Wno-undef -Wno-unused-function -Wno-unused-parameter -Wno-float-conversion -Wimplicit-fallthrough -Wno-pedantic -Wno-sign-conversion -Wno-type-limits -Wno-unused-const-variable -Wno-unsuffixed-float-constants -Wno-error -g -O2 -c -o lib/libhello_a-mbsrtowcs.o lib/mbsrtowcs.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=5z2yp3ysx8",
     ],
+)
+
+built_file(
+    name = "lib/libhello_a-mbsrtowcs.o",
+    file = ":s100786_gcc/build/hello-2.12.3/lib/libhello_a-mbsrtowcs.o",
 )
 
 cc_object(
@@ -3289,6 +3484,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "lib/libhello_a-mbsstr.o",
+    file = ":s100910_gcc/build/hello-2.12.3/lib/libhello_a-mbsstr.o",
+)
+
 cc_object(
     name = "s101054_gcc",
     src = ":s1378_tar/build/hello-2.12.3/lib/mbszero.c",
@@ -3320,6 +3520,11 @@ cc_object(
         "run --cwd /build/hello-2.12.3 --env 62 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 55 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 '-DLOCALEDIR=\"/nix/store/5z2yp3ysx8476c8g5w25b0smlgkjvaq3-hello-2.12.3/share/locale\"' -DHAVE_CONFIG_H -I. -Ilib -I./lib -Isrc -I./src -Wno-cast-qual -Wno-conversion -Wno-float-equal -Wno-sign-compare -Wno-undef -Wno-unused-function -Wno-unused-parameter -Wno-float-conversion -Wimplicit-fallthrough -Wno-pedantic -Wno-sign-conversion -Wno-type-limits -Wno-unused-const-variable -Wno-unsuffixed-float-constants -Wno-error -g -O2 -c -o lib/libhello_a-mbszero.o lib/mbszero.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=5z2yp3ysx8",
     ],
+)
+
+built_file(
+    name = "lib/libhello_a-mbszero.o",
+    file = ":s101054_gcc/build/hello-2.12.3/lib/libhello_a-mbszero.o",
 )
 
 cc_object(
@@ -3368,6 +3573,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "lib/libhello_a-mbuiter.o",
+    file = ":s101194_gcc/build/hello-2.12.3/lib/libhello_a-mbuiter.o",
+)
+
 cc_object(
     name = "s101319_gcc",
     src = ":s1378_tar/build/hello-2.12.3/lib/mbuiterf.c",
@@ -3414,6 +3624,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "lib/libhello_a-mbuiterf.o",
+    file = ":s101319_gcc/build/hello-2.12.3/lib/libhello_a-mbuiterf.o",
+)
+
 cc_object(
     name = "s101462_gcc",
     src = ":s1378_tar/build/hello-2.12.3/lib/memeq.c",
@@ -3443,6 +3658,11 @@ cc_object(
         "run --cwd /build/hello-2.12.3 --env 62 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 55 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 '-DLOCALEDIR=\"/nix/store/5z2yp3ysx8476c8g5w25b0smlgkjvaq3-hello-2.12.3/share/locale\"' -DHAVE_CONFIG_H -I. -Ilib -I./lib -Isrc -I./src -Wno-cast-qual -Wno-conversion -Wno-float-equal -Wno-sign-compare -Wno-undef -Wno-unused-function -Wno-unused-parameter -Wno-float-conversion -Wimplicit-fallthrough -Wno-pedantic -Wno-sign-conversion -Wno-type-limits -Wno-unused-const-variable -Wno-unsuffixed-float-constants -Wno-error -g -O2 -c -o lib/libhello_a-memeq.o lib/memeq.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=5z2yp3ysx8",
     ],
+)
+
+built_file(
+    name = "lib/libhello_a-memeq.o",
+    file = ":s101462_gcc/build/hello-2.12.3/lib/libhello_a-memeq.o",
 )
 
 cc_object(
@@ -3476,6 +3696,11 @@ cc_object(
         "run --cwd /build/hello-2.12.3 --env 62 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 55 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 '-DLOCALEDIR=\"/nix/store/5z2yp3ysx8476c8g5w25b0smlgkjvaq3-hello-2.12.3/share/locale\"' -DHAVE_CONFIG_H -I. -Ilib -I./lib -Isrc -I./src -Wno-cast-qual -Wno-conversion -Wno-float-equal -Wno-sign-compare -Wno-undef -Wno-unused-function -Wno-unused-parameter -Wno-float-conversion -Wimplicit-fallthrough -Wno-pedantic -Wno-sign-conversion -Wno-type-limits -Wno-unused-const-variable -Wno-unsuffixed-float-constants -Wno-error -g -O2 -c -o lib/libhello_a-progname.o lib/progname.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=5z2yp3ysx8",
     ],
+)
+
+built_file(
+    name = "lib/libhello_a-progname.o",
+    file = ":s101579_gcc/build/hello-2.12.3/lib/libhello_a-progname.o",
 )
 
 cc_object(
@@ -3538,6 +3763,11 @@ cc_object(
         "run --cwd /build/hello-2.12.3 --env 62 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 55 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 '-DLOCALEDIR=\"/nix/store/5z2yp3ysx8476c8g5w25b0smlgkjvaq3-hello-2.12.3/share/locale\"' -DHAVE_CONFIG_H -I. -Ilib -I./lib -Isrc -I./src -Wno-cast-qual -Wno-conversion -Wno-float-equal -Wno-sign-compare -Wno-undef -Wno-unused-function -Wno-unused-parameter -Wno-float-conversion -Wimplicit-fallthrough -Wno-pedantic -Wno-sign-conversion -Wno-type-limits -Wno-unused-const-variable -Wno-unsuffixed-float-constants -Wno-error -g -O2 -c -o lib/libhello_a-propername.o lib/propername.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=5z2yp3ysx8",
     ],
+)
+
+built_file(
+    name = "lib/libhello_a-propername.o",
+    file = ":s101704_gcc/build/hello-2.12.3/lib/libhello_a-propername.o",
 )
 
 cc_object(
@@ -3603,6 +3833,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "lib/libhello_a-quotearg.o",
+    file = ":s101860_gcc/build/hello-2.12.3/lib/libhello_a-quotearg.o",
+)
+
 cc_object(
     name = "s101998_gcc",
     src = ":s1378_tar/build/hello-2.12.3/lib/realloc.c",
@@ -3640,6 +3875,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "lib/libhello_a-realloc.o",
+    file = ":s101998_gcc/build/hello-2.12.3/lib/libhello_a-realloc.o",
+)
+
 cc_object(
     name = "s102114_gcc",
     src = ":s1378_tar/build/hello-2.12.3/lib/reallocarray.c",
@@ -3675,6 +3915,11 @@ cc_object(
         "run --cwd /build/hello-2.12.3 --env 62 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 55 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 '-DLOCALEDIR=\"/nix/store/5z2yp3ysx8476c8g5w25b0smlgkjvaq3-hello-2.12.3/share/locale\"' -DHAVE_CONFIG_H -I. -Ilib -I./lib -Isrc -I./src -Wno-cast-qual -Wno-conversion -Wno-float-equal -Wno-sign-compare -Wno-undef -Wno-unused-function -Wno-unused-parameter -Wno-float-conversion -Wimplicit-fallthrough -Wno-pedantic -Wno-sign-conversion -Wno-type-limits -Wno-unused-const-variable -Wno-unsuffixed-float-constants -Wno-error -g -O2 -c -o lib/libhello_a-reallocarray.o lib/reallocarray.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=5z2yp3ysx8",
     ],
+)
+
+built_file(
+    name = "lib/libhello_a-reallocarray.o",
+    file = ":s102114_gcc/build/hello-2.12.3/lib/libhello_a-reallocarray.o",
 )
 
 cc_object(
@@ -3718,6 +3963,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "lib/libhello_a-setlocale_null.o",
+    file = ":s102248_gcc/build/hello-2.12.3/lib/libhello_a-setlocale_null.o",
+)
+
 cc_object(
     name = "s102372_gcc",
     src = ":s1378_tar/build/hello-2.12.3/lib/setlocale_null-unlocked.c",
@@ -3751,6 +4001,11 @@ cc_object(
         "run --cwd /build/hello-2.12.3 --env 62 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 55 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 '-DLOCALEDIR=\"/nix/store/5z2yp3ysx8476c8g5w25b0smlgkjvaq3-hello-2.12.3/share/locale\"' -DHAVE_CONFIG_H -I. -Ilib -I./lib -Isrc -I./src -Wno-cast-qual -Wno-conversion -Wno-float-equal -Wno-sign-compare -Wno-undef -Wno-unused-function -Wno-unused-parameter -Wno-float-conversion -Wimplicit-fallthrough -Wno-pedantic -Wno-sign-conversion -Wno-type-limits -Wno-unused-const-variable -Wno-unsuffixed-float-constants -Wno-error -g -O2 -c -o lib/libhello_a-setlocale_null-unlocked.o lib/setlocale_null-unlocked.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=5z2yp3ysx8",
     ],
+)
+
+built_file(
+    name = "lib/libhello_a-setlocale_null-unlocked.o",
+    file = ":s102372_gcc/build/hello-2.12.3/lib/libhello_a-setlocale_null-unlocked.o",
 )
 
 cc_object(
@@ -3791,6 +4046,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "lib/libhello_a-stat-time.o",
+    file = ":s102501_gcc/build/hello-2.12.3/lib/libhello_a-stat-time.o",
+)
+
 cc_object(
     name = "s102633_gcc",
     src = ":s1378_tar/build/hello-2.12.3/lib/stdlib.c",
@@ -3826,6 +4086,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "lib/libhello_a-stdlib.o",
+    file = ":s102633_gcc/build/hello-2.12.3/lib/libhello_a-stdlib.o",
+)
+
 cc_object(
     name = "s102750_gcc",
     src = ":s1378_tar/build/hello-2.12.3/lib/streq.c",
@@ -3855,6 +4120,11 @@ cc_object(
         "run --cwd /build/hello-2.12.3 --env 62 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 55 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 '-DLOCALEDIR=\"/nix/store/5z2yp3ysx8476c8g5w25b0smlgkjvaq3-hello-2.12.3/share/locale\"' -DHAVE_CONFIG_H -I. -Ilib -I./lib -Isrc -I./src -Wno-cast-qual -Wno-conversion -Wno-float-equal -Wno-sign-compare -Wno-undef -Wno-unused-function -Wno-unused-parameter -Wno-float-conversion -Wimplicit-fallthrough -Wno-pedantic -Wno-sign-conversion -Wno-type-limits -Wno-unused-const-variable -Wno-unsuffixed-float-constants -Wno-error -g -O2 -c -o lib/libhello_a-streq.o lib/streq.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=5z2yp3ysx8",
     ],
+)
+
+built_file(
+    name = "lib/libhello_a-streq.o",
+    file = ":s102750_gcc/build/hello-2.12.3/lib/libhello_a-streq.o",
 )
 
 cc_object(
@@ -3900,6 +4170,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "lib/libhello_a-striconv.o",
+    file = ":s102876_gcc/build/hello-2.12.3/lib/libhello_a-striconv.o",
+)
+
 cc_object(
     name = "s103010_gcc",
     src = ":s1378_tar/build/hello-2.12.3/lib/strnlen1.c",
@@ -3932,6 +4207,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "lib/libhello_a-strnlen1.o",
+    file = ":s103010_gcc/build/hello-2.12.3/lib/libhello_a-strnlen1.o",
+)
+
 cc_object(
     name = "s103144_gcc",
     src = ":s1378_tar/build/hello-2.12.3/lib/strnul.c",
@@ -3961,6 +4241,11 @@ cc_object(
         "run --cwd /build/hello-2.12.3 --env 62 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 55 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 '-DLOCALEDIR=\"/nix/store/5z2yp3ysx8476c8g5w25b0smlgkjvaq3-hello-2.12.3/share/locale\"' -DHAVE_CONFIG_H -I. -Ilib -I./lib -Isrc -I./src -Wno-cast-qual -Wno-conversion -Wno-float-equal -Wno-sign-compare -Wno-undef -Wno-unused-function -Wno-unused-parameter -Wno-float-conversion -Wimplicit-fallthrough -Wno-pedantic -Wno-sign-conversion -Wno-type-limits -Wno-unused-const-variable -Wno-unsuffixed-float-constants -Wno-error -g -O2 -c -o lib/libhello_a-strnul.o lib/strnul.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=5z2yp3ysx8",
     ],
+)
+
+built_file(
+    name = "lib/libhello_a-strnul.o",
+    file = ":s103144_gcc/build/hello-2.12.3/lib/libhello_a-strnul.o",
 )
 
 cc_object(
@@ -4012,6 +4297,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "lib/libhello_a-trim.o",
+    file = ":s103268_gcc/build/hello-2.12.3/lib/libhello_a-trim.o",
+)
+
 cc_object(
     name = "s103518_gcc",
     src = ":s1378_tar/build/hello-2.12.3/lib/unicase/tolower.c",
@@ -4049,6 +4339,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "lib/unicase/libhello_a-tolower.o",
+    file = ":s103518_gcc/build/hello-2.12.3/lib/unicase/libhello_a-tolower.o",
+)
+
 cc_object(
     name = "s103761_gcc",
     src = ":s1378_tar/build/hello-2.12.3/lib/unictype/ctype_alnum.c",
@@ -4082,6 +4377,11 @@ cc_object(
         "run --cwd /build/hello-2.12.3 --env 62 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 55 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 '-DLOCALEDIR=\"/nix/store/5z2yp3ysx8476c8g5w25b0smlgkjvaq3-hello-2.12.3/share/locale\"' -DHAVE_CONFIG_H -I. -Ilib -I./lib -Isrc -I./src -Wno-cast-qual -Wno-conversion -Wno-float-equal -Wno-sign-compare -Wno-undef -Wno-unused-function -Wno-unused-parameter -Wno-float-conversion -Wimplicit-fallthrough -Wno-pedantic -Wno-sign-conversion -Wno-type-limits -Wno-unused-const-variable -Wno-unsuffixed-float-constants -Wno-error -g -O2 -c -o lib/unictype/libhello_a-ctype_alnum.o lib/unictype/ctype_alnum.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=5z2yp3ysx8",
     ],
+)
+
+built_file(
+    name = "lib/unictype/libhello_a-ctype_alnum.o",
+    file = ":s103761_gcc/build/hello-2.12.3/lib/unictype/libhello_a-ctype_alnum.o",
 )
 
 cc_object(
@@ -4119,6 +4419,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "lib/unictype/libhello_a-ctype_alpha.o",
+    file = ":s103887_gcc/build/hello-2.12.3/lib/unictype/libhello_a-ctype_alpha.o",
+)
+
 cc_object(
     name = "s104013_gcc",
     src = ":s1378_tar/build/hello-2.12.3/lib/unictype/ctype_blank.c",
@@ -4152,6 +4457,11 @@ cc_object(
         "run --cwd /build/hello-2.12.3 --env 62 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 55 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 '-DLOCALEDIR=\"/nix/store/5z2yp3ysx8476c8g5w25b0smlgkjvaq3-hello-2.12.3/share/locale\"' -DHAVE_CONFIG_H -I. -Ilib -I./lib -Isrc -I./src -Wno-cast-qual -Wno-conversion -Wno-float-equal -Wno-sign-compare -Wno-undef -Wno-unused-function -Wno-unused-parameter -Wno-float-conversion -Wimplicit-fallthrough -Wno-pedantic -Wno-sign-conversion -Wno-type-limits -Wno-unused-const-variable -Wno-unsuffixed-float-constants -Wno-error -g -O2 -c -o lib/unictype/libhello_a-ctype_blank.o lib/unictype/ctype_blank.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=5z2yp3ysx8",
     ],
+)
+
+built_file(
+    name = "lib/unictype/libhello_a-ctype_blank.o",
+    file = ":s104013_gcc/build/hello-2.12.3/lib/unictype/libhello_a-ctype_blank.o",
 )
 
 cc_object(
@@ -4189,6 +4499,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "lib/unictype/libhello_a-ctype_cntrl.o",
+    file = ":s104154_gcc/build/hello-2.12.3/lib/unictype/libhello_a-ctype_cntrl.o",
+)
+
 cc_object(
     name = "s104270_gcc",
     src = ":s1378_tar/build/hello-2.12.3/lib/unictype/ctype_digit.c",
@@ -4222,6 +4537,11 @@ cc_object(
         "run --cwd /build/hello-2.12.3 --env 62 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 55 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 '-DLOCALEDIR=\"/nix/store/5z2yp3ysx8476c8g5w25b0smlgkjvaq3-hello-2.12.3/share/locale\"' -DHAVE_CONFIG_H -I. -Ilib -I./lib -Isrc -I./src -Wno-cast-qual -Wno-conversion -Wno-float-equal -Wno-sign-compare -Wno-undef -Wno-unused-function -Wno-unused-parameter -Wno-float-conversion -Wimplicit-fallthrough -Wno-pedantic -Wno-sign-conversion -Wno-type-limits -Wno-unused-const-variable -Wno-unsuffixed-float-constants -Wno-error -g -O2 -c -o lib/unictype/libhello_a-ctype_digit.o lib/unictype/ctype_digit.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=5z2yp3ysx8",
     ],
+)
+
+built_file(
+    name = "lib/unictype/libhello_a-ctype_digit.o",
+    file = ":s104270_gcc/build/hello-2.12.3/lib/unictype/libhello_a-ctype_digit.o",
 )
 
 cc_object(
@@ -4259,6 +4579,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "lib/unictype/libhello_a-ctype_graph.o",
+    file = ":s104403_gcc/build/hello-2.12.3/lib/unictype/libhello_a-ctype_graph.o",
+)
+
 cc_object(
     name = "s104529_gcc",
     src = ":s1378_tar/build/hello-2.12.3/lib/unictype/ctype_lower.c",
@@ -4292,6 +4617,11 @@ cc_object(
         "run --cwd /build/hello-2.12.3 --env 62 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 55 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 '-DLOCALEDIR=\"/nix/store/5z2yp3ysx8476c8g5w25b0smlgkjvaq3-hello-2.12.3/share/locale\"' -DHAVE_CONFIG_H -I. -Ilib -I./lib -Isrc -I./src -Wno-cast-qual -Wno-conversion -Wno-float-equal -Wno-sign-compare -Wno-undef -Wno-unused-function -Wno-unused-parameter -Wno-float-conversion -Wimplicit-fallthrough -Wno-pedantic -Wno-sign-conversion -Wno-type-limits -Wno-unused-const-variable -Wno-unsuffixed-float-constants -Wno-error -g -O2 -c -o lib/unictype/libhello_a-ctype_lower.o lib/unictype/ctype_lower.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=5z2yp3ysx8",
     ],
+)
+
+built_file(
+    name = "lib/unictype/libhello_a-ctype_lower.o",
+    file = ":s104529_gcc/build/hello-2.12.3/lib/unictype/libhello_a-ctype_lower.o",
 )
 
 cc_object(
@@ -4329,6 +4659,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "lib/unictype/libhello_a-ctype_print.o",
+    file = ":s104664_gcc/build/hello-2.12.3/lib/unictype/libhello_a-ctype_print.o",
+)
+
 cc_object(
     name = "s104789_gcc",
     src = ":s1378_tar/build/hello-2.12.3/lib/unictype/ctype_punct.c",
@@ -4362,6 +4697,11 @@ cc_object(
         "run --cwd /build/hello-2.12.3 --env 62 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 55 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 '-DLOCALEDIR=\"/nix/store/5z2yp3ysx8476c8g5w25b0smlgkjvaq3-hello-2.12.3/share/locale\"' -DHAVE_CONFIG_H -I. -Ilib -I./lib -Isrc -I./src -Wno-cast-qual -Wno-conversion -Wno-float-equal -Wno-sign-compare -Wno-undef -Wno-unused-function -Wno-unused-parameter -Wno-float-conversion -Wimplicit-fallthrough -Wno-pedantic -Wno-sign-conversion -Wno-type-limits -Wno-unused-const-variable -Wno-unsuffixed-float-constants -Wno-error -g -O2 -c -o lib/unictype/libhello_a-ctype_punct.o lib/unictype/ctype_punct.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=5z2yp3ysx8",
     ],
+)
+
+built_file(
+    name = "lib/unictype/libhello_a-ctype_punct.o",
+    file = ":s104789_gcc/build/hello-2.12.3/lib/unictype/libhello_a-ctype_punct.o",
 )
 
 cc_object(
@@ -4399,6 +4739,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "lib/unictype/libhello_a-ctype_space.o",
+    file = ":s104906_gcc/build/hello-2.12.3/lib/unictype/libhello_a-ctype_space.o",
+)
+
 cc_object(
     name = "s105034_gcc",
     src = ":s1378_tar/build/hello-2.12.3/lib/unictype/ctype_upper.c",
@@ -4432,6 +4777,11 @@ cc_object(
         "run --cwd /build/hello-2.12.3 --env 62 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 55 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 '-DLOCALEDIR=\"/nix/store/5z2yp3ysx8476c8g5w25b0smlgkjvaq3-hello-2.12.3/share/locale\"' -DHAVE_CONFIG_H -I. -Ilib -I./lib -Isrc -I./src -Wno-cast-qual -Wno-conversion -Wno-float-equal -Wno-sign-compare -Wno-undef -Wno-unused-function -Wno-unused-parameter -Wno-float-conversion -Wimplicit-fallthrough -Wno-pedantic -Wno-sign-conversion -Wno-type-limits -Wno-unused-const-variable -Wno-unsuffixed-float-constants -Wno-error -g -O2 -c -o lib/unictype/libhello_a-ctype_upper.o lib/unictype/ctype_upper.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=5z2yp3ysx8",
     ],
+)
+
+built_file(
+    name = "lib/unictype/libhello_a-ctype_upper.o",
+    file = ":s105034_gcc/build/hello-2.12.3/lib/unictype/libhello_a-ctype_upper.o",
 )
 
 cc_object(
@@ -4469,6 +4819,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "lib/unictype/libhello_a-ctype_xdigit.o",
+    file = ":s105166_gcc/build/hello-2.12.3/lib/unictype/libhello_a-ctype_xdigit.o",
+)
+
 cc_object(
     name = "s105299_gcc",
     src = ":s1378_tar/build/hello-2.12.3/lib/unistd.c",
@@ -4502,6 +4857,11 @@ cc_object(
         "run --cwd /build/hello-2.12.3 --env 62 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 55 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 '-DLOCALEDIR=\"/nix/store/5z2yp3ysx8476c8g5w25b0smlgkjvaq3-hello-2.12.3/share/locale\"' -DHAVE_CONFIG_H -I. -Ilib -I./lib -Isrc -I./src -Wno-cast-qual -Wno-conversion -Wno-float-equal -Wno-sign-compare -Wno-undef -Wno-unused-function -Wno-unused-parameter -Wno-float-conversion -Wimplicit-fallthrough -Wno-pedantic -Wno-sign-conversion -Wno-type-limits -Wno-unused-const-variable -Wno-unsuffixed-float-constants -Wno-error -g -O2 -c -o lib/libhello_a-unistd.o lib/unistd.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=5z2yp3ysx8",
     ],
+)
+
+built_file(
+    name = "lib/libhello_a-unistd.o",
+    file = ":s105299_gcc/build/hello-2.12.3/lib/libhello_a-unistd.o",
 )
 
 cc_object(
@@ -4541,6 +4901,11 @@ cc_object(
         "run --cwd /build/hello-2.12.3 --env 62 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 55 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 '-DLOCALEDIR=\"/nix/store/5z2yp3ysx8476c8g5w25b0smlgkjvaq3-hello-2.12.3/share/locale\"' -DHAVE_CONFIG_H -I. -Ilib -I./lib -Isrc -I./src -Wno-cast-qual -Wno-conversion -Wno-float-equal -Wno-sign-compare -Wno-undef -Wno-unused-function -Wno-unused-parameter -Wno-float-conversion -Wimplicit-fallthrough -Wno-pedantic -Wno-sign-conversion -Wno-type-limits -Wno-unused-const-variable -Wno-unsuffixed-float-constants -Wno-error -g -O2 -c -o lib/unistr/libhello_a-u8-mbtoucr.o lib/unistr/u8-mbtoucr.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=5z2yp3ysx8",
     ],
+)
+
+built_file(
+    name = "lib/unistr/libhello_a-u8-mbtoucr.o",
+    file = ":s105539_gcc/build/hello-2.12.3/lib/unistr/libhello_a-u8-mbtoucr.o",
 )
 
 cc_object(
@@ -4583,6 +4948,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "lib/unistr/libhello_a-u8-uctomb.o",
+    file = ":s105663_gcc/build/hello-2.12.3/lib/unistr/libhello_a-u8-uctomb.o",
+)
+
 cc_object(
     name = "s105789_gcc",
     src = ":s1378_tar/build/hello-2.12.3/lib/unistr/u8-uctomb-aux.c",
@@ -4621,6 +4991,11 @@ cc_object(
         "run --cwd /build/hello-2.12.3 --env 62 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 55 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 '-DLOCALEDIR=\"/nix/store/5z2yp3ysx8476c8g5w25b0smlgkjvaq3-hello-2.12.3/share/locale\"' -DHAVE_CONFIG_H -I. -Ilib -I./lib -Isrc -I./src -Wno-cast-qual -Wno-conversion -Wno-float-equal -Wno-sign-compare -Wno-undef -Wno-unused-function -Wno-unused-parameter -Wno-float-conversion -Wimplicit-fallthrough -Wno-pedantic -Wno-sign-conversion -Wno-type-limits -Wno-unused-const-variable -Wno-unsuffixed-float-constants -Wno-error -g -O2 -c -o lib/unistr/libhello_a-u8-uctomb-aux.o lib/unistr/u8-uctomb-aux.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=5z2yp3ysx8",
     ],
+)
+
+built_file(
+    name = "lib/unistr/libhello_a-u8-uctomb-aux.o",
+    file = ":s105789_gcc/build/hello-2.12.3/lib/unistr/libhello_a-u8-uctomb-aux.o",
 )
 
 cc_object(
@@ -4664,6 +5039,11 @@ cc_object(
         "run --cwd /build/hello-2.12.3 --env 62 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 55 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 '-DLOCALEDIR=\"/nix/store/5z2yp3ysx8476c8g5w25b0smlgkjvaq3-hello-2.12.3/share/locale\"' -DHAVE_CONFIG_H -I. -Ilib -I./lib -Isrc -I./src -Wno-cast-qual -Wno-conversion -Wno-float-equal -Wno-sign-compare -Wno-undef -Wno-unused-function -Wno-unused-parameter -Wno-float-conversion -Wimplicit-fallthrough -Wno-pedantic -Wno-sign-conversion -Wno-type-limits -Wno-unused-const-variable -Wno-unsuffixed-float-constants -Wno-error -g -O2 -c -o lib/uniwidth/libhello_a-width.o lib/uniwidth/width.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=5z2yp3ysx8",
     ],
+)
+
+built_file(
+    name = "lib/uniwidth/libhello_a-width.o",
+    file = ":s106036_gcc/build/hello-2.12.3/lib/uniwidth/libhello_a-width.o",
 )
 
 cc_object(
@@ -4711,6 +5091,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "lib/libhello_a-version-etc.o",
+    file = ":s106179_gcc/build/hello-2.12.3/lib/libhello_a-version-etc.o",
+)
+
 cc_object(
     name = "s106308_gcc",
     src = ":s1378_tar/build/hello-2.12.3/lib/version-etc-fsf.c",
@@ -4743,6 +5128,11 @@ cc_object(
         "run --cwd /build/hello-2.12.3 --env 62 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 55 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 '-DLOCALEDIR=\"/nix/store/5z2yp3ysx8476c8g5w25b0smlgkjvaq3-hello-2.12.3/share/locale\"' -DHAVE_CONFIG_H -I. -Ilib -I./lib -Isrc -I./src -Wno-cast-qual -Wno-conversion -Wno-float-equal -Wno-sign-compare -Wno-undef -Wno-unused-function -Wno-unused-parameter -Wno-float-conversion -Wimplicit-fallthrough -Wno-pedantic -Wno-sign-conversion -Wno-type-limits -Wno-unused-const-variable -Wno-unsuffixed-float-constants -Wno-error -g -O2 -c -o lib/libhello_a-version-etc-fsf.o lib/version-etc-fsf.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=5z2yp3ysx8",
     ],
+)
+
+built_file(
+    name = "lib/libhello_a-version-etc-fsf.o",
+    file = ":s106308_gcc/build/hello-2.12.3/lib/libhello_a-version-etc-fsf.o",
 )
 
 cc_object(
@@ -4778,6 +5168,11 @@ cc_object(
         "run --cwd /build/hello-2.12.3 --env 62 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 55 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 '-DLOCALEDIR=\"/nix/store/5z2yp3ysx8476c8g5w25b0smlgkjvaq3-hello-2.12.3/share/locale\"' -DHAVE_CONFIG_H -I. -Ilib -I./lib -Isrc -I./src -Wno-cast-qual -Wno-conversion -Wno-float-equal -Wno-sign-compare -Wno-undef -Wno-unused-function -Wno-unused-parameter -Wno-float-conversion -Wimplicit-fallthrough -Wno-pedantic -Wno-sign-conversion -Wno-type-limits -Wno-unused-const-variable -Wno-unsuffixed-float-constants -Wno-error -g -O2 -c -o lib/libhello_a-wctype-h.o lib/wctype-h.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=5z2yp3ysx8",
     ],
+)
+
+built_file(
+    name = "lib/libhello_a-wctype-h.o",
+    file = ":s106434_gcc/build/hello-2.12.3/lib/libhello_a-wctype-h.o",
 )
 
 cc_object(
@@ -4829,6 +5224,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "lib/libhello_a-xmalloc.o",
+    file = ":s106559_gcc/build/hello-2.12.3/lib/libhello_a-xmalloc.o",
+)
+
 cc_object(
     name = "s106693_gcc",
     src = ":s1378_tar/build/hello-2.12.3/lib/xalloc-die.c",
@@ -4878,6 +5278,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "lib/libhello_a-xalloc-die.o",
+    file = ":s106693_gcc/build/hello-2.12.3/lib/libhello_a-xalloc-die.o",
+)
+
 cc_object(
     name = "s106825_gcc",
     src = ":s1378_tar/build/hello-2.12.3/lib/xstriconv.c",
@@ -4919,6 +5324,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "lib/libhello_a-xstriconv.o",
+    file = ":s106825_gcc/build/hello-2.12.3/lib/libhello_a-xstriconv.o",
+)
+
 cc_object(
     name = "s106949_gcc",
     src = ":s1378_tar/build/hello-2.12.3/lib/mbsrtowcs-state.c",
@@ -4950,6 +5360,11 @@ cc_object(
         "run --cwd /build/hello-2.12.3 --env 62 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 55 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 '-DLOCALEDIR=\"/nix/store/5z2yp3ysx8476c8g5w25b0smlgkjvaq3-hello-2.12.3/share/locale\"' -DHAVE_CONFIG_H -I. -Ilib -I./lib -Isrc -I./src -Wno-cast-qual -Wno-conversion -Wno-float-equal -Wno-sign-compare -Wno-undef -Wno-unused-function -Wno-unused-parameter -Wno-float-conversion -Wimplicit-fallthrough -Wno-pedantic -Wno-sign-conversion -Wno-type-limits -Wno-unused-const-variable -Wno-unsuffixed-float-constants -Wno-error -g -O2 -c -o lib/libhello_a-mbsrtowcs-state.o lib/mbsrtowcs-state.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=5z2yp3ysx8",
     ],
+)
+
+built_file(
+    name = "lib/libhello_a-mbsrtowcs-state.o",
+    file = ":s106949_gcc/build/hello-2.12.3/lib/libhello_a-mbsrtowcs-state.o",
 )
 
 cc_library(
@@ -5139,6 +5554,11 @@ cc_library(
     ],
 )
 
+built_file(
+    name = "lib/libhello.a",
+    file = ":s107088_ar/build/hello-2.12.3/lib/libhello.a",
+)
+
 cc_binary(
     name = "s107269_gcc",
     objs = [
@@ -5166,6 +5586,11 @@ cc_binary(
         "run --cwd /build/hello-2.12.3 --env 66 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 41 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -Wl,-dynamic-linker=/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ld-linux-x86-64.so.2 -g -O2 -Wl,--as-needed -o hello src/hello.o lib/libhello.a -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=5z2yp3ysx8 -Wl,-rpath -Wl,/nix/store/5z2yp3ysx8476c8g5w25b0smlgkjvaq3-hello-2.12.3/lib -L/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib -L/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0 -L/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -L/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib",
     ],
+)
+
+program(
+    name = "hello",
+    file = ":s107269_gcc/build/hello-2.12.3/hello",
 )
 
 recorded(

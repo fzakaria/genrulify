@@ -1,4 +1,4 @@
-load(":genrulify.bzl", "cc_binary", "cc_library", "cc_object", "nix_archive", "recorded")
+load(":genrulify.bzl", "built_file", "cc_binary", "cc_library", "cc_object", "nix_archive", "program", "recorded")
 
 recorded(
     name = "s1467_tar_xz",
@@ -5110,6 +5110,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "support/dfa.o",
+    file = ":s108274_gcc/build/gawk-5.4.1/support/dfa.o",
+)
+
 cc_object(
     name = "s108386_gcc",
     src = ":s1467_tar_xz/build/gawk-5.4.1/support/getopt.c",
@@ -5140,6 +5145,11 @@ cc_object(
         "run --cwd /build/gawk-5.4.1/support --env 67 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 40 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -DGAWK -DHAVE_CONFIG_H -I./.. -I. -I.. -g -O2 -g -O2 -c -o getopt.o getopt.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=63g104xwbz",
     ],
+)
+
+built_file(
+    name = "support/getopt.o",
+    file = ":s108386_gcc/build/gawk-5.4.1/support/getopt.o",
 )
 
 cc_object(
@@ -5173,6 +5183,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "support/getopt1.o",
+    file = ":s108514_gcc/build/gawk-5.4.1/support/getopt1.o",
+)
+
 cc_object(
     name = "s108615_gcc",
     src = ":s1467_tar_xz/build/gawk-5.4.1/support/localeinfo.c",
@@ -5202,6 +5217,11 @@ cc_object(
         "run --cwd /build/gawk-5.4.1/support --env 67 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 40 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -DGAWK -DHAVE_CONFIG_H -I./.. -I. -I.. -g -O2 -g -O2 -c -o localeinfo.o localeinfo.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=63g104xwbz",
     ],
+)
+
+built_file(
+    name = "support/localeinfo.o",
+    file = ":s108615_gcc/build/gawk-5.4.1/support/localeinfo.o",
 )
 
 cc_object(
@@ -5236,6 +5256,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "support/minrx.o",
+    file = ":s108717_gcc/build/gawk-5.4.1/support/minrx.o",
+)
+
 cc_object(
     name = "s108830_gcc",
     src = ":s1467_tar_xz/build/gawk-5.4.1/support/random.c",
@@ -5264,6 +5289,11 @@ cc_object(
         "run --cwd /build/gawk-5.4.1/support --env 67 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 40 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -DGAWK -DHAVE_CONFIG_H -I./.. -I. -I.. -g -O2 -g -O2 -c -o random.o random.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=63g104xwbz",
     ],
+)
+
+built_file(
+    name = "support/random.o",
+    file = ":s108830_gcc/build/gawk-5.4.1/support/random.o",
 )
 
 cc_object(
@@ -5310,6 +5340,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "support/regex.o",
+    file = ":s108932_gcc/build/gawk-5.4.1/support/regex.o",
+)
+
 cc_object(
     name = "s109102_gcc",
     src = ":s1467_tar_xz/build/gawk-5.4.1/support/malloc/dynarray_at_failure.c",
@@ -5340,6 +5375,11 @@ cc_object(
         "run --cwd /build/gawk-5.4.1/support --env 67 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 40 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -DGAWK -DHAVE_CONFIG_H -I./.. -I. -I.. -g -O2 -g -O2 -c -o malloc/dynarray_at_failure.o malloc/dynarray_at_failure.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=63g104xwbz",
     ],
+)
+
+built_file(
+    name = "support/malloc/dynarray_at_failure.o",
+    file = ":s109102_gcc/build/gawk-5.4.1/support/malloc/dynarray_at_failure.o",
 )
 
 cc_object(
@@ -5376,6 +5416,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "support/malloc/dynarray_emplace_enlarge.o",
+    file = ":s109202_gcc/build/gawk-5.4.1/support/malloc/dynarray_emplace_enlarge.o",
+)
+
 cc_object(
     name = "s109303_gcc",
     src = ":s1467_tar_xz/build/gawk-5.4.1/support/malloc/dynarray_finalize.c",
@@ -5406,6 +5451,11 @@ cc_object(
         "run --cwd /build/gawk-5.4.1/support --env 67 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 40 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -DGAWK -DHAVE_CONFIG_H -I./.. -I. -I.. -g -O2 -g -O2 -c -o malloc/dynarray_finalize.o malloc/dynarray_finalize.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=63g104xwbz",
     ],
+)
+
+built_file(
+    name = "support/malloc/dynarray_finalize.o",
+    file = ":s109303_gcc/build/gawk-5.4.1/support/malloc/dynarray_finalize.o",
 )
 
 cc_object(
@@ -5442,6 +5492,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "support/malloc/dynarray_resize.o",
+    file = ":s109402_gcc/build/gawk-5.4.1/support/malloc/dynarray_resize.o",
+)
+
 cc_object(
     name = "s109502_gcc",
     src = ":s1467_tar_xz/build/gawk-5.4.1/support/malloc/dynarray_resize_clear.c",
@@ -5474,6 +5529,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "support/malloc/dynarray_resize_clear.o",
+    file = ":s109502_gcc/build/gawk-5.4.1/support/malloc/dynarray_resize_clear.o",
+)
+
 cc_object(
     name = "s109602_gcc",
     src = ":s1467_tar_xz/build/gawk-5.4.1/support/pma.c",
@@ -5498,6 +5558,11 @@ cc_object(
         "run --cwd /build/gawk-5.4.1/support --env 67 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 40 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -DGAWK -DHAVE_CONFIG_H -I./.. -I. -I.. -g -O2 -g -O2 -c -o pma.o pma.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=63g104xwbz",
     ],
+)
+
+built_file(
+    name = "support/pma.o",
+    file = ":s109602_gcc/build/gawk-5.4.1/support/pma.o",
 )
 
 cc_library(
@@ -5549,6 +5614,11 @@ cc_library(
     ],
 )
 
+built_file(
+    name = "support/libsupport.a",
+    file = ":s109725_ar/build/gawk-5.4.1/support/libsupport.a",
+)
+
 cc_object(
     name = "s109805_gcc",
     src = ":s1467_tar_xz/build/gawk-5.4.1/array.c",
@@ -5587,6 +5657,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "array.o",
+    file = ":s109805_gcc/build/gawk-5.4.1/array.o",
+)
+
 cc_object(
     name = "s109918_gcc",
     src = ":s1467_tar_xz/build/gawk-5.4.1/awkgram.c",
@@ -5623,6 +5698,11 @@ cc_object(
         "run --cwd /build/gawk-5.4.1 --env 73 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 43 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 '-DDEFPATH=\".:/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/share/awk\"' '-DDEFLIBPATH=\"/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/lib/gawk\"' '-DSHLIBEXT=\"so\"' -DHAVE_CONFIG_H -DGAWK '-DLOCALEDIR=\"/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/share/locale\"' -I./support -I. -g -O2 -g -O2 -c -o awkgram.o awkgram.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=63g104xwbz",
     ],
+)
+
+built_file(
+    name = "awkgram.o",
+    file = ":s109918_gcc/build/gawk-5.4.1/awkgram.o",
 )
 
 cc_object(
@@ -5664,6 +5744,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "builtin.o",
+    file = ":s110030_gcc/build/gawk-5.4.1/builtin.o",
+)
+
 cc_object(
     name = "s110154_gcc",
     src = ":s1467_tar_xz/build/gawk-5.4.1/cint_array.c",
@@ -5700,6 +5785,11 @@ cc_object(
         "run --cwd /build/gawk-5.4.1 --env 73 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 43 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 '-DDEFPATH=\".:/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/share/awk\"' '-DDEFLIBPATH=\"/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/lib/gawk\"' '-DSHLIBEXT=\"so\"' -DHAVE_CONFIG_H -DGAWK '-DLOCALEDIR=\"/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/share/locale\"' -I./support -I. -g -O2 -g -O2 -c -o cint_array.o cint_array.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=63g104xwbz",
     ],
+)
+
+built_file(
+    name = "cint_array.o",
+    file = ":s110154_gcc/build/gawk-5.4.1/cint_array.o",
 )
 
 cc_object(
@@ -5741,6 +5831,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "command.o",
+    file = ":s110256_gcc/build/gawk-5.4.1/command.o",
+)
+
 cc_object(
     name = "s110367_gcc",
     src = ":s1467_tar_xz/build/gawk-5.4.1/debug.c",
@@ -5778,6 +5873,11 @@ cc_object(
         "run --cwd /build/gawk-5.4.1 --env 73 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 43 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 '-DDEFPATH=\".:/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/share/awk\"' '-DDEFLIBPATH=\"/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/lib/gawk\"' '-DSHLIBEXT=\"so\"' -DHAVE_CONFIG_H -DGAWK '-DLOCALEDIR=\"/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/share/locale\"' -I./support -I. -g -O2 -g -O2 -c -o debug.o debug.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=63g104xwbz",
     ],
+)
+
+built_file(
+    name = "debug.o",
+    file = ":s110367_gcc/build/gawk-5.4.1/debug.o",
 )
 
 cc_object(
@@ -5819,6 +5919,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "eval.o",
+    file = ":s110487_gcc/build/gawk-5.4.1/eval.o",
+)
+
 cc_object(
     name = "s110601_gcc",
     src = ":s1467_tar_xz/build/gawk-5.4.1/ext.c",
@@ -5855,6 +5960,11 @@ cc_object(
         "run --cwd /build/gawk-5.4.1 --env 73 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 43 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 '-DDEFPATH=\".:/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/share/awk\"' '-DDEFLIBPATH=\"/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/lib/gawk\"' '-DSHLIBEXT=\"so\"' -DHAVE_CONFIG_H -DGAWK '-DLOCALEDIR=\"/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/share/locale\"' -I./support -I. -g -O2 -g -O2 -c -o ext.o ext.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=63g104xwbz",
     ],
+)
+
+built_file(
+    name = "ext.o",
+    file = ":s110601_gcc/build/gawk-5.4.1/ext.o",
 )
 
 cc_object(
@@ -5895,6 +6005,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "field.o",
+    file = ":s110703_gcc/build/gawk-5.4.1/field.o",
+)
+
 cc_object(
     name = "s110813_gcc",
     src = ":s1467_tar_xz/build/gawk-5.4.1/floatcomp.c",
@@ -5933,6 +6048,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "floatcomp.o",
+    file = ":s110813_gcc/build/gawk-5.4.1/floatcomp.o",
+)
+
 cc_object(
     name = "s110913_gcc",
     src = ":s1467_tar_xz/build/gawk-5.4.1/gawkapi.c",
@@ -5969,6 +6089,11 @@ cc_object(
         "run --cwd /build/gawk-5.4.1 --env 73 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 43 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 '-DDEFPATH=\".:/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/share/awk\"' '-DDEFLIBPATH=\"/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/lib/gawk\"' '-DSHLIBEXT=\"so\"' -DHAVE_CONFIG_H -DGAWK '-DLOCALEDIR=\"/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/share/locale\"' -I./support -I. -g -O2 -g -O2 -c -o gawkapi.o gawkapi.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=63g104xwbz",
     ],
+)
+
+built_file(
+    name = "gawkapi.o",
+    file = ":s110913_gcc/build/gawk-5.4.1/gawkapi.o",
 )
 
 cc_object(
@@ -6010,6 +6135,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "gawkmisc.o",
+    file = ":s111024_gcc/build/gawk-5.4.1/gawkmisc.o",
+)
+
 cc_object(
     name = "s111135_gcc",
     src = ":s1467_tar_xz/build/gawk-5.4.1/int_array.c",
@@ -6048,6 +6178,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "int_array.o",
+    file = ":s111135_gcc/build/gawk-5.4.1/int_array.o",
+)
+
 cc_object(
     name = "s111251_gcc",
     src = ":s1467_tar_xz/build/gawk-5.4.1/io.c",
@@ -6084,6 +6219,11 @@ cc_object(
         "run --cwd /build/gawk-5.4.1 --env 73 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 43 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 '-DDEFPATH=\".:/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/share/awk\"' '-DDEFLIBPATH=\"/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/lib/gawk\"' '-DSHLIBEXT=\"so\"' -DHAVE_CONFIG_H -DGAWK '-DLOCALEDIR=\"/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/share/locale\"' -I./support -I. -g -O2 -g -O2 -c -o io.o io.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=63g104xwbz",
     ],
+)
+
+built_file(
+    name = "io.o",
+    file = ":s111251_gcc/build/gawk-5.4.1/io.o",
 )
 
 cc_object(
@@ -6125,6 +6265,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "main.o",
+    file = ":s111354_gcc/build/gawk-5.4.1/main.o",
+)
+
 cc_object(
     name = "s111466_gcc",
     src = ":s1467_tar_xz/build/gawk-5.4.1/mpfr.c",
@@ -6161,6 +6306,11 @@ cc_object(
         "run --cwd /build/gawk-5.4.1 --env 73 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 43 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 '-DDEFPATH=\".:/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/share/awk\"' '-DDEFLIBPATH=\"/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/lib/gawk\"' '-DSHLIBEXT=\"so\"' -DHAVE_CONFIG_H -DGAWK '-DLOCALEDIR=\"/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/share/locale\"' -I./support -I. -g -O2 -g -O2 -c -o mpfr.o mpfr.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=63g104xwbz",
     ],
+)
+
+built_file(
+    name = "mpfr.o",
+    file = ":s111466_gcc/build/gawk-5.4.1/mpfr.o",
 )
 
 cc_object(
@@ -6201,6 +6351,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "msg.o",
+    file = ":s111567_gcc/build/gawk-5.4.1/msg.o",
+)
+
 cc_object(
     name = "s111679_gcc",
     src = ":s1467_tar_xz/build/gawk-5.4.1/node.c",
@@ -6237,6 +6392,11 @@ cc_object(
         "run --cwd /build/gawk-5.4.1 --env 73 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 43 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 '-DDEFPATH=\".:/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/share/awk\"' '-DDEFLIBPATH=\"/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/lib/gawk\"' '-DSHLIBEXT=\"so\"' -DHAVE_CONFIG_H -DGAWK '-DLOCALEDIR=\"/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/share/locale\"' -I./support -I. -g -O2 -g -O2 -c -o node.o node.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=63g104xwbz",
     ],
+)
+
+built_file(
+    name = "node.o",
+    file = ":s111679_gcc/build/gawk-5.4.1/node.o",
 )
 
 cc_object(
@@ -6277,6 +6437,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "printf.o",
+    file = ":s111789_gcc/build/gawk-5.4.1/printf.o",
+)
+
 cc_object(
     name = "s111899_gcc",
     src = ":s1467_tar_xz/build/gawk-5.4.1/profile.c",
@@ -6313,6 +6478,11 @@ cc_object(
         "run --cwd /build/gawk-5.4.1 --env 73 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 43 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 '-DDEFPATH=\".:/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/share/awk\"' '-DDEFLIBPATH=\"/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/lib/gawk\"' '-DSHLIBEXT=\"so\"' -DHAVE_CONFIG_H -DGAWK '-DLOCALEDIR=\"/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/share/locale\"' -I./support -I. -g -O2 -g -O2 -c -o profile.o profile.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=63g104xwbz",
     ],
+)
+
+built_file(
+    name = "profile.o",
+    file = ":s111899_gcc/build/gawk-5.4.1/profile.o",
 )
 
 cc_object(
@@ -6354,6 +6524,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "re.o",
+    file = ":s112010_gcc/build/gawk-5.4.1/re.o",
+)
+
 cc_object(
     name = "s112120_gcc",
     src = ":s1467_tar_xz/build/gawk-5.4.1/replace.c",
@@ -6390,6 +6565,11 @@ cc_object(
         "run --cwd /build/gawk-5.4.1 --env 73 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 43 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 '-DDEFPATH=\".:/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/share/awk\"' '-DDEFLIBPATH=\"/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/lib/gawk\"' '-DSHLIBEXT=\"so\"' -DHAVE_CONFIG_H -DGAWK '-DLOCALEDIR=\"/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/share/locale\"' -I./support -I. -g -O2 -g -O2 -c -o replace.o replace.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=63g104xwbz",
     ],
+)
+
+built_file(
+    name = "replace.o",
+    file = ":s112120_gcc/build/gawk-5.4.1/replace.o",
 )
 
 cc_object(
@@ -6430,6 +6610,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "str_array.o",
+    file = ":s112222_gcc/build/gawk-5.4.1/str_array.o",
+)
+
 cc_object(
     name = "s112333_gcc",
     src = ":s1467_tar_xz/build/gawk-5.4.1/symbol.c",
@@ -6468,6 +6653,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "symbol.o",
+    file = ":s112333_gcc/build/gawk-5.4.1/symbol.o",
+)
+
 cc_object(
     name = "s112444_gcc",
     src = ":s1467_tar_xz/build/gawk-5.4.1/version.c",
@@ -6495,6 +6685,11 @@ cc_object(
         "run --cwd /build/gawk-5.4.1 --env 73 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 43 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 '-DDEFPATH=\".:/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/share/awk\"' '-DDEFLIBPATH=\"/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/lib/gawk\"' '-DSHLIBEXT=\"so\"' -DHAVE_CONFIG_H -DGAWK '-DLOCALEDIR=\"/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/share/locale\"' -I./support -I. -g -O2 -g -O2 -c -o version.o version.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=63g104xwbz",
     ],
+)
+
+built_file(
+    name = "version.o",
+    file = ":s112444_gcc/build/gawk-5.4.1/version.o",
 )
 
 cc_binary(
@@ -6574,6 +6769,11 @@ cc_binary(
     ],
 )
 
+program(
+    name = "gawk",
+    file = ":s112594_gcc/build/gawk-5.4.1/gawk",
+)
+
 cc_object(
     name = "s115535_gcc",
     src = ":s1467_tar_xz/build/gawk-5.4.1/extension/filefuncs.c",
@@ -6604,6 +6804,11 @@ cc_object(
         "run --cwd /build/gawk-5.4.1/extension --env 90 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 39 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -DHAVE_CONFIG_H -I. -I./.. -g -O2 -Wall -c filefuncs.c -fPIC -DPIC -o .libs/filefuncs.o -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=63g104xwbz",
     ],
+)
+
+built_file(
+    name = "extension/.libs/filefuncs.o",
+    file = ":s115535_gcc/build/gawk-5.4.1/extension/.libs/filefuncs.o",
 )
 
 recorded(
@@ -6655,6 +6860,11 @@ cc_object(
         "run --cwd /build/gawk-5.4.1/extension --env 90 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 39 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -DHAVE_CONFIG_H -I. -I./.. -g -O2 -Wall -c stack.c -fPIC -DPIC -o .libs/stack.o -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=63g104xwbz",
     ],
+)
+
+built_file(
+    name = "extension/.libs/stack.o",
+    file = ":s116038_gcc/build/gawk-5.4.1/extension/.libs/stack.o",
 )
 
 recorded(
@@ -6711,6 +6921,11 @@ cc_object(
         "run --cwd /build/gawk-5.4.1/extension --env 90 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 39 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -DHAVE_CONFIG_H -I. -I./.. -g -O2 -Wall -c gawkfts.c -fPIC -DPIC -o .libs/gawkfts.o -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=63g104xwbz",
     ],
+)
+
+built_file(
+    name = "extension/.libs/gawkfts.o",
+    file = ":s116521_gcc/build/gawk-5.4.1/extension/.libs/gawkfts.o",
 )
 
 recorded(
@@ -6805,6 +7020,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "extension/.libs/fnmatch.o",
+    file = ":s117923_gcc/build/gawk-5.4.1/extension/.libs/fnmatch.o",
+)
+
 recorded(
     name = "s118028_cat",
     srcs = [
@@ -6887,6 +7107,11 @@ cc_object(
         "run --cwd /build/gawk-5.4.1/extension --env 90 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 39 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -DHAVE_CONFIG_H -I. -I./.. -g -O2 -Wall -c fork.c -fPIC -DPIC -o .libs/fork.o -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=63g104xwbz",
     ],
+)
+
+built_file(
+    name = "extension/.libs/fork.o",
+    file = ":s119323_gcc/build/gawk-5.4.1/extension/.libs/fork.o",
 )
 
 recorded(
@@ -6973,6 +7198,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "extension/.libs/inplace.o",
+    file = ":s120712_gcc/build/gawk-5.4.1/extension/.libs/inplace.o",
+)
+
 recorded(
     name = "s120816_cat",
     srcs = [
@@ -7057,6 +7287,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "extension/.libs/intdiv.o",
+    file = ":s122110_gcc/build/gawk-5.4.1/extension/.libs/intdiv.o",
+)
+
 recorded(
     name = "s122195_cat",
     srcs = [
@@ -7139,6 +7374,11 @@ cc_object(
         "run --cwd /build/gawk-5.4.1/extension --env 90 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 39 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -DHAVE_CONFIG_H -I. -I./.. -g -O2 -Wall -c ordchr.c -fPIC -DPIC -o .libs/ordchr.o -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=63g104xwbz",
     ],
+)
+
+built_file(
+    name = "extension/.libs/ordchr.o",
+    file = ":s123502_gcc/build/gawk-5.4.1/extension/.libs/ordchr.o",
 )
 
 recorded(
@@ -7227,6 +7467,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "extension/.libs/readdir.o",
+    file = ":s124898_gcc/build/gawk-5.4.1/extension/.libs/readdir.o",
+)
+
 recorded(
     name = "s124993_cat",
     srcs = [
@@ -7309,6 +7554,11 @@ cc_object(
         "run --cwd /build/gawk-5.4.1/extension --env 90 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 39 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -DHAVE_CONFIG_H -I. -I./.. -g -O2 -Wall -c readfile.c -fPIC -DPIC -o .libs/readfile.o -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=63g104xwbz",
     ],
+)
+
+built_file(
+    name = "extension/.libs/readfile.o",
+    file = ":s126288_gcc/build/gawk-5.4.1/extension/.libs/readfile.o",
 )
 
 recorded(
@@ -7395,6 +7645,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "extension/.libs/revoutput.o",
+    file = ":s127681_gcc/build/gawk-5.4.1/extension/.libs/revoutput.o",
+)
+
 recorded(
     name = "s127776_cat",
     srcs = [
@@ -7477,6 +7732,11 @@ cc_object(
         "run --cwd /build/gawk-5.4.1/extension --env 90 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 39 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -DHAVE_CONFIG_H -I. -I./.. -g -O2 -Wall -c revtwoway.c -fPIC -DPIC -o .libs/revtwoway.o -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=63g104xwbz",
     ],
+)
+
+built_file(
+    name = "extension/.libs/revtwoway.o",
+    file = ":s129075_gcc/build/gawk-5.4.1/extension/.libs/revtwoway.o",
 )
 
 recorded(
@@ -7563,6 +7823,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "extension/.libs/rwarray.o",
+    file = ":s130464_gcc/build/gawk-5.4.1/extension/.libs/rwarray.o",
+)
+
 recorded(
     name = "s130568_cat",
     srcs = [
@@ -7645,6 +7910,11 @@ cc_object(
         "run --cwd /build/gawk-5.4.1/extension --env 90 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 39 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -DHAVE_CONFIG_H -I. -I./.. -g -O2 -Wall -c time.c -fPIC -DPIC -o .libs/time.o -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=63g104xwbz",
     ],
+)
+
+built_file(
+    name = "extension/.libs/time.o",
+    file = ":s131866_gcc/build/gawk-5.4.1/extension/.libs/time.o",
 )
 
 recorded(
@@ -7756,6 +8026,11 @@ cc_binary(
     ],
 )
 
+program(
+    name = "awklib/pwcat",
+    file = ":s133158_gcc/build/gawk-5.4.1/awklib/pwcat",
+)
+
 recorded(
     name = "s133399_gcc",
     srcs = [
@@ -7809,6 +8084,11 @@ cc_binary(
         "run --cwd /build/gawk-5.4.1/awklib --env 99 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 40 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -Wl,-dynamic-linker=/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ld-linux-x86-64.so.2 -g -O2 -o grcat grcat.o -lm -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=63g104xwbz -Wl,-rpath -Wl,/nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1/lib -L/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib -L/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0 -L/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -L/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib",
     ],
+)
+
+program(
+    name = "awklib/grcat",
+    file = ":s133562_gcc/build/gawk-5.4.1/awklib/grcat",
 )
 
 recorded(

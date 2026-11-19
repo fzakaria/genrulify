@@ -1,4 +1,4 @@
-load(":genrulify.buck.bzl", "cc_binary", "cc_object", "nix_archive", "recorded")
+load(":genrulify.buck.bzl", "built_file", "cc_binary", "cc_object", "nix_archive", "program", "recorded")
 
 recorded(
     name = "s2013_cp",
@@ -6,12 +6,31 @@ recorded(
         "actions/s2013_cp.manifest",
         "closure.txt",
         "env/13.env",
-        "platform",
+        "platform/bin/sh",
+        "platform/etc/group",
+        "platform/etc/hosts",
+        "platform/etc/passwd",
         "sandbox.sh",
     ],
-    out = "s2013_cp",
+    outs = [
+        "s2013_cp/build/source/color.c",
+        "s2013_cp/build/source/doc/tree.1",
+        "s2013_cp/build/source/file.c",
+        "s2013_cp/build/source/filter.c",
+        "s2013_cp/build/source/hash.c",
+        "s2013_cp/build/source/html.c",
+        "s2013_cp/build/source/info.c",
+        "s2013_cp/build/source/json.c",
+        "s2013_cp/build/source/list.c",
+        "s2013_cp/build/source/strverscmp.c",
+        "s2013_cp/build/source/tree.c",
+        "s2013_cp/build/source/tree.h",
+        "s2013_cp/build/source/unix.c",
+        "s2013_cp/build/source/util.c",
+        "s2013_cp/build/source/xml.c",
+    ],
     cmd = [
-        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out $OUTDIR",
         "--name s2013_cp --timeout 300",
         "run --cwd /build --env 13 --argv0 cp --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 7 --",
         "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/cp -r --preserve=timestamps --reflink=auto -- /nix/store/zmf8szdqzfavrwicpsgx147ps0cw4img-source source",
@@ -20,258 +39,432 @@ recorded(
 
 cc_object(
     name = "s2823_gcc",
-    srcs = [
+    src = ":s2013_cp[build/source/color.c]",
+    hdrs = [
+        ":s2013_cp[build/source/tree.h]",
+    ],
+    out = "s2823_gcc/build/source/color.o",
+    data = [
         "actions/s2823_gcc.manifest",
         "closure.txt",
         "env/26.env",
-        "platform",
+        "platform/bin/sh",
+        "platform/etc/group",
+        "platform/etc/hosts",
+        "platform/etc/passwd",
         "sandbox.sh",
         ":s2013_cp",
     ],
-    out = "s2823_gcc",
     cmd = [
-        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out $OUTDIR",
         "--name s2823_gcc --timeout 300",
         "run --cwd /build/source --env 26 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 42 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -ggdb -std=c11 -Wpedantic -Wall -Wextra -Wstrict-prototypes -Wshadow -Wconversion -Wdiscarded-qualifiers -DLARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -c -o color.o color.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=ggxc3i3q4k",
     ],
 )
 
+built_file(
+    name = "color.o",
+    file = ":s2823_gcc[build/source/color.o]",
+)
+
 cc_object(
     name = "s2953_gcc",
-    srcs = [
+    src = ":s2013_cp[build/source/file.c]",
+    hdrs = [
+        ":s2013_cp[build/source/tree.h]",
+    ],
+    out = "s2953_gcc/build/source/file.o",
+    data = [
         "actions/s2953_gcc.manifest",
         "closure.txt",
         "env/26.env",
-        "platform",
+        "platform/bin/sh",
+        "platform/etc/group",
+        "platform/etc/hosts",
+        "platform/etc/passwd",
         "sandbox.sh",
         ":s2013_cp",
     ],
-    out = "s2953_gcc",
     cmd = [
-        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out $OUTDIR",
         "--name s2953_gcc --timeout 300",
         "run --cwd /build/source --env 26 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 42 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -ggdb -std=c11 -Wpedantic -Wall -Wextra -Wstrict-prototypes -Wshadow -Wconversion -Wdiscarded-qualifiers -DLARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -c -o file.o file.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=ggxc3i3q4k",
     ],
 )
 
+built_file(
+    name = "file.o",
+    file = ":s2953_gcc[build/source/file.o]",
+)
+
 cc_object(
     name = "s3067_gcc",
-    srcs = [
+    src = ":s2013_cp[build/source/filter.c]",
+    hdrs = [
+        ":s2013_cp[build/source/tree.h]",
+    ],
+    out = "s3067_gcc/build/source/filter.o",
+    data = [
         "actions/s3067_gcc.manifest",
         "closure.txt",
         "env/26.env",
-        "platform",
+        "platform/bin/sh",
+        "platform/etc/group",
+        "platform/etc/hosts",
+        "platform/etc/passwd",
         "sandbox.sh",
         ":s2013_cp",
     ],
-    out = "s3067_gcc",
     cmd = [
-        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out $OUTDIR",
         "--name s3067_gcc --timeout 300",
         "run --cwd /build/source --env 26 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 42 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -ggdb -std=c11 -Wpedantic -Wall -Wextra -Wstrict-prototypes -Wshadow -Wconversion -Wdiscarded-qualifiers -DLARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -c -o filter.o filter.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=ggxc3i3q4k",
     ],
 )
 
+built_file(
+    name = "filter.o",
+    file = ":s3067_gcc[build/source/filter.o]",
+)
+
 cc_object(
     name = "s3198_gcc",
-    srcs = [
+    src = ":s2013_cp[build/source/hash.c]",
+    hdrs = [
+        ":s2013_cp[build/source/tree.h]",
+    ],
+    out = "s3198_gcc/build/source/hash.o",
+    data = [
         "actions/s3198_gcc.manifest",
         "closure.txt",
         "env/26.env",
-        "platform",
+        "platform/bin/sh",
+        "platform/etc/group",
+        "platform/etc/hosts",
+        "platform/etc/passwd",
         "sandbox.sh",
         ":s2013_cp",
     ],
-    out = "s3198_gcc",
     cmd = [
-        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out $OUTDIR",
         "--name s3198_gcc --timeout 300",
         "run --cwd /build/source --env 26 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 42 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -ggdb -std=c11 -Wpedantic -Wall -Wextra -Wstrict-prototypes -Wshadow -Wconversion -Wdiscarded-qualifiers -DLARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -c -o hash.o hash.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=ggxc3i3q4k",
     ],
 )
 
+built_file(
+    name = "hash.o",
+    file = ":s3198_gcc[build/source/hash.o]",
+)
+
 cc_object(
     name = "s3331_gcc",
-    srcs = [
+    src = ":s2013_cp[build/source/html.c]",
+    hdrs = [
+        ":s2013_cp[build/source/tree.h]",
+    ],
+    out = "s3331_gcc/build/source/html.o",
+    data = [
         "actions/s3331_gcc.manifest",
         "closure.txt",
         "env/26.env",
-        "platform",
+        "platform/bin/sh",
+        "platform/etc/group",
+        "platform/etc/hosts",
+        "platform/etc/passwd",
         "sandbox.sh",
         ":s2013_cp",
     ],
-    out = "s3331_gcc",
     cmd = [
-        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out $OUTDIR",
         "--name s3331_gcc --timeout 300",
         "run --cwd /build/source --env 26 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 42 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -ggdb -std=c11 -Wpedantic -Wall -Wextra -Wstrict-prototypes -Wshadow -Wconversion -Wdiscarded-qualifiers -DLARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -c -o html.o html.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=ggxc3i3q4k",
     ],
 )
 
+built_file(
+    name = "html.o",
+    file = ":s3331_gcc[build/source/html.o]",
+)
+
 cc_object(
     name = "s3462_gcc",
-    srcs = [
+    src = ":s2013_cp[build/source/info.c]",
+    hdrs = [
+        ":s2013_cp[build/source/tree.h]",
+    ],
+    out = "s3462_gcc/build/source/info.o",
+    data = [
         "actions/s3462_gcc.manifest",
         "closure.txt",
         "env/26.env",
-        "platform",
+        "platform/bin/sh",
+        "platform/etc/group",
+        "platform/etc/hosts",
+        "platform/etc/passwd",
         "sandbox.sh",
         ":s2013_cp",
     ],
-    out = "s3462_gcc",
     cmd = [
-        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out $OUTDIR",
         "--name s3462_gcc --timeout 300",
         "run --cwd /build/source --env 26 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 42 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -ggdb -std=c11 -Wpedantic -Wall -Wextra -Wstrict-prototypes -Wshadow -Wconversion -Wdiscarded-qualifiers -DLARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -c -o info.o info.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=ggxc3i3q4k",
     ],
 )
 
+built_file(
+    name = "info.o",
+    file = ":s3462_gcc[build/source/info.o]",
+)
+
 cc_object(
     name = "s3594_gcc",
-    srcs = [
+    src = ":s2013_cp[build/source/json.c]",
+    hdrs = [
+        ":s2013_cp[build/source/tree.h]",
+    ],
+    out = "s3594_gcc/build/source/json.o",
+    data = [
         "actions/s3594_gcc.manifest",
         "closure.txt",
         "env/26.env",
-        "platform",
+        "platform/bin/sh",
+        "platform/etc/group",
+        "platform/etc/hosts",
+        "platform/etc/passwd",
         "sandbox.sh",
         ":s2013_cp",
     ],
-    out = "s3594_gcc",
     cmd = [
-        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out $OUTDIR",
         "--name s3594_gcc --timeout 300",
         "run --cwd /build/source --env 26 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 42 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -ggdb -std=c11 -Wpedantic -Wall -Wextra -Wstrict-prototypes -Wshadow -Wconversion -Wdiscarded-qualifiers -DLARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -c -o json.o json.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=ggxc3i3q4k",
     ],
 )
 
+built_file(
+    name = "json.o",
+    file = ":s3594_gcc[build/source/json.o]",
+)
+
 cc_object(
     name = "s3717_gcc",
-    srcs = [
+    src = ":s2013_cp[build/source/list.c]",
+    hdrs = [
+        ":s2013_cp[build/source/tree.h]",
+    ],
+    out = "s3717_gcc/build/source/list.o",
+    data = [
         "actions/s3717_gcc.manifest",
         "closure.txt",
         "env/26.env",
-        "platform",
+        "platform/bin/sh",
+        "platform/etc/group",
+        "platform/etc/hosts",
+        "platform/etc/passwd",
         "sandbox.sh",
         ":s2013_cp",
     ],
-    out = "s3717_gcc",
     cmd = [
-        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out $OUTDIR",
         "--name s3717_gcc --timeout 300",
         "run --cwd /build/source --env 26 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 42 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -ggdb -std=c11 -Wpedantic -Wall -Wextra -Wstrict-prototypes -Wshadow -Wconversion -Wdiscarded-qualifiers -DLARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -c -o list.o list.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=ggxc3i3q4k",
     ],
 )
 
+built_file(
+    name = "list.o",
+    file = ":s3717_gcc[build/source/list.o]",
+)
+
 cc_object(
     name = "s3839_gcc",
-    srcs = [
+    src = ":s2013_cp[build/source/tree.c]",
+    hdrs = [
+        ":s2013_cp[build/source/tree.h]",
+    ],
+    out = "s3839_gcc/build/source/tree.o",
+    data = [
         "actions/s3839_gcc.manifest",
         "closure.txt",
         "env/26.env",
-        "platform",
+        "platform/bin/sh",
+        "platform/etc/group",
+        "platform/etc/hosts",
+        "platform/etc/passwd",
         "sandbox.sh",
         ":s2013_cp",
     ],
-    out = "s3839_gcc",
     cmd = [
-        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out $OUTDIR",
         "--name s3839_gcc --timeout 300",
         "run --cwd /build/source --env 26 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 42 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -ggdb -std=c11 -Wpedantic -Wall -Wextra -Wstrict-prototypes -Wshadow -Wconversion -Wdiscarded-qualifiers -DLARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -c -o tree.o tree.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=ggxc3i3q4k",
     ],
 )
 
+built_file(
+    name = "tree.o",
+    file = ":s3839_gcc[build/source/tree.o]",
+)
+
 cc_object(
     name = "s3979_gcc",
-    srcs = [
+    src = ":s2013_cp[build/source/unix.c]",
+    hdrs = [
+        ":s2013_cp[build/source/tree.h]",
+    ],
+    out = "s3979_gcc/build/source/unix.o",
+    data = [
         "actions/s3979_gcc.manifest",
         "closure.txt",
         "env/26.env",
-        "platform",
+        "platform/bin/sh",
+        "platform/etc/group",
+        "platform/etc/hosts",
+        "platform/etc/passwd",
         "sandbox.sh",
         ":s2013_cp",
     ],
-    out = "s3979_gcc",
     cmd = [
-        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out $OUTDIR",
         "--name s3979_gcc --timeout 300",
         "run --cwd /build/source --env 26 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 42 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -ggdb -std=c11 -Wpedantic -Wall -Wextra -Wstrict-prototypes -Wshadow -Wconversion -Wdiscarded-qualifiers -DLARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -c -o unix.o unix.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=ggxc3i3q4k",
     ],
 )
 
+built_file(
+    name = "unix.o",
+    file = ":s3979_gcc[build/source/unix.o]",
+)
+
 cc_object(
     name = "s4111_gcc",
-    srcs = [
+    src = ":s2013_cp[build/source/util.c]",
+    hdrs = [
+        ":s2013_cp[build/source/tree.h]",
+    ],
+    out = "s4111_gcc/build/source/util.o",
+    data = [
         "actions/s4111_gcc.manifest",
         "closure.txt",
         "env/26.env",
-        "platform",
+        "platform/bin/sh",
+        "platform/etc/group",
+        "platform/etc/hosts",
+        "platform/etc/passwd",
         "sandbox.sh",
         ":s2013_cp",
     ],
-    out = "s4111_gcc",
     cmd = [
-        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out $OUTDIR",
         "--name s4111_gcc --timeout 300",
         "run --cwd /build/source --env 26 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 42 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -ggdb -std=c11 -Wpedantic -Wall -Wextra -Wstrict-prototypes -Wshadow -Wconversion -Wdiscarded-qualifiers -DLARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -c -o util.o util.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=ggxc3i3q4k",
     ],
 )
 
+built_file(
+    name = "util.o",
+    file = ":s4111_gcc[build/source/util.o]",
+)
+
 cc_object(
     name = "s4224_gcc",
-    srcs = [
+    src = ":s2013_cp[build/source/xml.c]",
+    hdrs = [
+        ":s2013_cp[build/source/tree.h]",
+    ],
+    out = "s4224_gcc/build/source/xml.o",
+    data = [
         "actions/s4224_gcc.manifest",
         "closure.txt",
         "env/26.env",
-        "platform",
+        "platform/bin/sh",
+        "platform/etc/group",
+        "platform/etc/hosts",
+        "platform/etc/passwd",
         "sandbox.sh",
         ":s2013_cp",
     ],
-    out = "s4224_gcc",
     cmd = [
-        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out $OUTDIR",
         "--name s4224_gcc --timeout 300",
         "run --cwd /build/source --env 26 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 42 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -ggdb -std=c11 -Wpedantic -Wall -Wextra -Wstrict-prototypes -Wshadow -Wconversion -Wdiscarded-qualifiers -DLARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -c -o xml.o xml.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=ggxc3i3q4k",
     ],
 )
 
+built_file(
+    name = "xml.o",
+    file = ":s4224_gcc[build/source/xml.o]",
+)
+
 cc_object(
     name = "s4346_gcc",
-    srcs = [
+    src = ":s2013_cp[build/source/strverscmp.c]",
+    hdrs = [],
+    out = "s4346_gcc/build/source/strverscmp.o",
+    data = [
         "actions/s4346_gcc.manifest",
         "closure.txt",
         "env/26.env",
-        "platform",
+        "platform/bin/sh",
+        "platform/etc/group",
+        "platform/etc/hosts",
+        "platform/etc/passwd",
         "sandbox.sh",
         ":s2013_cp",
     ],
-    out = "s4346_gcc",
     cmd = [
-        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out $OUTDIR",
         "--name s4346_gcc --timeout 300",
         "run --cwd /build/source --env 26 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 42 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -ggdb -std=c11 -Wpedantic -Wall -Wextra -Wstrict-prototypes -Wshadow -Wconversion -Wdiscarded-qualifiers -DLARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -c -o strverscmp.o strverscmp.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=ggxc3i3q4k",
     ],
 )
 
+built_file(
+    name = "strverscmp.o",
+    file = ":s4346_gcc[build/source/strverscmp.o]",
+)
+
 cc_binary(
     name = "s4499_gcc",
-    srcs = [
+    objs = [
+        ":s2823_gcc[build/source/color.o]",
+        ":s2953_gcc[build/source/file.o]",
+        ":s3067_gcc[build/source/filter.o]",
+        ":s3198_gcc[build/source/hash.o]",
+        ":s3331_gcc[build/source/html.o]",
+        ":s3462_gcc[build/source/info.o]",
+        ":s3594_gcc[build/source/json.o]",
+        ":s3717_gcc[build/source/list.o]",
+        ":s3839_gcc[build/source/tree.o]",
+        ":s3979_gcc[build/source/unix.o]",
+        ":s4111_gcc[build/source/util.o]",
+        ":s4224_gcc[build/source/xml.o]",
+        ":s4346_gcc[build/source/strverscmp.o]",
+    ],
+    deps = [],
+    out = "s4499_gcc/build/source/tree",
+    data = [
         "actions/s4499_gcc.manifest",
         "closure.txt",
         "env/27.env",
-        "platform",
+        "platform/bin/sh",
+        "platform/etc/group",
+        "platform/etc/hosts",
+        "platform/etc/passwd",
         "sandbox.sh",
         ":s2823_gcc",
         ":s2953_gcc",
@@ -287,13 +480,17 @@ cc_binary(
         ":s4224_gcc",
         ":s4346_gcc",
     ],
-    out = "s4499_gcc",
     cmd = [
-        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out $OUTDIR",
         "--name s4499_gcc --timeout 300",
         "run --cwd /build/source --env 27 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 49 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -Wl,-dynamic-linker=/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ld-linux-x86-64.so.2 -o tree color.o file.o filter.o hash.o html.o info.o json.o list.o tree.o unix.o util.o xml.o strverscmp.o -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=ggxc3i3q4k -Wl,-rpath -Wl,/nix/store/ggxc3i3q4k4f2czrv01adcnn3hhajak5-tree-2.3.2/lib -L/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib -L/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0 -L/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -L/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib",
     ],
+)
+
+program(
+    name = "tree",
+    file = ":s4499_gcc[build/source/tree]",
 )
 
 recorded(
@@ -303,13 +500,19 @@ recorded(
         "closure.txt",
         "env/37.env",
         "env/38.env",
-        "platform",
+        "platform/bin/sh",
+        "platform/etc/group",
+        "platform/etc/hosts",
+        "platform/etc/passwd",
         "sandbox.sh",
+        ":s4499_gcc[build/source/tree]",
         ":s4499_gcc",
     ],
-    out = "s5521_find_patchelf",
+    outs = [
+        "s5521_find_patchelf/nix/store/ggxc3i3q4k4f2czrv01adcnn3hhajak5-tree-2.3.2/bin/tree",
+    ],
     cmd = [
-        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out $OUTDIR",
         "--name s5521_find_patchelf --timeout 300 --pipe 511:0:1:0",
         "run --cwd /build/source --env 37 --argv0 find --fd 0=null --fd 1=pipe-w:511 --fd 2=err --status 0 --argc 5 --",
         "/nix/store/ycrbcy9sg4knpnik6a01dk70l0m673x7-findutils-4.11.0/bin/find /nix/store/ggxc3i3q4k4f2czrv01adcnn3hhajak5-tree-2.3.2 -type f -print0",
@@ -323,15 +526,21 @@ recorded(
     srcs = [
         "actions/s5976_strip.manifest",
         "closure.txt",
-        "const_5867_mktemp",
         "env/48.env",
-        "platform",
+        "platform/bin/sh",
+        "platform/etc/group",
+        "platform/etc/hosts",
+        "platform/etc/passwd",
         "sandbox.sh",
+        "const_5867_mktemp/build/striperr.dmR3YD",
+        ":s5521_find_patchelf[nix/store/ggxc3i3q4k4f2czrv01adcnn3hhajak5-tree-2.3.2/bin/tree]",
         ":s5521_find_patchelf",
     ],
-    out = "s5976_strip",
+    outs = [
+        "s5976_strip/nix/store/ggxc3i3q4k4f2czrv01adcnn3hhajak5-tree-2.3.2/bin/tree",
+    ],
     cmd = [
-        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out $OUTDIR",
         "--name s5976_strip --timeout 300",
         "run --cwd /build/source --env 48 --fd 0=null --fd 1=err --fd 2=file:w:/build/striperr.dmR3YD --status 0 --argc 5 --",
         "/nix/store/y5sgl0vvrpbcwgjwpjs60r1hg0gi7i0n-binutils-2.46/bin/strip --enable-deterministic-archives -S -p /nix/store/ggxc3i3q4k4f2czrv01adcnn3hhajak5-tree-2.3.2/bin/tree",
@@ -344,13 +553,19 @@ recorded(
         "actions/s6287_gzip.manifest",
         "closure.txt",
         "env/55.env",
-        "platform",
+        "platform/bin/sh",
+        "platform/etc/group",
+        "platform/etc/hosts",
+        "platform/etc/passwd",
         "sandbox.sh",
+        ":s2013_cp[build/source/doc/tree.1]",
         ":s2013_cp",
     ],
-    out = "s6287_gzip",
+    outs = [
+        "s6287_gzip/nix/store/symf4p80isdvxjvj4m2y7gffaqyhm9fs-tree-2.3.2-man/share/man/man1/tree.1.gz",
+    ],
     cmd = [
-        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out $OUTDIR",
         "--name s6287_gzip --timeout 300",
         "run --cwd /build/source --env 55 --argv0 gzip --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 4 --",
         "/nix/store/yr6ar7lsk3yfas4d464z1ysaxwcq2gc5-gzip-1.14/bin/gzip -n -f /nix/store/symf4p80isdvxjvj4m2y7gffaqyhm9fs-tree-2.3.2-man/share/man/man1/tree.1",
@@ -362,11 +577,12 @@ nix_archive(
     srcs = [
         "actions/archive_man.manifest",
         "sandbox.sh",
+        ":s6287_gzip[nix/store/symf4p80isdvxjvj4m2y7gffaqyhm9fs-tree-2.3.2-man/share/man/man1/tree.1.gz]",
         ":s6287_gzip",
     ],
     out = "archive_man.nar",
     cmd = [
-        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out $OUTDIR",
         "--name archive_man pack /nix/store/symf4p80isdvxjvj4m2y7gffaqyhm9fs-tree-2.3.2-man 699f213a11ee4565b88036fdd8965917964ebbcb046b0f2a696d4f8db629a79b",
     ],
 )
@@ -376,11 +592,12 @@ nix_archive(
     srcs = [
         "actions/archive_out.manifest",
         "sandbox.sh",
+        ":s5976_strip[nix/store/ggxc3i3q4k4f2czrv01adcnn3hhajak5-tree-2.3.2/bin/tree]",
         ":s5976_strip",
     ],
     out = "archive_out.nar",
     cmd = [
-        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out $OUTDIR",
         "--name archive_out pack /nix/store/ggxc3i3q4k4f2czrv01adcnn3hhajak5-tree-2.3.2 a35de38ab62165a66588eaa6bf78c36ed307f6e611b0809f90d7b14d927c2d9c",
     ],
 )

@@ -1,4 +1,4 @@
-load(":genrulify.buck.bzl", "cc_object", "cc_shared_library", "nix_archive", "recorded")
+load(":genrulify.buck.bzl", "built_file", "cc_object", "cc_shared_library", "nix_archive", "recorded")
 
 recorded(
     name = "s2140_cp",
@@ -6,12 +6,21 @@ recorded(
         "actions/s2140_cp.manifest",
         "closure.txt",
         "env/13.env",
-        "platform",
+        "platform/bin/sh",
+        "platform/etc/group",
+        "platform/etc/hosts",
+        "platform/etc/passwd",
         "sandbox.sh",
     ],
-    out = "s2140_cp",
+    outs = [
+        "s2140_cp/build/source/CMakeLists.txt",
+        "s2140_cp/build/source/cmake/tinyxml2-config.cmake",
+        "s2140_cp/build/source/cmake/tinyxml2.pc.in",
+        "s2140_cp/build/source/tinyxml2.cpp",
+        "s2140_cp/build/source/tinyxml2.h",
+    ],
     cmd = [
-        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out $OUTDIR",
         "--name s2140_cp --timeout 300",
         "run --cwd /build --env 13 --argv0 cp --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 7 --",
         "/nix/store/2gfxiwls9hbgwdwcy43mprchwsq36mg6-coreutils-9.11/bin/cp -r --preserve=timestamps --reflink=auto -- /nix/store/zj1vni7ggkd3bk1w4035gvibwgkp8pv9-source source",
@@ -24,13 +33,27 @@ recorded(
         "actions/s3502_cmake.manifest",
         "closure.txt",
         "env/24.env",
-        "platform",
+        "platform/bin/sh",
+        "platform/etc/group",
+        "platform/etc/hosts",
+        "platform/etc/passwd",
         "sandbox.sh",
+        ":s2140_cp[build/source/CMakeLists.txt]",
+        ":s2140_cp[build/source/cmake/tinyxml2-config.cmake]",
+        ":s2140_cp[build/source/cmake/tinyxml2.pc.in]",
+        ":s2140_cp[build/source/tinyxml2.cpp]",
+        ":s2140_cp[build/source/tinyxml2.h]",
         ":s2140_cp",
     ],
-    out = "s3502_cmake",
+    outs = [
+        "s3502_cmake/build/source/build/CMakeFiles/Export/a801c02ec1fcb42ccc21a747b2503e91/tinyxml2-shared-targets-release.cmake",
+        "s3502_cmake/build/source/build/CMakeFiles/Export/a801c02ec1fcb42ccc21a747b2503e91/tinyxml2-shared-targets.cmake",
+        "s3502_cmake/build/source/build/CMakeFiles/tinyxml2.dir/link.txt",
+        "s3502_cmake/build/source/build/tinyxml2-config-version.cmake",
+        "s3502_cmake/build/source/build/tinyxml2.pc",
+    ],
     cmd = [
-        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out $OUTDIR",
         "--name s3502_cmake --timeout 300",
         "run --cwd /build/source/build --env 24 --argv0 cmake --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 26 --",
         "/nix/store/jcvvpih1046akxcwh9hdiak5q24jqcf0-cmake-4.4.3/bin/cmake .. -DCMAKE_FIND_USE_SYSTEM_PACKAGE_REGISTRY=OFF -DCMAKE_FIND_USE_PACKAGE_REGISTRY=OFF -DCMAKE_EXPORT_NO_PACKAGE_REGISTRY=ON -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF -DCMAKE_INSTALL_LOCALEDIR=/nix/store/zxzky44n1nngijv1n5xvgcbf005fajq5-tinyxml2-11.0.0/share/locale -DCMAKE_INSTALL_LIBEXECDIR=/nix/store/zxzky44n1nngijv1n5xvgcbf005fajq5-tinyxml2-11.0.0/libexec -DCMAKE_INSTALL_LIBDIR=/nix/store/zxzky44n1nngijv1n5xvgcbf005fajq5-tinyxml2-11.0.0/lib -DCMAKE_INSTALL_DOCDIR=/nix/store/zxzky44n1nngijv1n5xvgcbf005fajq5-tinyxml2-11.0.0/share/doc/tinyxml2 -DCMAKE_INSTALL_INFODIR=/nix/store/zxzky44n1nngijv1n5xvgcbf005fajq5-tinyxml2-11.0.0/share/info -DCMAKE_INSTALL_MANDIR=/nix/store/zxzky44n1nngijv1n5xvgcbf005fajq5-tinyxml2-11.0.0/share/man -DCMAKE_INSTALL_INCLUDEDIR=/nix/store/zxzky44n1nngijv1n5xvgcbf005fajq5-tinyxml2-11.0.0/include -DCMAKE_INSTALL_SBINDIR=/nix/store/zxzky44n1nngijv1n5xvgcbf005fajq5-tinyxml2-11.0.0/sbin -DCMAKE_INSTALL_BINDIR=/nix/store/zxzky44n1nngijv1n5xvgcbf005fajq5-tinyxml2-11.0.0/bin -DCMAKE_INSTALL_NAME_DIR=/nix/store/zxzky44n1nngijv1n5xvgcbf005fajq5-tinyxml2-11.0.0/lib -DCMAKE_STRIP=/nix/store/j1938gsbvbhkyz4kbmvjk56r479mkw3s-gcc-wrapper-16.2.0/bin/strip -DCMAKE_RANLIB=/nix/store/j1938gsbvbhkyz4kbmvjk56r479mkw3s-gcc-wrapper-16.2.0/bin/ranlib -DCMAKE_AR=/nix/store/j1938gsbvbhkyz4kbmvjk56r479mkw3s-gcc-wrapper-16.2.0/bin/ar -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ -DCMAKE_INSTALL_PREFIX=/nix/store/zxzky44n1nngijv1n5xvgcbf005fajq5-tinyxml2-11.0.0 -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_INCLUDEDIR=include -DCMAKE_INSTALL_LIBDIR=lib",
@@ -39,41 +62,66 @@ recorded(
 
 cc_object(
     name = "s9884_g__",
-    srcs = [
+    src = ":s2140_cp[build/source/tinyxml2.cpp]",
+    hdrs = [
+        ":s2140_cp[build/source/tinyxml2.h]",
+    ],
+    out = "s9884_g__/build/source/build/CMakeFiles/tinyxml2.dir/tinyxml2.cpp.o",
+    data = [
         "actions/s9884_g__.manifest",
         "closure.txt",
         "env/29.env",
-        "platform",
+        "platform/bin/sh",
+        "platform/etc/group",
+        "platform/etc/hosts",
+        "platform/etc/passwd",
         "sandbox.sh",
         ":s2140_cp",
     ],
-    out = "s9884_g__",
     cmd = [
-        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out $OUTDIR",
         "--name s9884_g__ --timeout 300",
         "run --cwd /build/source/build --env 29 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 44 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/g++ -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -DTINYXML2_EXPORT -D_FILE_OFFSET_BITS=64 -I/build/source -O3 -DNDEBUG -fPIC -fvisibility=hidden -fvisibility-inlines-hidden -MD -MT CMakeFiles/tinyxml2.dir/tinyxml2.cpp.o -MF CMakeFiles/tinyxml2.dir/tinyxml2.cpp.o.d -o CMakeFiles/tinyxml2.dir/tinyxml2.cpp.o -c /build/source/tinyxml2.cpp -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=zxzky44n1n",
     ],
 )
 
+built_file(
+    name = "build/CMakeFiles/tinyxml2.dir/tinyxml2.cpp.o",
+    file = ":s9884_g__[build/source/build/CMakeFiles/tinyxml2.dir/tinyxml2.cpp.o]",
+)
+
 cc_shared_library(
     name = "s10128_g__",
-    srcs = [
+    objs = [
+        ":s9884_g__[build/source/build/CMakeFiles/tinyxml2.dir/tinyxml2.cpp.o]",
+    ],
+    deps = [],
+    out = "s10128_g__/build/source/build/libtinyxml2.so.11.0.0",
+    data = [
         "actions/s10128_g__.manifest",
         "closure.txt",
         "env/30.env",
-        "platform",
+        "platform/bin/sh",
+        "platform/etc/group",
+        "platform/etc/hosts",
+        "platform/etc/passwd",
         "sandbox.sh",
+        ":s3502_cmake[build/source/build/CMakeFiles/tinyxml2.dir/link.txt]",
         ":s3502_cmake",
         ":s9884_g__",
     ],
-    out = "s10128_g__",
     cmd = [
-        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out $OUTDIR",
         "--name s10128_g__ --timeout 300",
         "run --cwd /build/source/build --env 30 --fd 0=null --fd 1=err --fd 2=err --fd 3=file:r@245:/build/source/build/CMakeFiles/tinyxml2.dir/link.txt --status 0 --argc 43 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/g++ -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -Wl,-dynamic-linker=/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ld-linux-x86-64.so.2 -fPIC -O3 -DNDEBUG -shared -Wl,--dependency-file=CMakeFiles/tinyxml2.dir/link.d -Wl,-soname,libtinyxml2.so.11 -o libtinyxml2.so.11.0.0 CMakeFiles/tinyxml2.dir/tinyxml2.cpp.o -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=zxzky44n1n -Wl,-rpath -Wl,/nix/store/zxzky44n1nngijv1n5xvgcbf005fajq5-tinyxml2-11.0.0/lib -L/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib -L/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0 -L/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -L/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib",
     ],
+)
+
+built_file(
+    name = "build/libtinyxml2.so.11.0.0",
+    file = ":s10128_g__[build/source/build/libtinyxml2.so.11.0.0]",
 )
 
 recorded(
@@ -83,13 +131,19 @@ recorded(
         "closure.txt",
         "env/36.env",
         "env/37.env",
-        "platform",
+        "platform/bin/sh",
+        "platform/etc/group",
+        "platform/etc/hosts",
+        "platform/etc/passwd",
         "sandbox.sh",
+        ":s10128_g__[build/source/build/libtinyxml2.so.11.0.0]",
         ":s10128_g__",
     ],
-    out = "s11501_find_patchelf",
+    outs = [
+        "s11501_find_patchelf/nix/store/zxzky44n1nngijv1n5xvgcbf005fajq5-tinyxml2-11.0.0/lib/libtinyxml2.so.11.0.0",
+    ],
     cmd = [
-        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out $OUTDIR",
         "--name s11501_find_patchelf --timeout 300 --pipe 762:0:1:0",
         "run --cwd /build/source/build --env 36 --argv0 find --fd 0=null --fd 1=pipe-w:762 --fd 2=err --status 0 --argc 5 --",
         "/nix/store/ycrbcy9sg4knpnik6a01dk70l0m673x7-findutils-4.11.0/bin/find /nix/store/zxzky44n1nngijv1n5xvgcbf005fajq5-tinyxml2-11.0.0 -type f -print0",
@@ -103,15 +157,21 @@ recorded(
     srcs = [
         "actions/s11948_strip.manifest",
         "closure.txt",
-        "const_11839_mktemp",
         "env/47.env",
-        "platform",
+        "platform/bin/sh",
+        "platform/etc/group",
+        "platform/etc/hosts",
+        "platform/etc/passwd",
         "sandbox.sh",
+        "const_11839_mktemp/build/striperr.SJIceq",
+        ":s11501_find_patchelf[nix/store/zxzky44n1nngijv1n5xvgcbf005fajq5-tinyxml2-11.0.0/lib/libtinyxml2.so.11.0.0]",
         ":s11501_find_patchelf",
     ],
-    out = "s11948_strip",
+    outs = [
+        "s11948_strip/nix/store/zxzky44n1nngijv1n5xvgcbf005fajq5-tinyxml2-11.0.0/lib/libtinyxml2.so.11.0.0",
+    ],
     cmd = [
-        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out $OUTDIR",
         "--name s11948_strip --timeout 300",
         "run --cwd /build/source/build --env 47 --fd 0=null --fd 1=err --fd 2=file:w:/build/striperr.SJIceq --status 0 --argc 5 --",
         "/nix/store/y5sgl0vvrpbcwgjwpjs60r1hg0gi7i0n-binutils-2.46/bin/strip --enable-deterministic-archives -S -p /nix/store/zxzky44n1nngijv1n5xvgcbf005fajq5-tinyxml2-11.0.0/lib/libtinyxml2.so.11.0.0",
@@ -123,13 +183,20 @@ nix_archive(
     srcs = [
         "actions/archive.manifest",
         "sandbox.sh",
+        ":s11948_strip[nix/store/zxzky44n1nngijv1n5xvgcbf005fajq5-tinyxml2-11.0.0/lib/libtinyxml2.so.11.0.0]",
+        ":s2140_cp[build/source/cmake/tinyxml2-config.cmake]",
+        ":s2140_cp[build/source/tinyxml2.h]",
+        ":s3502_cmake[build/source/build/CMakeFiles/Export/a801c02ec1fcb42ccc21a747b2503e91/tinyxml2-shared-targets-release.cmake]",
+        ":s3502_cmake[build/source/build/CMakeFiles/Export/a801c02ec1fcb42ccc21a747b2503e91/tinyxml2-shared-targets.cmake]",
+        ":s3502_cmake[build/source/build/tinyxml2-config-version.cmake]",
+        ":s3502_cmake[build/source/build/tinyxml2.pc]",
         ":s11948_strip",
         ":s2140_cp",
         ":s3502_cmake",
     ],
     out = "archive.nar",
     cmd = [
-        "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
+        "$SRCDIR/sandbox.sh --in $SRCDIR --out $OUTDIR",
         "--name archive pack /nix/store/zxzky44n1nngijv1n5xvgcbf005fajq5-tinyxml2-11.0.0 4c8f7a5bb2ccb66ce257e701ea2b7d926eea9dbfb19c41907edeaf0288299316",
     ],
 )

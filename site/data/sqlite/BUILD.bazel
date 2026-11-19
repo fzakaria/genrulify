@@ -1,4 +1,4 @@
-load(":genrulify.bzl", "cc_binary", "cc_library", "cc_object", "cc_shared_library", "nix_archive", "recorded")
+load(":genrulify.bzl", "built_file", "cc_binary", "cc_library", "cc_object", "cc_shared_library", "nix_archive", "program", "recorded")
 
 recorded(
     name = "s1931_unzip",
@@ -4635,6 +4635,11 @@ cc_binary(
     ],
 )
 
+program(
+    name = "mksourceid",
+    file = ":s21710_gcc/build/sqlite-src-3530300/mksourceid",
+)
+
 cc_binary(
     name = "s22205_gcc",
     objs = [],
@@ -4658,6 +4663,11 @@ cc_binary(
         "run --cwd /build/sqlite-src-3530300 --env 52 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 71 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -Wl,-dynamic-linker=/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ld-linux-x86-64.so.2 -g -o jimsh -O1 -DHAVE_REALPATH /build/sqlite-src-3530300/autosetup/jimsh0.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -isystem /nix/store/338gwr2718cdha9m9zavkpc9rvkrqd4q-tcl-8.6.16/include -DSQLITE_ENABLE_COLUMN_METADATA -DSQLITE_ENABLE_DBSTAT_VTAB -DSQLITE_ENABLE_JSON1 -DSQLITE_ENABLE_FTS3 -DSQLITE_ENABLE_FTS3_PARENTHESIS -DSQLITE_ENABLE_FTS3_TOKENIZER -DSQLITE_ENABLE_FTS4 -DSQLITE_ENABLE_FTS5 -DSQLITE_ENABLE_GEOPOLY -DSQLITE_ENABLE_MATH_FUNCTIONS -DSQLITE_ENABLE_PERCENTILE -DSQLITE_ENABLE_PREUPDATE_HOOK -DSQLITE_ENABLE_RBU -DSQLITE_ENABLE_RTREE -DSQLITE_ENABLE_SESSION -DSQLITE_ENABLE_STMT_SCANSTATUS -DSQLITE_ENABLE_UNLOCK_NOTIFY -DSQLITE_SOUNDEX -DSQLITE_SECURE_DELETE -DSQLITE_MAX_VARIABLE_NUMBER=250000 -DSQLITE_MAX_EXPR_DEPTH=10000 -ggdb -Wa,--compress-debug-sections -frandom-seed=cbcfzz0jww -isystem /nix/store/879xd5x23lfd4l93jz71yaz06wa15yc1-zlib-1.3.2-dev/include -lm -L/nix/store/338gwr2718cdha9m9zavkpc9rvkrqd4q-tcl-8.6.16/lib -Wl,-rpath -Wl,/nix/store/cbcfzz0jwwvki0cq4wk22p8ssnyh35z9-sqlite-3.53.3/lib -Wl,--compress-debug-sections=zlib -L/nix/store/wgw25d181h0qks7qsfp1bh7c5nd3f0s7-zlib-1.3.2/lib -L/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib -L/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0 -L/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -L/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib",
     ],
+)
+
+program(
+    name = "jimsh",
+    file = ":s22205_gcc/build/sqlite-src-3530300/jimsh",
 )
 
 recorded(
@@ -7003,6 +7013,11 @@ cc_binary(
     ],
 )
 
+program(
+    name = "mkkeywordhash",
+    file = ":s23042_gcc/build/sqlite-src-3530300/mkkeywordhash",
+)
+
 recorded(
     name = "s23480_mkkeywordhash",
     srcs = [
@@ -7052,6 +7067,11 @@ cc_binary(
         "run --cwd /build/sqlite-src-3530300 --env 52 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 69 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -Wl,-dynamic-linker=/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ld-linux-x86-64.so.2 -g -o lemon /build/sqlite-src-3530300/tool/lemon.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -isystem /nix/store/338gwr2718cdha9m9zavkpc9rvkrqd4q-tcl-8.6.16/include -DSQLITE_ENABLE_COLUMN_METADATA -DSQLITE_ENABLE_DBSTAT_VTAB -DSQLITE_ENABLE_JSON1 -DSQLITE_ENABLE_FTS3 -DSQLITE_ENABLE_FTS3_PARENTHESIS -DSQLITE_ENABLE_FTS3_TOKENIZER -DSQLITE_ENABLE_FTS4 -DSQLITE_ENABLE_FTS5 -DSQLITE_ENABLE_GEOPOLY -DSQLITE_ENABLE_MATH_FUNCTIONS -DSQLITE_ENABLE_PERCENTILE -DSQLITE_ENABLE_PREUPDATE_HOOK -DSQLITE_ENABLE_RBU -DSQLITE_ENABLE_RTREE -DSQLITE_ENABLE_SESSION -DSQLITE_ENABLE_STMT_SCANSTATUS -DSQLITE_ENABLE_UNLOCK_NOTIFY -DSQLITE_SOUNDEX -DSQLITE_SECURE_DELETE -DSQLITE_MAX_VARIABLE_NUMBER=250000 -DSQLITE_MAX_EXPR_DEPTH=10000 -ggdb -Wa,--compress-debug-sections -frandom-seed=cbcfzz0jww -isystem /nix/store/879xd5x23lfd4l93jz71yaz06wa15yc1-zlib-1.3.2-dev/include -lm -L/nix/store/338gwr2718cdha9m9zavkpc9rvkrqd4q-tcl-8.6.16/lib -Wl,-rpath -Wl,/nix/store/cbcfzz0jwwvki0cq4wk22p8ssnyh35z9-sqlite-3.53.3/lib -Wl,--compress-debug-sections=zlib -L/nix/store/wgw25d181h0qks7qsfp1bh7c5nd3f0s7-zlib-1.3.2/lib -L/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib -L/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0 -L/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -L/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib",
     ],
+)
+
+program(
+    name = "lemon",
+    file = ":s23579_gcc/build/sqlite-src-3530300/lemon",
 )
 
 recorded(
@@ -7331,6 +7351,11 @@ cc_binary(
         "run --cwd /build/sqlite-src-3530300 --env 52 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 69 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -Wl,-dynamic-linker=/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ld-linux-x86-64.so.2 -g -o src-verify /build/sqlite-src-3530300/tool/src-verify.c -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -isystem /nix/store/338gwr2718cdha9m9zavkpc9rvkrqd4q-tcl-8.6.16/include -DSQLITE_ENABLE_COLUMN_METADATA -DSQLITE_ENABLE_DBSTAT_VTAB -DSQLITE_ENABLE_JSON1 -DSQLITE_ENABLE_FTS3 -DSQLITE_ENABLE_FTS3_PARENTHESIS -DSQLITE_ENABLE_FTS3_TOKENIZER -DSQLITE_ENABLE_FTS4 -DSQLITE_ENABLE_FTS5 -DSQLITE_ENABLE_GEOPOLY -DSQLITE_ENABLE_MATH_FUNCTIONS -DSQLITE_ENABLE_PERCENTILE -DSQLITE_ENABLE_PREUPDATE_HOOK -DSQLITE_ENABLE_RBU -DSQLITE_ENABLE_RTREE -DSQLITE_ENABLE_SESSION -DSQLITE_ENABLE_STMT_SCANSTATUS -DSQLITE_ENABLE_UNLOCK_NOTIFY -DSQLITE_SOUNDEX -DSQLITE_SECURE_DELETE -DSQLITE_MAX_VARIABLE_NUMBER=250000 -DSQLITE_MAX_EXPR_DEPTH=10000 -ggdb -Wa,--compress-debug-sections -frandom-seed=cbcfzz0jww -isystem /nix/store/879xd5x23lfd4l93jz71yaz06wa15yc1-zlib-1.3.2-dev/include -lm -L/nix/store/338gwr2718cdha9m9zavkpc9rvkrqd4q-tcl-8.6.16/lib -Wl,-rpath -Wl,/nix/store/cbcfzz0jwwvki0cq4wk22p8ssnyh35z9-sqlite-3.53.3/lib -Wl,--compress-debug-sections=zlib -L/nix/store/wgw25d181h0qks7qsfp1bh7c5nd3f0s7-zlib-1.3.2/lib -L/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib -L/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0 -L/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -L/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib",
     ],
+)
+
+program(
+    name = "src-verify",
+    file = ":s25202_gcc/build/sqlite-src-3530300/src-verify",
 )
 
 recorded(
@@ -9613,6 +9638,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "sqlite3.o",
+    file = ":s25818_gcc/build/sqlite-src-3530300/sqlite3.o",
+)
+
 cc_library(
     name = "s25951_ar",
     objs = [
@@ -9636,6 +9666,11 @@ cc_library(
         "run --cwd /build/sqlite-src-3530300 --env 63 --argv0 ar --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 4 --",
         "/nix/store/j1938gsbvbhkyz4kbmvjk56r479mkw3s-gcc-wrapper-16.2.0/bin/ar cr libsqlite3.a sqlite3.o",
     ],
+)
+
+built_file(
+    name = "libsqlite3.a",
+    file = ":s25951_ar/build/sqlite-src-3530300/libsqlite3.a",
 )
 
 cc_shared_library(
@@ -9662,6 +9697,11 @@ cc_shared_library(
         "run --cwd /build/sqlite-src-3530300 --env 52 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 90 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -Wl,-dynamic-linker=/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ld-linux-x86-64.so.2 -DNDEBUG -fPIC -O2 -g -DSQLITE_ENABLE_MATH_FUNCTIONS -DSQLITE_ENABLE_PERCENTILE -DSQLITE_ENABLE_UPDATE_DELETE_LIMIT -DSQLITE_HAVE_ZLIB=1 -DSQLITE_THREADSAFE=1 -D_HAVE_SQLITE_CONFIG_H -DBUILD_sqlite -I. -I/build/sqlite-src-3530300/src -I/build/sqlite-src-3530300/ext/rtree -I/build/sqlite-src-3530300/ext/icu -I/build/sqlite-src-3530300/ext/fts3 -I/build/sqlite-src-3530300/ext/session -I/build/sqlite-src-3530300/ext/misc -shared -o libsqlite3.so sqlite3.o -Wl,-rpath,/nix/store/cbcfzz0jwwvki0cq4wk22p8ssnyh35z9-sqlite-3.53.3/lib -lm -lz -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -isystem /nix/store/338gwr2718cdha9m9zavkpc9rvkrqd4q-tcl-8.6.16/include -DSQLITE_ENABLE_COLUMN_METADATA -DSQLITE_ENABLE_DBSTAT_VTAB -DSQLITE_ENABLE_JSON1 -DSQLITE_ENABLE_FTS3 -DSQLITE_ENABLE_FTS3_PARENTHESIS -DSQLITE_ENABLE_FTS3_TOKENIZER -DSQLITE_ENABLE_FTS4 -DSQLITE_ENABLE_FTS5 -DSQLITE_ENABLE_GEOPOLY -DSQLITE_ENABLE_MATH_FUNCTIONS -DSQLITE_ENABLE_PERCENTILE -DSQLITE_ENABLE_PREUPDATE_HOOK -DSQLITE_ENABLE_RBU -DSQLITE_ENABLE_RTREE -DSQLITE_ENABLE_SESSION -DSQLITE_ENABLE_STMT_SCANSTATUS -DSQLITE_ENABLE_UNLOCK_NOTIFY -DSQLITE_SOUNDEX -DSQLITE_SECURE_DELETE -DSQLITE_MAX_VARIABLE_NUMBER=250000 -DSQLITE_MAX_EXPR_DEPTH=10000 -ggdb -Wa,--compress-debug-sections -frandom-seed=cbcfzz0jww -isystem /nix/store/879xd5x23lfd4l93jz71yaz06wa15yc1-zlib-1.3.2-dev/include -lm -L/nix/store/338gwr2718cdha9m9zavkpc9rvkrqd4q-tcl-8.6.16/lib -Wl,-rpath -Wl,/nix/store/cbcfzz0jwwvki0cq4wk22p8ssnyh35z9-sqlite-3.53.3/lib -Wl,--compress-debug-sections=zlib -L/nix/store/wgw25d181h0qks7qsfp1bh7c5nd3f0s7-zlib-1.3.2/lib -L/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib -L/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0 -L/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -L/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib",
     ],
+)
+
+built_file(
+    name = "libsqlite3.so",
+    file = ":s26055_gcc/build/sqlite-src-3530300/libsqlite3.so",
 )
 
 recorded(
@@ -9739,6 +9779,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "tclsqlite.o",
+    file = ":s27052_gcc/build/sqlite-src-3530300/tclsqlite.o",
+)
+
 cc_shared_library(
     name = "s27217_gcc",
     objs = [
@@ -9767,6 +9812,11 @@ cc_shared_library(
         "run --cwd /build/sqlite-src-3530300 --env 52 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 95 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -Wl,-dynamic-linker=/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ld-linux-x86-64.so.2 -DNDEBUG -fPIC -O2 -g -DSQLITE_ENABLE_MATH_FUNCTIONS -DSQLITE_ENABLE_PERCENTILE -DSQLITE_ENABLE_UPDATE_DELETE_LIMIT -DSQLITE_HAVE_ZLIB=1 -DSQLITE_THREADSAFE=1 -D_HAVE_SQLITE_CONFIG_H -DBUILD_sqlite -I. -I/build/sqlite-src-3530300/src -I/build/sqlite-src-3530300/ext/rtree -I/build/sqlite-src-3530300/ext/icu -I/build/sqlite-src-3530300/ext/fts3 -I/build/sqlite-src-3530300/ext/session -I/build/sqlite-src-3530300/ext/misc -shared -o libsqlite3.53.3.so tclsqlite.o -I/nix/store/338gwr2718cdha9m9zavkpc9rvkrqd4q-tcl-8.6.16/include -L/nix/store/338gwr2718cdha9m9zavkpc9rvkrqd4q-tcl-8.6.16/lib -ltclstub8.6 -Wl,-rpath,/nix/store/cbcfzz0jwwvki0cq4wk22p8ssnyh35z9-sqlite-3.53.3/lib -lm -lz sqlite3.o -Wl,-rpath,/nix/store/cbcfzz0jwwvki0cq4wk22p8ssnyh35z9-sqlite-3.53.3/lib -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -isystem /nix/store/338gwr2718cdha9m9zavkpc9rvkrqd4q-tcl-8.6.16/include -DSQLITE_ENABLE_COLUMN_METADATA -DSQLITE_ENABLE_DBSTAT_VTAB -DSQLITE_ENABLE_JSON1 -DSQLITE_ENABLE_FTS3 -DSQLITE_ENABLE_FTS3_PARENTHESIS -DSQLITE_ENABLE_FTS3_TOKENIZER -DSQLITE_ENABLE_FTS4 -DSQLITE_ENABLE_FTS5 -DSQLITE_ENABLE_GEOPOLY -DSQLITE_ENABLE_MATH_FUNCTIONS -DSQLITE_ENABLE_PERCENTILE -DSQLITE_ENABLE_PREUPDATE_HOOK -DSQLITE_ENABLE_RBU -DSQLITE_ENABLE_RTREE -DSQLITE_ENABLE_SESSION -DSQLITE_ENABLE_STMT_SCANSTATUS -DSQLITE_ENABLE_UNLOCK_NOTIFY -DSQLITE_SOUNDEX -DSQLITE_SECURE_DELETE -DSQLITE_MAX_VARIABLE_NUMBER=250000 -DSQLITE_MAX_EXPR_DEPTH=10000 -ggdb -Wa,--compress-debug-sections -frandom-seed=cbcfzz0jww -isystem /nix/store/879xd5x23lfd4l93jz71yaz06wa15yc1-zlib-1.3.2-dev/include -lm -L/nix/store/338gwr2718cdha9m9zavkpc9rvkrqd4q-tcl-8.6.16/lib -Wl,-rpath -Wl,/nix/store/cbcfzz0jwwvki0cq4wk22p8ssnyh35z9-sqlite-3.53.3/lib -Wl,--compress-debug-sections=zlib -L/nix/store/wgw25d181h0qks7qsfp1bh7c5nd3f0s7-zlib-1.3.2/lib -L/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib -L/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0 -L/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -L/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib",
     ],
+)
+
+built_file(
+    name = "libsqlite3.53.3.so",
+    file = ":s27217_gcc/build/sqlite-src-3530300/libsqlite3.53.3.so",
 )
 
 cc_binary(
@@ -9798,6 +9848,11 @@ cc_binary(
         "run --cwd /build/sqlite-src-3530300 --env 52 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 103 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/gcc -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -Wl,-dynamic-linker=/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ld-linux-x86-64.so.2 -DNDEBUG -fPIC -O2 -g -DSQLITE_ENABLE_MATH_FUNCTIONS -DSQLITE_ENABLE_PERCENTILE -DSQLITE_ENABLE_UPDATE_DELETE_LIMIT -DSQLITE_HAVE_ZLIB=1 -DSQLITE_THREADSAFE=1 -D_HAVE_SQLITE_CONFIG_H -DBUILD_sqlite -I. -I/build/sqlite-src-3530300/src -I/build/sqlite-src-3530300/ext/rtree -I/build/sqlite-src-3530300/ext/icu -I/build/sqlite-src-3530300/ext/fts3 -I/build/sqlite-src-3530300/ext/session -I/build/sqlite-src-3530300/ext/misc -o sqlite3 shell.c sqlite3.c -DSQLITE_DQS=0 -DSQLITE_ENABLE_BYTECODE_VTAB -DSQLITE_ENABLE_DBPAGE_VTAB -DSQLITE_ENABLE_DBSTAT_VTAB -DSQLITE_ENABLE_EXPLAIN_COMMENTS -DSQLITE_ENABLE_FTS4 -DSQLITE_ENABLE_OFFSET_SQL_FUNC -DSQLITE_ENABLE_PERCENTILE -DSQLITE_ENABLE_RTREE -DSQLITE_ENABLE_STMTVTAB -DSQLITE_ENABLE_UNKNOWN_SQL_FUNCTION -DSQLITE_HAVE_ZLIB=1 -DSQLITE_STRICT_SUBTYPE=1 -Wl,-rpath,/nix/store/cbcfzz0jwwvki0cq4wk22p8ssnyh35z9-sqlite-3.53.3/lib -lm -lz -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -isystem /nix/store/338gwr2718cdha9m9zavkpc9rvkrqd4q-tcl-8.6.16/include -DSQLITE_ENABLE_COLUMN_METADATA -DSQLITE_ENABLE_DBSTAT_VTAB -DSQLITE_ENABLE_JSON1 -DSQLITE_ENABLE_FTS3 -DSQLITE_ENABLE_FTS3_PARENTHESIS -DSQLITE_ENABLE_FTS3_TOKENIZER -DSQLITE_ENABLE_FTS4 -DSQLITE_ENABLE_FTS5 -DSQLITE_ENABLE_GEOPOLY -DSQLITE_ENABLE_MATH_FUNCTIONS -DSQLITE_ENABLE_PERCENTILE -DSQLITE_ENABLE_PREUPDATE_HOOK -DSQLITE_ENABLE_RBU -DSQLITE_ENABLE_RTREE -DSQLITE_ENABLE_SESSION -DSQLITE_ENABLE_STMT_SCANSTATUS -DSQLITE_ENABLE_UNLOCK_NOTIFY -DSQLITE_SOUNDEX -DSQLITE_SECURE_DELETE -DSQLITE_MAX_VARIABLE_NUMBER=250000 -DSQLITE_MAX_EXPR_DEPTH=10000 -ggdb -Wa,--compress-debug-sections -frandom-seed=cbcfzz0jww -isystem /nix/store/879xd5x23lfd4l93jz71yaz06wa15yc1-zlib-1.3.2-dev/include -lm -L/nix/store/338gwr2718cdha9m9zavkpc9rvkrqd4q-tcl-8.6.16/lib -Wl,-rpath -Wl,/nix/store/cbcfzz0jwwvki0cq4wk22p8ssnyh35z9-sqlite-3.53.3/lib -Wl,--compress-debug-sections=zlib -L/nix/store/wgw25d181h0qks7qsfp1bh7c5nd3f0s7-zlib-1.3.2/lib -L/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib -L/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0 -L/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -L/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib",
     ],
+)
+
+program(
+    name = "sqlite3",
+    file = ":s27660_gcc/build/sqlite-src-3530300/sqlite3",
 )
 
 recorded(

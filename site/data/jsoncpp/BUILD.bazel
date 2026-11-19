@@ -1,4 +1,4 @@
-load(":genrulify.bzl", "cc_object", "cc_shared_library", "nix_archive", "recorded")
+load(":genrulify.bzl", "built_file", "cc_object", "cc_shared_library", "nix_archive", "recorded")
 
 recorded(
     name = "s1473_cp",
@@ -153,6 +153,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "build/src/lib_json/CMakeFiles/jsoncpp_lib.dir/json_reader.cpp.o",
+    file = ":s14686_g__/build/source/build/src/lib_json/CMakeFiles/jsoncpp_lib.dir/json_reader.cpp.o",
+)
+
 cc_object(
     name = "s14860_g__",
     src = ":s1473_cp/build/source/src/lib_json/json_value.cpp",
@@ -184,6 +189,11 @@ cc_object(
         "run --cwd /build/source/build/src/lib_json --env 26 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 49 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/g++ -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -DJSON_DLL_BUILD -Djsoncpp_lib_EXPORTS -I/build/source/include -I/build/source/src/lib_json/../../include -O3 -DNDEBUG -fPIC -Wall -Wconversion -Wshadow -Wextra -Wpedantic -Werror=strict-aliasing -MD -MT src/lib_json/CMakeFiles/jsoncpp_lib.dir/json_value.cpp.o -MF CMakeFiles/jsoncpp_lib.dir/json_value.cpp.o.d -o CMakeFiles/jsoncpp_lib.dir/json_value.cpp.o -c /build/source/src/lib_json/json_value.cpp -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=g1jcfq4b6f",
     ],
+)
+
+built_file(
+    name = "build/src/lib_json/CMakeFiles/jsoncpp_lib.dir/json_value.cpp.o",
+    file = ":s14860_g__/build/source/build/src/lib_json/CMakeFiles/jsoncpp_lib.dir/json_value.cpp.o",
 )
 
 cc_object(
@@ -218,6 +228,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "build/src/lib_json/CMakeFiles/jsoncpp_lib.dir/json_writer.cpp.o",
+    file = ":s15043_g__/build/source/build/src/lib_json/CMakeFiles/jsoncpp_lib.dir/json_writer.cpp.o",
+)
+
 cc_shared_library(
     name = "s15286_g__",
     objs = [
@@ -248,6 +263,11 @@ cc_shared_library(
         "run --cwd /build/source/build/src/lib_json --env 27 --fd 0=null --fd 1=err --fd 2=err --fd 3=file:r@350:/build/source/build/src/lib_json/CMakeFiles/jsoncpp_lib.dir/link.txt --status 0 --argc 45 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/g++ -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -Wl,-dynamic-linker=/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ld-linux-x86-64.so.2 -fPIC -O3 -DNDEBUG -shared -Wl,--dependency-file=CMakeFiles/jsoncpp_lib.dir/link.d -Wl,-soname,libjsoncpp.so.27 -o ../../lib/libjsoncpp.so.1.9.8 CMakeFiles/jsoncpp_lib.dir/json_reader.cpp.o CMakeFiles/jsoncpp_lib.dir/json_value.cpp.o CMakeFiles/jsoncpp_lib.dir/json_writer.cpp.o -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=g1jcfq4b6f -Wl,-rpath -Wl,/nix/store/g1jcfq4b6favy36p099qwrh3f385cmlw-jsoncpp-1.9.8/lib -L/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib -L/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0 -L/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -L/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib",
     ],
+)
+
+built_file(
+    name = "build/lib/libjsoncpp.so.1.9.8",
+    file = ":s15286_g__/build/source/build/lib/libjsoncpp.so.1.9.8",
 )
 
 recorded(

@@ -1,4 +1,4 @@
-load(":genrulify.bzl", "cc_binary", "cc_object", "nix_archive", "recorded")
+load(":genrulify.bzl", "built_file", "cc_binary", "cc_object", "nix_archive", "program", "recorded")
 
 recorded(
     name = "s1274_tar",
@@ -54,6 +54,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "src/patchelf.o",
+    file = ":s9299_g__/build/patchelf-0.15.2/src/patchelf.o",
+)
+
 cc_binary(
     name = "s9472_g__",
     objs = [
@@ -78,6 +83,11 @@ cc_binary(
         "run --cwd /build/patchelf-0.15.2/src --env 35 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 46 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/g++ -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -Wl,-dynamic-linker=/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ld-linux-x86-64.so.2 -std=gnu++11 -std=c++17 -Wall -Wextra -Wcast-qual -std=c++17 -D_FILE_OFFSET_BITS=64 -g -O2 -o patchelf patchelf.o -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=qcwnw71iks -Wl,-rpath -Wl,/nix/store/qcwnw71iksl68k7fipizi6wn0s1xms9v-patchelf-0.15.2/lib -L/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib -L/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0 -L/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -L/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib",
     ],
+)
+
+program(
+    name = "src/patchelf",
+    file = ":s9472_g__/build/patchelf-0.15.2/src/patchelf",
 )
 
 recorded(

@@ -1,4 +1,4 @@
-load(":genrulify.bzl", "cc_object", "cc_shared_library", "nix_archive", "recorded")
+load(":genrulify.bzl", "built_file", "cc_object", "cc_shared_library", "nix_archive", "recorded")
 
 recorded(
     name = "s2140_cp",
@@ -86,6 +86,11 @@ cc_object(
     ],
 )
 
+built_file(
+    name = "build/CMakeFiles/tinyxml2.dir/tinyxml2.cpp.o",
+    file = ":s9884_g__/build/source/build/CMakeFiles/tinyxml2.dir/tinyxml2.cpp.o",
+)
+
 cc_shared_library(
     name = "s10128_g__",
     objs = [
@@ -112,6 +117,11 @@ cc_shared_library(
         "run --cwd /build/source/build --env 30 --fd 0=null --fd 1=err --fd 2=err --fd 3=file:r@245:/build/source/build/CMakeFiles/tinyxml2.dir/link.txt --status 0 --argc 43 --",
         "/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/bin/g++ -fPIC -fstack-clash-protection -O2 -U_FORTIFY_SOURCE -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST -Wformat -Wformat-security -Werror=format-security -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=1 -fstack-protector-strong --param ssp-buffer-size=4 -fno-strict-overflow -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -mtls-dialect=gnu2 -Wl,-dynamic-linker=/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ld-linux-x86-64.so.2 -fPIC -O3 -DNDEBUG -shared -Wl,--dependency-file=CMakeFiles/tinyxml2.dir/link.d -Wl,-soname,libtinyxml2.so.11 -o libtinyxml2.so.11.0.0 CMakeFiles/tinyxml2.dir/tinyxml2.cpp.o -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -B/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ -idirafter /nix/store/m38wglsqnh1mrmj2cmqa3pjb6w4yjxdi-glibc-2.44-25-dev/include -idirafter /nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0/include-fixed -B/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -frandom-seed=zxzky44n1n -Wl,-rpath -Wl,/nix/store/zxzky44n1nngijv1n5xvgcbf005fajq5-tinyxml2-11.0.0/lib -L/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib -L/nix/store/5q6bdxkp7lc70gn9mnf4yiybrx8ry5xq-gcc-16.2.0/lib/gcc/x86_64-unknown-linux-gnu/16.2.0 -L/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib -L/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib",
     ],
+)
+
+built_file(
+    name = "build/libtinyxml2.so.11.0.0",
+    file = ":s10128_g__/build/source/build/libtinyxml2.so.11.0.0",
 )
 
 recorded(
