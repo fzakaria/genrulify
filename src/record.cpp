@@ -231,6 +231,18 @@ Entry observe(const fs::path &host, const std::string &guestPath) {
   return entry;
 }
 
+// The entries of a directory, listed before any of them is visited. A
+// walk that kept each directory open while it went down held one
+// descriptor per level, in every thread that snapshots a step, and a deep
+// tree on a machine with many cores ran the process out of descriptors.
+std::vector<fs::path> childrenOf(const fs::path &directory) {
+  std::vector<fs::path> children;
+  for (const auto &child : fs::directory_iterator(directory)) {
+    children.push_back(child.path());
+  }
+  return children;
+}
+
 // Records the entry at a host path and everything below it. The walk
 // needs owner access to hash a file or list a directory that the build left
 // unreadable, so the recorded mode is read before access is granted.
@@ -252,9 +264,8 @@ void walk(const fs::path &host, const std::string &guest, State &state,
   if (entry.kind != EntryKind::Directory) {
     return;
   }
-  for (const auto &child : fs::directory_iterator(host)) {
-    walk(child.path(), guest + "/" + child.path().filename().string(), state,
-         blobs);
+  for (const auto &child : childrenOf(host)) {
+    walk(child, guest + "/" + child.filename().string(), state, blobs);
   }
 }
 
@@ -269,8 +280,8 @@ void observeTree(const fs::path &host, State &state, BlobStore &blobs) {
   if (entry.kind != EntryKind::Directory) {
     return;
   }
-  for (const auto &child : fs::directory_iterator(host)) {
-    observeTree(child.path(), state, blobs);
+  for (const auto &child : childrenOf(host)) {
+    observeTree(child, state, blobs);
   }
 }
 
