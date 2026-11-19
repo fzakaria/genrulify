@@ -69,10 +69,9 @@
       <pre>nix run github:fzakaria/genrulify -- convert nixpkgs#hello hello
 cd hello/workspace</pre>
       <p>
-        Build the <code>archive</code> target with either tool. The result is a Nix
-        archive (NAR) of the package. Its SHA-256 digest must match the one
-        <code>convert</code> printed for the Nix output. A different digest means the
-        build produced a different archive.
+        A successful <code>//:archive</code> build with Bazel or Buck2 reproduces the recorded Nix archive
+        (NAR) byte for byte. The <code>sha256sum</code> command below prints the same digest
+        that <code>convert</code> printed for the Nix output.
       </p>
       <h3>Bazel</h3>
       <pre>bazel build //:archive
