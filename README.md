@@ -5,8 +5,7 @@
 <h1 align="center">genrulify</h1>
 
 <p align="center">
-  <b>Any Nix build, as Bazel and Buck2 genrules.</b><br />
-  Record a build once and get a build file with one rule for every command it ran.
+  <b>Turn a recorded Nix build into Bazel and Buck2 rules.</b>
 </p>
 
 <p align="center">
@@ -21,11 +20,23 @@
   <a href="https://nixbot.decio.us/repos/github/fzakaria/genrulify"><img src="https://nixbot.decio.us/badge/3b4d3f0d-de80-420b-8aa6-d99459a79380.svg" alt="nixbot" /></a>
 </p>
 
-genrulify takes a build that [Rewind](https://rewindvm.dev) recorded and
-writes a `BUILD.bazel` and a `BUCK` file for it. It has no knowledge of
-C, Rust or autotools that a build depends on, and it never reads the
-build script. The graph comes from the recording: which commands ran,
-what each one found on disk, and what each one left behind.
+genrulify records a Nix build with [Rewind](https://rewindvm.dev) and
+writes `BUILD.bazel` and `BUCK` from the commands that ran. If GCC read a
+header that `configure` wrote, the generated compile rule depends on
+that version of the header.
+
+## Use it
+
+Recording requires Nix with flakes enabled, Rewind on `PATH` and KVM on
+x86-64 Linux. The generated rules need Bazel or Buck2, bubblewrap and the
+Nix store paths used in the recording. The flake offers a binary cache
+at `genrulify.cachix.org`.
+
+### Rebuild a Nix package
+
+Record GNU hello and build its Nix archive (NAR) from the generated
+workspace. In this run the archive from Bazel has the same SHA-256
+digest as the output that Rewind recorded.
 
 ```console
 $ nix run github:fzakaria/genrulify -- convert nixpkgs#hello hello
@@ -37,113 +48,79 @@ INFO: Build completed successfully, 134 total actions
 
 $ sha256sum bazel-bin/archive.nar
 cca3804d340495150db44b1e762655d8a0b4fe6d37b8350f1a0d8fa33c27c8cc  bazel-bin/archive.nar
-
-$ nix-store --dump /nix/store/5z2yp3ysx8476c8g5w25b0smlgkjvaq3-hello-2.12.3 | sha256sum
-cca3804d340495150db44b1e762655d8a0b4fe6d37b8350f1a0d8fa33c27c8cc  -
 ```
 
-Bazel built the archive Nix built, byte for byte, from 133 rules. 83 of
-them compile one file each, one is the `ar` and one is the link. This is
-the rule for `src/hello.c`:
+From `hello/workspace`, `buck2 build //:archive` builds the same target.
+The recording and optimized graph are in `hello/recording` and
+`hello/graph.mlir`.
+
+### Build a project you can edit
+
+From the root of this repository, convert the [C example](examples/project/README.md).
+The `.#project` derivation uses `examples/project` as its source.
+
+```console
+$ nix run . -- convert --source examples/project .#project /tmp/project-recording
+$ cd examples/project
+$ bazel build //:archive
+```
+
+`--source` puts `BUILD.bazel` and `BUCK` beside the sources they read.
+Change the greeting in `greet.c` and build again. Bazel recompiles
+`greet.c`, reuses `main.o` and relinks the program. Project rules accept
+the new output bytes. If you add a header dependency or change a compile
+command, run `convert` again from the repository root with a fresh output
+directory.
+
+## How it works
+
+Rewind lets genrulify inspect `/build` and the output paths before and
+after each command. Comparing those snapshots tells us which files
+changed. Commands that share a pipe or overlap form one group. A program
+like `make` that only launches other commands can be split at its children.
+
+Each write creates a new version of a path. If one command appends to a
+file another command created, the graph connects the first version to
+the command that reads it. genrulify represents these connections in an
+MLIR dialect called `splice`.
+
+The optimizer removes groups whose results never reach the output. It
+can also replace `mkdir` with a directory entry or `cp` with a reference
+to the original bytes. You can turn each optimization on and off in the
+[build explorer](https://fzakaria.github.io/genrulify/).
+
+Each remaining group runs in a sandbox with its recorded inputs. The
+checker compares its exit statuses and used results with the recording.
+If a group fails, the checker can try more inputs or take individual
+results from the recording. The report counts how many groups replayed
+and how many needed recorded bytes.
+
+Each replayed group becomes a build rule. For example, the GNU hello
+rule below takes `hello.c` from the tarball and `config.h` from the
+configure step. The `cc_object` rule calls `sandbox.sh` to stage those
+files and run the recorded GCC command. The full rule is in the
+[hello explorer](https://fzakaria.github.io/genrulify/?pkg=hello).
 
 ```python
 cc_object(
     name = "s95245_gcc",
     src = ":s1375_tar/build/hello-2.12.3/src/hello.c",
     hdrs = [
-        ":s1375_tar/build/hello-2.12.3/src/system.h",
+        …
         ":s4251_bash/build/hello-2.12.3/config.h",
-        ":s91456_sed/build/hello-2.12.3/lib/stddef.h-t",
         …
     ],
     out = "s95245_gcc/build/hello-2.12.3/src/hello.o",
-    data = [":actions/s95245_gcc.manifest", ":closure.txt", ":env/62.env", ":sandbox.sh", …],
-    cmd = [
-        "./sandbox.sh --in . --in $(RULEDIR) --out $(RULEDIR)",
-        "--name s95245_gcc --timeout 300",
-        "run --cwd /build/hello-2.12.3 --env 62 --fd 0=null --fd 1=err --fd 2=err --status 0 --argc 40 --",
-        "/nix/store/5q6b…-gcc-16.2.0/bin/gcc … -g -O2 -c -o src/hello.o src/hello.c",
-    ],
+    …
 )
 ```
 
-Nobody declared those headers. They are the files the compiler opened:
-`system.h` as `tar` unpacked it, `config.h` as `configure` wrote it, and
-one that `sed` generated a moment earlier. The last line of `cmd` is the
-`execve` that was recorded.
-
-## How it works
-
-1. **Cut the build at its commands.** The builder's shell is not
-   replayed. Neither is a process that only ran other commands and wrote
-   no file itself, such as `make` or a recipe shell: the trace shows
-   which processes those are, so no list of tool names is involved. The
-   cuts land on `gcc`, `sed`, `install`, `strip`. A process that writes
-   files, such as `configure`, stays one command.
-2. **Diff the filesystem around each command.** Rewind can return to any
-   step of the build, so genrulify reads `/build` and the output paths
-   before and after every command. The difference is what the command
-   wrote. No system call is modelled.
-3. **Give every write a version.** A file written twice has two values,
-   so an in-place edit is an ordinary edge. This is SSA over files, in an
-   [MLIR](https://mlir.llvm.org) dialect called `splice`:
-
-   ```mlir
-   %dd_735 = splice.exec "dd" at 735(%sandbox_717) -> [
-       #splice.entry<"/build/bundle" file 644 mtime 1 "cb94740a…">
-   ]
-   %dd_764 = splice.exec "dd" at 764(%sandbox_717, %dd_735) -> [
-       #splice.entry<"/build/bundle" file 644 mtime 1 "50f55425…">
-   ]
-   ```
-
-4. **Optimize.** Passes over the dialect remove what a build system need
-   not run. They can be switched on and off in the
-   [explorer](https://fzakaria.github.io/genrulify/).
-
-   | Pass | What it does | What it removes |
-   | --- | --- | --- |
-   | `link` | A file the driver wrote with the bytes of an existing file becomes a copy of it. | `cargo` linking a binary to its final name |
-   | `dce` | Deletes operations nothing reads. MLIR's stock canonicalizer. | `date`, a `find` that only looked |
-   | `fold` | Directories, symlinks and empty files become constants. | `mkdir`, `ln -s`, `mktemp`, `touch` |
-   | `merge` | A result with the bytes of the operand at the same path becomes a copy. | `chmod` |
-   | `raise` | A result with the bytes of an operand at another path becomes a copy. | `cp`, `install`, `mv` |
-   | `rules` | A command recognised from its arguments is given a rule of its kind. | `gcc -c` → `cc_object`, `ar` → `cc_library`, a link → `cc_binary` |
-
-   A copy needs no rule. Whoever reads it is given the original file at
-   the copy's path.
-5. **Replay every command that is left, alone.** Each one runs in a
-   sandbox with only its recorded inputs and must leave files with the
-   recorded hashes, twice. A command that fails is given more of the
-   tree. If it still fails, the files it cannot reproduce are taken from
-   the recording, and in the last resort all of them are.
-6. **Lower to rules.** A command becomes one rule. The rule kinds are
-   defined in `genrulify.bzl`, which ships in the workspace, and every
-   one of them runs the recorded command through
-   [`sandbox.sh`](src/sandbox.sh.in), which ships there too: it puts the
-   inputs back at their recorded paths, runs the command, and compares
-   every output with its recorded hash. So the kind decides how a rule
-   reads and never what it does, and the workspace builds without
-   genrulify.
-
-## What is claimed
-
-If every command passed its replay, then running the graph in any order
-that respects its edges produces the recorded files, and so the recorded
-NAR. The proof is an induction over that order, and it uses nothing else
-about the scheduler: Bazel and Buck2 may run independent rules in
-parallel, cache them or skip them.
-
-A complete recording can supply the bytes for any command that fails
-its replay check. The report counts how often that happened. What differs between
-packages is how much of the build is run again.
-
-The byte-for-byte guarantee applies to the recorded build. To work on
-sources in your checkout, use the [project example](examples/project/README.md).
-
-[Why it works](https://fzakaria.github.io/genrulify/theory.html) has the
-proof, and [docs/theory.md](docs/theory.md) relates it to
-[Build Systems à la Carte](https://doi.org/10.1145/3236774).
+If each group produces the same result on the same inputs and platform,
+any build order that respects the dependencies reproduces the recorded
+archive. The checker samples this with two clean replay passes. In a
+recorded workspace each command rule checks its outputs again when it
+runs. [Why this works](https://fzakaria.github.io/genrulify/theory.html)
+gives the proof.
 
 ## Results
 
@@ -176,30 +153,20 @@ Rewind recorded.
 
 The coarse row cuts hello only at the commands the builder runs, which
 leaves `make` as one rule. The four-job row is a recording made with
-`--cores 4`: commands that overlapped cannot be told apart, so they
-merge.
+`--cores 4`. Commands that overlapped share a group.
 
-## Use it
+## Inspect a conversion
 
-Recording needs [Rewind](https://rewindvm.dev) on the `PATH` and KVM.
-Building the result needs Bazel or Buck2, bubblewrap and the Nix store.
-CI pushes the compiler to `genrulify.cachix.org`, and the flake names
-that cache, so `nix run` downloads it when you accept the flake's
-configuration.
+Use `--open` to split a program such as Cargo into the commands it ran,
+even if it also wrote files. Use `--coarse` to split only at commands
+started by the builder.
 
 ```console
-$ nix run github:fzakaria/genrulify -- convert nixpkgs#hello hello
 $ nix run github:fzakaria/genrulify -- convert --open cargo nixpkgs#hexyl hexyl
 ```
 
-`convert` writes three things into the directory: `recording`, what was
-observed; `graph.mlir`, the optimized graph; and `workspace`, which
-`bazel build //:archive` or `buck2 build //:archive` turns into the NAR
-of the output. `--open` names programs to take apart even though they
-write files of their own, and `--coarse` cuts only at the commands the
-builder runs.
-
-The steps are commands too, for looking at one stage:
+You can also run the stages individually to inspect the recording or try
+a different set of optimizations.
 
 ```console
 $ genrulify record RUN /nix/store/…-hello-2.12.3.drv recording
@@ -211,19 +178,10 @@ $ genrulify emit recording graph.mlir workspace
 
 ## Limits
 
-- **One build, one graph.** With `convert --source`, edits to known
-  inputs can reuse the graph. Changes to commands or dependencies need a
-  new recording.
-- **Determinism is sampled.** Two passing replays are evidence that a
-  command is a function of its inputs, not proof. Rules for a recorded
-  workspace check their output hashes. Project rules accept new bytes so
-  source edits can change the build.
-- **A build has to be recordable.** Rewind runs it on one virtual CPU
-  with at most 3 GiB of memory.
-- **Record with one job.** Commands that overlap in time cannot be told
-  apart by a snapshot and are merged into one rule.
-- **The platform is an input.** Rules read the host's `/nix/store` and
-  are marked local-only.
+Rewind records on one virtual CPU with at most 3 GiB of memory. Use one
+build job for finer rules. Commands that overlap share a snapshot, so
+they must stay together. The generated rules run locally because they
+read tools and libraries from the host's `/nix/store`.
 
 ## Layout
 
@@ -254,8 +212,8 @@ $ nix run .#serve           # the explorer, on port 8139
 
 ## Credits
 
-The snapshots, the descriptor tables and the determinism that make a
-replay mean something all come from [Rewind](https://rewindvm.dev).
+Filesystem snapshots, process state and deterministic VM replay come
+from [Rewind](https://rewindvm.dev).
 
 The model of tasks, a store and a scheduler is from
 [Build Systems à la Carte](https://doi.org/10.1145/3236774) by Mokhov,
