@@ -174,3 +174,26 @@ sed 's|/bin/sh|/build/configure|' "$scratch/events" > "$scratch/configure-events
 test "$(wc -l < "$scratch/script")" = 1
 grep -q '"pid":3' "$scratch/script"
 grep -q '"name":"configure"' "$scratch/script"
+
+# A program is opened by the name the program was called by as well as by
+# the name of its file. A nixpkgs wrapper script execs `.cargo-wrapped`
+# and passes the path of the wrapper as argv[0]. Here that program writes
+# a file and starts a compiler. Unopened, the program is the cut. Opening
+# `cargo` opens the program, so the compiler is the cut.
+{
+    event 1 2 '{"type":"exec","filename":"/bin/bash","argv":[]}'
+    event 2 2 '{"type":"fork","child":3,"thread":false}'
+    event 3 3 '{"type":"exec","filename":"/bin/.cargo-wrapped","argv":["/bin/cargo","build"]}'
+    event 4 3 "$written"
+    event 5 3 '{"type":"fork","child":4,"thread":false}'
+    event 6 4 '{"type":"exec","filename":"/bin/rustc","argv":["rustc"]}'
+    for pid in 4 3 2; do
+        event $((12 - pid)) "$pid" '{"type":"exit","status":0,"thread":false}'
+    done
+} > "$scratch/events"
+"$compiler" cuts "$scratch/events" "$scratch/trace" > "$scratch/wrapped"
+test "$(wc -l < "$scratch/wrapped")" = 1
+grep -q '"name":".cargo-wrapped"' "$scratch/wrapped"
+"$compiler" cuts "$scratch/events" "$scratch/trace" cargo > "$scratch/called"
+test "$(wc -l < "$scratch/called")" = 1
+grep -q '"name":"rustc"' "$scratch/called"

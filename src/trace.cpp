@@ -22,6 +22,9 @@ constexpr int kInitPid = 1;
 // the make from the caller who asked to open it.
 constexpr std::string_view kShellNames = "sh|bash|dash|ksh|zsh";
 
+// The field of an exec event that holds the arguments of the execve.
+constexpr const char *kArgvKey = "argv";
+
 // The layout of trace.bin, from rewind-trace 0.16: an 8-byte magic and a
 // little-endian u32 version, then records. Each record is a u64 step and a
 // body that starts with its own u32 length. Byte 4 of the body holds a u16
@@ -208,6 +211,10 @@ IoLog readIoLog(const fs::path &file) {
 struct Exec {
   uint64_t step = 0;
   std::string filename;
+
+  // The first argument, which is the name the program was called by. Empty
+  // when the execve passed no arguments.
+  std::string calledAs;
 };
 
 struct TraceProcess {
@@ -285,7 +292,14 @@ Events readEvents(const fs::path &file) {
       continue;
     }
     if (type == "exec") {
-      events.processes[pid].execs.push_back({step, kind.at("filename")});
+      // A run recorded before Rewind reported arguments has no argv.
+      std::string calledAs;
+      if (const auto argv = kind.find(kArgvKey);
+          argv != kind.end() && !argv->empty()) {
+        calledAs = argv->front();
+      }
+      events.processes[pid].execs.push_back(
+          {step, kind.at("filename"), std::move(calledAs)});
       if (!events.builder && pid != kInitPid) {
         events.builder = pid;
       }
@@ -335,6 +349,18 @@ Events readEvents(const fs::path &file) {
 
 std::string programName(const Exec &exec) {
   return fs::path(exec.filename).filename().string();
+}
+
+// Whether the pattern matches the program an execve started: the name of
+// the program's file, or the name the program was called by. The two
+// differ under a nixpkgs wrapper script, which execs `.cargo-wrapped` and
+// passes `cargo` as the first argument.
+bool programMatches(const Exec &exec, const std::regex &pattern) {
+  if (std::regex_match(programName(exec), pattern)) {
+    return true;
+  }
+  const auto calledAs = fs::path(exec.calledAs).filename().string();
+  return !calledAs.empty() && std::regex_match(calledAs, pattern);
 }
 
 // Decides which execve calls keep a process in the driver.
@@ -443,7 +469,8 @@ private:
     }
     const auto &process = events.processes.at(pid);
     const auto name = programName(process.execs[index]);
-    bool opened = events.open && std::regex_match(name, *events.open);
+    bool opened =
+        events.open && programMatches(process.execs[index], *events.open);
 
     // Remember the answer for anything that is not a shell before looking
     // further, since only a shell can be opened by what it runs.
