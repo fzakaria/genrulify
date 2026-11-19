@@ -79,6 +79,10 @@ for file in a.txt sub/b.txt shut/x.txt c.txt; do
     cmp "$scratch/out/batch/build/$file" "$data/example/blobs/$bundle"
 done
 
+# The directories the results are handed on in are the build system's to
+# clean up, so none of them takes the mode of the directory it mirrors.
+test -w "$scratch/out/batch/build/shut"
+
 # A step whose results are all directories still writes its stamp, which
 # is then the one file the build system has of it.
 {

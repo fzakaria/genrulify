@@ -270,6 +270,7 @@ declare -A tree_of      # that directory, by producer
 declare -A by_mode      # staged files, by the mode to give them
 declare -A by_time      # staged files and directories, by mtime
 declare -A links_by_time
+declare -A parents      # the directories the copied files go into
 made_directories=()
 
 # Copies the files "$@", given relative to the directory $1, to the same
@@ -322,6 +323,7 @@ while IFS=$FS read -r tag kind mode mtime path content artifact origin; do
                 fi
                 tree_copies[${tree_of[$producer]}]+=${path#/}$'\n'
                 by_mode[$mode]+=$host$'\n'
+                parents[${host%/*}]=1
             else
                 locate "$artifact" || fail "no input named $artifact"
                 if [ "${origin:-}" = "$CHECKOUT" ]; then
@@ -336,6 +338,9 @@ while IFS=$FS read -r tag kind mode mtime path content artifact origin; do
 done < "$manifest"
 
 # Directories first, then the files of each producer, then the symlinks.
+# The directory a file goes into is made here and not left to cp, which
+# would give a directory it creates the mode of the one it copies from.
+made_directories+=("${!parents[@]}")
 each_batch made_directories "$C/mkdir" -p -- || fail "cannot create the staged directories"
 for tree in "${!tree_copies[@]}"; do
     each_batch_of_lines "${tree_copies[$tree]}" copy_tree "$tree" || fail "cannot stage the files of $tree"
@@ -656,9 +661,63 @@ describe() {
     fi
 }
 
+# What every result that is there is now, as `describe` would print it,
+# by host path. A step can leave thousands of results, so each question is
+# put once for all of them: what kind of thing each is and its mode, the
+# digest of each file, and the target of each symlink. A trusted step is
+# not asked for digests, which nothing would compare.
+declare -A described
+describe_results() {
+    local kind mode mtime path content artifact type line index
+    local -a present=() files=() symlinks=() targets=()
+    local -A kinds=() modes=() digests=()
+    while IFS=$FS read -r kind mode mtime path content artifact; do
+        if [ -e "$root$path" ] || [ -L "$root$path" ]; then
+            present+=("$root$path")
+        fi
+    done < <(printf '%s\n' "${results[@]}")
+    if [ ${#present[@]} -eq 0 ]; then
+        return 0
+    fi
+
+    # stat does not follow a symlink, and ends each answer with a NUL.
+    while IFS=$FS read -r -d '' type mode path; do
+        case $type in
+            'symbolic link') kinds[$path]=link; symlinks+=("$path") ;;
+            directory) kinds[$path]=dir; modes[$path]=$mode ;;
+            *) kinds[$path]=file; modes[$path]=$mode; files+=("$path") ;;
+        esac
+    done < <(each_batch present "$C/stat" --printf "%F$FS%a$FS%n\0" --)
+
+    # With --zero, sha256sum prints a name as it is: digest, two spaces,
+    # name.
+    if [ -z "$trust" ] && [ ${#files[@]} -gt 0 ]; then
+        while IFS= read -r -d '' line; do
+            digests[${line#*  }]=${line%% *}
+        done < <(each_batch files "$C/sha256sum" --zero --)
+    fi
+
+    # readlink answers in the order it was asked.
+    if [ ${#symlinks[@]} -gt 0 ]; then
+        mapfile -d '' -t targets < <(each_batch symlinks "$C/readlink" --zero --)
+    fi
+    for index in "${!symlinks[@]}"; do
+        described[${symlinks[index]}]="link 0 ${targets[index]:-}"
+    done
+    for path in "${present[@]}"; do
+        case ${kinds[$path]:-} in
+            dir) described[$path]="dir ${modes[$path]} " ;;
+            file) described[$path]="file ${modes[$path]} ${digests[$path]:-}" ;;
+        esac
+    done
+}
+
 left=()             # what a trusted step saw each result to be
+kept=()             # the results to hand on, relative to the staging root
+declare -A kept_parents # the directories those results go into
 
 if [ ${#results[@]} -gt 0 ]; then
+    describe_results
     while IFS=$FS read -r kind mode mtime path content artifact; do
         host=$root$path
         want="$kind $mode $content"
@@ -684,7 +743,10 @@ if [ ${#results[@]} -gt 0 ]; then
             problems+=("missing $path")
             continue
         fi
-        got=$(describe "$host")
+        got=${described[$host]:-}
+        if [ -z "$got" ]; then
+            got=$(describe "$host")
+        fi
 
         # A trusted result has to be the kind of thing that was recorded.
         # Its bytes are whatever the sources now give.
@@ -707,10 +769,20 @@ if [ ${#results[@]} -gt 0 ]; then
             problems+=("differs $path: got $got, recorded $want")
             continue
         fi
-        if [ -n "$artifact" ]; then
-            "$C/mkdir" -p "$out/${artifact%/*}"
-            "$C/cp" "$host" "$out/$artifact"
+        # A result is handed on under the step's name and then its guest
+        # path, and all such results are copied out together below. One
+        # found under another name, or whose artifact is named some other
+        # way, is copied on its own.
+        if [ -z "$artifact" ]; then
+            continue
         fi
+        if [ "$artifact" = "$name$path" ] && [ "$host" = "$root$path" ]; then
+            kept+=("${path#/}")
+            kept_parents[$out/${artifact%/*}]=1
+            continue
+        fi
+        "$C/mkdir" -p "$out/${artifact%/*}"
+        "$C/cp" "$host" "$out/$artifact"
     done < <(printf '%s\n' "${results[@]}")
 fi
 
@@ -751,6 +823,20 @@ if [ ${#problems[@]} -gt 0 ]; then
         echo "  If a command now reads or writes a file it did not when the build was recorded, convert the project again." >&2
     fi
     exit 1
+fi
+
+# Copies the results "$@", given relative to the staging root, to the same
+# places below the step's own directory.
+hand_on() {
+    (cd "$root" && "$C/cp" --parents -t "$out/$name" -- "$@")
+}
+if [ ${#kept[@]} -gt 0 ]; then
+    # The directories are made first, so that none takes the mode of the
+    # staged directory it mirrors, which the build system may not be able
+    # to clean up.
+    kept_directories=("${!kept_parents[@]}")
+    each_batch kept_directories "$C/mkdir" -p -- || fail "cannot hand on the results"
+    each_batch kept hand_on || fail "cannot hand on the results"
 fi
 
 # Every rule writes a stamp, so a step whose results are all directories
