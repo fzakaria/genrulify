@@ -200,6 +200,29 @@ chmod 644 "$scratch/checkout/rests"
 grep -q "^file.555./build/runs.\$" "$scratch/out/modes.ok"
 grep -q "^file.644./build/rests.\$" "$scratch/out/modes.ok"
 
+# A step can be given much of a source tree, so the project's files are
+# not staged one process at a time either. A file staged under its own
+# path below some directory, as every file of an unpacked tree is, is
+# copied with the others, and their executable bits are read together.
+# Here the tree has a file in a directory, and the two files have the
+# bits of the checkout and not the recorded ones.
+mkdir -p "$scratch/tree/sub"
+cp "$data/example/blobs/$bundle" "$scratch/tree/sub/runs"
+cp "$data/example/blobs/$bundle" "$scratch/tree/rests"
+chmod 755 "$scratch/tree/sub/runs"
+chmod 644 "$scratch/tree/rests"
+{
+    line in dir 755 1 /build '' ''
+    origin_line in file 444 1 /build/app/sub/runs "$bundle" sub/runs @checkout
+    origin_line in file 755 1 /build/app/rests "$bundle" rests @checkout
+    line out file 444 1 /build/app/sub/runs "$bundle" unpacked/build/app/sub/runs
+    line out file 755 1 /build/app/rests "$bundle" unpacked/build/app/rests
+} > "$scratch/actions/unpacked.manifest"
+"$script" --name unpacked --trust --in "$scratch/tree" --in "$scratch" --out "$scratch/out"
+grep -q "^file.555./build/app/sub/runs.\$" "$scratch/out/unpacked.ok"
+grep -q "^file.644./build/app/rests.\$" "$scratch/out/unpacked.ok"
+cmp "$scratch/out/unpacked/build/app/sub/runs" "$data/example/blobs/$bundle"
+
 # A trusted step that leaves an entry under an output path which the
 # recorded command did not write fails and names the entry: no rule would
 # carry it into the package. Staging a file makes the directories above

@@ -225,12 +225,20 @@ observe() {
 # that copies the file hands that on. Every class that may read the file
 # may then run it.
 checkout_mode() {
-    local recorded=$((8#$1)) held
+    local held
     held=$("$C/stat" -L -c %a "$2") || fail "cannot stat $2"
-    if (((8#$held & OWNER_EXECUTE) != 0)); then
-        printf '%o' $((recorded | ((recorded & ALL_READ) >> READ_TO_EXECUTE)))
+    with_checkout_bits "$1" "$held"
+    printf '%s' "$staged_mode"
+}
+
+# The same from the mode $2 the project's file has, without starting a
+# process. Sets `staged_mode`.
+with_checkout_bits() {
+    local recorded=$((8#$1))
+    if (((8#$2 & OWNER_EXECUTE) != 0)); then
+        printf -v staged_mode '%o' $((recorded | ((recorded & ALL_READ) >> READ_TO_EXECUTE)))
     else
-        printf '%o' $((recorded & ~ALL_EXECUTE))
+        printf -v staged_mode '%o' $((recorded & ~ALL_EXECUTE))
     fi
 }
 
@@ -263,10 +271,14 @@ results=()              # the manifest's `out` lines
 # What staging collects to do in batches. A file whose artifact is named
 # after its producer and then its guest path, as `s12_tar/build/a.c` is
 # for /build/a.c, is copied by one cp for all such files of the producer,
-# which recreates each path below the root. Every other file is copied on
-# its own.
-declare -A tree_copies  # paths to copy, by the directory the paths are relative to
-declare -A tree_of      # that directory, by producer
+# which recreates each path below the root. A file of the project that
+# is staged under its own path below some directory, as `sub/a.c` is at
+# /build/app/sub/a.c, is copied the same way with the others staged below
+# that directory. Every other file is copied on its own.
+declare -A tree_copies  # paths to copy, by where they are relative to and where they go
+declare -A tree_of      # where a producer's files are, by producer
+checkout_dir=           # where the project's files are
+checkout_files=()       # recorded mode, path in the project and staged path of each
 declare -A by_mode      # staged files, by the mode to give them
 declare -A by_time      # staged files and directories, by mtime
 declare -A links_by_time
@@ -276,9 +288,9 @@ made_directories=()
 # Copies the files "$@", given relative to the directory $1, to the same
 # places below the staging root.
 copy_tree() {
-    local from=$1
+    local from=${1%%"$FS"*} to=${1#*"$FS"}
     shift
-    (cd "$from" && "$C/cp" --parents -t "$root" -- "$@")
+    (cd "$from" && "$C/cp" --parents -t "$to" -- "$@")
 }
 
 while IFS=$FS read -r tag kind mode mtime path content artifact origin; do
@@ -321,8 +333,18 @@ while IFS=$FS read -r tag kind mode mtime path content artifact origin; do
                     locate "$artifact" || fail "no input named $artifact"
                     tree_of[$producer]=$found_in/$producer
                 fi
-                tree_copies[${tree_of[$producer]}]+=${path#/}$'\n'
+                tree_copies[${tree_of[$producer]}$FS$root]+=${path#/}$'\n'
                 by_mode[$mode]+=$host$'\n'
+                parents[${host%/*}]=1
+            elif [ "${origin:-}" = "$CHECKOUT" ] && [[ $path == */"$artifact" ]]; then
+                # The project's files are all in one place too. Their modes
+                # are decided below, once the project's own are known.
+                if [ -z "$checkout_dir" ]; then
+                    locate "$artifact" || fail "no input named $artifact"
+                    checkout_dir=$found_in
+                fi
+                tree_copies[$checkout_dir$FS$root${path%/"$artifact"}]+=$artifact$'\n'
+                checkout_files+=("$mode$FS$artifact$FS$host")
                 parents[${host%/*}]=1
             else
                 locate "$artifact" || fail "no input named $artifact"
@@ -343,8 +365,27 @@ done < "$manifest"
 made_directories+=("${!parents[@]}")
 each_batch made_directories "$C/mkdir" -p -- || fail "cannot create the staged directories"
 for tree in "${!tree_copies[@]}"; do
-    each_batch_of_lines "${tree_copies[$tree]}" copy_tree "$tree" || fail "cannot stage the files of $tree"
+    each_batch_of_lines "${tree_copies[$tree]}" copy_tree "$tree" || fail "cannot stage the files of ${tree%%"$FS"*}"
 done
+
+# A file of the project gets its recorded mode with the executable bits
+# the project's file has now, which one stat reads for all of them.
+if [ ${#checkout_files[@]} -gt 0 ]; then
+    declare -A held
+    asked=()
+    for item in "${checkout_files[@]}"; do
+        item=${item#*"$FS"}
+        asked+=("${item%%"$FS"*}")
+    done
+    while IFS=$FS read -r -d '' bits file; do
+        held[$file]=$bits
+    done < <(cd "$checkout_dir" && each_batch asked "$C/stat" -L --printf "%a$FS%n\0" --)
+    while IFS=$FS read -r mode file host; do
+        [ -n "${held[$file]:-}" ] || fail "cannot stat $file"
+        with_checkout_bits "$mode" "${held[$file]}"
+        by_mode[$staged_mode]+=$host$'\n'
+    done < <(printf '%s\n' "${checkout_files[@]}")
+fi
 if [ ${#links[@]} -gt 0 ]; then
     while IFS=$FS read -r target host; do
         "$C/ln" -s "$target" "$host" || fail "cannot stage ${host#"$root"}"
