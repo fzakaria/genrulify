@@ -176,11 +176,21 @@ a different set of optimizations.
 
 ```console
 $ genrulify record RUN /nix/store/…-hello-2.12.3.drv recording
-$ genrulify check recording
+$ genrulify check recording dce fold
 $ genrulify import recording > recorded.mlir
 $ genrulify opt --recording recording recorded.mlir dce fold > graph.mlir
 $ genrulify emit recording graph.mlir workspace
 ```
+
+`check` writes its replay decisions into `recording/verdicts.json`.
+`import recording` reads that file. For example, if a command needed an
+extra header to replay, the imported graph gives the command that input.
+If a result had to come from the recording, the graph represents it as a
+literal. `recorded.mlir` therefore already includes the checker's decisions.
+
+Use the same passes for `check` and `opt` (`dce fold` here). `check` also
+writes `recording/check.json`, a report that `emit` reads so it can reject
+a graph that asks it to run a group the checker skipped.
 
 ## Limits
 
