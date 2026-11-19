@@ -25,14 +25,15 @@ constexpr std::string_view kUsage =
     "       genrulify import RECORDING\n"
     "       genrulify opt [--recording RECORDING] GRAPH.mlir [PASS...]\n"
     "       genrulify rule PROGRAM [ARGUMENT...]\n"
+    "       genrulify unpack PROGRAM [ARGUMENT...]\n"
     "       genrulify emit RECORDING GRAPH.mlir WORKSPACE\n"
     "       genrulify describe RECORDING RECORDED.mlir\n"
     "       genrulify reference RECORDING OUTPUT ARCHIVE.nar\n"
     "       genrulify verify REFERENCE.nar ARCHIVE.nar\n"
     "\n"
-    "PASS is one of link, dce, fold, merge, raise and rules. With none\n"
-    "named, all run. The rules pass reads command lines, so it needs the\n"
-    "recording and does nothing without one.\n"
+    "PASS is one of link, dce, fold, unpack, merge, raise and rules. With\n"
+    "none named, all run. The unpack and rules passes read command lines,\n"
+    "so they need the recording and do nothing without one.\n"
     "OPEN is a regular expression over the names of programs to treat as\n"
     "driver code. Programs that only run other commands are found without\n"
     "being named, unless --coarse is given.\n";
@@ -234,6 +235,29 @@ void run(std::span<char *> args) {
     process.argv.assign(args.begin() + 1, args.end());
     if (const auto kind = splice_ir::ruleKind(process)) {
       llvm::outs() << *kind << "\n";
+    }
+    return;
+  }
+
+  if (args.size() >= 2 && command == "unpack") {
+    // What the unpack pass reads a command line as: the trees a cp copies
+    // and where to, or the paths a chmod changes the write bits of.
+    splice_ir::Process process;
+    process.filename = args[1];
+    process.argv.assign(args.begin() + 1, args.end());
+    if (const auto copy = splice_ir::copyCommand(process)) {
+      llvm::outs() << "cp";
+      for (const auto &source : copy->sources) {
+        llvm::outs() << " " << source;
+      }
+      llvm::outs() << " -> " << copy->destination << "\n";
+    }
+    if (const auto paths = splice_ir::writeBitChange(process)) {
+      llvm::outs() << "chmod";
+      for (const auto &path : *paths) {
+        llvm::outs() << " " << path;
+      }
+      llvm::outs() << "\n";
     }
     return;
   }

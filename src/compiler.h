@@ -189,6 +189,12 @@ enum class Pass {
   // with no other result is no longer run.
   Fold,
 
+  // Turns the copy of a project's source tree into /build, and the chmod
+  // that makes the copy writable, into copies of the project's own files.
+  // The pass reads the two command lines, so a command that read a source
+  // is rewritten for what the command is, never for the bytes it left.
+  Unpack,
+
   // Turns a result with the bytes of the operand at the same path into a
   // copy of the operand: a chmod, or a rewrite that changed nothing.
   Merge,
@@ -203,9 +209,18 @@ enum class Pass {
   // whatever its kind is.
   Rules,
 };
-inline constexpr std::array kAllPasses{Pass::Link,  Pass::Eliminate,
-                                       Pass::Fold,  Pass::Merge,
-                                       Pass::Raise, Pass::Rules};
+inline constexpr std::array kAllPasses{Pass::Link,   Pass::Eliminate,
+                                       Pass::Fold,   Pass::Unpack,
+                                       Pass::Merge,  Pass::Raise,
+                                       Pass::Rules};
+
+// The passes the explorer lets a reader switch on and off. The explorer
+// shows a graph under every subset of them, so a pass belongs here only
+// when it changes the graph of a recorded build. Unpack rewrites nothing
+// in a graph without a source tree.
+inline constexpr std::array kToggledPasses{Pass::Link,  Pass::Eliminate,
+                                           Pass::Fold,  Pass::Merge,
+                                           Pass::Raise, Pass::Rules};
 
 // The name of the literal that holds a project's source tree.
 inline constexpr std::string_view kSourceName = "source";
@@ -249,8 +264,8 @@ std::optional<Pass> passNamed(std::string_view name);
 // Without it nothing is removed, and the operations a pass has taken the
 // readers from stay in the module.
 //
-// Rules reads command lines, which are in the recording and not in the
-// module. Without a recording that pass does nothing.
+// Unpack and Rules read command lines, which are in the recording and not
+// in the module. Without a recording those passes do nothing.
 void optimize(mlir::ModuleOp module, std::span<const Pass> passes = kAllPasses,
               const Recording *recording = nullptr);
 

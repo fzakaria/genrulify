@@ -8,6 +8,7 @@
 #include "rules.h"
 #include <algorithm>
 #include <filesystem>
+#include <functional>
 #include <map>
 #include <set>
 
@@ -17,7 +18,11 @@ namespace {
 constexpr std::string_view kLinkName = "link";
 constexpr std::string_view kEliminateName = "dce";
 constexpr std::string_view kFoldName = "fold";
+constexpr std::string_view kUnpackName = "unpack";
 constexpr std::string_view kMergeName = "merge";
+
+// The permission bits that say who may execute a file.
+constexpr uint32_t kExecutableBits = 0111;
 constexpr std::string_view kRaiseName = "raise";
 constexpr std::string_view kRulesName = "rules";
 
@@ -304,6 +309,203 @@ private:
   Source source;
 };
 
+// Turns the unpacking of a project's sources into copies of the project's
+// own files. A Nix build of a directory copies the tree into /build with
+// `cp -r` and makes the copy writable with `chmod -R u+w`. Both commands
+// read the sources, so no pass may rewrite them for the bytes they left,
+// and as commands they copy the whole tree again on every edit and stand
+// between each compile and the one file the compile reads.
+//
+// This pass rewrites them for what their command lines say. A `cp` whose
+// options are all known names its sources and its destination, and so
+// names, for every file it writes, the file that was copied. A `chmod`
+// that only adds or removes read and write rights leaves each file's
+// bytes and executable bits alone. Each file such a command leaves
+// becomes a splice.copy of the file it was given, down to a file of the
+// source tree, and a rule that reads the copy then lists the project's
+// file. The recording is still asked to agree: a result that does not
+// have the bytes and the executable bits of the file the command line
+// points to means the command line was misread, and the command stays.
+//
+// A copy keeps the recorded mode, except for the executable bits, which
+// a rule takes from the project's file as it is when the rule runs. That
+// is what both commands do, and it is why a chmod that touches those bits
+// is not read.
+//
+// The directories and symlinks the commands leave become constants.
+// Which directories a source tree has is part of what a conversion
+// records, the same as which files it has: a rule lists the files that
+// were there, and a new one calls for converting again.
+struct UnpackSources
+    : mlir::PassWrapper<UnpackSources, mlir::OperationPass<mlir::ModuleOp>> {
+  explicit UnpackSources(const Recording &recording) : recording(recording) {}
+
+  llvm::StringRef getArgument() const final { return "splice-unpack-sources"; }
+  llvm::StringRef getDescription() const final {
+    return "Turn the copy of a project's sources into copies of its files";
+  }
+
+  void runOnOperation() final {
+    // The recorded groups by the step they started at.
+    std::map<uint64_t, const Group *> groups;
+    for (const auto &group : recording.groups) {
+      groups[group.start] = &group;
+    }
+
+    for (auto exec : processGroups(getOperation())) {
+      // Only a group that is one command has a command line to read.
+      const auto group = groups.find(exec.getStep());
+      if (group == groups.end() || group->second->processes.size() != 1) {
+        continue;
+      }
+      const auto &process = group->second->processes.front();
+
+      // A chmod leaves each file where it was. A cp of one tree puts the
+      // tree at its destination, or inside the destination when that was
+      // a directory already, so both readings are tried.
+      if (writeBitChange(process)) {
+        rewrite(exec, [](const std::string &path) { return path; });
+        continue;
+      }
+      const auto copy = copyCommand(process);
+      if (!copy) {
+        continue;
+      }
+      const auto inside = [&](const std::string &path) {
+        return originInside(*copy, path);
+      };
+      const auto replacing = [&](const std::string &path) {
+        return originReplacing(*copy, path);
+      };
+      if (!rewrite(exec, inside)) {
+        rewrite(exec, replacing);
+      }
+    }
+  }
+
+private:
+  // Where a copied path came from, given where it is.
+  using OriginOf =
+      std::function<std::optional<std::string>(const std::string &)>;
+
+  // The path with the directory `from` in front replaced by `to`, when
+  // the path is `from` or below it.
+  static std::optional<std::string> moved(const std::string &path,
+                                          const std::string &from,
+                                          const std::string &to) {
+    if (!isBelow(path, from)) {
+      return std::nullopt;
+    }
+    return to + path.substr(from.size());
+  }
+
+  // The origin of a path when each source was copied into the
+  // destination under its own name, as `cp -r a b existing/` does.
+  static std::optional<std::string> originInside(const CopyCommand &copy,
+                                                 const std::string &path) {
+    for (const auto &source : copy.sources) {
+      const auto name = std::filesystem::path(source).filename().string();
+      if (const auto origin =
+              moved(path, copy.destination + "/" + name, source)) {
+        return origin;
+      }
+    }
+    return std::nullopt;
+  }
+
+  // The origin of a path when the one source was copied to the
+  // destination itself, as `cp -r a new` does.
+  static std::optional<std::string> originReplacing(const CopyCommand &copy,
+                                                    const std::string &path) {
+    if (copy.sources.size() != 1) {
+      return std::nullopt;
+    }
+    return moved(path, copy.destination, copy.sources.front());
+  }
+
+  // Whether a value is a file of the project's source tree.
+  static bool isSourceFile(mlir::Value value) {
+    auto literal = llvm::dyn_cast<LiteralOp>(value.getDefiningOp());
+    return literal && literal.getName().str() == kSourceName &&
+           !literal.getDemoted() && !literal.getFolded();
+  }
+
+  // Replaces the results of `exec` that something reads, when `originOf`
+  // accounts for every one of them: each file has the bytes and the
+  // executable bits of the operand at the path it came from, and that
+  // operand is a file of the source tree or a copy of one. Returns
+  // whether the results were replaced. A command with a result that is
+  // not accounted for is left whole.
+  bool rewrite(ExecOp exec, const OriginOf &originOf) {
+    std::map<std::string, mlir::Value> operands;
+    for (const auto input : exec.getInputs()) {
+      operands.emplace(entryOf(input)->path, input);
+    }
+
+    // Decide for every result before changing anything.
+    std::vector<std::pair<mlir::Value, mlir::Value>> copies;
+    std::vector<mlir::Value> constants;
+    for (const auto result : exec->getResults()) {
+      if (result.use_empty()) {
+        continue;
+      }
+      const auto entry = *entryOf(result);
+      if (entry.kind != EntryKind::File) {
+        constants.push_back(result);
+        continue;
+      }
+      const auto origin = originOf(entry.path);
+      const auto operand = origin ? operands.find(*origin) : operands.end();
+      if (operand == operands.end()) {
+        return false;
+      }
+      const auto given = *entryOf(operand->second);
+      const bool same = given.kind == EntryKind::File &&
+                        given.content == entry.content &&
+                        (given.mode & kExecutableBits) ==
+                            (entry.mode & kExecutableBits);
+      if (!same || !isSourceFile(contentSource(operand->second))) {
+        return false;
+      }
+      copies.emplace_back(result, operand->second);
+    }
+    if (copies.empty()) {
+      return false;
+    }
+
+    // Each file becomes a copy of the file the command was given.
+    auto *context = &getContext();
+    mlir::OpBuilder builder(exec);
+    for (const auto &[result, operand] : copies) {
+      auto copy = CopyOp::create(builder, exec->getLoc(),
+                                 EntryType::get(context), operand,
+                                 exec.getName(), exec.getStep(),
+                                 toAttribute(context, *entryOf(result)));
+      mlir::Value(result).replaceAllUsesWith(copy.getOutput());
+    }
+    if (constants.empty()) {
+      return true;
+    }
+
+    // The directories and symlinks become one literal of constants.
+    std::vector<Entry> entries;
+    for (const auto result : constants) {
+      entries.push_back(*entryOf(result));
+    }
+    const llvm::SmallVector<mlir::Type> types(entries.size(),
+                                              EntryType::get(context));
+    auto literal = LiteralOp::create(
+        builder, exec->getLoc(), types, exec.getName(), exec.getStep(),
+        toAttributes(context, entries), /*demoted=*/false, /*folded=*/true);
+    for (size_t index = 0; index < constants.size(); ++index) {
+      constants[index].replaceAllUsesWith(literal->getResult(index));
+    }
+    return true;
+  }
+
+  const Recording &recording;
+};
+
 // Raises a process group to the kind of build rule it stands for. A group
 // that is one command is looked up in the recording, and the command's
 // program and arguments say whether it compiles, links or archives. The
@@ -361,6 +563,8 @@ std::string_view passName(Pass pass) {
     return kEliminateName;
   case Pass::Fold:
     return kFoldName;
+  case Pass::Unpack:
+    return kUnpackName;
   case Pass::Merge:
     return kMergeName;
   case Pass::Raise:
@@ -398,6 +602,11 @@ void optimize(mlir::ModuleOp module, std::span<const Pass> passes,
       break;
     case Pass::Fold:
       manager.addPass(std::make_unique<FoldConstants>());
+      break;
+    case Pass::Unpack:
+      if (recording != nullptr) {
+        manager.addPass(std::make_unique<UnpackSources>(*recording));
+      }
       break;
     case Pass::Merge:
       manager.addPass(std::make_unique<RaiseCopies>(Source::SamePath));

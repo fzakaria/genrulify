@@ -220,12 +220,12 @@ void describeGraph(mlir::ModuleOp module, const Recording &recording) {
 
   // The module under every choice of passes. Choice number `mask` runs
   // the passes whose bit is set, bit 0 being the first of the pipeline.
-  const size_t choices = size_t{1} << kAllPasses.size();
+  const size_t choices = size_t{1} << kToggledPasses.size();
   const auto chosen = [](size_t mask) {
     std::vector<Pass> passes;
-    for (size_t bit = 0; bit < kAllPasses.size(); ++bit) {
+    for (size_t bit = 0; bit < kToggledPasses.size(); ++bit) {
       if ((mask >> bit & 1) != 0) {
-        passes.push_back(kAllPasses[bit]);
+        passes.push_back(kToggledPasses[bit]);
       }
     }
     return passes;
@@ -238,7 +238,7 @@ void describeGraph(mlir::ModuleOp module, const Recording &recording) {
 
   // Which bit elimination has, to find the same choice with it added.
   const auto eliminateBit =
-      std::ranges::find(kAllPasses, Pass::Eliminate) - kAllPasses.begin();
+      std::ranges::find(kToggledPasses, Pass::Eliminate) - kToggledPasses.begin();
 
   // A node is the same under many choices, so each distinct node is listed
   // once and a choice is a list of positions in that list. A node that
@@ -268,7 +268,7 @@ void describeGraph(mlir::ModuleOp module, const Recording &recording) {
     variants.push_back(std::move(variant));
   }
   Json names = Json::array();
-  for (const auto pass : kAllPasses) {
+  for (const auto pass : kToggledPasses) {
     names.push_back(passName(pass));
   }
 
