@@ -11,6 +11,7 @@
 
 <p align="center">
   <a href="https://fzakaria.github.io/genrulify/">Explorer</a> ·
+  <a href="https://fzakaria.github.io/genrulify/how-to.html">How to use it?</a> ·
   <a href="https://fzakaria.github.io/genrulify/theory.html">Why it works</a> ·
   <a href="docs/theory.md">Theory</a> ·
   <a href="src/Splice.td">The MLIR dialect</a>
@@ -133,12 +134,12 @@ NAR. The proof is an induction over that order, and it uses nothing else
 about the scheduler: Bazel and Buck2 may run independent rules in
 parallel, cache them or skip them.
 
-The conversion cannot fail. A command that will not replay is carried as
-recorded bytes, and the report says how many were. What differs between
+A complete recording can supply the bytes for any command that fails
+its replay check. The report counts how often that happened. What differs between
 packages is how much of the build is run again.
 
-The claim is about the build that was recorded. Edit a source file and
-it is a new build that needs a new recording.
+The byte-for-byte guarantee applies to the recorded build. To work on
+sources in your checkout, use the [project example](examples/project/README.md).
 
 [Why it works](https://fzakaria.github.io/genrulify/theory.html) has the
 proof, and [docs/theory.md](docs/theory.md) relates it to
@@ -210,11 +211,13 @@ $ genrulify emit recording graph.mlir workspace
 
 ## Limits
 
-- **One build, one graph.** The graph recomputes the recorded build. It
-  is not an incremental build for edited sources.
+- **One build, one graph.** With `convert --source`, edits to known
+  inputs can reuse the graph. Changes to commands or dependencies need a
+  new recording.
 - **Determinism is sampled.** Two passing replays are evidence that a
-  command is a function of its inputs, not proof. Every rule checks its
-  own outputs on every build, so a command that drifts fails its rule.
+  command is a function of its inputs, not proof. Rules for a recorded
+  workspace check their output hashes. Project rules accept new bytes so
+  source edits can change the build.
 - **A build has to be recordable.** Rewind runs it on one virtual CPU
   with at most 3 GiB of memory.
 - **Record with one job.** Commands that overlap in time cannot be told

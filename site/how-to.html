@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>How to use it? · genrulify</title>
+    <meta
+      name="description"
+      content="Convert a Nix package to Bazel or Buck2, or generate build files that read sources from your checkout."
+    />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧬</text></svg>"
+    />
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#16181d" media="(prefers-color-scheme: dark)" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="genrulify" />
+    <meta property="og:title" content="How to use it? · genrulify" />
+    <meta
+      property="og:description"
+      content="Convert a Nix package to Bazel or Buck2, or generate build files that read sources from your checkout."
+    />
+
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <header class="site">
+      <h1><a href=".">genrulify</a></h1>
+      <nav class="site">
+        <a href="how-to.html" aria-current="page">How to use it?</a>
+        <a href="theory.html">Theory</a>
+        <span class="muted" aria-hidden="true">|</span>
+        <a href="https://nixmultiverse.com/" title="every version of every package nixpkgs ever shipped">
+          Multiverse
+        </a>
+        <a href="https://trynix.dev/" title="trynix: boot anything nixpkgs ever shipped, in your browser">
+          Boot a package
+        </a>
+        <a href="https://seenix.dev/" title="seenix: every byte of a Nix closure, one pixel each">
+          Seenix
+        </a>
+        <a href="https://omniflake.com/" title="omniflake: thousands of Nix flakes from one flake input">
+          Omniflake
+        </a>
+        <a href="https://github.com/fzakaria/genrulify">GitHub</a>
+      </nav>
+    </header>
+
+    <main class="theory">
+      <h1>How to use it?</h1>
+      <p>
+        To record a build, you need Nix with flakes enabled, an x86-64 Linux machine with
+        access to KVM, and <a href="https://rewindvm.dev">Rewind</a> on your PATH.
+        To build the generated rules, use Bazel or Buck2 on a machine with bubblewrap
+        and the Nix store paths from the recording.
+      </p>
+
+      <h2 id="package">Rebuild a Nix package</h2>
+      <p>
+        This command records GNU hello, checks which commands it can replay, and writes
+        a Bazel and Buck2 workspace in a new directory called <code>hello/workspace</code>.
+      </p>
+      <pre>nix run github:fzakaria/genrulify -- convert nixpkgs#hello hello
+cd hello/workspace</pre>
+      <p>
+        Build the <code>archive</code> target with either tool. The result is a Nix
+        archive (NAR) of the package. Compare its SHA-256 digest with the one
+        <code>convert</code> printed for the Nix output. They should match.
+      </p>
+      <h3>Bazel</h3>
+      <pre>bazel build //:archive
+sha256sum bazel-bin/archive.nar</pre>
+      <h3>Buck2</h3>
+      <pre>buck2 build //:archive --out hello.nar
+sha256sum hello.nar</pre>
+      <p><a href="./?pkg=hello">Explore the recorded hello build</a>.</p>
+
+      <h2 id="project">Build from sources you can edit</h2>
+      <p>
+        The repository includes a <a href="https://github.com/fzakaria/genrulify/tree/main/examples/project">small C project</a>.
+        Its Makefile compiles <code>main.c</code> and <code>greet.c</code>, then links the
+        two objects. The <code>.#project</code> derivation uses <code>examples/project</code>
+        as its source directory. Run these commands from the root of a genrulify checkout.
+      </p>
+      <pre>nix run . -- convert --source examples/project .#project /tmp/project-recording
+cd examples/project
+bazel build //:archive</pre>
+      <p>
+        <code>--source</code> tells genrulify where the working sources live. It checks
+        that they match the derivation's source, then writes <code>BUILD.bazel</code> and
+        <code>BUCK</code> beside them. The rules read files from your checkout.
+        Their scripts and manifests live under <code>genrulify/</code>.
+        The last argument names a new directory for the recording and graph.
+      </p>
+      <p>
+        Change the greeting in <code>greet.c</code> and run <code>bazel build //:archive</code>
+        again, or use <code>buck2 build //:archive</code> for both builds. The build recompiles
+        <code>greet.c</code> and relinks the program. It reuses the object for <code>main.c</code>.
+      </p>
+      <p>
+        Project rules accept changed output bytes. Their inputs and commands still come from
+        the recording. If you add a source file or include a new header, run the conversion
+        again from the repository root with a fresh recording directory.
+      </p>
+    </main>
+
+    <footer class="muted">
+      Made with ❤️ by
+      <a href="https://fzakaria.com">Farid Zakaria</a>
+      ·
+      <a href="https://github.com/fzakaria/genrulify/blob/main/LICENSE">MIT</a>
+      ·
+      <a href="https://github.com/fzakaria/genrulify">GitHub</a>
+    </footer>
+  </body>
+</html>
