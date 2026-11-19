@@ -149,7 +149,10 @@ read files from the checkout and allow output bytes to change. An edit to
 `greet.c` can reuse the recorded commands. Adding a dependency or changing
 a command calls for a new recording. In such a graph the passes keep
 every command that read a source, because a result with the bytes of an
-input, or with no bytes, was computed from the source as it was that day. [Try the C project](../examples/project/README.md).
+input, or with no bytes, was computed from the source as it was that day.
+A file the builder wrote itself is not tied to a source with the same
+bytes either. It stays recorded bytes, and `check` lists every recorded
+file the project still uses, since an edit will not change those. [Try the C project](../examples/project/README.md).
 
 ## In the terms of Build Systems à la Carte
 
