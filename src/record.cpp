@@ -383,9 +383,16 @@ Process inspect(const Rewind &rewind, const Cut &cut, const Arguments &roots,
 // exchange bytes no snapshot sees. Cuts that overlap in time interleave
 // their writes between two snapshots, and a FIFO or a file passed between
 // concurrent processes looks the same way.
+//
+// One kind of pipe joins only the cuts that run at the same time: a pipe
+// of which every cut that holds it holds both ends. No cut is upstream of
+// another on such a pipe. A driver made the pipe and handed both ends to
+// each command it started, as cargo and make do with the pipe of their
+// job server. Commands that ran one after another are replayed apart,
+// each with a pipe of its own, and the replay check decides whether a
+// command needed anything an earlier command left in the pipe.
 std::vector<Group> group(std::vector<Process> processes,
                          const std::vector<Cut> &cuts, const Arguments &roots) {
-  // Union cuts that name the same pipe.
   std::vector<size_t> leader(processes.size());
   for (size_t index = 0; index < leader.size(); ++index) {
     leader[index] = index;
@@ -396,17 +403,42 @@ std::vector<Group> group(std::vector<Process> processes,
     }
     return index;
   };
-  std::map<std::string, size_t> pipeHolder;
+
+  // For each pipe, the cuts that hold an end of the pipe, in the order
+  // the cuts began, and whether a cut can read the pipe and write it.
+  struct Ends {
+    bool read = false;
+    bool write = false;
+  };
+  std::map<std::string, std::map<size_t, Ends>> holders;
   for (size_t index = 0; index < processes.size(); ++index) {
     for (const auto &descriptor : processes[index].fds) {
-      if (!descriptor.target.starts_with(kPipePrefix)) {
+      if (!isPipe(descriptor)) {
         continue;
       }
-      const auto [holder, fresh] =
-          pipeHolder.emplace(descriptor.target, index);
-      if (!fresh) {
-        leader[find(index)] = find(holder->second);
+      auto &ends = holders[descriptor.target][index];
+      ends.read = ends.read || readable(descriptor);
+      ends.write = ends.write || writable(descriptor);
+    }
+  }
+
+  for (const auto &[pipe, held] : holders) {
+    const bool shared = std::ranges::all_of(held, [](const auto &holder) {
+      return holder.second.read && holder.second.write;
+    });
+
+    // Union the cuts that name the pipe: all of them, or for a pipe every
+    // cut holds both ends of, those whose lifetimes overlap. The cuts are
+    // in the order they began, so a cut overlaps an earlier one when the
+    // cut began before every earlier one had ended.
+    std::optional<size_t> previous;
+    uint64_t running = 0;
+    for (const auto &[index, ends] : held) {
+      if (previous && (!shared || cuts[index].step <= running)) {
+        leader[find(index)] = find(*previous);
       }
+      previous = index;
+      running = std::max(running, cuts[index].end);
     }
   }
 
