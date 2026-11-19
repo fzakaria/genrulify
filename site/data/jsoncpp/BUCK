@@ -170,7 +170,7 @@ nix_archive(
     out = "archive_dev.nar",
     cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name archive_dev pack /nix/store/q957fj0pjwaa0b8hbyyvr51cksyh5bxi-jsoncpp-1.9.8-dev",
+        "--name archive_dev pack /nix/store/q957fj0pjwaa0b8hbyyvr51cksyh5bxi-jsoncpp-1.9.8-dev 815d1b22209ee0f1a489141ad203edc2b56b0f30400990b3d86e1998a1e591bf",
     ],
 )
 
@@ -184,7 +184,7 @@ nix_archive(
     out = "archive_out.nar",
     cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name archive_out pack /nix/store/g1jcfq4b6favy36p099qwrh3f385cmlw-jsoncpp-1.9.8",
+        "--name archive_out pack /nix/store/g1jcfq4b6favy36p099qwrh3f385cmlw-jsoncpp-1.9.8 389f5554c99fec296e4e13256a457c3ca1a7c988f9c8e8280ca8fa948a4e86f4",
     ],
 )
 

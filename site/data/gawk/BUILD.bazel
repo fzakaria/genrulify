@@ -8856,7 +8856,7 @@ nix_archive(
     out = "archive_info.nar",
     cmd = [
         "./sandbox.sh --in . --in $(RULEDIR) --out $(RULEDIR)",
-        "--name archive_info pack /nix/store/l4pwpdc6hrgy8n3diy24n389k53jqqjk-gawk-5.4.1-info",
+        "--name archive_info pack /nix/store/l4pwpdc6hrgy8n3diy24n389k53jqqjk-gawk-5.4.1-info 710c19d7f364e71ff56a24c3360a592cf198b833a0cb87c3f464dabc08b5fedf",
     ],
 )
 
@@ -8899,7 +8899,7 @@ nix_archive(
     out = "archive_man.nar",
     cmd = [
         "./sandbox.sh --in . --in $(RULEDIR) --out $(RULEDIR)",
-        "--name archive_man pack /nix/store/0azvqykndxs3clnj974q99cjfnmpprjv-gawk-5.4.1-man",
+        "--name archive_man pack /nix/store/0azvqykndxs3clnj974q99cjfnmpprjv-gawk-5.4.1-man 04e85a83ebadb0722cdff3ea6d17c246211dfacdf5f7f15b6a3df074cb861697",
     ],
 )
 
@@ -8997,7 +8997,7 @@ nix_archive(
     out = "archive_out.nar",
     cmd = [
         "./sandbox.sh --in . --in $(RULEDIR) --out $(RULEDIR)",
-        "--name archive_out pack /nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1",
+        "--name archive_out pack /nix/store/63g104xwbzfpcq0h7c99w19m6j9ly3p1-gawk-5.4.1 270856e4b04644e9f5123b1052675aa50a34ed222e870441f61c0f2f03c9323b",
     ],
 )
 

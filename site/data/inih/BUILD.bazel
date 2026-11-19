@@ -348,7 +348,7 @@ nix_archive(
     out = "archive_dev.nar",
     cmd = [
         "./sandbox.sh --in . --in $(RULEDIR) --out $(RULEDIR)",
-        "--name archive_dev pack /nix/store/vsnhi4gz0dvl0ml700s97314kj58r9g4-inih-62-dev",
+        "--name archive_dev pack /nix/store/vsnhi4gz0dvl0ml700s97314kj58r9g4-inih-62-dev 94f4d95ed81d57e02a77513a71cd04edd99a2db45f6c023b01b11b14b4d97152",
     ],
 )
 
@@ -365,7 +365,7 @@ nix_archive(
     out = "archive_out.nar",
     cmd = [
         "./sandbox.sh --in . --in $(RULEDIR) --out $(RULEDIR)",
-        "--name archive_out pack /nix/store/bgdzq5lb4ws5q6bmg07j5bgdqwdb4f4d-inih-62",
+        "--name archive_out pack /nix/store/bgdzq5lb4ws5q6bmg07j5bgdqwdb4f4d-inih-62 676c07009de3958935f10afa4fcbcaab9db4b32049f8dbfb11301c73afeb1b90",
     ],
 )
 

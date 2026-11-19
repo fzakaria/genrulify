@@ -120,7 +120,7 @@ nix_archive(
     out = "archive_man.nar",
     cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name archive_man pack /nix/store/b5r8bhcls3hn4748zf4ln16771nlkwa5-cowsay-3.8.4-man",
+        "--name archive_man pack /nix/store/b5r8bhcls3hn4748zf4ln16771nlkwa5-cowsay-3.8.4-man e303366da6bf8e1549fc44912881d5a2ced46c9d0f971b7ccbbe4ace541a90f1",
     ],
 )
 
@@ -136,7 +136,7 @@ nix_archive(
     out = "archive_out.nar",
     cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name archive_out pack /nix/store/s5w9gi7p8m7yx878yxkf8q8480i82qj7-cowsay-3.8.4",
+        "--name archive_out pack /nix/store/s5w9gi7p8m7yx878yxkf8q8480i82qj7-cowsay-3.8.4 a8b057868d53f40c9f7f0283a530da71f77a7475ae106f415ea7870e11ff00f5",
     ],
 )
 

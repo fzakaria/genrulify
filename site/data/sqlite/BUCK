@@ -1004,7 +1004,7 @@ nix_archive(
     out = "archive_bin.nar",
     cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name archive_bin pack /nix/store/rvd9ln2y3gcc3mc1jsdipiv7j936sf7q-sqlite-3.53.3-bin",
+        "--name archive_bin pack /nix/store/rvd9ln2y3gcc3mc1jsdipiv7j936sf7q-sqlite-3.53.3-bin 95a5dcc41e8925fad258384cd61093fc6202a0aca9c71e9f2eb80701d24c3494",
     ],
 )
 
@@ -1022,7 +1022,7 @@ nix_archive(
     out = "archive_debug.nar",
     cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name archive_debug pack /nix/store/rf4jh1k8pfxh0lws7zw811mlwaj404cy-sqlite-3.53.3-debug",
+        "--name archive_debug pack /nix/store/rf4jh1k8pfxh0lws7zw811mlwaj404cy-sqlite-3.53.3-debug 218f09882a9b593d60b38012bb89af107496eb209e4c4f8635d75d3b4d544daf",
     ],
 )
 
@@ -1039,7 +1039,7 @@ nix_archive(
     out = "archive_dev.nar",
     cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name archive_dev pack /nix/store/g9zm3alp97jraam7kmhvbjr5v3a7dh8f-sqlite-3.53.3-dev",
+        "--name archive_dev pack /nix/store/g9zm3alp97jraam7kmhvbjr5v3a7dh8f-sqlite-3.53.3-dev 30def782d7aab54991a82067290752a2e5390321910c0b0ff84690b774ab11cb",
     ],
 )
 
@@ -1054,7 +1054,7 @@ nix_archive(
     out = "archive_doc.nar",
     cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name archive_doc pack /nix/store/7kj734nkdkyajkw8hv7x1amdgdcnr5hs-sqlite-3.53.3-doc",
+        "--name archive_doc pack /nix/store/7kj734nkdkyajkw8hv7x1amdgdcnr5hs-sqlite-3.53.3-doc 608690a5e5a63da8e0ed64804630b91f91043c6ac1fe2ab3849cf888234b4744",
     ],
 )
 
@@ -1068,7 +1068,7 @@ nix_archive(
     out = "archive_man.nar",
     cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name archive_man pack /nix/store/mj0s9mnrm55zpq6i8pl8w5aal17p1rkp-sqlite-3.53.3-man",
+        "--name archive_man pack /nix/store/mj0s9mnrm55zpq6i8pl8w5aal17p1rkp-sqlite-3.53.3-man b5883aea7298ef1cb88e209fe899b1650a833d363f23825fb2a4a8982573d719",
     ],
 )
 
@@ -1085,7 +1085,7 @@ nix_archive(
     out = "archive_out.nar",
     cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name archive_out pack /nix/store/cbcfzz0jwwvki0cq4wk22p8ssnyh35z9-sqlite-3.53.3",
+        "--name archive_out pack /nix/store/cbcfzz0jwwvki0cq4wk22p8ssnyh35z9-sqlite-3.53.3 ba611a3d545434af81b15e97788396a3b3fd8019e2bf4dcccc4118b090d90b77",
     ],
 )
 

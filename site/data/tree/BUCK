@@ -367,7 +367,7 @@ nix_archive(
     out = "archive_man.nar",
     cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name archive_man pack /nix/store/symf4p80isdvxjvj4m2y7gffaqyhm9fs-tree-2.3.2-man",
+        "--name archive_man pack /nix/store/symf4p80isdvxjvj4m2y7gffaqyhm9fs-tree-2.3.2-man 699f213a11ee4565b88036fdd8965917964ebbcb046b0f2a696d4f8db629a79b",
     ],
 )
 
@@ -381,7 +381,7 @@ nix_archive(
     out = "archive_out.nar",
     cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name archive_out pack /nix/store/ggxc3i3q4k4f2czrv01adcnn3hhajak5-tree-2.3.2",
+        "--name archive_out pack /nix/store/ggxc3i3q4k4f2czrv01adcnn3hhajak5-tree-2.3.2 a35de38ab62165a66588eaa6bf78c36ed307f6e611b0809f90d7b14d927c2d9c",
     ],
 )
 

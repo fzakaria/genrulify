@@ -972,7 +972,7 @@ nix_archive(
     out = "archive.nar",
     cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name archive pack /nix/store/przagm88ij4731554f5fa5lcly24gz85-hexyl-0.17.0",
+        "--name archive pack /nix/store/przagm88ij4731554f5fa5lcly24gz85-hexyl-0.17.0 4adaca2fdd36a66847d91d6723e9409d6641315b89deea2a16f23f3fa9695b2d",
     ],
 )
 

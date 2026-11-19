@@ -1074,7 +1074,7 @@ nix_archive(
     out = "archive_doc.nar",
     cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name archive_doc pack /nix/store/4p7a27j5w4xicg024qwr9ynlcdbnrpag-lua-5.2.4-doc",
+        "--name archive_doc pack /nix/store/4p7a27j5w4xicg024qwr9ynlcdbnrpag-lua-5.2.4-doc 3d78e812fc38c92649386b4229bd310502b7e642844d61d6a357acd08196e847",
     ],
 )
 
@@ -1098,7 +1098,7 @@ nix_archive(
     out = "archive_out.nar",
     cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name archive_out pack /nix/store/ngrfxya6bawfbkyd0mi4wz4x54ykwx3z-lua-5.2.4",
+        "--name archive_out pack /nix/store/ngrfxya6bawfbkyd0mi4wz4x54ykwx3z-lua-5.2.4 6586fd013e653960a3dd831dc5d146051cbc21b02f152b863f0f4a01d1607f42",
     ],
 )
 

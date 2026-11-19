@@ -336,7 +336,7 @@ nix_archive(
     out = "archive_info.nar",
     cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name archive_info pack /nix/store/yzrbsxy63iq4mclf51b57nlfjvdwwg5w-which-2.25-info",
+        "--name archive_info pack /nix/store/yzrbsxy63iq4mclf51b57nlfjvdwwg5w-which-2.25-info 4652515e8ca87f8edaa072aa1c0d0871a3daaa31b165404da0c2f7554c2c809e",
     ],
 )
 
@@ -350,7 +350,7 @@ nix_archive(
     out = "archive_man.nar",
     cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name archive_man pack /nix/store/2qqgq8ajvhai10hw5mids7djjs1m19z6-which-2.25-man",
+        "--name archive_man pack /nix/store/2qqgq8ajvhai10hw5mids7djjs1m19z6-which-2.25-man 119a26b7028d6f44132e0db5200a77f2969c52156a34c67de649909336799e89",
     ],
 )
 
@@ -364,7 +364,7 @@ nix_archive(
     out = "archive_out.nar",
     cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name archive_out pack /nix/store/mdwxdimw26b72k7wign651n8clh4jzii-which-2.25",
+        "--name archive_out pack /nix/store/mdwxdimw26b72k7wign651n8clh4jzii-which-2.25 13d84ec54e56c68b0afc68551ec0cc27184e196d64eb906ada007a154583a0be",
     ],
 )
 

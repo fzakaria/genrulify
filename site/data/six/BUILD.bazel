@@ -101,7 +101,7 @@ nix_archive(
     out = "archive_dist.nar",
     cmd = [
         "./sandbox.sh --in . --in $(RULEDIR) --out $(RULEDIR)",
-        "--name archive_dist pack /nix/store/xdyfansxkvyki35nzivbxd5pcvcx09vg-python3.14-six-1.17.0-dist",
+        "--name archive_dist pack /nix/store/xdyfansxkvyki35nzivbxd5pcvcx09vg-python3.14-six-1.17.0-dist 841255801a6c56a19c239135c1e39347694c8987d7c5cb9ea324acfd2af01b1e",
     ],
 )
 
@@ -124,7 +124,7 @@ nix_archive(
     out = "archive_out.nar",
     cmd = [
         "./sandbox.sh --in . --in $(RULEDIR) --out $(RULEDIR)",
-        "--name archive_out pack /nix/store/ryg0sjdnp2vhi51m876d5blj7si80mgf-python3.14-six-1.17.0",
+        "--name archive_out pack /nix/store/ryg0sjdnp2vhi51m876d5blj7si80mgf-python3.14-six-1.17.0 90d6bc51b39a9a215c8428bd84686eb565607cb194aaf101102e646456ae7393",
     ],
 )
 

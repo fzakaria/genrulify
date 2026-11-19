@@ -130,7 +130,7 @@ nix_archive(
     out = "archive.nar",
     cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name archive pack /nix/store/qcwnw71iksl68k7fipizi6wn0s1xms9v-patchelf-0.15.2",
+        "--name archive pack /nix/store/qcwnw71iksl68k7fipizi6wn0s1xms9v-patchelf-0.15.2 648dab1d082040477f02d2f6d796bc19086d86b03a664cf6fb19678413a3ca84",
     ],
 )
 

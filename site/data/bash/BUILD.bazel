@@ -22298,7 +22298,7 @@ nix_archive(
     out = "archive_debug.nar",
     cmd = [
         "./sandbox.sh --in . --in $(RULEDIR) --out $(RULEDIR)",
-        "--name archive_debug pack /nix/store/bxzrhigb7ji4712aa8id9kyak5q0q7z9-bash-interactive-5.3p15-debug",
+        "--name archive_debug pack /nix/store/bxzrhigb7ji4712aa8id9kyak5q0q7z9-bash-interactive-5.3p15-debug 569282b803bf6801a96bba34bc5c2455fe5de6777620ea49c69668ae120a19a3",
     ],
 )
 
@@ -22381,7 +22381,7 @@ nix_archive(
     out = "archive_dev.nar",
     cmd = [
         "./sandbox.sh --in . --in $(RULEDIR) --out $(RULEDIR)",
-        "--name archive_dev pack /nix/store/rxgngn06ihrwh52bfi4vmm0i2ds69wsj-bash-interactive-5.3p15-dev",
+        "--name archive_dev pack /nix/store/rxgngn06ihrwh52bfi4vmm0i2ds69wsj-bash-interactive-5.3p15-dev 99eb255561535f5a31e90aca65c01e6727aa7506b5977d7ff21c7d10482da959",
     ],
 )
 
@@ -22405,7 +22405,7 @@ nix_archive(
     out = "archive_doc.nar",
     cmd = [
         "./sandbox.sh --in . --in $(RULEDIR) --out $(RULEDIR)",
-        "--name archive_doc pack /nix/store/lz3qj37l1h44jy1vn91f32hf5ghrabab-bash-interactive-5.3p15-doc",
+        "--name archive_doc pack /nix/store/lz3qj37l1h44jy1vn91f32hf5ghrabab-bash-interactive-5.3p15-doc 927903b26226b6f87bd83801c50690f30ee677b9b3a1a1c1596f5d7f6e2a0d72",
     ],
 )
 
@@ -22420,7 +22420,7 @@ nix_archive(
     out = "archive_info.nar",
     cmd = [
         "./sandbox.sh --in . --in $(RULEDIR) --out $(RULEDIR)",
-        "--name archive_info pack /nix/store/3k8qpmnj7smafs2frihw0299gcivixh7-bash-interactive-5.3p15-info",
+        "--name archive_info pack /nix/store/3k8qpmnj7smafs2frihw0299gcivixh7-bash-interactive-5.3p15-info 9d4271cb9cd8ef6994afebb5474ff6753279defba4dbe55683e91a9de04beb98",
     ],
 )
 
@@ -22437,7 +22437,7 @@ nix_archive(
     out = "archive_man.nar",
     cmd = [
         "./sandbox.sh --in . --in $(RULEDIR) --out $(RULEDIR)",
-        "--name archive_man pack /nix/store/7dnkkayima0chah3sm21nsp86zfgi6h9-bash-interactive-5.3p15-man",
+        "--name archive_man pack /nix/store/7dnkkayima0chah3sm21nsp86zfgi6h9-bash-interactive-5.3p15-man 3cc4f7f5d7c94a8ba139edb6bc8e72f60ac57b5a4e085fbb439923dea1e2668a",
     ],
 )
 
@@ -22578,7 +22578,7 @@ nix_archive(
     out = "archive_out.nar",
     cmd = [
         "./sandbox.sh --in . --in $(RULEDIR) --out $(RULEDIR)",
-        "--name archive_out pack /nix/store/1mv3qz005gkbalxfghk4y3s8ayv4d2dl-bash-interactive-5.3p15",
+        "--name archive_out pack /nix/store/1mv3qz005gkbalxfghk4y3s8ayv4d2dl-bash-interactive-5.3p15 d559b6d10defed2a46711dbc9d0f8136326b208d4248404ee93f0e6dde4fa252",
     ],
 )
 

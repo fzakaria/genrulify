@@ -47,7 +47,7 @@ nix_archive(
     out = "archive.nar",
     cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name archive pack /nix/store/l1dx8g9mr73bdp8y6i2yp92xprmz8xzg-genrulify-example",
+        "--name archive pack /nix/store/l1dx8g9mr73bdp8y6i2yp92xprmz8xzg-genrulify-example 615d7b847f0909cb4d971b8afe479068c70fbb6a2e5b6d18da18803cd8c42556",
     ],
 )
 

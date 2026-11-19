@@ -1261,7 +1261,7 @@ nix_archive(
     out = "archive_dev.nar",
     cmd = [
         "./sandbox.sh --in . --in $(RULEDIR) --out $(RULEDIR)",
-        "--name archive_dev pack /nix/store/879xd5x23lfd4l93jz71yaz06wa15yc1-zlib-1.3.2-dev",
+        "--name archive_dev pack /nix/store/879xd5x23lfd4l93jz71yaz06wa15yc1-zlib-1.3.2-dev 52c5062cb78b465864756f816ce621bf03a6d534e53a0ceb6a1bb7bf6bf5b06b",
     ],
 )
 
@@ -1278,7 +1278,7 @@ nix_archive(
     out = "archive_out.nar",
     cmd = [
         "./sandbox.sh --in . --in $(RULEDIR) --out $(RULEDIR)",
-        "--name archive_out pack /nix/store/wgw25d181h0qks7qsfp1bh7c5nd3f0s7-zlib-1.3.2",
+        "--name archive_out pack /nix/store/wgw25d181h0qks7qsfp1bh7c5nd3f0s7-zlib-1.3.2 80a49f236b4500b20cd65a333e6160196631b1f9dc479bdb93097c21f6051562",
     ],
 )
 
@@ -1293,7 +1293,7 @@ nix_archive(
     out = "archive_static.nar",
     cmd = [
         "./sandbox.sh --in . --in $(RULEDIR) --out $(RULEDIR)",
-        "--name archive_static pack /nix/store/igzrdkid07pdyh30cswrjb7a9yln9mpp-zlib-1.3.2-static",
+        "--name archive_static pack /nix/store/igzrdkid07pdyh30cswrjb7a9yln9mpp-zlib-1.3.2-static b292b068b76bf2e2ed5287536da84f7df91fee9a3f3f5672f19afd656ae0ada9",
     ],
 )
 

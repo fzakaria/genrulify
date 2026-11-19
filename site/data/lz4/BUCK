@@ -847,7 +847,7 @@ nix_archive(
     out = "archive_dev.nar",
     cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name archive_dev pack /nix/store/5mzhn4ckld94vqq8pkadqq8rf0fbi3r7-lz4-1.10.0-dev",
+        "--name archive_dev pack /nix/store/5mzhn4ckld94vqq8pkadqq8rf0fbi3r7-lz4-1.10.0-dev 3629a0730e5c40eb0df04945bbab0a3dbff1ef5e2022af00efd4bf064535e370",
     ],
 )
 
@@ -861,7 +861,7 @@ nix_archive(
     out = "archive_lib.nar",
     cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name archive_lib pack /nix/store/8327b5r0l5k48fpcqiaias8p2m7h52n5-lz4-1.10.0-lib",
+        "--name archive_lib pack /nix/store/8327b5r0l5k48fpcqiaias8p2m7h52n5-lz4-1.10.0-lib c6e55e8ba1617497e2f2e18379017dc69f010e3d6a9d7b50748cba13185ac96c",
     ],
 )
 
@@ -877,7 +877,7 @@ nix_archive(
     out = "archive_man.nar",
     cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name archive_man pack /nix/store/cvjg1abig6l4jc0av5v8kn31075p0msg-lz4-1.10.0-man",
+        "--name archive_man pack /nix/store/cvjg1abig6l4jc0av5v8kn31075p0msg-lz4-1.10.0-man d8a5c173fb3b9f4e062a1eaeff1de39e073e5f8099f595b491f6c4b4b974e059",
     ],
 )
 
@@ -891,7 +891,7 @@ nix_archive(
     out = "archive_out.nar",
     cmd = [
         "$SRCDIR/sandbox.sh --in $SRCDIR --out ${OUT%/*}",
-        "--name archive_out pack /nix/store/dk9wf8nnmmwmy5wvp4n7kgr7r8y0ad3k-lz4-1.10.0",
+        "--name archive_out pack /nix/store/dk9wf8nnmmwmy5wvp4n7kgr7r8y0ad3k-lz4-1.10.0 a87f01c353ee8d7a0fffe2c93cdbc5ffcf530ab81a910eae1588e50505e30fc1",
     ],
 )
 
