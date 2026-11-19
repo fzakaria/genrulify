@@ -8,9 +8,11 @@
 # Buck2. Then it changes the greeting in greet.c and builds
 # again. In each system the object of greet.c has to be a new file, the
 # object of main.c has to be the file the first build left, and the
-# program has to print the new greeting. Last, it converts the edited
-# copy again beside a build file written by hand, which has to survive
-# and still build.
+# program has to print the new greeting. The archive each system then
+# builds has to be the one Nix builds from the edited project, which is
+# the check that two build systems agreeing with each other cannot give.
+# Last, it converts the edited copy again beside a build file written by
+# hand, which has to survive and still build.
 #
 # usage: tools/validate-project.sh
 #
@@ -51,10 +53,34 @@ NIX
 "$compiler" convert --source "$project" "path:$flake#default" "$work/recording"
 cd "$project"
 
-# Builds the archive with both systems.
+# Builds the archive with both systems and keeps each one's NAR.
 build() {
     "$bazel" --batch build --enable_bzlmod=false //:archive > "$work/bazel.$1.log" 2>&1
-    "$buck" build //:archive > "$work/buck.$1.log" 2>&1
+    cp bazel-bin/archive.nar "$work/bazel.$1.nar"
+    "$buck" build //:archive --out "$work/buck.$1.nar" > "$work/buck.$1.log" 2>&1
+}
+
+# The digest of the NAR Nix builds from the project as it is now. Nix is
+# given a copy without what the conversion and the build systems wrote
+# into the project, none of which the project's own build reads. The
+# example's program does not hold its own store path, so its NAR is the
+# same wherever Nix puts it.
+native_digest() {
+    local copy=$work/native.$1
+    mkdir -p "$copy"
+    cp "$flake/flake.nix" "$copy/"
+    if [ -e "$flake/flake.lock" ]; then
+        cp "$flake/flake.lock" "$copy/"
+    fi
+    cp -r "$project" "$copy/project"
+    (
+        cd "$copy/project"
+        rm -rf genrulify buck-out toolchains BUILD.bazel BUCK WORKSPACE MODULE.bazel .buckconfig
+        find . -maxdepth 1 -name 'bazel-*' -type l -delete
+    )
+    local built
+    built=$(nix build --no-link --print-out-paths "path:$copy#default")
+    nix-store --dump "$built" | sha256sum | cut -d' ' -f1
 }
 
 # The file one system has for the target $2, which is the name genrulify
@@ -103,6 +129,16 @@ done
 "$bazel" --batch run --enable_bzlmod=false //:greet 2> /dev/null | grep -q "$EDITED_GREETING"
 "$buck" run //:greet 2> /dev/null | grep -q "$EDITED_GREETING"
 
+# Both archives are what Nix builds from the edited project.
+native=$(native_digest second)
+for system in bazel buck; do
+    generated=$(sha256sum "$work/$system.second.nar" | cut -d' ' -f1)
+    if [ "$generated" != "$native" ]; then
+        echo "$system archived sha256:$generated after the edit, and Nix builds sha256:$native" >&2
+        exit 1
+    fi
+done
+
 # A build file somebody wrote: it loads the converted rules and adds a
 # rule of its own that depends on the program by name.
 cat > BUILD.bazel <<'BAZEL'
@@ -132,4 +168,4 @@ grep -q "$CONVERTED_AGAIN_GREETING" bazel-bin/greeting.txt
 "$buck" run //:greet 2> /dev/null | grep -q "$CONVERTED_AGAIN_GREETING"
 "$buck" kill > /dev/null 2>&1 || true
 
-echo "Both systems rebuilt greet.o, kept main.o, and built the hand-written rule after converting again."
+echo "Both systems rebuilt greet.o, kept main.o, archived what Nix builds from the edited project (sha256:$native), and built the hand-written rule after converting again."
