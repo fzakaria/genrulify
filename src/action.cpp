@@ -68,6 +68,7 @@ constexpr std::string_view kRunCommand = "run";
 constexpr std::string_view kPackCommand = "pack";
 constexpr std::string_view kDirectoryOption = "--cwd";
 constexpr std::string_view kEnvironmentOption = "--env";
+constexpr std::string_view kUmaskOption = "--umask";
 constexpr std::string_view kNameZeroOption = "--argv0";
 constexpr std::string_view kDescriptorOption = "--fd";
 constexpr std::string_view kAfterOption = "--after";
@@ -507,6 +508,12 @@ std::vector<Arguments> actionArguments(const Action &action,
     auto wiring = words({kRunCommand, kDirectoryOption, process.cwd,
                          kEnvironmentOption,
                          std::to_string(process.environment)});
+
+    // The script gives a process the mask a build starts with unless it
+    // is told another, in octal as the shell's `umask` takes it.
+    if (process.umask != kBuilderUmask) {
+      append(wiring, {kUmaskOption, std::format("{:o}", process.umask)});
+    }
 
     // The kernel loads `exe`. For a script that is the interpreter, and
     // argv already names the script. When the path given to execve, or

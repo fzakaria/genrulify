@@ -53,6 +53,7 @@ nlohmann::json toJson(const Process &process) {
           {"filename", process.filename},
           {"exe", process.exe},
           {"cwd", process.cwd},
+          {"umask", process.umask},
           {"argv", process.argv},
           {"environment", process.environment},
           {"fds", fds}};
@@ -68,6 +69,7 @@ Process processFromJson(const nlohmann::json &json) {
   process.filename = json.value("filename", std::string());
   process.exe = json.at("exe");
   process.cwd = json.at("cwd");
+  process.umask = json.value("umask", kBuilderUmask);
   process.argv = json.at("argv").get<Arguments>();
   process.environment = json.at("environment");
   for (const auto &descriptor : json.at("fds")) {

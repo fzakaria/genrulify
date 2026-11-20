@@ -47,6 +47,8 @@
 # run options:
 #   --cwd DIR        working directory inside the sandbox
 #   --env N          which environment file to use
+#   --umask MASK     the file-creation mask, in octal, when it is not the
+#                    one a Nix build starts with
 #   --argv0 TEXT     argv[0], when it differs from PROGRAM
 #   --fd N=SPEC      descriptor N: null, err, pipe-r:ID, pipe-w:ID,
 #                    data:FILE (bytes the builder had written into a pipe),
@@ -65,6 +67,12 @@ NIX_STORE=@SPLICE_NIX@/bin/nix-store
 BUILD_UID=1000
 BUILD_GID=100
 BUILD_HOST=localhost
+
+# The file-creation mask a Nix build starts its builder with. A process
+# is given this mask unless the recording saw it have another, so that
+# the mode of a file it creates does not depend on the mask of whoever
+# runs the build system.
+BUILD_UMASK=022
 
 # The phrases a failure is reported with. `genrulify learn` reads them back
 # out of a build log.
@@ -543,6 +551,7 @@ while [ $# -gt 0 ]; do
     shift
     cwd=/build
     env_file=
+    mask=$BUILD_UMASK
     argv0=
     fds=()
     after=
@@ -552,6 +561,7 @@ while [ $# -gt 0 ]; do
         case $1 in
             --cwd) cwd=$2 ;;
             --env) env_file=$2 ;;
+            --umask) mask=$2 ;;
             --argv0) argv0=$2 ;;
             --fd) fds+=("$2") ;;
             --after) after=$2 ;;
@@ -600,6 +610,10 @@ while [ $# -gt 0 ]; do
     fi
 
     (
+        # The mask comes first: a descriptor placed below can create its
+        # file, as the builder's redirection did under the same mask.
+        umask "$mask"
+
         # Place this process's descriptors.
         for spec in "${fds[@]}"; do
             fd=${spec%%=*}

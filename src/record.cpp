@@ -42,6 +42,10 @@ constexpr std::string_view kPositionField = "pos:";
 constexpr std::string_view kFlagsField = "flags:";
 constexpr int kOctalBase = 8;
 
+// The line of /proc/PID/status that carries the file-creation mask, also
+// in octal.
+constexpr std::string_view kUmaskField = "Umask:";
+
 // Asks Rewind about one run. Every query forks the run at a step and reads
 // the guest, so queries are independent and safe to issue in parallel.
 class Rewind {
@@ -328,6 +332,20 @@ State snapshot(const Rewind &rewind, uint64_t step, const Arguments &roots,
   return state;
 }
 
+// A process's file-creation mask from the text of /proc/PID/status, or
+// the mask a build starts with when the text does not say.
+uint32_t readUmask(const std::string &text) {
+  for (const std::string_view line :
+       absl::StrSplit(text, '\n', absl::SkipEmpty())) {
+    const std::pair<std::string_view, std::string_view> field =
+        absl::StrSplit(line, absl::MaxSplits('\t', 1));
+    if (field.first == kUmaskField) {
+      return std::stoul(std::string(field.second), nullptr, kOctalBase);
+    }
+  }
+  return kBuilderUmask;
+}
+
 // A descriptor's offset and flags from the text of /proc/PID/fdinfo/N.
 void readDescriptorInfo(const std::string &text, Descriptor &descriptor) {
   for (const std::string_view line :
@@ -350,7 +368,8 @@ bool belowRoots(const std::string &path, const Arguments &roots) {
 }
 
 // Reads what a process looked like at the step of its execve: the program
-// the kernel loaded, argv, environment, working directory and descriptors.
+// the kernel loaded, argv, environment, working directory, file-creation
+// mask and descriptors.
 Process inspect(const Rewind &rewind, const Cut &cut, const Arguments &roots,
                 Arguments &environment) {
   const std::string proc = "/proc/" + std::to_string(cut.pid);
@@ -372,6 +391,7 @@ Process inspect(const Rewind &rewind, const Cut &cut, const Arguments &roots,
   const auto links = rewind.files(cut.step, proc);
   process.exe = links.at("exe").at("target");
   process.cwd = links.at("cwd").at("target");
+  process.umask = readUmask(rewind.cat(cut.step, proc + "/status"));
 
   for (const auto &[name, link] : rewind.files(cut.step, proc + "/fd")) {
     Descriptor descriptor;

@@ -333,3 +333,20 @@ done
 start order run --cwd /build --env 0 --fd 2=file:w:/build/log --fd 1=err --status 0 --argc 2 -- \
     "$coreutils/echo" written 2> "$scratch/order.err"
 grep -q '^written$' "$scratch/order.err"
+
+# A process starts with the file-creation mask the recording saw it
+# have, whatever mask the build system runs the script with. touch asks
+# for a file anyone can read and write, and the mask takes bits away:
+# a Nix build's own mask leaves 644, and the mask 0117 leaves 660. The
+# script is run under a mask of 077 both times.
+EMPTY=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+{
+    line in dir 700 1 /build '' ''
+    line out file 644 1 /build/made "$EMPTY" plain/build/made
+} > "$scratch/actions/plain.manifest"
+(umask 077 && start plain run --cwd /build --env 0 --status 0 --argc 2 -- "$coreutils/touch" made)
+{
+    line in dir 700 1 /build '' ''
+    line out file 660 1 /build/made "$EMPTY" masked/build/made
+} > "$scratch/actions/masked.manifest"
+(umask 077 && start masked run --cwd /build --env 0 --umask 117 --status 0 --argc 2 -- "$coreutils/touch" made)

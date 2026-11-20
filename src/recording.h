@@ -35,6 +35,10 @@ struct Descriptor {
   std::optional<std::string> input;
 };
 
+// The file-creation mask a Nix build starts its builder with, and so the
+// mask of a process in a recording made before masks were kept.
+inline constexpr uint32_t kBuilderUmask = 022;
+
 // One process the builder started, at the step of the execve that turned
 // the process into something other than the builder's own program.
 struct Process {
@@ -56,6 +60,11 @@ struct Process {
   std::string exe;
   std::string cwd;
   Arguments argv;
+
+  // The file-creation mask the process had at its execve. A builder that
+  // calls `umask` changes the mode of every file its later commands
+  // create.
+  uint32_t umask = kBuilderUmask;
 
   // An index into Recording::environments.
   size_t environment = 0;

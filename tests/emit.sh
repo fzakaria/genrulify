@@ -46,6 +46,23 @@ rule BUCK s764_dd | grep -q '"s764_dd/build/bundle",'
 rule BUCK s764_dd | grep -q '"\$SRCDIR/sandbox.sh --in \$SRCDIR --out \$OUTDIR"'
 rule BUCK archive | grep -q 'out = "archive.nar",'
 
+# A process creates files with the mode it asks for less the bits of its
+# file-creation mask, which a builder can change before it starts a
+# command. A recording keeps each process's mask, and a rule passes on a
+# mask that is not the one a Nix build starts with. Here the second dd is
+# given the mask 0111, and the example as recorded has none to pass on.
+if grep -q -e '--umask' BUILD.bazel BUCK; then
+    exit 1
+fi
+cp -r "$data/example" "$scratch/masked"
+chmod -R u+w "$scratch/masked"
+sed -i '0,/"step": 764,/s//"step": 764,\n     "umask": 73,/' "$scratch/masked/recording.json"
+grep -q '"umask": 73' "$scratch/masked/recording.json"
+"$compiler" emit "$scratch/masked" "$scratch/graph.mlir" "$scratch/masked-workspace"
+rule "$scratch/masked-workspace/BUILD.bazel" s764_dd | grep -q -e '--env [0-9]* --umask 111 '
+rule "$scratch/masked-workspace/BUCK" s764_dd | grep -q -e '--env [0-9]* --umask 111 '
+test "$(grep -c -e '--umask' "$scratch/masked-workspace/BUILD.bazel")" = 1
+
 # The archive rule takes the last dd's file and writes a NAR.
 rule BUILD.bazel archive | grep -q '"archive.nar"'
 rule BUILD.bazel archive | grep -q 'pack /nix/store/l1dx8g9mr73bdp8y6i2yp92xprmz8xzg-genrulify-example'
