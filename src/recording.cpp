@@ -40,6 +40,24 @@ Descriptor descriptorFromJson(const Json &json) {
 
 } // namespace
 
+std::string replayedProgram(const Process &process) {
+  if (!process.program.empty()) {
+    return process.program;
+  }
+  const auto names = [&](const std::string &path) {
+    std::error_code error;
+    return fs::path(path).is_absolute() &&
+           fs::canonical(path, error) == fs::path(process.exe) && !error;
+  };
+  if (names(process.filename)) {
+    return process.filename;
+  }
+  if (!process.argv.empty() && names(process.argv.front())) {
+    return process.argv.front();
+  }
+  return process.exe;
+}
+
 nlohmann::json toJson(const Process &process) {
   Json fds = Json::array();
   for (const auto &descriptor : process.fds) {
@@ -52,6 +70,7 @@ nlohmann::json toJson(const Process &process) {
           {"name", process.name},
           {"filename", process.filename},
           {"exe", process.exe},
+          {"program", process.program},
           {"cwd", process.cwd},
           {"umask", process.umask},
           {"argv", process.argv},
@@ -68,6 +87,7 @@ Process processFromJson(const nlohmann::json &json) {
   process.name = json.at("name");
   process.filename = json.value("filename", std::string());
   process.exe = json.at("exe");
+  process.program = json.value("program", std::string());
   process.cwd = json.at("cwd");
   process.umask = json.value("umask", kBuilderUmask);
   process.argv = json.at("argv").get<Arguments>();

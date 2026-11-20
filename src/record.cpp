@@ -407,6 +407,10 @@ Process inspect(const Rewind &rewind, const Cut &cut, const Arguments &roots,
     }
     process.fds.push_back(std::move(descriptor));
   }
+
+  // The store paths the process names are on this machine now, which a
+  // machine that emits from the recording later may not be able to say.
+  process.program = replayedProgram(process);
   return process;
 }
 

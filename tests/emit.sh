@@ -63,6 +63,23 @@ rule "$scratch/masked-workspace/BUILD.bazel" s764_dd | grep -q -e '--env [0-9]* 
 rule "$scratch/masked-workspace/BUCK" s764_dd | grep -q -e '--env [0-9]* --umask 111 '
 test "$(grep -c -e '--umask' "$scratch/masked-workspace/BUILD.bazel")" = 1
 
+# A command can be started by more than one path: dd is a symlink to a
+# program that holds every coreutils command. Which path a rule shows is
+# found by following symlinks in the Nix store, and the store of the
+# machine that emits may have lost the path since. So `record` keeps the
+# choice in the recording, and emitting does not look at the store again.
+# Here the second dd is given a path that no machine has, and the rule
+# shows that path. The example as recorded has no such choice, and its
+# rules are written from this machine's store as before.
+gone=/nix/store/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa-gone/bin/dd
+cp -r "$data/example" "$scratch/spelled"
+chmod -R u+w "$scratch/spelled"
+sed -i "0,/\"step\": 764,/s||\"step\": 764,\n     \"program\": \"$gone\",|" "$scratch/spelled/recording.json"
+grep -q '"program": ' "$scratch/spelled/recording.json"
+"$compiler" emit "$scratch/spelled" "$scratch/graph.mlir" "$scratch/spelled-workspace"
+rule "$scratch/spelled-workspace/BUILD.bazel" s764_dd | grep -q "\"$gone if=.*-body.txt of=bundle"
+rule "$scratch/spelled-workspace/BUCK" s764_dd | grep -q "\"$gone if=.*-body.txt of=bundle"
+
 # The archive rule takes the last dd's file and writes a NAR.
 rule BUILD.bazel archive | grep -q '"archive.nar"'
 rule BUILD.bazel archive | grep -q 'pack /nix/store/l1dx8g9mr73bdp8y6i2yp92xprmz8xzg-genrulify-example'

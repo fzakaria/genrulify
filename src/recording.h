@@ -58,6 +58,11 @@ struct Process {
   // The program the kernel loaded. For a script this path is the
   // interpreter, and argv already carries the script's path.
   std::string exe;
+
+  // The path a replay starts the program by, which `replayedProgram`
+  // chose when the process was recorded. Empty in a recording made
+  // before the choice was kept.
+  std::string program;
   std::string cwd;
   Arguments argv;
 
@@ -70,6 +75,18 @@ struct Process {
   size_t environment = 0;
   std::vector<Descriptor> fds;
 };
+
+// The path to start a process's program by. The kernel loads `exe`. When
+// the path given to execve, or argv[0], is another path to `exe`, as with
+// a multi-call binary reached through a symlink, running that path is the
+// same execve and reads as the command that was typed. Otherwise the
+// path is `exe`.
+//
+// Finding out follows symlinks in this machine's Nix store, so the answer
+// is right where the recorded store paths are, as they are when a build
+// is recorded. A recording keeps the answer in `Process::program`, and
+// this function gives that answer back when there is one.
+std::string replayedProgram(const Process &process);
 
 nlohmann::json toJson(const Process &process);
 Process processFromJson(const nlohmann::json &json);

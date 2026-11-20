@@ -516,19 +516,11 @@ std::vector<Arguments> actionArguments(const Action &action,
     }
 
     // The kernel loads `exe`. For a script that is the interpreter, and
-    // argv already names the script. When the path given to execve, or
-    // argv[0], is another path to `exe`, as with a multi-call binary
-    // reached through a symlink, running that path is the same execve and
-    // reads as the command that was typed. A name that differs from the
-    // program shown is passed along as argv[0].
-    const auto names = [&](const std::string &path) {
-      std::error_code error;
-      return fs::path(path).is_absolute() &&
-             fs::canonical(path, error) == fs::path(process.exe) && !error;
-    };
-    const auto &program = names(process.filename)       ? process.filename
-                          : names(process.argv.front()) ? process.argv.front()
-                                                        : process.exe;
+    // argv already names the script. The program is started by the path
+    // that reads as the command that was typed, which the recording
+    // holds. A name that differs from the program shown is passed along
+    // as argv[0].
+    const auto program = replayedProgram(process);
     if (process.argv.front() != program) {
       append(wiring, {kNameZeroOption, process.argv.front()});
     }
