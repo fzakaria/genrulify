@@ -12,7 +12,18 @@ trap 'rm -rf "$scratch"' EXIT
 if "$compiler" convert 2> "$scratch/usage"; then
     exit 1
 fi
-grep -q 'genrulify convert \[--coarse\] \[--open PROGRAMS\] \[--source PROJECT\] INSTALLABLE DIRECTORY' "$scratch/usage"
+grep -q 'genrulify convert \[--coarse\] \[--open PROGRAMS\] \[--source PROJECT\] \[--into WORKSPACE\] INSTALLABLE DIRECTORY' "$scratch/usage"
+
+# A build becomes a package of a workspace many builds share, or the
+# rules of a project converted in place, and not both. The command says
+# so before it builds anything.
+mkdir "$scratch/both"
+if "$compiler" convert --source "$scratch/both" --into "$scratch/shared" nixpkgs#hello "$scratch/out" 2> "$scratch/error"; then
+    exit 1
+fi
+grep -q 'a project converted in place' "$scratch/error"
+test ! -e "$scratch/out"
+test ! -e "$scratch/shared"
 
 # A project to convert in place has to be a directory.
 if "$compiler" convert --source "$scratch/absent" nixpkgs#hello "$scratch/out" 2> "$scratch/error"; then

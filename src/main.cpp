@@ -14,7 +14,7 @@
 
 namespace {
 constexpr std::string_view kUsage =
-    "usage: genrulify convert [--coarse] [--open PROGRAMS] [--source PROJECT] INSTALLABLE DIRECTORY\n"
+    "usage: genrulify convert [--coarse] [--open PROGRAMS] [--source PROJECT] [--into WORKSPACE] INSTALLABLE DIRECTORY\n"
     "       genrulify record [--coarse] [--source PROJECT] RUN DERIVATION.drv RECORDING [OPEN]\n"
     "       genrulify groups RECORDING\n"
     "       genrulify origins RECORDING GRAPH.mlir\n"
@@ -150,10 +150,23 @@ void run(std::span<char *> args) {
       args = rest;
     }
     const auto project = takeProject();
+
+    // The workspace many builds share that this one becomes a package of.
+    std::optional<std::filesystem::path> shared;
+    if (rest.size() > 2 && rest[1] == kIntoOption) {
+      shared = rest[2];
+      rest.erase(rest.begin() + 1, rest.begin() + 3);
+      args = rest;
+    }
     if (args.size() != 3) {
       throw std::runtime_error(std::string(kUsage));
     }
-    splice_ir::convert(args[1], args[2], open, granularity, project);
+    if (project && shared) {
+      throw std::runtime_error(
+          "a project converted in place builds its own sources and cannot "
+          "be a package of a shared workspace: give --source or --into");
+    }
+    splice_ir::convert(args[1], args[2], open, granularity, project, shared);
     return;
   }
 

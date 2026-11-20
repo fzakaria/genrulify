@@ -299,10 +299,15 @@ void checkRecording(const Recording &recording,
 // With `project`, the directory of a project whose derivation takes that
 // directory as its source, the build files are written into the project
 // and read its files where they are.
+//
+// With `shared`, a workspace many builds share, the build becomes a
+// package of that workspace and `directory` gets no workspace of its own.
+// `link` then gives the workspace's store paths their packages.
 void convert(const std::string &installable,
              const std::filesystem::path &directory, const std::string &open,
              Granularity granularity,
-             const std::optional<std::filesystem::path> &project = {});
+             const std::optional<std::filesystem::path> &project = {},
+             const std::optional<std::filesystem::path> &shared = {});
 
 // Reads the output of a failed build of an emitted workspace and adjusts
 // the verdicts of the rules that did not reproduce the recording: results

@@ -73,7 +73,8 @@ std::vector<std::pair<std::string, std::string>> builtOutputs(
 
 void convert(const std::string &installable, const fs::path &directory,
              const std::string &open, Granularity granularity,
-             const std::optional<fs::path> &project) {
+             const std::optional<fs::path> &project,
+             const std::optional<fs::path> &shared) {
   // Find out now, and not after the build has been recorded, that the
   // project cannot take the build files.
   if (project) {
@@ -115,9 +116,15 @@ void convert(const std::string &installable, const fs::path &directory,
     writeBytes(directory / kGraphFile, text + "\n");
 
     // The rules of a project go into the project, next to the
-    // sources they name. A recorded build gets a workspace of its own.
-    emitWorkspace(*module, recording,
-                  project ? *project : directory / kWorkspaceDirectory);
+    // sources they name. A build that joins a shared workspace becomes a
+    // package there. Any other recorded build gets a workspace of its
+    // own.
+    if (shared) {
+      llvm::outs() << emitPackage(*module, recording, *shared) << "\n";
+    } else {
+      emitWorkspace(*module, recording,
+                    project ? *project : directory / kWorkspaceDirectory);
+    }
 
     // Say what the build has to reproduce, as sha256sum would print it:
     // the digest in hex with nothing in front, then the path.
