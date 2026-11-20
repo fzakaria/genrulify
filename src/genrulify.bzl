@@ -77,18 +77,46 @@ def rust_proc_macro(name, srcs = [], deps = [], outs = [], data = [], cmd = []):
 def watched(name, srcs):
     """Stands for commands that are run to see that they still do what was recorded.
 
-    A project's command that reads its sources and whose results nothing
-    uses is run only for that: a grep the builder branched on, say. Such
-    a command fails when it ends another way or leaves a file the
-    recorded build did not have. `srcs` is the stamp of one such command
-    and the target of this kind for the commands before it, and every
-    rule recorded after that command lists this target.
+    A project's command that reads its sources is run again after an edit
+    and fails when it ends another way than it did or leaves something
+    else. The builder may have decided what to run next by how such a
+    command ended. So whatever somebody builds waits for the commands of
+    that kind recorded before the one that made it: `srcs` is the stamps
+    of some of them and the target of this kind for the ones before. The
+    archive and each file with a name of its own name one such target.
     """
-    native.filegroup(name = name, srcs = srcs)
 
-def built_file(name, file):
-    """Names a file a rule wrote after the file's place in the build tree."""
-    native.alias(name = name, actual = file)
+    # One file stands for all of them, so that a chain of these targets
+    # stays one file deep however long it is.
+    native.genrule(
+        name = name,
+        srcs = srcs,
+        outs = [name + _STAMP],
+        cmd = ": > $@",
+        tags = _TAGS,
+    )
+
+def _built_file_impl(ctx):
+    """Hands on one file of another rule, and has the watched commands checked."""
+
+    # The file is the other rule's own. The watched commands are a
+    # validation: Bazel runs them when the target is built, by name or
+    # as a dependency of another rule, and fails the build with them.
+    return [
+        DefaultInfo(files = depset([ctx.file.file])),
+        OutputGroupInfo(_validation = depset(ctx.files.after)),
+    ]
+
+# Names a file a rule wrote after the file's place in the build tree.
+# `after` is the `watched` target for the commands recorded before the one
+# that wrote the file.
+built_file = rule(
+    implementation = _built_file_impl,
+    attrs = {
+        "after": attr.label_list(allow_files = True),
+        "file": attr.label(allow_single_file = True, mandatory = True),
+    },
+)
 
 # The script a program is started through. It puts the directory of the
 # program's shared libraries ahead of the loader's other places and then
@@ -121,12 +149,21 @@ def _program_impl(ctx):
 
     # The target's file is the program itself, so that a rule which names
     # the target among its sources is given the program. The launcher is
-    # what `bazel run` starts, and its runfiles exist only there.
-    return [DefaultInfo(
-        files = depset([ctx.file.file]),
-        executable = launcher,
-        runfiles = ctx.runfiles(files = [ctx.file.file], symlinks = symlinks),
-    )]
+    # what `bazel run` starts, and its runfiles exist only there. The
+    # stamps of the watched commands are among the runfiles, so that the
+    # program is not started before those commands have been checked,
+    # and they are a validation for a rule that only takes the file.
+    return [
+        DefaultInfo(
+            files = depset([ctx.file.file]),
+            executable = launcher,
+            runfiles = ctx.runfiles(
+                files = [ctx.file.file] + ctx.files.after,
+                symlinks = symlinks,
+            ),
+        ),
+        OutputGroupInfo(_validation = depset(ctx.files.after)),
+    ]
 
 # Names a program a rule linked after the program's place in the build
 # tree, and runs it. The program is the recorded build's: it finds the
@@ -135,10 +172,12 @@ def _program_impl(ctx):
 # target is given those, `libs`, with the name the loader asks for each
 # by, `lib_names`, and puts them on the loader's path. A library the
 # program asks for under a third name, such as a versioned soname the
-# link never read, is not found this way.
+# link never read, is not found this way. `after` is the `watched` target
+# for the commands recorded before the link.
 program = rule(
     implementation = _program_impl,
     attrs = {
+        "after": attr.label_list(allow_files = True),
         "file": attr.label(allow_single_file = True, mandatory = True),
         "lib_names": attr.string_list(),
         "libs": attr.label_list(allow_files = True),

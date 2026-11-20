@@ -201,11 +201,13 @@ struct Rule {
   uint64_t step = 0;
 
   // Whether the rule runs nothing and stands for watched commands: the
-  // ones in `stamps`, and the ones the target `after` stands for. On any
-  // other rule `after` is the target of that kind the rule waits for, or
-  // empty.
+  // ones in `stamps`, and the ones the target `after` stands for. On an
+  // archive `after` is the target of that kind the archive waits for, or
+  // empty. `fileAfter` is the same for the target that names the rule's
+  // file.
   bool gate = false;
   std::string after;
+  std::string fileAfter;
 
   // The guest path of the file the rule writes when it writes exactly
   // one, and the name that file is given as a target of its own, or
@@ -439,8 +441,8 @@ std::vector<std::string> ruleAttributes(Backend backend, const Rule &rule,
     stamps.push_back(stampLabel(target));
   }
 
-  // The target that stands for the watched commands recorded before
-  // this rule's command is named the same way in both build files.
+  // The target that stands for the watched commands a gate takes in or
+  // an archive waits for is named the same way in both build files.
   if (!rule.after.empty()) {
     stamps.push_back(absl::StrCat(":", rule.after));
   }
@@ -591,6 +593,14 @@ std::string renderRule(Backend backend, const Rule &rule,
                     ",\n", kAttributeIndent,
                     attribute("lib_names", list(names)), ",\n");
   }
+
+  // The watched commands recorded before the command that wrote the
+  // file, which whoever builds or runs the file waits for.
+  if (!rule.fileAfter.empty()) {
+    absl::StrAppend(
+        &text, kAttributeIndent,
+        attribute("after", list({absl::StrCat(":", rule.fileAfter)})), ",\n");
+  }
   return text + ")\n\n";
 }
 
@@ -629,46 +639,68 @@ void closeLibraries(std::vector<Rule> &rules) {
   }
 }
 
-// Makes every rule wait for the watched commands nothing reads that were
-// recorded before the rule's own command. The archive is not all that
-// somebody builds: a program is run and an object is built by name, and a
-// command that came earlier may have decided how either was made, as a
-// grep whose exit status the builder branches on does.
+// Makes what somebody builds wait for the watched commands recorded
+// before the command that made it. A watched command reads a source, runs
+// again after an edit, and fails when it ends another way than it did or
+// leaves something else. The builder may have decided what to run next
+// by how any such command ended, as a shell does with a command it
+// tests, whether or not something reads what the command wrote. An
+// archive waits for all of them, and a file with a name of its own for
+// those recorded before the command that wrote it.
 //
-// Each such command gets a target that stands for it and for every one
-// before it, so a rule names one target however many commands it waits
-// for. A watched command waits for none of the others: each can run as
-// soon as its inputs are there.
+// The commands are collected by gates. A gate holds the commands since
+// the gate before it and takes that gate in, so a target names one gate
+// and each command is listed once. The commands themselves wait for
+// nothing more than their inputs: they run side by side, and one object
+// can be built while another source does not compile.
 void addGates(std::vector<Rule> &rules,
-              const std::map<uint64_t, std::string> &unreadAt) {
-  if (unreadAt.empty()) {
+              const std::map<uint64_t, std::string> &watchedAt) {
+  if (watchedAt.empty()) {
     return;
   }
+  const auto gateName = [](uint64_t step) {
+    return absl::StrCat(kWatchedPrefix, step);
+  };
 
-  // One gate per command, by the command's rule and by its step.
-  std::map<std::string, Rule> gateOf;
-  std::map<uint64_t, std::string> gateAt;
-  std::string previous;
-  for (const auto &[step, name] : unreadAt) {
-    Rule gate;
-    gate.name = absl::StrCat(kWatchedPrefix, step);
-    gate.gate = true;
-    gate.stamps.insert(name);
-    gate.after = previous;
-    previous = gate.name;
-    gateAt[step] = gate.name;
-    gateOf.emplace(name, std::move(gate));
+  // Where a gate is needed: at the last watched command before each
+  // named file's command, and at the last one of all for an archive.
+  std::set<uint64_t> cuts;
+  for (auto &rule : rules) {
+    if (rule.archive) {
+      const auto last = watchedAt.rbegin()->first;
+      cuts.insert(last);
+      rule.after = gateName(last);
+      continue;
+    }
+    const auto later = watchedAt.lower_bound(rule.step);
+    if (rule.fileName.empty() || later == watchedAt.begin()) {
+      continue;
+    }
+    const auto last = std::prev(later)->first;
+    cuts.insert(last);
+    rule.fileAfter = gateName(last);
   }
 
-  // A gate is written after the rule of its command.
+  // Each gate, by the rule of the last command it holds.
+  std::map<std::string, Rule> gateOf;
+  std::string previous;
+  auto member = watchedAt.begin();
+  for (const auto cut : cuts) {
+    Rule gate;
+    gate.name = gateName(cut);
+    gate.gate = true;
+    gate.after = previous;
+    for (; member != watchedAt.end() && member->first <= cut; ++member) {
+      gate.stamps.insert(member->second);
+    }
+    previous = gate.name;
+    gateOf.emplace(watchedAt.at(cut), std::move(gate));
+  }
+
+  // A gate is written after the rule of its last command.
   std::vector<Rule> all;
   for (auto &rule : rules) {
     const auto own = gateOf.find(rule.name);
-    const bool command = !rule.archive && own == gateOf.end();
-    if (const auto later = gateAt.lower_bound(rule.step);
-        command && later != gateAt.begin()) {
-      rule.after = std::prev(later)->second;
-    }
     all.push_back(std::move(rule));
     if (own != gateOf.end()) {
       all.push_back(std::move(own->second));
@@ -687,7 +719,8 @@ void addGates(std::vector<Rule> &rules,
 // The directory every such file is under, as `hello-2.12.3/` is in a
 // build from a tarball, is left off. Two rules that write one path wrote
 // two versions of the file, and the name goes to the later one. A name
-// that a rule or a file of the workspace already has is not given out.
+// that a rule or a file of the workspace already has is not given out,
+// and neither is one that reads like a gate's.
 void nameFiles(std::vector<Rule> &rules, const fs::path &workspace) {
   // The rules that have a file to name, with the file's place below the
   // build tree.
@@ -726,7 +759,7 @@ void nameFiles(std::vector<Rule> &rules, const fs::path &workspace) {
   for (const auto &[rule, place] : candidates) {
     const auto name = common ? place.substr(shared.size()) : place;
     if (!std::regex_match(name, allowed) || taken.contains(name) ||
-        fs::exists(workspace / name)) {
+        name.starts_with(kWatchedPrefix) || fs::exists(workspace / name)) {
       continue;
     }
     named[name] = rule;
@@ -1082,10 +1115,8 @@ void emitWorkspace(mlir::ModuleOp module, const Recording &recording,
       }
     };
 
-    // The watched commands whose results nothing reads, by rule name
-    // and by the step each was recorded at.
-    std::set<std::string> unread;
-    std::map<uint64_t, std::string> unreadAt;
+    // The watched commands, by the step each was recorded at.
+    std::map<uint64_t, std::string> watchedAt;
     std::vector<Rule> rules;
     for (auto &op : module.getBody()->getOperations()) {
       if (auto literal = llvm::dyn_cast<LiteralOp>(op)) {
@@ -1125,13 +1156,9 @@ void emitWorkspace(mlir::ModuleOp module, const Recording &recording,
         if (action.trusted) {
           action.removed = removedPaths(recording, exec.getStep());
         }
-        const bool read = llvm::any_of(
-            exec->getResults(),
-            [](mlir::Value result) { return !result.use_empty(); });
         rule.step = exec.getStep();
-        if (exec.getWatched() && !read) {
-          unread.insert(action.name);
-          unreadAt[rule.step] = action.name;
+        if (exec.getWatched()) {
+          watchedAt[rule.step] = action.name;
         }
         rule.recorded.insert(platformFiles.begin(), platformFiles.end());
 
@@ -1215,17 +1242,9 @@ void emitWorkspace(mlir::ModuleOp module, const Recording &recording,
       rules.push_back(std::move(rule));
     }
 
-    // A watched command nothing reads is run for what it might do after
-    // an edit, and a build system runs only what a target needs. Every
-    // archive therefore waits for the stamp of every such command.
-    for (auto &rule : rules) {
-      if (rule.archive) {
-        rule.stamps.insert(unread.begin(), unread.end());
-      }
-    }
-    addGates(rules, unreadAt);
     closeLibraries(rules);
     nameFiles(rules, destination);
+    addGates(rules, watchedAt);
     const auto bazelFile = buildFile(Backend::Bazel, rules, layout);
     const auto buckFile = buildFile(Backend::Buck2, rules, layout);
     writeBytes(support / kBazelRulesFile, kBazelRules);

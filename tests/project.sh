@@ -110,65 +110,61 @@ grep -qx /build genrulify/roots.txt
 grep -qx /nix/store/l1dx8g9mr73bdp8y6i2yp92xprmz8xzg-genrulify-example genrulify/roots.txt
 rule "$bazel_rules" s735_dd | grep -q '":genrulify/roots.txt",'
 
-# A watched command whose results nothing reads is on no path to the
-# archive, and a build system runs only what the archive needs. So the
-# archive rule waits for the stamp of every such command, and the command
-# gets to run and to fail. Here the output is emptied, which leaves the
-# last dd with no reader.
-sed 's|^\(  splice.output .*\)(%dd_782)|\1()|' "$scratch/opt.mlir" > "$scratch/unread.mlir"
-mkdir "$scratch/unread"
-printf 'header\n' > "$scratch/unread/header.txt"
-"$compiler" emit "$scratch/recording" "$scratch/unread.mlir" "$scratch/unread"
-rule "$scratch/unread/$bazel_rules" archive | grep -q '":s782_dd.ok",'
-rule "$scratch/unread/$buck_rules" archive | grep -q '":s782_dd",'
+# A command that reads a source is run again after an edit, and fails
+# when it ends another way than it did or leaves something else. The
+# builder may have decided what to run next by how such a command ended,
+# as a shell does with a grep and with any command it tests. So whatever
+# somebody builds has to wait for every watched command that was
+# recorded before the command that made it, whether or not anything
+# reads what those commands wrote. The archive waits for all of them.
+# They are collected by `watched` targets, each of which takes in the
+# one before it, so the archive names one target. Here all three dd
+# commands are watched.
+rule "$bazel_rules" archive | grep -q '":watched_782",'
+rule "$buck_rules" archive | grep -q '":watched_782",'
+grep -B 1 'name = "watched_782",' "$bazel_rules" | grep -q '^    watched($'
+grep -B 1 'name = "watched_782",' "$buck_rules" | grep -q '^    watched($'
+for command in s735_dd s764_dd s782_dd; do
+    rule "$bazel_rules" watched_782 | grep -q "\":$command.ok\","
+    rule "$buck_rules" watched_782 | grep -q "\":$command\","
+done
+grep -q '^def watched(' genrulify/genrulify.bzl
+grep -q '^def watched(' genrulify/genrulify.buck.bzl
 
-# A watched command that has a reader is run for that reader, and the
-# archive does not wait for it besides.
-if rule "$scratch/unread/$bazel_rules" archive | grep -q '":s764_dd.ok",'; then
-    exit 1
-fi
-
-# The archive is not the only thing somebody builds. A program is run
-# and an object is built by name, and neither waits for the archive. A
-# command that was recorded before a rule's command may have decided how
-# that rule's command was run, as a grep whose exit status the builder
-# branches on does. So every rule recorded after a watched command
-# nothing reads waits for it too, through one target that stands for
-# every such command up to that step: the list a rule carries stays one
-# label long however many there are. Here the second dd is made to read
-# the header in place of the first dd's file, which leaves the first dd
-# with no reader, and the output is emptied as before.
-sed -e 's|\(at 764 watched(%sandbox_717, \)%dd_735)|\1%source_717#1)|' \
-    -e 's|^\(  splice.output .*\)(%dd_782)|\1()|' "$scratch/opt.mlir" > "$scratch/gated.mlir"
-grep -q 'at 764 watched(%sandbox_717, %source_717#1)' "$scratch/gated.mlir"
-mkdir "$scratch/gated"
-printf 'header\n' > "$scratch/gated/header.txt"
-"$compiler" emit "$scratch/recording" "$scratch/gated.mlir" "$scratch/gated"
-grep -B 1 'name = "watched_735",' "$scratch/gated/$bazel_rules" | grep -q '^    watched($'
-grep -B 1 'name = "watched_735",' "$scratch/gated/$buck_rules" | grep -q '^    watched($'
-rule "$scratch/gated/$bazel_rules" watched_735 | grep -q '":s735_dd.ok",'
-rule "$scratch/gated/$buck_rules" watched_735 | grep -q '":s735_dd",'
-rule "$scratch/gated/$bazel_rules" s764_dd | grep -q '":watched_735",'
-rule "$scratch/gated/$buck_rules" s764_dd | grep -q '":watched_735",'
-
-# The target of a later watched command takes in the one before it. A
-# watched command waits for none: each can run as soon as its inputs are
-# there, and whoever waits for one waits for all before it.
-rule "$scratch/gated/$bazel_rules" watched_782 | grep -q '":s782_dd.ok",'
-rule "$scratch/gated/$bazel_rules" watched_782 | grep -q '":watched_735",'
-rule "$scratch/gated/$buck_rules" watched_782 | grep -q '":watched_735",'
-for command in s735_dd s782_dd; do
-    if rule "$scratch/gated/$bazel_rules" "$command" | grep -q 'watched_'; then
+# The commands themselves wait for nothing more than their inputs, so
+# they still run side by side and one object can be built while another
+# source does not compile.
+for command in s735_dd s764_dd s782_dd; do
+    if rule "$bazel_rules" "$command" | grep -q 'watched_'; then
         exit 1
     fi
 done
-grep -q '^def watched(' "$scratch/gated/genrulify/genrulify.bzl"
-grep -q '^def watched(' "$scratch/gated/genrulify/genrulify.buck.bzl"
 
-# A project whose watched commands all have readers has no such target.
-if grep -q 'watched' "$bazel_rules" "$buck_rules"; then
+# A file with a name of its own is built and run without the archive.
+# Its target waits for the watched commands recorded before the command
+# that made the file, through a `watched` target for those alone, which
+# the archive's then takes in. Here the second dd is called a link, so
+# that the file it writes is a program somebody can run, and the first
+# dd is the one command recorded before it.
+sed 's|at 764 watched(|at 764 as "cc_binary" watched(|' "$scratch/opt.mlir" > "$scratch/named.mlir"
+grep -q 'at 764 as "cc_binary" watched(' "$scratch/named.mlir"
+mkdir "$scratch/named"
+printf 'header\n' > "$scratch/named/header.txt"
+"$compiler" emit "$scratch/recording" "$scratch/named.mlir" "$scratch/named"
+grep -B 1 'name = "bundle",' "$scratch/named/$bazel_rules" | grep -q '^    program($'
+rule "$scratch/named/$bazel_rules" bundle | grep -A 2 'after = \[' | grep -q '":watched_735",'
+rule "$scratch/named/$buck_rules" bundle | grep -A 2 'after = \[' | grep -q '":watched_735",'
+rule "$scratch/named/$bazel_rules" watched_735 | grep -q '":s735_dd.ok",'
+if rule "$scratch/named/$bazel_rules" watched_735 | grep -q 's764_dd'; then
     exit 1
 fi
+rule "$scratch/named/$bazel_rules" watched_782 | grep -q '":s764_dd.ok",'
+rule "$scratch/named/$bazel_rules" watched_782 | grep -q '":watched_735",'
+rule "$scratch/named/$buck_rules" watched_782 | grep -q '":watched_735",'
+if rule "$scratch/named/$bazel_rules" watched_782 | grep -q '":s735_dd.ok",'; then
+    exit 1
+fi
+rule "$scratch/named/$bazel_rules" archive | grep -q '":watched_782",'
 
 # A recorded command can remove a file, and the graph then has no later
 # version of that path: nothing after the command is given the file.

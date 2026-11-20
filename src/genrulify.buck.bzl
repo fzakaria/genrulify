@@ -134,11 +134,17 @@ def rust_proc_macro(name, srcs = [], deps = [], outs = [], data = [], cmd = [], 
     _run(name, srcs + deps + data, outs, cmd, **placed)
 
 def _watched_impl(ctx):
-    """Collects the stamps of watched commands, so that a rule can wait for all."""
-    return [DefaultInfo(default_output = ctx.actions.symlinked_dir(
-        ctx.label.name,
-        {source.short_path: source for source in ctx.attrs.srcs},
-    ))]
+    """Writes one file once the stamps of the watched commands are there."""
+    stamp = ctx.actions.declare_output(ctx.label.name + _STAMP)
+    ctx.actions.run(
+        cmd_args(
+            ["/usr/bin/env", "bash", "-c", ': > "$1"', "--", stamp.as_output()],
+            hidden = ctx.attrs.srcs,
+        ),
+        category = "watched",
+        local_only = True,
+    )
+    return [DefaultInfo(default_output = stamp)]
 
 _watched = rule(
     impl = _watched_impl,
@@ -150,22 +156,28 @@ _watched = rule(
 def watched(name, srcs):
     """Stands for commands that are run to see that they still do what was recorded.
 
-    A project's command that reads its sources and whose results nothing
-    uses is run only for that: a grep the builder branched on, say. Such
-    a command fails when it ends another way or leaves a file the
-    recorded build did not have. `srcs` is the stamp of one such command
-    and the target of this kind for the commands before it, and every
-    rule recorded after that command lists this target.
+    A project's command that reads its sources is run again after an edit
+    and fails when it ends another way than it did or leaves something
+    else. The builder may have decided what to run next by how such a
+    command ended. So whatever somebody builds waits for the commands of
+    that kind recorded before the one that made it: `srcs` is the stamps
+    of some of them and the target of this kind for the ones before. The
+    archive and each file with a name of its own name one such target.
     """
     _watched(name = name, srcs = srcs)
 
 def _named_impl(ctx):
     """Stands for one file of another rule, and runs it when it is a program."""
-    providers = [DefaultInfo(default_output = ctx.attrs.file)]
+
+    # Whoever takes the file, builds it by name or runs it also waits for
+    # the watched commands recorded before the one that made the file.
+    checks = ctx.attrs.after
+    file = ctx.attrs.file.with_associated_artifacts(checks) if checks else ctx.attrs.file
+    providers = [DefaultInfo(default_output = file, other_outputs = checks)]
     if not ctx.attrs.runs:
         return providers
     if not ctx.attrs.libs:
-        return providers + [RunInfo(args = cmd_args(ctx.attrs.file))]
+        return providers + [RunInfo(args = cmd_args(file, hidden = checks))]
 
     # Each library is linked into one directory under the name the link
     # knew it by, which is the name the loader asks for, and the program
@@ -177,12 +189,14 @@ def _named_impl(ctx):
     return providers + [RunInfo(args = cmd_args(
         "/usr/bin/env",
         cmd_args(libraries, format = "LD_LIBRARY_PATH={}"),
-        ctx.attrs.file,
+        file,
+        hidden = checks,
     ))]
 
 _named = rule(
     impl = _named_impl,
     attrs = {
+        "after": attrs.list(attrs.source(), default = []),
         "file": attrs.source(),
         "lib_names": attrs.list(attrs.string(), default = []),
         "libs": attrs.list(attrs.source(), default = []),
@@ -190,11 +204,15 @@ _named = rule(
     },
 )
 
-def built_file(name, file):
-    """Names a file a rule wrote after the file's place in the build tree."""
-    _named(name = name, file = file)
+def built_file(name, file, after = []):
+    """Names a file a rule wrote after the file's place in the build tree.
 
-def program(name, file, libs = [], lib_names = []):
+    `after` is the `watched` target for the commands recorded before the
+    one that wrote the file.
+    """
+    _named(name = name, file = file, after = after)
+
+def program(name, file, libs = [], lib_names = [], after = []):
     """Names a program a rule linked, for `buck2 run`.
 
     The program is the recorded build's: it finds the libraries of other
@@ -206,7 +224,7 @@ def program(name, file, libs = [], lib_names = []):
     under a third name, such as a versioned soname no link read, is not
     found this way.
     """
-    _named(name = name, file = file, libs = libs, lib_names = lib_names, runs = True)
+    _named(name = name, file = file, libs = libs, lib_names = lib_names, after = after, runs = True)
 
 def nix_archive(name, srcs, out, cmd, **placed):
     """Packs one derivation output as a NAR, the form Nix hashes."""
