@@ -74,7 +74,7 @@ std::vector<std::pair<std::string, std::string>> builtOutputs(
 void convert(const std::string &installable, const fs::path &directory,
              const std::string &open, Granularity granularity,
              const std::optional<fs::path> &project,
-             const std::optional<fs::path> &shared) {
+             const std::optional<fs::path> &shared, IdleCommands idle) {
   // Find out now, and not after the build has been recorded, that the
   // project cannot take the build files.
   if (project) {
@@ -94,7 +94,7 @@ void convert(const std::string &installable, const fs::path &directory,
     // Cut the run, snapshot around every command, and replay each command
     // that the passes leave.
     const auto recorded = directory / kRecordingDirectory;
-    recordRun(run.at("id"), drv, recorded, open, granularity, project);
+    recordRun(run.at("id"), drv, recorded, open, granularity, project, idle);
     const auto recording = Recording::load(recorded);
 
     // Nothing is written for a build system until the recording is known

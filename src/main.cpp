@@ -14,7 +14,7 @@
 
 namespace {
 constexpr std::string_view kUsage =
-    "usage: genrulify convert [--coarse] [--open PROGRAMS] [--source PROJECT] [--into WORKSPACE] INSTALLABLE DIRECTORY\n"
+    "usage: genrulify convert [--coarse] [--skip-idle] [--open PROGRAMS] [--source PROJECT] [--into WORKSPACE] INSTALLABLE DIRECTORY\n"
     "       genrulify record [--coarse] [--skip-idle] [--source PROJECT] RUN DERIVATION.drv RECORDING [OPEN]\n"
     "       genrulify idle RECORDING\n"
     "       genrulify groups RECORDING\n"
@@ -119,7 +119,8 @@ void run(std::span<char *> args) {
     args = rest;
   }
 
-  // Take out the option that drops idle commands, which `record` has.
+  // Take out the option that drops idle commands, which `convert` and
+  // `record` have.
   auto idle = splice_ir::IdleCommands::Record;
   if (rest.size() > 1 && rest[1] == kSkipIdleOption) {
     idle = splice_ir::IdleCommands::Skip;
@@ -178,7 +179,14 @@ void run(std::span<char *> args) {
           "a project converted in place builds its own sources and cannot "
           "be a package of a shared workspace: give --source or --into");
     }
-    splice_ir::convert(args[1], args[2], open, granularity, project, shared);
+    if (project && idle == splice_ir::IdleCommands::Skip) {
+      throw std::runtime_error(
+          "--skip-idle is for a recorded build: a project converted in "
+          "place runs the commands that write nothing, to see that they "
+          "still end the same way");
+    }
+    splice_ir::convert(args[1], args[2], open, granularity, project, shared,
+                       idle);
     return;
   }
 

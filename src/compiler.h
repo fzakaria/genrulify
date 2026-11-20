@@ -325,7 +325,8 @@ void convert(const std::string &installable,
              const std::filesystem::path &directory, const std::string &open,
              Granularity granularity,
              const std::optional<std::filesystem::path> &project = {},
-             const std::optional<std::filesystem::path> &shared = {});
+             const std::optional<std::filesystem::path> &shared = {},
+             IdleCommands idle = IdleCommands::Record);
 
 // Reads the output of a failed build of an emitted workspace and adjusts
 // the verdicts of the rules that did not reproduce the recording: results

@@ -12,7 +12,7 @@ trap 'rm -rf "$scratch"' EXIT
 if "$compiler" convert 2> "$scratch/usage"; then
     exit 1
 fi
-grep -q 'genrulify convert \[--coarse\] \[--open PROGRAMS\] \[--source PROJECT\] \[--into WORKSPACE\] INSTALLABLE DIRECTORY' "$scratch/usage"
+grep -q 'genrulify convert \[--coarse\] \[--skip-idle\] \[--open PROGRAMS\] \[--source PROJECT\] \[--into WORKSPACE\] INSTALLABLE DIRECTORY' "$scratch/usage"
 
 # A build becomes a package of a workspace many builds share, or the
 # rules of a project converted in place, and not both. The command says
@@ -24,6 +24,15 @@ fi
 grep -q 'a project converted in place' "$scratch/error"
 test ! -e "$scratch/out"
 test ! -e "$scratch/shared"
+
+# Commands that change nothing can be dropped from a recorded build, and
+# not from a project, which runs them to see that they still end the
+# same way. That too is said before anything is built.
+if "$compiler" convert --skip-idle --source "$scratch/both" nixpkgs#hello "$scratch/out" 2> "$scratch/error"; then
+    exit 1
+fi
+grep -q 'skip-idle' "$scratch/error"
+test ! -e "$scratch/out"
 
 # A project to convert in place has to be a directory.
 if "$compiler" convert --source "$scratch/absent" nixpkgs#hello "$scratch/out" 2> "$scratch/error"; then
