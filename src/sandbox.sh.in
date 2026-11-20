@@ -615,8 +615,11 @@ unpack_store_path() {
 
     # The path is unpacked in the store itself, under a name no other
     # step has: a directory with nothing writable in it can be renamed
-    # only within the directory that holds it.
-    partial=$store/.partial.$$.$RANDOM
+    # only within the directory that holds it. The name is drawn at
+    # random and not made from the script's process id, which is the same
+    # small number in every step a build system runs in a namespace of
+    # its own.
+    partial=$("$C/mktemp" --dry-run "$store/.partial.XXXXXXXXXXXX") || fail "cannot name a directory in $store"
     "$NIX_STORE" --restore "$partial" < "$(find_input "$holder/$ARCHIVE_FILE")" ||
         fail "cannot unpack the archive of $holder"
 
