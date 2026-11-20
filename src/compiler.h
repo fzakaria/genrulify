@@ -324,6 +324,15 @@ void checkProjectDirectory(const std::filesystem::path &project);
 void emitWorkspace(mlir::ModuleOp module, const Recording &recording,
                    const std::filesystem::path &destination);
 
+// Writes a recorded build as one package of a workspace that many builds
+// share, `pkgs/NAME` with NAME the last name of the store path the build
+// makes, replacing a package of that name. The rules are for Bazel. A
+// store path the build read is a target of the workspace, below
+// `store/`, which `link` writes. Returns the label of the archive of the
+// build's main output.
+std::string emitPackage(mlir::ModuleOp module, const Recording &recording,
+                        const std::filesystem::path &workspace);
+
 // Prints a JSON description of a recorded graph and of every process
 // group in its recording, for tools that show a conversion to people.
 // `module` is the graph before optimization: the description marks the

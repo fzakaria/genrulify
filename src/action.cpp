@@ -34,8 +34,6 @@ constexpr uint64_t kMillisecondsPerSecond = 1000;
 // killed by a signal, and so does bubblewrap.
 constexpr int kSignalExitBase = 128;
 
-// The separator of a manifest line's fields, which no path may contain.
-constexpr char kFieldSeparator = '\x1f';
 
 constexpr int kStandardInput = 0;
 

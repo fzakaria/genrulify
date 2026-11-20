@@ -27,6 +27,7 @@ constexpr std::string_view kUsage =
     "       genrulify rule PROGRAM [ARGUMENT...]\n"
     "       genrulify unpack PROGRAM [ARGUMENT...]\n"
     "       genrulify emit RECORDING GRAPH.mlir WORKSPACE\n"
+    "       genrulify emit --into WORKSPACE RECORDING GRAPH.mlir\n"
     "       genrulify describe RECORDING RECORDED.mlir\n"
     "       genrulify reference RECORDING OUTPUT ARCHIVE.nar\n"
     "       genrulify verify REFERENCE.nar ARCHIVE.nar\n"
@@ -52,6 +53,9 @@ constexpr std::string_view kSourceOption = "--source";
 
 // The option of `opt` that names the recording a graph was imported from.
 constexpr std::string_view kRecordingOption = "--recording";
+
+// The option of `emit` that names a workspace many builds share.
+constexpr std::string_view kIntoOption = "--into";
 
 // The separator between the process and the step of an image.
 constexpr char kImageSeparator = '@';
@@ -304,6 +308,14 @@ void run(std::span<char *> args) {
   if (args.size() == 3 && command == "describe") {
     auto module = parse(context, args[2]);
     splice_ir::describeGraph(*module, splice_ir::Recording::load(args[1]));
+    return;
+  }
+  if (args.size() == 5 && command == "emit" && args[1] == kIntoOption) {
+    // One package of a shared workspace, whose label is printed.
+    auto module = parse(context, args[4]);
+    llvm::outs() << splice_ir::emitPackage(
+                        *module, splice_ir::Recording::load(args[3]), args[2])
+                 << "\n";
     return;
   }
   if (args.size() == 4 && command == "emit") {

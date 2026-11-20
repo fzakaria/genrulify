@@ -181,6 +181,9 @@ std::optional<ReplayFailure> runAction(const Action &action,
                                        const std::filesystem::path &shared,
                                        const std::filesystem::path &trace = {});
 
+// The separator of a manifest line's fields, which no path may contain.
+inline constexpr char kFieldSeparator = '\x1f';
+
 // File names inside an emitted workspace and a checker's scratch directory.
 inline constexpr std::string_view kSandboxFile = "sandbox.sh";
 inline constexpr std::string_view kClosureFile = "closure.txt";
