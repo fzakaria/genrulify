@@ -50,6 +50,12 @@ constexpr std::string_view kStatusFormat = "%{http_code}";
 constexpr std::string_view kFound = "200";
 constexpr std::string_view kNotFound[] = {"404", "403"};
 
+// How often curl asks again when a request failed on the way, and how
+// long one request may take. A cache that is asked for thousands of
+// small files drops a few.
+constexpr std::string_view kFetchRetries = "5";
+constexpr std::string_view kFetchSeconds = "60";
+
 // The files `link` writes at the root of a workspace.
 constexpr std::string_view kBuildFile = "BUILD.bazel";
 constexpr std::string_view kModuleFile = "MODULE.bazel";
@@ -190,7 +196,9 @@ void fetchNarinfos(const fs::path &directory, const std::string &cache,
     const auto file = directory / absl::StrCat(hash, kNarinfoExtension);
     const auto partial = directory / absl::StrCat(hash, ".partial");
     const auto status =
-        capture({std::string(kCurl), "--silent", "--location", "--output",
+        capture({std::string(kCurl), "--silent", "--location", "--retry",
+                 std::string(kFetchRetries), "--retry-all-errors",
+                 "--max-time", std::string(kFetchSeconds), "--output",
                  partial.string(), "--write-out", std::string(kStatusFormat),
                  absl::StrCat(cache, "/", hash, kNarinfoExtension)});
     if (status == kFound) {
