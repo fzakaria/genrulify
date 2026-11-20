@@ -170,17 +170,26 @@ A command that read a source is also kept when nothing reads what it
 left. In the graph it is marked `watched`. After an edit it may write a
 file it did not write before, or exit with another status that the
 builder then branches on, and only a rule that runs can notice either.
-Every rule whose command was recorded after such a command waits for
-it, because the builder may have decided how to run the later command
-by what the earlier one did. So a program built or run by name fails
-the same way the archive does.
+The builder may have decided what to run next by how any command that
+read a source ended, whether or not something reads what the command
+wrote. So the archive waits for every watched command, and a file with
+a name of its own waits for those recorded before the command that
+wrote it. A program built or run by name then fails the same way the
+archive does. The commands themselves wait only for their inputs, so
+they still run in parallel.
 
 A trusted rule writes down the modes and symlink targets it left, and
 the rules that read its results stage those. The rule fails if a result
 is missing, or if the command leaves an entry that the recording did not
 have, under an output path or under `/build`. A new file under `/build`
 would stay in the sandbox of the step that wrote it, and a later command
-that asks whether the file exists would be told that it does not. A
+that asks whether the file exists would be told that it does not. The
+rule also fails if the command keeps a path the recorded command
+removed, or changes or removes an entry the recorded command was given
+and left as it was. The graph has one version of a path per write the
+recording saw, so it has nothing to hand on for either. A file that was
+left alone is compared with what was staged for this build, so an
+edited source is no change. A
 file the builder wrote itself is not tied
 to a source with the same bytes. It stays recorded bytes, and `check`
 lists every recorded file the project still uses, since an edit will not

@@ -223,12 +223,15 @@ read tools and libraries from the host's `/nix/store`.
 A project's rules hold what one build did: which commands ran and with
 which arguments. Every command that read a source runs again after an
 edit, and its rule fails when the command exits differently or leaves a
-file it did not leave before, in the package or under `/build`. Every
-rule recorded after such a command waits for it, so `bazel run` and
-`buck2 run` fail with the archive when a command the builder branched
-on ends another way. A value the builder read from a source and passed
-on a command line stays as recorded, and so does a symlink in the
-source tree.
+file it did not leave before, in the package or under `/build`. It also
+fails when the command keeps a file it removed before, or changes one
+it only read. The archive waits for every such command, and a named
+target like `//:greet` for those recorded before the command that made
+its file. So `bazel run` and `buck2 run` fail with the archive when a
+command the builder branched on ends another way. A label named after
+a step, like `:s2845_gcc`, waits for its inputs alone. A value the
+builder read from a source and passed on a command line stays as
+recorded, and so does a symlink in the source tree.
 
 A command runs under the file-creation mask its process had when the
 build was recorded. A recording made before masks were kept runs under
