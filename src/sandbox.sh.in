@@ -563,7 +563,23 @@ while [ $# -gt 0 ]; do
             --env) env_file=$2 ;;
             --umask) mask=$2 ;;
             --argv0) argv0=$2 ;;
-            --fd) fds+=("$2") ;;
+            --fd)
+                fds+=("$2")
+
+                # The file behind a descriptor is the recording's wiring:
+                # the script opens the file, and the command did not
+                # choose to make it. So the file counts as known even
+                # when the recording has no entry for it, as for a named
+                # pipe, which is opened here as a plain file.
+                what=${2#*=}
+                case $what in
+                    file:r@*)
+                        what=${what#file:r@}
+                        known[${what#*:}]=1
+                        ;;
+                    file:[rwa]:*) known[${what#file:?:}]=1 ;;
+                esac
+                ;;
             --after) after=$2 ;;
             --status) want=$2 ;;
             --argc) argc=$2 ;;

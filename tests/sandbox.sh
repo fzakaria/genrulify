@@ -350,3 +350,15 @@ EMPTY=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
     line out file 660 1 /build/made "$EMPTY" masked/build/made
 } > "$scratch/actions/masked.manifest"
 (umask 077 && start masked run --cwd /build --env 0 --umask 117 --status 0 --argc 2 -- "$coreutils/touch" made)
+
+# A trusted step is handed its descriptors by the recording, and the
+# script opens the file behind each one. Such a file can be one the
+# recording has no entry for: a named pipe the builder made is opened
+# here as a plain file. The command did not make that file up, so the
+# file is not reported as one the recorded build did not leave. Here
+# echo writes to descriptor 1, a file with no line in the manifest.
+{
+    line in dir 700 1 /build '' ''
+} > "$scratch/actions/wired.manifest"
+start wired --trust --in "$scratch/project-files" \
+    run --cwd /build --env 0 --fd 1=file:w:/build/wired --status 0 --argc 2 -- "$coreutils/echo" written
