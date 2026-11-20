@@ -74,6 +74,18 @@ def rust_proc_macro(name, srcs = [], deps = [], outs = [], data = [], cmd = []):
     """A rustc invocation that builds a procedural macro."""
     _run(name, srcs + deps + data, outs, cmd)
 
+def watched(name, srcs):
+    """Stands for commands that are run to see that they still do what was recorded.
+
+    A project's command that reads its sources and whose results nothing
+    uses is run only for that: a grep the builder branched on, say. Such
+    a command fails when it ends another way or leaves a file the
+    recorded build did not have. `srcs` is the stamp of one such command
+    and the target of this kind for the commands before it, and every
+    rule recorded after that command lists this target.
+    """
+    native.filegroup(name = name, srcs = srcs)
+
 def built_file(name, file):
     """Names a file a rule wrote after the file's place in the build tree."""
     native.alias(name = name, actual = file)

@@ -26,6 +26,11 @@ inline constexpr std::string_view kRustProcMacro = "rust_proc_macro";
 inline constexpr std::string_view kRecordedRule = "recorded";
 inline constexpr std::string_view kArchiveRule = "nix_archive";
 
+// The rule that stands for the watched commands up to one step, and what
+// such a target is called ahead of the step.
+inline constexpr std::string_view kWatchedRule = "watched";
+inline constexpr std::string_view kWatchedPrefix = "watched_";
+
 // The rules that give the file a typed rule wrote a name of its own: a
 // program that can be run, and any other file.
 inline constexpr std::string_view kProgramRule = "program";

@@ -133,6 +133,32 @@ def rust_proc_macro(name, srcs = [], deps = [], outs = [], data = [], cmd = [], 
     """A rustc invocation that builds a procedural macro."""
     _run(name, srcs + deps + data, outs, cmd, **placed)
 
+def _watched_impl(ctx):
+    """Collects the stamps of watched commands, so that a rule can wait for all."""
+    return [DefaultInfo(default_output = ctx.actions.symlinked_dir(
+        ctx.label.name,
+        {source.short_path: source for source in ctx.attrs.srcs},
+    ))]
+
+_watched = rule(
+    impl = _watched_impl,
+    attrs = {
+        "srcs": attrs.list(attrs.source()),
+    },
+)
+
+def watched(name, srcs):
+    """Stands for commands that are run to see that they still do what was recorded.
+
+    A project's command that reads its sources and whose results nothing
+    uses is run only for that: a grep the builder branched on, say. Such
+    a command fails when it ends another way or leaves a file the
+    recorded build did not have. `srcs` is the stamp of one such command
+    and the target of this kind for the commands before it, and every
+    rule recorded after that command lists this target.
+    """
+    _watched(name = name, srcs = srcs)
+
 def _named_impl(ctx):
     """Stands for one file of another rule, and runs it when it is a program."""
     providers = [DefaultInfo(default_output = ctx.attrs.file)]

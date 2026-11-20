@@ -584,15 +584,12 @@ function excerpt(node) {
   return [...lines, "]"].join("\n");
 }
 
-/** The module listing: one line per operation, with the selected one printed in full. */
+/** Build the collapsed listing once for this choice of optimizer passes. */
 function renderModule() {
-  const selectedId = selected().node?.id;
   const rows = shownNodes().map((node) => {
-    const open = node.id === selectedId;
     const row = create("li", { className: `op ${nodeClass(node)}` }, [
-      create("code", {}, valueTokens(open ? excerpt(node) : summaryLine(node))),
+      create("code", {}, valueTokens(summaryLine(node))),
     ]);
-    row.classList.toggle("selected", open);
     row.dataset.id = node.id;
     return row;
   });
@@ -600,13 +597,32 @@ function renderModule() {
   const scrolled = listing.scrollTop;
   listing.replaceChildren(...rows);
   listing.scrollTop = scrolled;
+  $("module-caption").textContent = `${rows.length.toLocaleString()} operations shown.`;
+}
+
+/** Only the previous and current selections change between clicks. */
+function selectModuleRow(node) {
+  const listing = $("module");
+  const previous = listing.querySelector(".selected");
+  if (previous && previous.dataset.id !== node?.id) {
+    const collapsed = shownNodes().find((candidate) => candidate.id === previous.dataset.id);
+    previous.firstChild.replaceChildren(...valueTokens(summaryLine(collapsed)));
+    previous.classList.remove("selected");
+  }
+  if (!node) {
+    return;
+  }
+
+  const row = listing.querySelector(`[data-id="${CSS.escape(node.id)}"]`);
+  if (!row.classList.contains("selected")) {
+    row.firstChild.replaceChildren(...valueTokens(excerpt(node)));
+    row.classList.add("selected");
+  }
 
   // Bring the selected operation into view without moving the page.
-  const row = listing.querySelector(".op.selected");
-  if (row && (row.offsetTop < listing.scrollTop || row.offsetTop > listing.scrollTop + listing.clientHeight - row.clientHeight)) {
+  if (row.offsetTop < listing.scrollTop || row.offsetTop > listing.scrollTop + listing.clientHeight - row.clientHeight) {
     listing.scrollTop = row.offsetTop - listing.clientHeight / 3;
   }
-  $("module-caption").textContent = `${rows.length.toLocaleString()} operations shown.`;
 }
 
 /** Makes the module listing respond to the pointer. Called once. */
@@ -651,11 +667,13 @@ function selected() {
 function select(selection) {
   state.selection = selection;
   const { node, group } = selected();
-  for (const cell of $("timeline").children) {
-    cell.classList.toggle("selected", group !== undefined && Number(cell.dataset.step) === group.step);
+  const timeline = $("timeline");
+  timeline.querySelector(".selected")?.classList.remove("selected");
+  if (group) {
+    timeline.querySelector(`[data-step="${group.step}"]`).classList.add("selected");
   }
   highlight($("graph"), node?.id ?? null);
-  renderModule();
+  selectModuleRow(node);
 
   $("detail").hidden = false;
   $("detail-title").textContent = node ? nodeLabel(node) : group.name;

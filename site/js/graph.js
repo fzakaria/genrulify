@@ -116,11 +116,10 @@ export function draw(svg, nodes, { labelOf, classOf, onSelect }) {
 
   // Edges go under the nodes. They are redrawn and fade in, because a
   // curve between two moving nodes has no good intermediate shape.
-  const edges = layerGroup(svg, "edges");
+  const previousEdges = layerGroup(svg, "edges");
   const nodeLayer = layerGroup(svg, "nodes");
   const redrawn = nodeLayer.childElementCount > 0;
-  edges.replaceChildren();
-  edges.classList.toggle("redrawn", redrawn);
+  const edges = element("g", { class: redrawn ? "edges redrawn" : "edges" });
   for (const { node, x, y } of placed.values()) {
     for (const input of node.inputs) {
       const from = placed.get(input.node);
@@ -137,6 +136,8 @@ export function draw(svg, nodes, { labelOf, classOf, onSelect }) {
       edges.append(path);
     }
   }
+
+  previousEdges.replaceWith(edges);
 
   // Find the elements an earlier call drew. One that is already leaving
   // is not reused: a node that comes back gets a fresh element.
@@ -172,11 +173,18 @@ export function draw(svg, nodes, { labelOf, classOf, onSelect }) {
 
 /** Marks the selected node and the edges that touch it. */
 export function highlight(svg, id) {
-  for (const node of svg.querySelectorAll(".node")) {
-    node.classList.toggle("selected", node.dataset.id === id);
+  svg.querySelector(".node.selected")?.classList.remove("selected");
+  for (const edge of svg.querySelectorAll(".edge.touching")) {
+    edge.classList.remove("touching");
   }
-  for (const edge of svg.querySelectorAll(".edge")) {
-    edge.classList.toggle("touching", edge.dataset.from === id || edge.dataset.to === id);
+  if (id === null) {
+    return;
   }
-  svg.querySelector(".node.selected")?.scrollIntoView({ block: "nearest", inline: "nearest" });
+  const value = CSS.escape(id);
+  const node = svg.querySelector(`.node:not(.leaving)[data-id="${value}"]`);
+  node?.classList.add("selected");
+  for (const edge of svg.querySelectorAll(`[data-from="${value}"], [data-to="${value}"]`)) {
+    edge.classList.add("touching");
+  }
+  node?.scrollIntoView({ block: "nearest", inline: "nearest" });
 }

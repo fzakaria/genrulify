@@ -128,6 +128,48 @@ if rule "$scratch/unread/$bazel_rules" archive | grep -q '":s764_dd.ok",'; then
     exit 1
 fi
 
+# The archive is not the only thing somebody builds. A program is run
+# and an object is built by name, and neither waits for the archive. A
+# command that was recorded before a rule's command may have decided how
+# that rule's command was run, as a grep whose exit status the builder
+# branches on does. So every rule recorded after a watched command
+# nothing reads waits for it too, through one target that stands for
+# every such command up to that step: the list a rule carries stays one
+# label long however many there are. Here the second dd is made to read
+# the header in place of the first dd's file, which leaves the first dd
+# with no reader, and the output is emptied as before.
+sed -e 's|\(at 764 watched(%sandbox_717, \)%dd_735)|\1%source_717#1)|' \
+    -e 's|^\(  splice.output .*\)(%dd_782)|\1()|' "$scratch/opt.mlir" > "$scratch/gated.mlir"
+grep -q 'at 764 watched(%sandbox_717, %source_717#1)' "$scratch/gated.mlir"
+mkdir "$scratch/gated"
+printf 'header\n' > "$scratch/gated/header.txt"
+"$compiler" emit "$scratch/recording" "$scratch/gated.mlir" "$scratch/gated"
+grep -B 1 'name = "watched_735",' "$scratch/gated/$bazel_rules" | grep -q '^    watched($'
+grep -B 1 'name = "watched_735",' "$scratch/gated/$buck_rules" | grep -q '^    watched($'
+rule "$scratch/gated/$bazel_rules" watched_735 | grep -q '":s735_dd.ok",'
+rule "$scratch/gated/$buck_rules" watched_735 | grep -q '":s735_dd",'
+rule "$scratch/gated/$bazel_rules" s764_dd | grep -q '":watched_735",'
+rule "$scratch/gated/$buck_rules" s764_dd | grep -q '":watched_735",'
+
+# The target of a later watched command takes in the one before it. A
+# watched command waits for none: each can run as soon as its inputs are
+# there, and whoever waits for one waits for all before it.
+rule "$scratch/gated/$bazel_rules" watched_782 | grep -q '":s782_dd.ok",'
+rule "$scratch/gated/$bazel_rules" watched_782 | grep -q '":watched_735",'
+rule "$scratch/gated/$buck_rules" watched_782 | grep -q '":watched_735",'
+for command in s735_dd s782_dd; do
+    if rule "$scratch/gated/$bazel_rules" "$command" | grep -q 'watched_'; then
+        exit 1
+    fi
+done
+grep -q '^def watched(' "$scratch/gated/genrulify/genrulify.bzl"
+grep -q '^def watched(' "$scratch/gated/genrulify/genrulify.buck.bzl"
+
+# A project whose watched commands all have readers has no such target.
+if grep -q 'watched' "$bazel_rules" "$buck_rules"; then
+    exit 1
+fi
+
 # A command of a recorded build is held to the recording.
 "$compiler" import "$data/example" > "$scratch/plain.mlir"
 "$compiler" emit "$data/example" "$scratch/plain.mlir" "$scratch/plain"

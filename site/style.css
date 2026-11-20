@@ -313,7 +313,7 @@ button[aria-pressed="true"] {
   pointer-events: none;
 }
 #graph .node.entering,
-#graph .edges.redrawn .edge {
+#graph .edges.redrawn {
   animation: appear 0.4s ease 0.3s backwards;
 }
 @keyframes appear {
@@ -324,7 +324,7 @@ button[aria-pressed="true"] {
 @media (prefers-reduced-motion: reduce) {
   #graph .node,
   #graph .node.entering,
-  #graph .edges.redrawn .edge {
+  #graph .edges.redrawn {
     transition: none;
     animation: none;
   }
