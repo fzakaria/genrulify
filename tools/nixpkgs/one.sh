@@ -36,6 +36,9 @@ record_options=${RECORD_OPTIONS:---skip-idle}
 # The status `timeout` exits with when the deadline passed.
 TIMED_OUT=124
 
+# How Rewind says a build was stopped at its deadline.
+BUILD_TIMED_OUT=timed-out
+
 # What Rewind says of a derivation it will not build because the
 # derivation fetches.
 FIXED_OUTPUT_MARK='is a fixed-output derivation'
@@ -166,7 +169,14 @@ for vm_memory in $vm_memories; do
         fi
         finish rewind-failed
     fi
-    if [ "$(jq -r .ending "$work/run.json")" = exited:0 ]; then
+    ending=$(jq -r .ending "$work/run.json")
+    if [ "$ending" = exited:0 ]; then
+        break
+    fi
+
+    # A build that ran out of time would run out of it again with more
+    # memory.
+    if [ "$ending" = "$BUILD_TIMED_OUT" ]; then
         break
     fi
 done
