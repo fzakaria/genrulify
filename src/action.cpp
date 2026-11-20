@@ -619,13 +619,11 @@ void writeSharedFiles(const Recording &recording, const fs::path &directory) {
   if (!recording.source.empty()) {
     writeBytes(directory / kSourceFile, recording.source + "\n");
 
-    // A trusted step may leave nothing under an output path that the
-    // recording did not see, so the script has to know those paths too.
-    std::string outputs;
-    for (const auto &[name, path] : recording.outputs) {
-      absl::StrAppend(&outputs, path, "\n");
-    }
-    writeBytes(directory / kOutputsFile, outputs);
+    // A trusted step may leave nothing the recording did not see in a
+    // directory the build can write, so the script has to know those
+    // directories too.
+    writeBytes(directory / kRootsFile,
+               absl::StrJoin(recording.roots, "\n") + "\n");
   }
 
   // An environment is NAME=VALUE entries, each ended by a NUL, because a
@@ -649,7 +647,7 @@ Arguments sharedFiles(const Action &action, const Recording &recording) {
       files.insert(std::string(kSourceFile));
     }
     if (action.trusted) {
-      files.insert(std::string(kOutputsFile));
+      files.insert(std::string(kRootsFile));
     }
   }
   for (const auto &process : action.processes) {

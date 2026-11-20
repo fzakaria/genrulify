@@ -119,7 +119,7 @@ Arguments writeActionFiles(const Action &action,
 
 // Writes the files every step shares: the sandbox script, the store
 // closure, the environments, and for a project the path of its source
-// tree and the output paths of its build.
+// tree and the directories its build can write.
 void writeSharedFiles(const Recording &recording,
                       const std::filesystem::path &directory);
 
@@ -176,7 +176,7 @@ std::optional<ReplayFailure> runAction(const Action &action,
 inline constexpr std::string_view kSandboxFile = "sandbox.sh";
 inline constexpr std::string_view kClosureFile = "closure.txt";
 inline constexpr std::string_view kSourceFile = "source.txt";
-inline constexpr std::string_view kOutputsFile = "outputs.txt";
+inline constexpr std::string_view kRootsFile = "roots.txt";
 
 // The origin of an entry that is a file of the project being built.
 inline constexpr std::string_view kCheckoutOrigin = "@checkout";

@@ -22,7 +22,8 @@
 #   env/N.env               an environment, NUL-separated NAME=VALUE
 #   source.txt              for a project, the store path of its source
 #                           tree, which is staged and not read from the host
-#   outputs.txt             for a project, the store paths the build fills
+#   roots.txt               for a project, the directories the build can
+#                           write: /build and the output paths
 #   RULE.ok                 the stamp of a rule this step takes entries from
 #
 # With --trust a result is whatever the processes left, provided it is
@@ -31,8 +32,9 @@
 # builds. Such a step writes into its stamp the mode of each file and
 # directory it left and the target of each symlink, and a step that is
 # given one of those entries stages it as the stamp says. A trusted step
-# that leaves an entry under an output path which the recorded build did
-# not leave fails: no rule would pick the entry up.
+# that leaves an entry the recorded build did not leave, anywhere the
+# build can write, fails: no rule would pick the entry up, and no later
+# step would be given the entry.
 #
 # A manifest line is a tag and then a kind, a mode, an mtime, a path, the
 # content, an artifact and an origin. The tag `in` is an entry to stage,
@@ -78,10 +80,10 @@ FS=$'\x1f'
 
 # The extension of the stamp a step writes once its results check out, the
 # origin of a file that is the project's own, and the file that lists the
-# output paths of a project's build.
+# directories a project's build can write.
 STAMP=.ok
 CHECKOUT=@checkout
-OUTPUTS_FILE=outputs.txt
+ROOTS_FILE=roots.txt
 
 # Permission bits: the owner's right to execute, everyone's right to
 # execute, and everyone's right to read. A read bit is two places above
@@ -827,13 +829,17 @@ if [ ${#results[@]} -gt 0 ]; then
     done < <(printf '%s\n' "${results[@]}")
 fi
 
-# Every entry under an output path ends up in the package. One that the
-# recorded command did not write has no rule to carry it there, so a
-# trusted step that leaves one fails and does not drop the entry quietly.
-if [ -n "$trust" ] && outputs_file=$(find_optional_input "$OUTPUTS_FILE"); then
-    while IFS= read -r output; do
+# A trusted step runs on sources that may have been edited, and can leave
+# an entry the recorded command did not write. Under an output path the
+# entry belongs in the package, and no rule would carry it there. Under
+# /build a later command may open the entry or ask whether it is there,
+# and that command's step is given only what the recording saw it use.
+# So a trusted step that leaves such an entry anywhere the build can
+# write fails, and does not drop the entry quietly.
+if [ -n "$trust" ] && roots_file=$(find_optional_input "$ROOTS_FILE"); then
+    while IFS= read -r writable; do
         while IFS= read -r -d '' entry; do
-            # The pattern below also yields the output path itself with a
+            # The pattern below also yields the directory itself with a
             # slash after it.
             entry=${entry%/}
             if [ -z "${known[${entry#"$root"}]:-}" ]; then
@@ -841,11 +847,11 @@ if [ -n "$trust" ] && outputs_file=$(find_optional_input "$OUTPUTS_FILE"); then
             fi
         done < <(
             shopt -s globstar dotglob nullglob
-            if [ -e "$root$output" ] || [ -L "$root$output" ]; then
-                printf '%s\0' "$root$output" "$root$output"/**
+            if [ -e "$root$writable" ] || [ -L "$root$writable" ]; then
+                printf '%s\0' "$root$writable" "$root$writable"/**
             fi
         )
-    done < "$outputs_file"
+    done < "$roots_file"
 fi
 
 if [ ${#problems[@]} -gt 0 ]; then

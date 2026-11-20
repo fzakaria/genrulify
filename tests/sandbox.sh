@@ -223,19 +223,22 @@ grep -q "^file.555./build/app/sub/runs.\$" "$scratch/out/unpacked.ok"
 grep -q "^file.644./build/app/rests.\$" "$scratch/out/unpacked.ok"
 cmp "$scratch/out/unpacked/build/app/sub/runs" "$data/example/blobs/$bundle"
 
-# A trusted step that leaves an entry under an output path which the
-# recorded command did not write fails and names the entry: no rule would
-# carry it into the package. Staging a file makes the directories above
-# it, and here those have no line of their own, which stands for a
-# command that made them. An entry the recorded command wrote and nothing
-# reads is `unused`, and is no problem. Outside the output paths nothing
-# is looked at.
+# A trusted step that leaves an entry the recorded command did not write
+# fails and names the entry, wherever the build can write. Under an
+# output path no rule would carry the entry into the package. Under
+# /build no later step would be given the entry, and a later command
+# that asks whether the entry is there would be told that it is not.
+# Staging a file makes the directories above it, and here those have no
+# line of their own, which stands for a command that made them. An entry
+# the recorded command wrote and nothing reads is `unused`, and is no
+# problem. The places the build can write are listed in roots.txt.
 mkdir "$scratch/project-files"
-printf '/out\n' > "$scratch/project-files/outputs.txt"
+printf '/build\n/out\n' > "$scratch/project-files/roots.txt"
 {
+    line in dir 755 1 /build '' ''
     line in dir 755 1 /out '' ''
     line in file 644 1 /out/extra/file "$bundle" "blobs/$bundle"
-    line in file 644 1 /build/extra/file "$bundle" "blobs/$bundle"
+    line in file 644 1 /build/option/file "$bundle" "blobs/$bundle"
     line out dir 755 1 /out '' ''
 } > "$scratch/actions/more.manifest"
 more() {
@@ -246,11 +249,15 @@ if more 2> "$scratch/error"; then
 fi
 grep -q '^more did not leave what the recorded build left:$' "$scratch/error"
 grep -q '^  unrecorded /out/extra$' "$scratch/error"
+grep -q '^  unrecorded /build/option$' "$scratch/error"
 grep -q 'convert the project again' "$scratch/error"
-if grep -q 'unrecorded /build' "$scratch/error"; then
+test "$(grep -c '^  unrecorded ' "$scratch/error")" = 2
+line unused dir 755 1 /out/extra '' '' >> "$scratch/actions/more.manifest"
+if more 2> "$scratch/error"; then
     exit 1
 fi
-line unused dir 755 1 /out/extra '' '' >> "$scratch/actions/more.manifest"
+test "$(grep -c '^  unrecorded ' "$scratch/error")" = 1
+line unused dir 755 1 /build/option '' '' >> "$scratch/actions/more.manifest"
 more
 
 # A symlink is staged from its entry alone and packed as a symlink.
