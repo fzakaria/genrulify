@@ -1,11 +1,13 @@
 # A command that leaves /build and the outputs as it found them writes
 # nothing a later command can read, and `record --skip-idle` spends no
-# Rewind query on it beyond one snapshot. Rewind needs KVM, so the test
+# Rewind query on it beyond a snapshot. Rewind needs KVM, so the test
 # covers the decision, which `idle` makes for a finished recording the
-# way `record` makes it for a run: commands whose lifetimes overlap are
-# one stretch, and a stretch is idle when the snapshot at its start is
-# the snapshot at the start of the next one, or at the end of the build
-# for the last.
+# way `record` makes it for a run. Commands whose lifetimes overlap are
+# one stretch. A run of stretches is idle when the snapshot where it
+# begins is the snapshot where the stretch after it begins, or the end
+# of the build. A run that is not idle is split in two and each half is
+# asked the same, so a long run of idle commands costs two snapshots and
+# not one for each command.
 set -eu
 compiler=$1
 data=$2
@@ -36,6 +38,14 @@ cp -r "$data/example" "$scratch/last"
 chmod -R u+w "$scratch/last"
 cp "$scratch/last/states/782.json" "$scratch/last/states/796.json"
 test "$("$compiler" idle "$scratch/last")" = 782
+
+# A whole build that ends as it began is idle from end to end, whatever
+# its commands did in between: what one wrote, another undid, and no
+# output has a file. One comparison settles all three commands.
+cp -r "$data/example" "$scratch/nothing"
+chmod -R u+w "$scratch/nothing"
+cp "$scratch/nothing/states/735.json" "$scratch/nothing/states/796.json"
+test "$("$compiler" idle "$scratch/nothing" | tr '\n' ' ')" = "735 764 782 "
 
 # Commands that ran at the same time are one stretch: with the second dd
 # still running when the third began, the two are idle together or not

@@ -74,9 +74,9 @@ enum class IdleCommands {
   Record,
 
   // Drop the command: it wrote nothing a later command can read, so no
-  // graph has a use for it. Commands that ran at the same time are
-  // judged together, by one snapshot where they began and one where the
-  // next ones began.
+  // graph has a use for it. Commands are judged in runs, by the
+  // snapshot where a run begins and the one where the next command
+  // after it begins. A run that changed something is split in two.
   Skip,
 };
 

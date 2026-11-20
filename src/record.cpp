@@ -584,24 +584,62 @@ std::vector<Stretch> stretchesOf(const std::vector<Cut> &cuts) {
   return stretches;
 }
 
-// The cuts that left the writable roots as they found them. A stretch
-// is idle when the snapshot at its start is the snapshot at the start of
-// the next stretch, or at the end of the build for the last one: then
-// neither its commands nor the builder after them changed anything a
-// later command could read. `fingerprint` names the snapshot at a step,
-// and two steps with one fingerprint have the same snapshot.
+// The cuts that left the writable roots as they found them. A run of
+// stretches is idle when the snapshot at its start is the snapshot at
+// the start of the stretch after it, or at the end of the build for the
+// last one: then whatever its commands and the builder between them
+// wrote was undone again, and nothing a later command could read
+// changed. A run that is not idle is split in two, down to single
+// stretches, so a long run of idle commands is settled by the two
+// snapshots at its ends.
+//
+// `prepare` is told the steps whose snapshots the next round compares,
+// so that they can be taken at once. `fingerprint` names the snapshot at
+// a step, and two steps with one fingerprint have the same snapshot.
 std::set<size_t> idleCuts(
     const std::vector<Cut> &cuts, uint64_t finalStep,
+    const std::function<void(const std::set<uint64_t> &)> &prepare,
     const std::function<std::string(uint64_t)> &fingerprint) {
   std::set<size_t> idle;
   const auto stretches = stretchesOf(cuts);
-  for (size_t index = 0; index < stretches.size(); ++index) {
-    const uint64_t next = index + 1 < stretches.size()
-                              ? stretches[index + 1].start
-                              : finalStep;
-    if (fingerprint(stretches[index].start) == fingerprint(next)) {
-      idle.insert(stretches[index].cuts.begin(), stretches[index].cuts.end());
+  if (stretches.empty()) {
+    return idle;
+  }
+
+  // The step each stretch begins at, and the step the build ends at.
+  std::vector<uint64_t> boundaries;
+  for (const auto &stretch : stretches) {
+    boundaries.push_back(stretch.start);
+  }
+  boundaries.push_back(finalStep);
+
+  // Runs of stretches still to settle, as the indices of their first
+  // stretch and of the one after their last.
+  std::vector<std::pair<size_t, size_t>> runs{{0, stretches.size()}};
+  prepare({boundaries.front(), boundaries.back()});
+  while (!runs.empty()) {
+    std::vector<std::pair<size_t, size_t>> halves;
+    std::set<uint64_t> wanted;
+    for (const auto &[first, after] : runs) {
+      if (fingerprint(boundaries[first]) == fingerprint(boundaries[after])) {
+        for (size_t index = first; index < after; ++index) {
+          idle.insert(stretches[index].cuts.begin(),
+                      stretches[index].cuts.end());
+        }
+        continue;
+      }
+
+      // One stretch that changed something is kept.
+      if (after - first == 1) {
+        continue;
+      }
+      const size_t middle = first + (after - first) / 2;
+      halves.emplace_back(first, middle);
+      halves.emplace_back(middle, after);
+      wanted.insert(boundaries[middle]);
     }
+    prepare(wanted);
+    runs = std::move(halves);
   }
   return idle;
 }
@@ -637,9 +675,12 @@ std::vector<Cut> cutsOf(const Recording &recording,
 
 std::vector<uint64_t> idleSteps(const Recording &recording) {
   const auto cuts = cutsOf(recording);
-  const auto idle = idleCuts(cuts, recording.finalStep, [&](uint64_t step) {
-    return digest(stateFile(recording.directory, step));
-  });
+  // A finished recording has every snapshot already.
+  const auto idle = idleCuts(
+      cuts, recording.finalStep, [](const std::set<uint64_t> &) {},
+      [&](uint64_t step) {
+        return digest(stateFile(recording.directory, step));
+      });
   std::vector<uint64_t> steps;
   for (const auto index : idle) {
     steps.push_back(cuts[index].step);
@@ -762,20 +803,15 @@ void recordRun(const std::string &run, const fs::path &drvPath,
 
     // Inspecting a command costs several Rewind queries, and most
     // commands of a build write nothing: they print something the
-    // builder reads. One snapshot at the start of each stretch of
-    // commands shows which stretches changed nothing, and their cuts are
-    // dropped before anything else is asked about them.
+    // builder reads. Snapshots where stretches of commands begin show
+    // which of them changed nothing, and their cuts are dropped before
+    // anything else is asked about them.
     const auto dropIdle = [&](std::vector<Cut> &cuts) {
       if (idle == IdleCommands::Record) {
         return;
       }
-      std::set<uint64_t> starts{analysis.finalStep};
-      for (const auto &stretch : stretchesOf(cuts)) {
-        starts.insert(stretch.start);
-      }
-      takeSnapshots(starts);
       const auto dropped =
-          idleCuts(cuts, analysis.finalStep,
+          idleCuts(cuts, analysis.finalStep, takeSnapshots,
                    [&](uint64_t step) { return fingerprints.at(step); });
       std::vector<Cut> kept;
       for (size_t index = 0; index < cuts.size(); ++index) {
