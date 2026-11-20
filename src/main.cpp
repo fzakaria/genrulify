@@ -15,7 +15,8 @@
 namespace {
 constexpr std::string_view kUsage =
     "usage: genrulify convert [--coarse] [--open PROGRAMS] [--source PROJECT] [--into WORKSPACE] INSTALLABLE DIRECTORY\n"
-    "       genrulify record [--coarse] [--source PROJECT] RUN DERIVATION.drv RECORDING [OPEN]\n"
+    "       genrulify record [--coarse] [--skip-idle] [--source PROJECT] RUN DERIVATION.drv RECORDING [OPEN]\n"
+    "       genrulify idle RECORDING\n"
     "       genrulify groups RECORDING\n"
     "       genrulify origins RECORDING GRAPH.mlir\n"
     "       genrulify same-source TREE DIRECTORY\n"
@@ -44,6 +45,9 @@ constexpr std::string_view kUsage =
 // The option that stops the cuts at the commands the builder runs, and the
 // option that keeps one image from being opened.
 constexpr std::string_view kCoarseOption = "--coarse";
+
+// The option of `record` that drops the commands which changed nothing.
+constexpr std::string_view kSkipIdleOption = "--skip-idle";
 constexpr std::string_view kCloseOption = "--close";
 
 // The option of `convert` that names programs to treat as driver code.
@@ -111,6 +115,14 @@ void run(std::span<char *> args) {
   std::vector<char *> rest(args.begin(), args.end());
   if (rest.size() > 1 && rest[1] == kCoarseOption) {
     granularity = splice_ir::Granularity::Coarse;
+    rest.erase(rest.begin() + 1);
+    args = rest;
+  }
+
+  // Take out the option that drops idle commands, which `record` has.
+  auto idle = splice_ir::IdleCommands::Record;
+  if (rest.size() > 1 && rest[1] == kSkipIdleOption) {
+    idle = splice_ir::IdleCommands::Skip;
     rest.erase(rest.begin() + 1);
     args = rest;
   }
@@ -184,7 +196,16 @@ void run(std::span<char *> args) {
       throw std::runtime_error(std::string(kUsage));
     }
     splice_ir::recordRun(args[1], args[2], args[3],
-                         args.size() == 5 ? args[4] : "", granularity, project);
+                         args.size() == 5 ? args[4] : "", granularity, project,
+                         idle);
+    return;
+  }
+  if (args.size() == 2 && command == "idle") {
+    // The steps of the processes that changed nothing, one on each line.
+    for (const auto step :
+         splice_ir::idleSteps(splice_ir::Recording::load(args[1]))) {
+      llvm::outs() << step << "\n";
+    }
     return;
   }
   if (args.size() == 2 && command == "accessed") {

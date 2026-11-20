@@ -67,6 +67,19 @@ Verdicts loadVerdicts(const Recording &recording);
 void saveVerdicts(const Recording &recording, const Verdicts &verdicts);
 std::string_view rungName(Rung rung);
 
+// What a recorder does with a command that left /build and the outputs
+// as it found them.
+enum class IdleCommands {
+  // Inspect the command and snapshot around it, like any other.
+  Record,
+
+  // Drop the command: it wrote nothing a later command can read, so no
+  // graph has a use for it. Commands that ran at the same time are
+  // judged together, by one snapshot where they began and one where the
+  // next ones began.
+  Skip,
+};
+
 // Pulls everything the compiler needs about a Rewind run into a directory.
 // `open` names the programs to treat as driver code and `granularity`
 // says whether to find more of them, as trace.h describes.
@@ -78,7 +91,12 @@ std::string_view rungName(Rung rung);
 void recordRun(const std::string &run, const std::filesystem::path &drv,
                const std::filesystem::path &directory, const std::string &open,
                Granularity granularity = Granularity::Fine,
-               const std::optional<std::filesystem::path> &project = {});
+               const std::optional<std::filesystem::path> &project = {},
+               IdleCommands idle = IdleCommands::Record);
+
+// The steps of the processes of a finished recording that `record` would
+// have dropped as idle, read from the recording's own snapshots.
+std::vector<uint64_t> idleSteps(const Recording &recording);
 
 // A number of files and how many bytes they hold together.
 struct FileCount {

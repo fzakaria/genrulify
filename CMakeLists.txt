@@ -69,6 +69,6 @@ target_link_libraries(genrulify PRIVATE MLIR LLVM absl::strings nlohmann_json::n
 target_compile_options(genrulify PRIVATE -Wall -Wextra -Wno-unused-parameter)
 install(TARGETS genrulify)
 enable_testing()
-foreach(test check-ir cuts groups jobs origins import opt unpack emit package store link edit rules reference sandbox learn access convert project)
+foreach(test check-ir cuts groups idle jobs origins import opt unpack emit package store link edit rules reference sandbox learn access convert project)
   add_test(NAME ${test} COMMAND bash ${CMAKE_SOURCE_DIR}/tests/${test}.sh $<TARGET_FILE:genrulify> ${CMAKE_SOURCE_DIR}/tests/data)
 endforeach()

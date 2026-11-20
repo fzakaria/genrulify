@@ -557,24 +557,101 @@ void captureBuilderPipes(const Rewind &rewind, std::vector<Group> &groups) {
     }
   });
 }
-} // namespace
+// Commands that ran at the same time, as one stretch of the run: the
+// step the first began at, the step the last ended at, and which cuts
+// they are.
+struct Stretch {
+  uint64_t start = 0;
+  uint64_t end = 0;
+  std::vector<size_t> cuts;
+};
 
-std::vector<Group> regroup(const Recording &recording) {
-  // A cut for each process, in the order the processes began, which is
-  // the order the grouping takes them in.
-  std::vector<Process> processes;
-  for (const auto &group : recording.groups) {
-    std::ranges::copy(group.processes, std::back_inserter(processes));
+// The stretches of a run's cuts, which are in the order they began. A
+// cut that begins before an earlier one has ended joins that one's
+// stretch.
+std::vector<Stretch> stretchesOf(const std::vector<Cut> &cuts) {
+  std::vector<Stretch> stretches;
+  for (size_t index = 0; index < cuts.size(); ++index) {
+    const auto &cut = cuts[index];
+    if (stretches.empty() || cut.step > stretches.back().end) {
+      stretches.push_back({cut.step, cut.end, {index}});
+      continue;
+    }
+    auto &stretch = stretches.back();
+    stretch.end = std::max(stretch.end, cut.end);
+    stretch.cuts.push_back(index);
   }
-  std::ranges::sort(processes, {}, &Process::step);
+  return stretches;
+}
+
+// The cuts that left the writable roots as they found them. A stretch
+// is idle when the snapshot at its start is the snapshot at the start of
+// the next stretch, or at the end of the build for the last one: then
+// neither its commands nor the builder after them changed anything a
+// later command could read. `fingerprint` names the snapshot at a step,
+// and two steps with one fingerprint have the same snapshot.
+std::set<size_t> idleCuts(
+    const std::vector<Cut> &cuts, uint64_t finalStep,
+    const std::function<std::string(uint64_t)> &fingerprint) {
+  std::set<size_t> idle;
+  const auto stretches = stretchesOf(cuts);
+  for (size_t index = 0; index < stretches.size(); ++index) {
+    const uint64_t next = index + 1 < stretches.size()
+                              ? stretches[index + 1].start
+                              : finalStep;
+    if (fingerprint(stretches[index].start) == fingerprint(next)) {
+      idle.insert(stretches[index].cuts.begin(), stretches[index].cuts.end());
+    }
+  }
+  return idle;
+}
+
+// The file a recording keeps the snapshot at a step in.
+fs::path stateFile(const fs::path &directory, uint64_t step) {
+  return directory / kStatesDirectory / (std::to_string(step) + ".json");
+}
+
+// A cut for each process of a recording, in the order the processes
+// began: what is left of the run's cuts once the run is gone.
+std::vector<Cut> cutsOf(const Recording &recording,
+                        std::vector<Process> *processes = nullptr) {
+  std::vector<Process> all;
+  for (const auto &group : recording.groups) {
+    std::ranges::copy(group.processes, std::back_inserter(all));
+  }
+  std::ranges::sort(all, {}, &Process::step);
   std::vector<Cut> cuts;
-  for (const auto &process : processes) {
+  for (const auto &process : all) {
     Cut cut;
     cut.pid = process.pid;
     cut.step = process.step;
     cut.end = process.exit;
     cuts.push_back(std::move(cut));
   }
+  if (processes != nullptr) {
+    *processes = std::move(all);
+  }
+  return cuts;
+}
+} // namespace
+
+std::vector<uint64_t> idleSteps(const Recording &recording) {
+  const auto cuts = cutsOf(recording);
+  const auto idle = idleCuts(cuts, recording.finalStep, [&](uint64_t step) {
+    return digest(stateFile(recording.directory, step));
+  });
+  std::vector<uint64_t> steps;
+  for (const auto index : idle) {
+    steps.push_back(cuts[index].step);
+  }
+  return steps;
+}
+
+std::vector<Group> regroup(const Recording &recording) {
+  // A cut for each process, in the order the processes began, which is
+  // the order the grouping takes them in.
+  std::vector<Process> processes;
+  const auto cuts = cutsOf(recording, &processes);
   return group(std::move(processes), cuts, recording.roots);
 }
 
@@ -615,7 +692,11 @@ void checkSameSource(const fs::path &tree, const fs::path &directory) {
 void recordRun(const std::string &run, const fs::path &drvPath,
                const fs::path &directory, const std::string &open,
                Granularity granularity,
-               const std::optional<fs::path> &project) {
+               const std::optional<fs::path> &project, IdleCommands idle) {
+  check(!project || idle == IdleCommands::Record,
+        "--skip-idle is for a recorded build: a project converted in place "
+        "runs the commands that write nothing, to see that they still end "
+        "the same way");
   const Rewind rewind(run);
   check(fs::create_directory(directory), "destination already exists");
   try {
@@ -654,6 +735,57 @@ void recordRun(const std::string &run, const fs::path &drvPath,
     const auto runDirectory = rewind.directory();
     auto analysis =
         analyze(events, runDirectory / "trace.bin", open, granularity);
+
+    // Snapshots are written as they are taken, and each is taken once.
+    // The digest of a snapshot's file stands for the snapshot.
+    BlobStore blobs(directory / kBlobsDirectory);
+    fs::create_directory(directory / kStatesDirectory);
+    std::map<uint64_t, std::string> fingerprints;
+    const auto takeSnapshots = [&](const std::set<uint64_t> &at) {
+      std::vector<uint64_t> missing;
+      for (const auto step : at) {
+        if (!fingerprints.contains(step)) {
+          missing.push_back(step);
+        }
+      }
+      std::vector<std::string> taken(missing.size());
+      parallelFor(missing.size(), [&](size_t index) {
+        const auto file = stateFile(directory, missing[index]);
+        writeState(file,
+                   snapshot(rewind, missing[index], recording.roots, blobs));
+        taken[index] = digest(file);
+      });
+      for (size_t index = 0; index < missing.size(); ++index) {
+        fingerprints[missing[index]] = std::move(taken[index]);
+      }
+    };
+
+    // Inspecting a command costs several Rewind queries, and most
+    // commands of a build write nothing: they print something the
+    // builder reads. One snapshot at the start of each stretch of
+    // commands shows which stretches changed nothing, and their cuts are
+    // dropped before anything else is asked about them.
+    const auto dropIdle = [&](std::vector<Cut> &cuts) {
+      if (idle == IdleCommands::Record) {
+        return;
+      }
+      std::set<uint64_t> starts{analysis.finalStep};
+      for (const auto &stretch : stretchesOf(cuts)) {
+        starts.insert(stretch.start);
+      }
+      takeSnapshots(starts);
+      const auto dropped =
+          idleCuts(cuts, analysis.finalStep,
+                   [&](uint64_t step) { return fingerprints.at(step); });
+      std::vector<Cut> kept;
+      for (size_t index = 0; index < cuts.size(); ++index) {
+        if (!dropped.contains(index)) {
+          kept.push_back(std::move(cuts[index]));
+        }
+      }
+      cuts = std::move(kept);
+    };
+    dropIdle(analysis.cuts);
 
     // Rewind's manifest holds how long the run took, which bounds how long
     // a replay of any part of it may take.
@@ -741,6 +873,7 @@ void recordRun(const std::string &run, const fs::path &drvPath,
       closed.insert(more.begin(), more.end());
       analysis =
           analyze(events, runDirectory / "trace.bin", open, granularity, closed);
+      dropIdle(analysis.cuts);
     }
 
     // Snapshot the writable roots where the graph needs a state: before
@@ -750,16 +883,15 @@ void recordRun(const std::string &run, const fs::path &drvPath,
       wanted.insert(group.start);
       wanted.insert(group.end);
     }
-    const std::vector<uint64_t> steps(wanted.begin(), wanted.end());
-    BlobStore blobs(directory / kBlobsDirectory);
-    fs::create_directory(directory / kStatesDirectory);
-    parallelFor(steps.size(), [&](size_t index) {
-      const auto state =
-          snapshot(rewind, steps[index], recording.roots, blobs);
-      writeState(directory / kStatesDirectory /
-                     (std::to_string(steps[index]) + ".json"),
-                 state);
-    });
+    takeSnapshots(wanted);
+
+    // A snapshot that only showed a stretch to be idle is no state of
+    // the graph.
+    for (const auto &[step, fingerprint] : fingerprints) {
+      if (!wanted.contains(step)) {
+        fs::remove(stateFile(directory, step));
+      }
+    }
 
     // The source tree is the same at every step, and the host has it.
     if (!recording.source.empty()) {
