@@ -15,8 +15,9 @@ the guest filesystem. genrulify uses the following information from that run.
 - The state $\sigma_t$ of `/build` and the output paths at step $t$.
   Each path names a file with bytes, mode and modification time, a
   directory with a mode, or a symlink with a target.
-- The program, arguments, environment, working directory and open file
-  descriptors at each `execve`, including bytes waiting in input pipes.
+- The program, arguments, environment, working directory, file-creation
+  mask and open file descriptors at each `execve`, including bytes
+  waiting in input pipes.
 - When processes forked, ran a program and exited, and their exit statuses.
 - The platform $P$ shared by the recording and the replay, including
   the Nix store closure, user identity and kernel behavior.
@@ -160,17 +161,27 @@ rewritten for another reason, which is what their command lines say:
 each file they leave is a copy of the checkout's file. That reading is
 made only of the `cp` and `chmod` of GNU coreutils, by the store path of
 the program that ran, and not of a `cp` that wrote over an existing file
-without preserving modes, which keeps the mode the file had.
+without preserving modes, which keeps the mode the file had. Nor is it
+made of a `cp` whose process had a file-creation mask that takes the
+executable bit from a new file, such as 0111: a copy would hand the bit
+on.
 
 A command that read a source is also kept when nothing reads what it
 left. In the graph it is marked `watched`. After an edit it may write a
 file it did not write before, or exit with another status that the
 builder then branches on, and only a rule that runs can notice either.
+Every rule whose command was recorded after such a command waits for
+it, because the builder may have decided how to run the later command
+by what the earlier one did. So a program built or run by name fails
+the same way the archive does.
 
 A trusted rule writes down the modes and symlink targets it left, and
 the rules that read its results stage those. The rule fails if a result
-is missing, or if the command leaves an entry under an output path that
-the recording did not have. A file the builder wrote itself is not tied
+is missing, or if the command leaves an entry that the recording did not
+have, under an output path or under `/build`. A new file under `/build`
+would stay in the sandbox of the step that wrote it, and a later command
+that asks whether the file exists would be told that it does not. A
+file the builder wrote itself is not tied
 to a source with the same bytes. It stays recorded bytes, and `check`
 lists every recorded file the project still uses, since an edit will not
 change those. The same goes for what the builder did with a source
