@@ -344,6 +344,49 @@ function markTimeline() {
   }
 }
 
+// Pre-render just before a panel scrolls into view.
+const PANEL_MARGIN = "120px 0px";
+
+/** Coalesce pass changes while a panel is below the viewport. The observer
+ * draws the latest choice as the visitor approaches it. */
+function deferredPanel(element, render) {
+  let nearby = false;
+  let dirty = false;
+  function flush() {
+    if (dirty) {
+      dirty = false;
+      render();
+    }
+  }
+  new IntersectionObserver(([entry]) => {
+    nearby = entry.isIntersecting;
+    if (nearby) {
+      flush();
+    }
+  }, { rootMargin: PANEL_MARGIN }).observe(element);
+  return {
+    refresh() {
+      dirty = true;
+      if (nearby) {
+        flush();
+      }
+    },
+    get pending() {
+      return dirty;
+    },
+    flush,
+  };
+}
+
+const graphPanel = deferredPanel($("graph-scroll"), () => {
+  renderGraph();
+  highlight($("graph"), selected().node?.id ?? null);
+});
+const modulePanel = deferredPanel($("module"), () => {
+  renderModule();
+  selectModuleRow(selected().node);
+});
+
 /** Shows the graph under a choice of passes. */
 function choose(mask) {
   state.mask = mask;
@@ -352,14 +395,15 @@ function choose(mask) {
   // A selected operation that the graph no longer has has nothing to show.
   if (state.selection !== null && !selected().node) {
     state.selection = null;
+    $("timeline").querySelector(".selected")?.classList.remove("selected");
     $("detail").hidden = true;
   }
   renderSwitches();
   markTimeline();
-  renderGraph();
-  renderModule();
+  graphPanel.refresh();
+  modulePanel.refresh();
   if (state.selection !== null) {
-    select(state.selection);
+    renderDetail();
   }
 }
 
@@ -667,13 +711,26 @@ function selected() {
 function select(selection) {
   state.selection = selection;
   const { node, group } = selected();
+  if (!node && !group) {
+    state.selection = null;
+    return;
+  }
   const timeline = $("timeline");
   timeline.querySelector(".selected")?.classList.remove("selected");
   if (group) {
     timeline.querySelector(`[data-step="${group.step}"]`).classList.add("selected");
   }
-  highlight($("graph"), node?.id ?? null);
-  selectModuleRow(node);
+  graphPanel.flush();
+  highlight($("graph"), node?.id ?? null)?.scrollIntoView({ block: "nearest", inline: "nearest" });
+  if (!modulePanel.pending) {
+    selectModuleRow(node);
+  }
+  renderDetail();
+}
+
+/** Refresh the inspector without scrolling the graph when a pass changes. */
+function renderDetail() {
+  const { node, group } = selected();
 
   $("detail").hidden = false;
   $("detail-title").textContent = node ? nodeLabel(node) : group.name;

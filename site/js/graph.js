@@ -28,6 +28,10 @@ const ROWS_PER_COLUMN = 18;
 // horizontal distance, which gives the curve its S shape.
 const EDGE_CURVE = 0.5;
 
+// Dashed strokes on thousands of long curves make SVG layout expensive.
+// Dense graphs use the same faded color for unused dependencies.
+const DENSE_EDGE_COUNT = 1000;
+
 // How long a removed node takes to fade, which the stylesheet's
 // transition on `.node.leaving` matches.
 const LEAVE_MILLISECONDS = 450;
@@ -107,6 +111,20 @@ function createNode(node, onSelect) {
   return group;
 }
 
+// SVG subpaths with the same stroke can be painted and faded together.
+function addCurve(curves, style, d) {
+  if (!curves.has(style)) {
+    curves.set(style, []);
+  }
+  curves.get(style).push(d);
+}
+
+function paintCurves(layer, curves, extraClass = "") {
+  for (const [style, segments] of curves) {
+    layer.append(element("path", { class: style + extraClass, d: segments.join(" ") }));
+  }
+}
+
 /**
  * Draws the graph into `svg`. `classOf` gives a node its outcome class and
  * `onSelect` is called with a node's id when the node is activated. Nodes
@@ -126,12 +144,11 @@ export function draw(svg, nodes, { labelOf, classOf, onSelect }) {
   const edges = element("g", { class: redrawn ? "edges redrawn" : "edges" });
   const curves = new Map();
   const incident = new Map();
+  let edgeCount = 0;
   for (const { node, x, y } of placed.values()) {
     const style = classOf(node) === "doomed" ? "edge doomed" : "edge";
-    if (!curves.has(style)) {
-      curves.set(style, []);
-    }
-    incident.set(node.id, []);
+    incident.set(node.id, new Map());
+    edgeCount += node.inputs.length;
     for (const input of node.inputs) {
       const from = placed.get(input.node);
       const startX = from.x + from.width;
@@ -139,17 +156,14 @@ export function draw(svg, nodes, { labelOf, classOf, onSelect }) {
       const endY = y + NODE_HEIGHT / 2;
       const bend = (x - startX) * EDGE_CURVE;
       const d = `M${startX},${startY} C${startX + bend},${startY} ${x - bend},${endY} ${x},${endY}`;
-      curves.get(style).push(d);
-      const curve = { style, d };
-      incident.get(input.node).push(curve);
-      incident.get(node.id).push(curve);
+      addCurve(curves, style, d);
+      addCurve(incident.get(input.node), style, d);
+      addCurve(incident.get(node.id), style, d);
     }
   }
 
-  // SVG subpaths with the same stroke can be painted and faded together.
-  for (const [style, segments] of curves) {
-    edges.append(element("path", { class: style, d: segments.join(" ") }));
-  }
+  paintCurves(edges, curves);
+  svg.classList.toggle("dense", edgeCount >= DENSE_EDGE_COUNT);
   incidentCurves.set(svg, incident);
   previousEdges.replaceWith(edges);
 
@@ -181,7 +195,13 @@ export function draw(svg, nodes, { labelOf, classOf, onSelect }) {
   for (const group of drawn.values()) {
     group.classList.add("leaving");
     group.classList.remove("selected");
-    setTimeout(() => group.remove(), LEAVE_MILLISECONDS);
+  }
+  if (drawn.size) {
+    setTimeout(() => {
+      for (const group of drawn.values()) {
+        group.remove();
+      }
+    }, LEAVE_MILLISECONDS);
   }
 }
 
@@ -195,8 +215,8 @@ export function highlight(svg, id) {
   }
   const node = svg.querySelector(`.node:not(.leaving)[data-id="${CSS.escape(id)}"]`);
   node?.classList.add("selected");
-  for (const curve of incidentCurves.get(svg).get(id) ?? []) {
-    overlay.append(element("path", { class: `${curve.style} touching`, d: curve.d }));
+  if (node) {
+    paintCurves(overlay, incidentCurves.get(svg).get(id), " touching");
   }
-  node?.scrollIntoView({ block: "nearest", inline: "nearest" });
+  return node;
 }

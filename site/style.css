@@ -300,6 +300,10 @@ button[aria-pressed="true"] {
   opacity: 0.6;
 }
 
+#graph.dense .edge.doomed {
+  stroke-dasharray: none;
+}
+
 /* Elimination: the nodes that stay slide to their new places, the dead
    ones fade, and the edges are redrawn once the nodes have arrived. The
    leaving duration matches LEAVE_MILLISECONDS in graph.js. */
