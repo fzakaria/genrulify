@@ -170,6 +170,42 @@ rule BUCK libbundle.so | grep -A 2 'libs = \[' | grep -q '":s735_dd\[build/libbu
 grep -q 'LD_LIBRARY_PATH' genrulify.bzl
 grep -q 'LD_LIBRARY_PATH' genrulify.buck.bzl
 
+# A shared library can need another one, which the program's link may
+# never have opened: the loader finds it only when the program runs. So
+# a program is given the libraries of its libraries too, each from the
+# link that made the library that needs it. Here the graph is written by
+# hand over the example's three commands: the first writes libleaf.so,
+# the second links libmiddle.so against it, and the third links the
+# program against libmiddle.so alone. A copy puts the program in the
+# package, so that the program has a reader.
+leaf=cb94740ad765d0c3cb3742959e2f7556d4c7adb712660bfbacb1ba2c6f50e671
+linked=50f55425c6b2fa76153714d7097567804eabbe75984a18b4534537973c24d9fa
+cat > "$scratch/chain.mlir" <<MLIR
+module {
+  %sandbox_717 = splice.literal "sandbox" at 717 -> [
+      #splice.entry<"/build" dir 700 mtime 1>
+  ]
+  %dd_735 = splice.exec "dd" at 735(%sandbox_717) -> [
+      #splice.entry<"/build/libleaf.so" file 644 mtime 1 "$leaf">
+  ]
+  %dd_764 = splice.exec "dd" at 764 as "cc_shared_library"(%sandbox_717, %dd_735) -> [
+      #splice.entry<"/build/libmiddle.so" file 644 mtime 1 "$linked">
+  ]
+  %dd_782 = splice.exec "dd" at 782 as "cc_binary"(%sandbox_717, %dd_764) -> [
+      #splice.entry<"/build/app" file 755 mtime 1 "$linked">
+  ]
+  %cp_790 = splice.copy "cp" at 790(%dd_782) -> <"/nix/store/l1dx8g9mr73bdp8y6i2yp92xprmz8xzg-genrulify-example" file 755 mtime 1 "$linked">
+  splice.output "out" "/nix/store/l1dx8g9mr73bdp8y6i2yp92xprmz8xzg-genrulify-example"(%cp_790)
+}
+MLIR
+"$compiler" emit "$scratch/recording" "$scratch/chain.mlir" "$scratch/chain"
+cd "$scratch/chain"
+rule BUILD.bazel app | grep -q '^program($'
+rule BUILD.bazel app | grep -A 3 'libs = \[' | grep -q '":s764_dd/build/libmiddle.so",'
+rule BUILD.bazel app | grep -A 3 'libs = \[' | grep -q '":s735_dd/build/libleaf.so",'
+rule BUILD.bazel app | grep -A 3 'lib_names = \[' | grep -q '"libleaf.so",'
+rule BUCK app | grep -A 3 'libs = \[' | grep -q '":s735_dd\[build/libleaf.so\]",'
+
 # A rule written by hand that lists the program among its sources is
 # given the program and not the script `bazel run` starts it through,
 # which only works where its runfiles are.

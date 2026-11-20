@@ -200,9 +200,11 @@ def program(name, file, libs = [], lib_names = []):
     The program is the recorded build's: it finds the libraries of other
     packages in the Nix store the recording used. A shared library its own
     project built is a file of another rule, so the target is given those,
-    `libs`, with the name the loader asks for each by, `lib_names`. A
-    library the program asks for under a third name, such as a versioned
-    soname the link never read, is not found this way.
+    `libs`, with the name the loader asks for each by, `lib_names`. They
+    are the libraries the program's link was given and the ones the link
+    of each of those was given, and so on. A library the program asks for
+    under a third name, such as a versioned soname no link read, is not
+    found this way.
     """
     _named(name = name, file = file, libs = libs, lib_names = lib_names, runs = True)
 

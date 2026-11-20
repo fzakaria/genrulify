@@ -32,6 +32,10 @@ const EDGE_CURVE = 0.5;
 // transition on `.node.leaving` matches.
 const LEAVE_MILLISECONDS = 450;
 
+// Curves touching each node, kept with the SVG so a selection can be drawn
+// over the static edges without changing the rest of the graph.
+const incidentCurves = new WeakMap();
+
 /** Places every node. Returns the nodes with x, y, width and the canvas size. */
 export function layout(nodes, labelOf) {
   // A node's layer is fixed by the nodes it consumes, which come earlier.
@@ -120,23 +124,33 @@ export function draw(svg, nodes, { labelOf, classOf, onSelect }) {
   const nodeLayer = layerGroup(svg, "nodes");
   const redrawn = nodeLayer.childElementCount > 0;
   const edges = element("g", { class: redrawn ? "edges redrawn" : "edges" });
+  const curves = new Map();
+  const incident = new Map();
   for (const { node, x, y } of placed.values()) {
+    const style = classOf(node) === "doomed" ? "edge doomed" : "edge";
+    if (!curves.has(style)) {
+      curves.set(style, []);
+    }
+    incident.set(node.id, []);
     for (const input of node.inputs) {
       const from = placed.get(input.node);
       const startX = from.x + from.width;
       const startY = from.y + NODE_HEIGHT / 2;
       const endY = y + NODE_HEIGHT / 2;
       const bend = (x - startX) * EDGE_CURVE;
-      const path = element("path", {
-        class: `edge ${classOf(node)}`,
-        d: `M${startX},${startY} C${startX + bend},${startY} ${x - bend},${endY} ${x},${endY}`,
-      });
-      path.dataset.from = input.node;
-      path.dataset.to = node.id;
-      edges.append(path);
+      const d = `M${startX},${startY} C${startX + bend},${startY} ${x - bend},${endY} ${x},${endY}`;
+      curves.get(style).push(d);
+      const curve = { style, d };
+      incident.get(input.node).push(curve);
+      incident.get(node.id).push(curve);
     }
   }
 
+  // SVG subpaths with the same stroke can be painted and faded together.
+  for (const [style, segments] of curves) {
+    edges.append(element("path", { class: style, d: segments.join(" ") }));
+  }
+  incidentCurves.set(svg, incident);
   previousEdges.replaceWith(edges);
 
   // Find the elements an earlier call drew. One that is already leaving
@@ -174,17 +188,15 @@ export function draw(svg, nodes, { labelOf, classOf, onSelect }) {
 /** Marks the selected node and the edges that touch it. */
 export function highlight(svg, id) {
   svg.querySelector(".node.selected")?.classList.remove("selected");
-  for (const edge of svg.querySelectorAll(".edge.touching")) {
-    edge.classList.remove("touching");
-  }
+  const overlay = layerGroup(svg.querySelector(".edges"), "touching-edges");
+  overlay.replaceChildren();
   if (id === null) {
     return;
   }
-  const value = CSS.escape(id);
-  const node = svg.querySelector(`.node:not(.leaving)[data-id="${value}"]`);
+  const node = svg.querySelector(`.node:not(.leaving)[data-id="${CSS.escape(id)}"]`);
   node?.classList.add("selected");
-  for (const edge of svg.querySelectorAll(`[data-from="${value}"], [data-to="${value}"]`)) {
-    edge.classList.add("touching");
+  for (const curve of incidentCurves.get(svg).get(id) ?? []) {
+    overlay.append(element("path", { class: `${curve.style} touching`, d: curve.d }));
   }
   node?.scrollIntoView({ block: "nearest", inline: "nearest" });
 }

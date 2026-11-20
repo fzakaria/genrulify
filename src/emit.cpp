@@ -594,6 +594,41 @@ std::string renderRule(Backend backend, const Rule &rule,
   return text + ")\n\n";
 }
 
+// Gives every rule the shared libraries of its libraries. A library that
+// needs another one says so by name, and the loader looks for that name
+// when the program starts. The program's own link may never have opened
+// the file. The link that made a library was given what the library
+// needs, so the libraries are followed from one link to the next. Under
+// a name a rule already has a library for, the rule keeps that library.
+void closeLibraries(std::vector<Rule> &rules) {
+  // What each rule's own command was given, by rule.
+  std::map<std::string, std::vector<Library>> given;
+  for (const auto &rule : rules) {
+    given[rule.name] = rule.libraries;
+  }
+
+  for (auto &rule : rules) {
+    std::set<std::string> names;
+    for (const auto &library : rule.libraries) {
+      names.insert(library.name);
+    }
+
+    // The list grows while it is walked: a library added here is looked
+    // at in turn.
+    for (size_t index = 0; index < rule.libraries.size(); ++index) {
+      const auto library = rule.libraries[index];
+      if (!library.generated) {
+        continue;
+      }
+      for (const auto &needed : given[library.file.target]) {
+        if (names.insert(needed.name).second) {
+          rule.libraries.push_back(needed);
+        }
+      }
+    }
+  }
+}
+
 // Makes every rule wait for the watched commands nothing reads that were
 // recorded before the rule's own command. The archive is not all that
 // somebody builds: a program is run and an object is built by name, and a
@@ -1186,6 +1221,7 @@ void emitWorkspace(mlir::ModuleOp module, const Recording &recording,
       }
     }
     addGates(rules, unreadAt);
+    closeLibraries(rules);
     nameFiles(rules, destination);
     const auto bazelFile = buildFile(Backend::Bazel, rules, layout);
     const auto buckFile = buildFile(Backend::Buck2, rules, layout);
