@@ -13,6 +13,7 @@ host=${NIXPKGS_HOST:-fmzakari@leviathan.cymric-daggertooth.ts.net}
 base=${NIXPKGS_BASE:-genrulify-nixpkgs}
 NIXPKGS_REVISION=b4fd65b198c599cbe814fcb9f42d25d021595ec9
 SHORT_REVISION_LENGTH=8
+HARNESS_URL=https://github.com/fzakaria/genrulify/tree/nixpkgs-workspace/tools/nixpkgs
 mkdir -p "$repository"
 
 # The numbers first, so that they describe the tree that is copied next.
@@ -72,10 +73,13 @@ their builder ran.
 
 In $(number some_differ) of them an output is not the archive
 cache.nixos.org has, and what depends on such an output fetches the
-cache's. In the two that were looked at the cause is one date: stdenv
-takes \`SOURCE_DATE_EPOCH\` from the newest source file that is not newer
-than the directory above the build directory, which in Rewind's VM is
-\`/\` with a modification time of 1, so the date stays at 1980.
+cache's. For most of them the cause is one date: stdenv takes
+\`SOURCE_DATE_EPOCH\` from the newest source file that is not newer than
+the directory above the build directory, which in Rewind's VM is \`/\`
+with a modification time of 1, so the date stays at 1980. Built again
+by a Rewind whose init gives \`/\` the time on the VM's clock,
+$(number redated_match) of $(number redated) match the cache in every output. The packages here
+were recorded before that change.
 
 | not converted | derivations |
 | --- | ---: |
@@ -121,7 +125,9 @@ cache.nixos.org said of each store path. \`MODULE.bazel\` has one
 \$ genrulify link .
 \`\`\`
 
-The batch that does this for nixpkgs is \`tools/nixpkgs/\` in genrulify.
+Both commands are on genrulify's \`main\`. The batch that runs them over
+nixpkgs is [\`tools/nixpkgs/\`]($HARNESS_URL)
+on its \`nixpkgs-workspace\` branch.
 
 nixpkgs is MIT, and so is this. Please see [LICENSE](LICENSE).
 README

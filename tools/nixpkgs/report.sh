@@ -14,6 +14,12 @@ RULE_CALL='^(recorded|cc_object|cc_library|cc_binary|cc_shared_library|rust_libr
 
 count() { jq -r "$1" "$results" | grep -c . || true; }
 link_count() { sed -n "s/^ *\([0-9]*\) $1.*/\1/p" "$base/logs/link.log" | tail -1; }
+
+# The lines of rootmtime-all.sh's log that match a pattern: one line for
+# each derivation built again by a Rewind that dates the job's root.
+REBUILT='with a dated root \['
+REBUILT_MATCHING='with a dated root \["matches"\(,"matches"\)*\]$'
+rebuilt_count() { { cat "$base/logs/rootmtime.txt" 2> /dev/null || true; } | grep -c "$1" || true; }
 packages=$(find "$ws/pkgs" -mindepth 1 -maxdepth 1 -type d ! -name '.*' | wc -l)
 jq -n \
     --argjson derivations "$(wc -l < "$base/jobs-all.txt")" \
@@ -38,6 +44,8 @@ jq -n \
     --argjson fetched_paths "$(link_count 'fetched from')" \
     --argjson kept_paths "$(link_count 'kept as an archive')" \
     --argjson differing_outputs "$(sed -n 's/^\([0-9]*\) outputs\? differs\?.*/\1/p' "$base/logs/link.log" | tail -1 | grep . || echo 0)" \
+    --argjson redated "$(rebuilt_count "$REBUILT")" \
+    --argjson redated_match "$(rebuilt_count "$REBUILT_MATCHING")" \
     --arg nixpkgs "$(cat "$base/eval/src" | xargs basename)" \
     --arg date "$(date -u +%Y-%m-%d)" \
     '$ARGS.named' > "$base/report.json"
