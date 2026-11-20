@@ -23,6 +23,23 @@ constexpr std::string_view kMergeName = "merge";
 
 // The permission bits that say who may execute a file.
 constexpr uint32_t kExecutableBits = 0111;
+
+// Everyone's right to read a file. A read bit is two places above the
+// execute bit of the same people.
+constexpr uint32_t kReadableBits = 0444;
+constexpr uint32_t kReadToExecute = 2;
+
+// Whether a file-creation mask takes the right to execute from somebody
+// the mask leaves the right to read. A copy of a project's file is
+// executable, when the project's file is, for everyone who can read the
+// recorded file. A process creates the same file under a mask that takes
+// both rights from the same people or neither, and a file that nobody
+// can execute under any other mask.
+bool masksExecuteAlone(uint32_t mask) {
+  const uint32_t executeMasked = mask & kExecutableBits;
+  const uint32_t readMasked = (mask & kReadableBits) >> kReadToExecute;
+  return (executeMasked & ~readMasked) != 0;
+}
 constexpr std::string_view kRaiseName = "raise";
 constexpr std::string_view kRulesName = "rules";
 
@@ -377,9 +394,11 @@ struct UnpackSources
       // A file this cp wrote over kept its own mode, and a copy would
       // take the executable bit from the project's file instead. Nothing
       // in the graph says "the bytes of one file and the mode of
-      // another", so such a cp stays a command.
-      if (copy->overwritten == CopyCommand::Overwritten::KeepsItsMode &&
-          overwrites(exec)) {
+      // another", so such a cp stays a command. So does one whose mask
+      // takes the executable bit from a file it creates, which a copy
+      // would hand on.
+      if (copy->modes == CopyCommand::Modes::Left &&
+          (overwrites(exec) || masksExecuteAlone(process.umask))) {
         continue;
       }
       const auto inside = [&](const std::string &path) {

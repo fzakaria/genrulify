@@ -245,9 +245,8 @@ std::optional<CopyCommand> copyCommand(const Process &process) {
     return std::nullopt;
   }
   CopyCommand command;
-  command.overwritten = preservesMode
-                            ? CopyCommand::Overwritten::TakesSourceMode
-                            : CopyCommand::Overwritten::KeepsItsMode;
+  command.modes = preservesMode ? CopyCommand::Modes::Preserved
+                                : CopyCommand::Modes::Left;
   command.destination = paths.back();
   paths.pop_back();
   command.sources = std::move(paths);

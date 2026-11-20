@@ -131,6 +131,35 @@ if grep -q 'splice.exec "cp"' "$scratch/opt.mlir"; then
     exit 1
 fi
 
+# A file cp creates has the source's mode less the bits of the process's
+# file-creation mask, unless cp was told to preserve the mode. The copy
+# the pass would make gives a file the executable bit of the project's
+# file wherever the recorded file can be read. Under a mask that takes
+# the executable bit away and leaves the read bit, as 0111 does, that is
+# wrong once somebody makes the project's file executable, so the cp
+# stays a command. Told to preserve modes it is a copy, and so it is
+# under a mask that takes both bits from the same people, as 027 does.
+masked() {
+    cp -r "$scratch/recording" "$scratch/masked"
+    sed -i "0,/\"exe\": /s//\"umask\": $1,\n     \"exe\": /" "$scratch/masked/recording.json"
+    graph aa 644 > "$scratch/graph.mlir"
+    "$compiler" opt --recording "$scratch/masked" "$scratch/graph.mlir" > "$scratch/opt.mlir"
+}
+EXECUTE_MASKED=$((8#111))
+GROUP_AND_OTHERS_MASKED=$((8#027))
+masked "$EXECUTE_MASKED"
+grep -q 'splice.exec "cp" at 735' "$scratch/opt.mlir"
+sed -i 's|"-r", "--reflink=auto"|"-pr", "--reflink=auto"|' "$scratch/masked/recording.json"
+"$compiler" opt --recording "$scratch/masked" "$scratch/graph.mlir" > "$scratch/opt.mlir"
+if grep -q 'splice.exec "cp"' "$scratch/opt.mlir"; then
+    exit 1
+fi
+rm -rf "$scratch/masked"
+masked "$GROUP_AND_OTHERS_MASKED"
+if grep -q 'splice.exec "cp"' "$scratch/opt.mlir"; then
+    exit 1
+fi
+
 # That a program is called cp says nothing about what it does. The pass
 # reads a command line only when the program the kernel loaded is the cp
 # or the chmod of GNU coreutils, which the Nix store path of the program

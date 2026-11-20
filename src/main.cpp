@@ -251,7 +251,7 @@ void run(std::span<char *> args) {
         llvm::outs() << " " << source;
       }
       llvm::outs() << " -> " << copy->destination;
-      if (copy->overwritten == splice_ir::CopyCommand::Overwritten::KeepsItsMode) {
+      if (copy->modes == splice_ir::CopyCommand::Modes::Left) {
         llvm::outs() << ", a file that is there keeps its mode";
       }
       llvm::outs() << "\n";
