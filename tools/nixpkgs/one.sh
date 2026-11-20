@@ -11,6 +11,9 @@
 # VM_MEMORIES       MiB of memory to give the VM, each tried in turn until
 #                   the build succeeds. Rewind allows at most 3072
 # MAX_LOCAL_BUILDS  inputs that may be built here when no cache has them
+# RECORD_OPTIONS    options for `genrulify record`. By default commands
+#                   that changed nothing are dropped, which is most of
+#                   them and most of the Rewind queries
 # SNAPSHOT_TIMEOUT  seconds the snapshots, and then the replays, may take
 # MAX_EXECS         commands a build may run and still be cut at every
 #                   command. A build that ran more is cut only at the
@@ -28,6 +31,7 @@ max_local_builds=${MAX_LOCAL_BUILDS:-6}
 vm_memories=${VM_MEMORIES:-1024 3072}
 max_execs=${MAX_EXECS:-2500}
 snapshot_timeout=${SNAPSHOT_TIMEOUT:-2400}
+record_options=${RECORD_OPTIONS:---skip-idle}
 
 # The status `timeout` exits with when the deadline passed.
 TIMED_OUT=124
@@ -187,7 +191,8 @@ fi
 # Cut the run into commands and snapshot around each.
 # A build with a long stretch of computation makes every snapshot after
 # the stretch replay it, so the phase has a deadline of its own.
-timeout "$snapshot_timeout" "$compiler" record "${coarse[@]}" "$run" "$drv" "$work/recording" >> "$log" 2>&1
+# shellcheck disable=SC2086
+timeout "$snapshot_timeout" "$compiler" record "${coarse[@]}" $record_options "$run" "$drv" "$work/recording" >> "$log" 2>&1
 status=$?
 if [ "$status" = "$TIMED_OUT" ]; then
     lap record

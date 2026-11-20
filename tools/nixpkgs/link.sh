@@ -13,4 +13,6 @@ export PATH=$base/roots/jq/bin:$PATH
 jq -r 'select(.verdict == "ok") | [.attr, ((.outputs | map(.path)) as $paths
         | ($paths | map(select(test("-(dev|lib|bin|man|doc|info|dist|static|debug)$") | not)) | first) // $paths[0])] | @tsv' \
     "$base/results.jsonl" | sed 's|\t/nix/store/| |' > "$base/attrs.txt"
-"$compiler" link --attrs "$base/attrs.txt" "$base/ws"
+
+# The cache is asked about each new store path, a few at a time.
+GENRULIFY_JOBS=${LINK_JOBS:-16} "$compiler" link --attrs "$base/attrs.txt" "$base/ws"
