@@ -34,12 +34,16 @@
 # given one of those entries stages it as the stamp says. A trusted step
 # that leaves an entry the recorded build did not leave, anywhere the
 # build can write, fails: no rule would pick the entry up, and no later
-# step would be given the entry.
+# step would be given the entry. So does one that leaves a path the
+# recorded command removed, and one that changes or removes an entry the
+# recorded command was given and left as it was: the rules after it were
+# written for what the recorded command did to each path.
 #
 # A manifest line is a tag and then a kind, a mode, an mtime, a path, the
 # content, an artifact and an origin. The tag `in` is an entry to stage,
-# `out` a result to expect, and `unused` a path the recorded command wrote
-# that nothing reads. The origin of an `in` line is empty when the entry is
+# `out` a result to expect, `unused` a path the recorded command wrote
+# that nothing reads, and `gone` a path the recorded command removed. The
+# origin of an `in` line is empty when the entry is
 # staged as recorded, the name of the rule whose stamp describes it, or
 # @checkout for a file of the project, which keeps the executable bit the
 # project's file has.
@@ -275,6 +279,11 @@ esac
 
 manifest=$(find_input "actions/$name.manifest")
 declare -A known        # guest paths the step was given or is expected to write
+declare -A written      # guest paths the recorded command wrote
+declare -A gone         # guest paths the recorded command removed
+given=()                # guest paths a trusted step was given
+declare -A given_from   # where the file at each of those was copied from
+declare -A given_target # the target of the symlink at each of those
 directories=()          # mode, mtime and path of every staged directory
 results=()              # the manifest's `out` lines
 
@@ -306,13 +315,22 @@ copy_tree() {
 while IFS=$FS read -r tag kind mode mtime path content artifact origin; do
     known[$path]=1
     if [ "$tag" = out ]; then
+        written[$path]=1
         results+=("$kind$FS$mode$FS$mtime$FS$path$FS$content$FS$artifact")
         continue
     fi
     if [ "$tag" = unused ]; then
+        written[$path]=1
+        continue
+    fi
+    if [ "$tag" = gone ]; then
+        gone[$path]=1
         continue
     fi
     host=$root$path
+    if [ -n "$trust" ]; then
+        given+=("$path")
+    fi
 
     # An entry a trusted rule made is staged the way that rule left it.
     if [ -n "${origin:-}" ] && [ "$origin" != "$CHECKOUT" ]; then
@@ -332,6 +350,7 @@ while IFS=$FS read -r tag kind mode mtime path content artifact origin; do
         link)
             made_directories+=("${host%/*}")
             links+=("$content$FS$host")
+            given_target[$path]=$content
             links_by_time[$mtime]+=$host$'\n'
             ;;
         file)
@@ -344,6 +363,7 @@ while IFS=$FS read -r tag kind mode mtime path content artifact origin; do
                     tree_of[$producer]=$found_in/$producer
                 fi
                 tree_copies[${tree_of[$producer]}$FS$root]+=${path#/}$'\n'
+                given_from[$path]=${tree_of[$producer]}$path
                 by_mode[$mode]+=$host$'\n'
                 parents[${host%/*}]=1
             elif [ "${origin:-}" = "$CHECKOUT" ] && [[ $path == */"$artifact" ]]; then
@@ -355,6 +375,7 @@ while IFS=$FS read -r tag kind mode mtime path content artifact origin; do
                 fi
                 tree_copies[$checkout_dir$FS$root${path%/"$artifact"}]+=$artifact$'\n'
                 checkout_files+=("$mode$FS$artifact$FS$host")
+                given_from[$path]=$checkout_dir/$artifact
                 parents[${host%/*}]=1
             else
                 locate "$artifact" || fail "no input named $artifact"
@@ -362,6 +383,7 @@ while IFS=$FS read -r tag kind mode mtime path content artifact origin; do
                     mode=$(checkout_mode "$mode" "$found")
                 fi
                 "$C/install" -D -m "$mode" "$found" "$host" || fail "cannot stage $path"
+                given_from[$path]=$found
             fi
             by_time[$mtime]+=$host$'\n'
             ;;
@@ -447,6 +469,53 @@ if [ ${#directories[@]} -gt 0 ]; then
     for item in "${shutting[@]}"; do
         "$C/chmod" "${item%%"$FS"*}" "${item#*"$FS"}" || fail "cannot set modes"
     done
+fi
+
+# ---- what a trusted step has to leave as it is ------------------------------
+
+# The directories a project's build can write, which are all a trusted
+# step is asked about.
+writable_roots=()
+if [ -n "$trust" ] && roots_file=$(find_optional_input "$ROOTS_FILE"); then
+    while IFS= read -r writable; do
+        writable_roots+=("$writable")
+    done < "$roots_file"
+fi
+
+# The entries the step was given that the recorded command neither wrote
+# nor removed, by host path. The graph has no later version of such a
+# path, so every later step is given the entry as it is now.
+alone=()
+for path in "${given[@]}"; do
+    if [ -n "${written[$path]:-}" ] || [ -n "${gone[$path]:-}" ]; then
+        continue
+    fi
+    for writable in "${writable_roots[@]}"; do
+        if [ "$path" = "$writable" ] || [[ $path == "$writable"/* ]]; then
+            alone+=("$root$path")
+            break
+        fi
+    done
+done
+
+# Prints what tells whether each entry "$@" was touched: its type and
+# mode first, then its size, its modification time, its change time and
+# its inode. An entry that is not there prints nothing.
+marks() {
+    "$C/stat" --printf "%f %s %Y %.9Z %i$FS%n\0" -- "$@" 2> /dev/null
+}
+
+# Fills the array named $1 with the marks of the entries left alone.
+mark_alone() {
+    local -n into=$1
+    local seen file
+    while IFS=$FS read -r -d '' seen file; do
+        into[$file]=$seen
+    done < <(each_batch alone marks)
+}
+declare -A marked_before
+if [ ${#alone[@]} -gt 0 ]; then
+    mark_alone marked_before
 fi
 
 # ---- pack: serialize one output path as a NAR -------------------------------
@@ -866,8 +935,8 @@ fi
 # and that command's step is given only what the recording saw it use.
 # So a trusted step that leaves such an entry anywhere the build can
 # write fails, and does not drop the entry quietly.
-if [ -n "$trust" ] && roots_file=$(find_optional_input "$ROOTS_FILE"); then
-    while IFS= read -r writable; do
+if [ ${#writable_roots[@]} -gt 0 ]; then
+    for writable in "${writable_roots[@]}"; do
         while IFS= read -r -d '' entry; do
             # The pattern below also yields the directory itself with a
             # slash after it.
@@ -881,7 +950,56 @@ if [ -n "$trust" ] && roots_file=$(find_optional_input "$ROOTS_FILE"); then
                 printf '%s\0' "$root$writable" "$root$writable"/**
             fi
         )
-    done < "$roots_file"
+    done
+fi
+
+# A path the recorded command removed has no later version in the graph,
+# and an entry the recorded command left alone has only the version this
+# step was given. Whatever the command did to either now, no later step
+# would see it: a file that is no longer removed would be missing from
+# the package, and a file that is now rewritten would be packed as it was
+# before. So both fail the step.
+for path in "${!gone[@]}"; do
+    if [ -e "$root$path" ] || [ -L "$root$path" ]; then
+        problems+=("kept $path, which the recorded command removed")
+    fi
+done
+if [ ${#alone[@]} -gt 0 ]; then
+    declare -A marked_after
+    mark_alone marked_after
+    for host in "${alone[@]}"; do
+        was=${marked_before[$host]:-}
+        is=${marked_after[$host]:-}
+        if [ "$was" = "$is" ]; then
+            continue
+        fi
+        path=${host#"$root"}
+        if [ -z "$is" ]; then
+            problems+=("removed $path, which the recorded command left alone")
+            continue
+        fi
+
+        # Another type or mode is a change whatever else is the same. A
+        # directory is touched by every entry made or removed inside it,
+        # which is no change to the directory itself.
+        if [ "${was%% *}" != "${is%% *}" ]; then
+            problems+=("changed $path, which the recorded command left alone")
+            continue
+        fi
+        if [ -d "$host" ] && [ ! -L "$host" ]; then
+            continue
+        fi
+
+        # A file that was touched is compared with what was staged, so
+        # that setting its time or linking to it is no change.
+        if [ -L "$host" ]; then
+            [ "$("$C/readlink" "$host")" = "${given_target[$path]:-}" ] ||
+                problems+=("changed $path, which the recorded command left alone")
+            continue
+        fi
+        [ "$("$C/sha256sum" < "${given_from[$path]:-}")" = "$("$C/sha256sum" < "$host")" ] ||
+            problems+=("changed $path, which the recorded command left alone")
+    done
 fi
 
 if [ ${#problems[@]} -gt 0 ]; then

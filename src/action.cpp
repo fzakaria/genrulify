@@ -44,6 +44,7 @@ constexpr int kStandardInput = 0;
 constexpr std::string_view kStageTag = "in";
 constexpr std::string_view kExpectTag = "out";
 constexpr std::string_view kUnusedTag = "unused";
+constexpr std::string_view kRemovedTag = "gone";
 
 // What sandbox.sh can put at a descriptor, as its --fd option spells them.
 constexpr std::string_view kNullSpec = "null";
@@ -554,6 +555,12 @@ std::vector<Arguments> actionArguments(const Action &action,
   return lines;
 }
 
+Arguments removedPaths(const Recording &recording, uint64_t step) {
+  const auto &group = recording.group(step);
+  return difference(recording.state(group.start), recording.state(group.end))
+      .removed;
+}
+
 Arguments writeActionFiles(const Action &action, const fs::path &directory) {
   Arguments written;
   fs::create_directories(directory / kActionsDirectory);
@@ -572,6 +579,11 @@ Arguments writeActionFiles(const Action &action, const fs::path &directory) {
   if (action.trusted) {
     for (const auto &entry : action.unused) {
       manifest += manifestLine(kUnusedTag, {entry, "", ""});
+    }
+    for (const auto &path : action.removed) {
+      Entry entry;
+      entry.path = path;
+      manifest += manifestLine(kRemovedTag, {entry, "", ""});
     }
   }
   const auto name =

@@ -39,6 +39,11 @@ struct Action {
   bool trusted = false;
   std::vector<Entry> unused;
 
+  // For a trusted step, the paths the recorded processes removed. The
+  // graph has no later version of such a path, so a command that now
+  // leaves one in place has to fail its step.
+  Arguments removed;
+
   // How long the processes may run before the step is abandoned.
   uint64_t timeoutSeconds = 0;
 
@@ -113,6 +118,10 @@ std::vector<Arguments> actionArguments(const Action &action,
 
 // Writes what a step's command line refers to by name: its manifest, and
 // the bytes the builder had written into a pipe for one of its processes.
+// The paths the group recorded at `step` removed: there when the group
+// started and not when it ended.
+Arguments removedPaths(const Recording &recording, uint64_t step);
+
 // Returns the names written, relative to `directory`.
 Arguments writeActionFiles(const Action &action,
                            const std::filesystem::path &directory);

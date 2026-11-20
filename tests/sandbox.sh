@@ -260,6 +260,22 @@ test "$(grep -c '^  unrecorded ' "$scratch/error")" = 1
 line unused dir 755 1 /build/option '' '' >> "$scratch/actions/more.manifest"
 more
 
+# A trusted step is told which paths the recorded command removed, on
+# lines tagged `gone`. The graph has no later version of such a path, so
+# no later step is given it. A command that now leaves the path where it
+# was has done something the rules cannot pass on, and the step fails.
+# Here nothing runs, so the file that was to be removed is still there.
+{
+    line in dir 755 1 /build '' ''
+    line in file 644 1 /build/stale "$bundle" "blobs/$bundle"
+    line gone file 644 1 /build/stale "$bundle" ''
+} > "$scratch/actions/keeps.manifest"
+if "$script" --name keeps --trust --in "$scratch/project-files" --in "$scratch" --in "$data/example" --out "$scratch/out" 2> "$scratch/error"; then
+    exit 1
+fi
+grep -q '^  kept /build/stale, which the recorded command removed$' "$scratch/error"
+grep -q 'convert the project again' "$scratch/error"
+
 # A symlink is staged from its entry alone and packed as a symlink.
 {
     line in dir 755 1 /out '' ''
@@ -362,3 +378,34 @@ EMPTY=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
 } > "$scratch/actions/wired.manifest"
 start wired --trust --in "$scratch/project-files" \
     run --cwd /build --env 0 --fd 1=file:w:/build/wired --status 0 --argc 2 -- "$coreutils/echo" written
+
+# A trusted step may change what the recorded command changed and no
+# more. A file the step was given and the recorded command left as it
+# was has no later version in the graph: every later step is given the
+# file as it was before this one. So a command that now rewrites the
+# file, removes it or changes its mode fails the step. The file is
+# compared with what was staged for this build, so an edited source is
+# no change. Reading the file, or setting its time, is none either.
+alone() {
+    {
+        line in dir 700 1 /build '' ''
+        line in file 644 1 /build/kept "$bundle" "blobs/$bundle"
+    } > "$scratch/actions/$1.manifest"
+    name=$1
+    shift
+    start "$name" --trust --in "$scratch/project-files" --in "$data/example" "$@"
+}
+alone reads run --cwd /build --env 0 --fd 1=null --status 0 --argc 2 -- "$coreutils/cat" kept
+alone touches run --cwd /build --env 0 --status 0 --argc 2 -- "$coreutils/touch" kept
+if alone rewrites run --cwd /build --env 0 --fd 1=file:w:/build/kept --status 0 --argc 2 -- "$coreutils/echo" new 2> "$scratch/error"; then
+    exit 1
+fi
+grep -q '^  changed /build/kept, which the recorded command left alone$' "$scratch/error"
+if alone modes run --cwd /build --env 0 --status 0 --argc 3 -- "$coreutils/chmod" 600 kept 2> "$scratch/error"; then
+    exit 1
+fi
+grep -q '^  changed /build/kept, which the recorded command left alone$' "$scratch/error"
+if alone removes run --cwd /build --env 0 --status 0 --argc 2 -- "$coreutils/rm" kept 2> "$scratch/error"; then
+    exit 1
+fi
+grep -q '^  removed /build/kept, which the recorded command left alone$' "$scratch/error"

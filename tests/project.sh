@@ -170,6 +170,29 @@ if grep -q 'watched' "$bazel_rules" "$buck_rules"; then
     exit 1
 fi
 
+# A recorded command can remove a file, and the graph then has no later
+# version of that path: nothing after the command is given the file.
+# After an edit the command may leave the file where it was, and the
+# package Nix builds then has a file the rules know nothing of. So the
+# manifest of a trusted step lists what the recorded command removed,
+# and the step fails when one of those is still there. Here a file
+# appears between the first two dd commands and is gone after the
+# second, which makes the second dd the command that removed it.
+cp -r "$scratch/recording" "$scratch/removing"
+for state in 749 764; do
+    sed -i "s|^\[|[\n {\"content\": \"$header\", \"kind\": \"file\", \"mode\": 420, \"mtime\": 1, \"path\": \"/build/stale\"},|" "$scratch/removing/states/$state.json"
+done
+"$compiler" import "$scratch/removing" > "$scratch/removing.mlir"
+"$compiler" opt "$scratch/removing.mlir" > "$scratch/removing.opt.mlir"
+mkdir "$scratch/removing-project"
+printf 'header\n' > "$scratch/removing-project/header.txt"
+"$compiler" emit "$scratch/removing" "$scratch/removing.opt.mlir" "$scratch/removing-project"
+grep -q "^in.*/build/stale" "$scratch/removing-project/genrulify/actions/s764_dd.manifest"
+grep -q "^gone.*/build/stale" "$scratch/removing-project/genrulify/actions/s764_dd.manifest"
+if grep -q "^gone" "$scratch/removing-project/genrulify/actions/s735_dd.manifest"; then
+    exit 1
+fi
+
 # A command of a recorded build is held to the recording.
 "$compiler" import "$data/example" > "$scratch/plain.mlir"
 "$compiler" emit "$data/example" "$scratch/plain.mlir" "$scratch/plain"

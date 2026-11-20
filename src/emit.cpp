@@ -1122,6 +1122,9 @@ void emitWorkspace(mlir::ModuleOp module, const Recording &recording,
         action = execAction(exec, recording, artifactOf, platformArtifact,
                             originOf);
         action.trusted = dependent.contains(&op);
+        if (action.trusted) {
+          action.removed = removedPaths(recording, exec.getStep());
+        }
         const bool read = llvm::any_of(
             exec->getResults(),
             [](mlir::Value result) { return !result.use_empty(); });
