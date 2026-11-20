@@ -81,6 +81,8 @@
           SPLICE_BWRAP
           SPLICE_TAR
           SPLICE_STRACE
+          SPLICE_XZ
+          SPLICE_ZSTD
           ;
         inputsFrom = [ self.packages.${system}.default ];
       };

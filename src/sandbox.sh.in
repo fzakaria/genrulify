@@ -15,10 +15,21 @@
 #                   [--pipe ID:LAST_WRITER:READERS:BROKE]...
 #                   (run OPTIONS --argc N -- PROGRAM ARG...)...
 #        sandbox.sh --name NAME --in DIR... --out DIR pack GUEST_PATH [SHA256]
+#        sandbox.sh import COMPRESSION FILE ARCHIVE SHA256
+#
+# `import` turns a store path as a binary cache serves it, a NAR
+# compressed with xz or zstd or not at all (none), into the NAR, and
+# fails unless the NAR has the digest the cache gave for it.
 #
 # Files are looked up by name under each --in directory:
 #   actions/NAME.manifest   the entries to stage and the results to expect
-#   closure.txt             store paths to mount read-only
+#   closure.txt             store paths to mount read-only. In a workspace
+#                           that many builds share, a line also names
+#                           the package that holds the path's archive, as
+#                           PACKAGE/nar, and the archive's digest, as
+#                           PACKAGE/nar.sha256. The archive is unpacked
+#                           once, under its digest, into the directory
+#                           GENRULIFY_STORE names, and mounted from there.
 #   env/N.env               an environment, NUL-separated NAME=VALUE
 #   source.txt              for a project, the store path of its source
 #                           tree, which is staged and not read from the host
@@ -66,6 +77,21 @@ set -u
 C=@SPLICE_COREUTILS@/bin
 BWRAP=@SPLICE_BWRAP@/bin/bwrap
 NIX_STORE=@SPLICE_NIX@/bin/nix-store
+XZ=@SPLICE_XZ@/bin/xz
+ZSTD=@SPLICE_ZSTD@/bin/zstd
+
+# Where the store paths of a shared workspace are unpacked, each under
+# the digest of its archive, unless GENRULIFY_STORE names another place.
+# Every rule of every workspace of one user shares the directory.
+DEFAULT_STORE=/var/tmp/genrulify-store-$UID
+
+# The names of a store path's archive and of the file with the archive's
+# digest, in the package of the workspace that holds them.
+ARCHIVE_FILE=nar
+DIGEST_FILE=nar.sha256
+
+# The time stamp Nix gives everything in its store.
+STORE_MTIME=1
 
 # The identity the Nix sandbox gives a builder, which the recording had.
 BUILD_UID=1000
@@ -110,6 +136,31 @@ fail() {
     echo "sandbox.sh: $*" >&2
     exit 2
 }
+
+# ---- import: a compressed NAR from a binary cache ---------------------------
+
+if [ "${1:-}" = import ]; then
+    [ $# -eq 5 ] || fail "usage: sandbox.sh import COMPRESSION FILE ARCHIVE SHA256"
+    compression=$2
+    fetched=$3
+    archive=$4
+    expected=$5
+    case $compression in
+        xz) "$XZ" --decompress --stdout < "$fetched" > "$archive" ;;
+        zstd) "$ZSTD" --decompress --stdout --quiet < "$fetched" > "$archive" ;;
+        none) "$C/cp" "$fetched" "$archive" ;;
+        *) fail "unknown compression $compression" ;;
+    esac || fail "cannot unpack $fetched"
+
+    # An archive with another digest is removed, so that no step can use it.
+    actual=$("$C/sha256sum" < "$archive")
+    actual=${actual%% *}
+    if [ "$actual" != "$expected" ]; then
+        "$C/rm" -f "$archive"
+        fail "$fetched unpacks to sha256:$actual, and the cache said sha256:$expected"
+    fi
+    exit 0
+fi
 
 # The script keeps pipe ends and fed files open on descriptors of its own
 # until each process has the ones it needs. Those must not collide with a
@@ -545,6 +596,51 @@ fi
 
 # ---- start the processes ----------------------------------------------------
 
+# Unpacks the archive of the package $1 into the script's store, unless
+# an earlier step did, and sets `unpacked` to where the store path is.
+# The directory is named after the archive's digest, so what is there
+# under a name is what the name says. A path is unpacked under another
+# name and renamed, so that no step sees half a path, and steps that
+# unpack the same path at once all end up with one copy.
+unpack_store_path() {
+    local holder=$1 digest partial
+    local -a entries
+    local store=${GENRULIFY_STORE:-$DEFAULT_STORE}
+    digest=$(< "$(find_input "$holder/$DIGEST_FILE")") || fail "no digest for $holder"
+    unpacked=$store/$digest
+    if [ -e "$unpacked" ] || [ -L "$unpacked" ]; then
+        return 0
+    fi
+    "$C/mkdir" -p "$store" || fail "cannot create $store"
+
+    # The path is unpacked in the store itself, under a name no other
+    # step has: a directory with nothing writable in it can be renamed
+    # only within the directory that holds it.
+    partial=$store/.partial.$$.$RANDOM
+    "$NIX_STORE" --restore "$partial" < "$(find_input "$holder/$ARCHIVE_FILE")" ||
+        fail "cannot unpack the archive of $holder"
+
+    # Nix keeps a store path with nothing writable in it and every time
+    # stamp at 1, and a build can see both.
+    mapfile -d '' -t entries < <(
+        shopt -s globstar dotglob nullglob
+        printf '%s\0' "$partial" "$partial"/**
+    )
+    if [ ! -L "$partial" ]; then
+        "$C/chmod" -R a-w "$partial" || fail "cannot protect $holder"
+    fi
+    each_batch entries "$C/touch" -h -d "@$STORE_MTIME" -- || fail "cannot set the time stamps of $holder"
+
+    # Another step may have put the path there in the meantime. A
+    # directory cannot be renamed over one that has entries, and the copy
+    # that lost is discarded.
+    if ! "$C/mv" -T "$partial" "$unpacked" 2> /dev/null; then
+        "$C/chmod" -R u+w "$partial" 2> /dev/null
+        "$C/rm" -rf "$partial"
+    fi
+    [ -e "$unpacked" ] || [ -L "$unpacked" ] || fail "cannot keep $holder in $store"
+}
+
 # The sandbox every process shares: the staged tree as the only writable
 # state, the store closure at its own paths, nothing else.
 sandbox=("$BWRAP" --unshare-all --die-with-parent --clearenv
@@ -553,8 +649,15 @@ sandbox=("$BWRAP" --unshare-all --die-with-parent --clearenv
     --bind "$root/tmp" /tmp
     --bind "$root/nix/store" /nix/store
     --ro-bind "$root/bin" /bin --ro-bind "$root/etc" /etc)
-while IFS= read -r store_path; do
-    sandbox+=(--ro-bind "$store_path" "$store_path")
+while IFS=$FS read -r store_path holder; do
+    # A store path of the host is mounted from where it is. One that a
+    # rule of the workspace made is mounted from the script's own store.
+    if [ -z "${holder:-}" ]; then
+        sandbox+=(--ro-bind "$store_path" "$store_path")
+        continue
+    fi
+    unpack_store_path "$holder"
+    sandbox+=(--ro-bind "$unpacked" "$store_path")
 done < "$(find_input closure.txt)"
 sandbox+=(--bind "$root/build" /build)
 

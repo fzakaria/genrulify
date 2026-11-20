@@ -27,5 +27,10 @@ pkgs.stdenv.mkDerivation {
   SPLICE_COREUTILS = pkgs.coreutils;
   SPLICE_NIX = pkgs.nix;
   SPLICE_STRACE = pkgs.strace;
+
+  # A store path fetched from a binary cache is a NAR packed with one of
+  # these. `bin` is the output with the programs.
+  SPLICE_XZ = pkgs.xz.bin;
+  SPLICE_ZSTD = pkgs.zstd.bin;
   doCheck = true;
 }
