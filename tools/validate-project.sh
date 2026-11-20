@@ -14,13 +14,16 @@
 # Last, it converts the edited copy again beside a build file written by
 # hand, which has to survive and still build.
 #
-# A second project checks what somebody runs while they work. Its builder
-# greps a file of the project and compiles a number into the program by
-# what the grep found. After the file changes, the recorded compile
-# command is the wrong one, and `bazel run` and `buck2 run` have to fail
-# and say to convert again, as the archive does. Handing over the
-# program built the old way would be a quiet lie. After converting again
-# both have to print the number Nix's own build prints.
+# Two more projects check what somebody runs while they work. The builder
+# of each runs a command on a file of the project and compiles a number
+# into the program by whether the command succeeded: a grep in one, and
+# in the other a script whose report is packed too, so that something
+# reads what the script wrote. After the file changes, the recorded
+# compile command is the wrong one. `bazel run` and `buck2 run` have to
+# fail and say to convert again, and so does a rule written by hand that
+# takes the program. Handing over the program built the old way would be
+# a quiet lie. After converting again both have to print the number
+# Nix's own build prints.
 #
 # usage: tools/validate-project.sh
 #
@@ -178,39 +181,15 @@ grep -q "$CONVERTED_AGAIN_GREETING" bazel-bin/greeting.txt
 
 echo "Both systems rebuilt greet.o, kept main.o, archived what Nix builds from the edited project (sha256:$native), and built the hand-written rule after converting again."
 
-# The project whose builder decides by a grep. The number the program
-# prints is 1 while the file says the recorded word and 2 otherwise.
+# A project whose builder decides by how a command ends. The number the
+# program prints is 1 while the file says the recorded word and 2
+# otherwise. A build file written by hand has a rule that takes the
+# program, as a project's own rules would.
 RECORDED_WORD=disabled
 EDITED_WORD=enabled
 RECORDED_NUMBER=1
 EDITED_NUMBER=2
 CONVERT_AGAIN="convert the project again"
-decided=$work/decided
-mkdir -p "$decided/project"
-echo "$RECORDED_WORD" > "$decided/project/flag"
-cat > "$decided/project/main.c" <<'C'
-#include <stdio.h>
-int main(void) { printf("%d\n", VALUE); return 0; }
-C
-cat > "$decided/flake.nix" <<NIX
-{
-  inputs.genrulify.url = "path:$root";
-  outputs = { self, genrulify }:
-    let pkgs = genrulify.inputs.nixpkgs.legacyPackages.x86_64-linux; in {
-      packages.x86_64-linux.default = pkgs.stdenv.mkDerivation {
-        pname = "decided";
-        version = "0.1.0";
-        src = ./project;
-        dontConfigure = true;
-        dontFixup = true;
-        buildPhase = "if grep -q $RECORDED_WORD flag; then n=$RECORDED_NUMBER; else n=$EDITED_NUMBER; fi; gcc -DVALUE=\$n main.c -o app";
-        installPhase = "mkdir -p \$out/bin; cp app \$out/bin/app";
-      };
-    };
-}
-NIX
-"$compiler" convert --source "$decided/project" "path:$decided#default" "$work/decided-recording"
-cd "$decided/project"
 
 # Runs the program with one system. Standard output is the program's.
 run_app() {
@@ -220,28 +199,94 @@ run_app() {
         "$buck" run //:app
     fi
 }
-for system in bazel buck2; do
-    test "$(run_app "$system" 2> /dev/null)" = "$RECORDED_NUMBER"
-done
 
-# The grep now ends another way, so the compile the rules hold is not the
-# one the builder would run. Neither system may hand over a program.
-echo "$EDITED_WORD" > flag
-for system in bazel buck2; do
-    if run_app "$system" > "$work/decided.$system.out" 2> "$work/decided.$system.log"; then
-        echo "$system ran a program built on a decision that has changed: $(cat "$work/decided.$system.out")" >&2
+# decided NAME COMMAND INSTALLED: the project NAME, whose builder runs
+# COMMAND and compiles one number or the other by whether it succeeded,
+# and installs the files INSTALLED.
+decided() {
+    local name=$1 command=$2 installed=$3
+    local decided=$work/$name
+    mkdir -p "$decided/project"
+    echo "$RECORDED_WORD" > "$decided/project/flag"
+    cat > "$decided/project/main.c" <<'C'
+#include <stdio.h>
+int main(void) { printf("%d\n", VALUE); return 0; }
+C
+    cat > "$decided/project/check.pl" <<PERL
+open(my \$file, "<", "flag") or die;
+open(my \$report, ">", "report") or die;
+print \$report "checked\n";
+exit((<\$file> =~ /^$RECORDED_WORD/) ? 0 : 1);
+PERL
+    cat > "$decided/flake.nix" <<NIX
+{
+  inputs.genrulify.url = "path:$root";
+  outputs = { self, genrulify }:
+    let pkgs = genrulify.inputs.nixpkgs.legacyPackages.x86_64-linux; in {
+      packages.x86_64-linux.default = pkgs.stdenv.mkDerivation {
+        pname = "$name";
+        version = "0.1.0";
+        src = ./project;
+        nativeBuildInputs = [ pkgs.perl ];
+        dontConfigure = true;
+        dontFixup = true;
+        buildPhase = "if $command; then n=$RECORDED_NUMBER; else n=$EDITED_NUMBER; fi; gcc -DVALUE=\$n main.c -o app";
+        installPhase = "mkdir -p \$out/bin; cp $installed \$out/bin/";
+      };
+    };
+}
+NIX
+    "$compiler" convert --source "$decided/project" "path:$decided#default" "$work/$name-recording"
+    cd "$decided/project"
+    cat > BUILD.bazel <<'BAZEL'
+load(":genrulify/targets.bzl", "genrulify_targets")
+
+genrulify_targets()
+
+genrule(
+    name = "number",
+    srcs = [":app"],
+    outs = ["number.txt"],
+    cmd = "$(location :app) > $@",
+)
+BAZEL
+    for system in bazel buck2; do
+        test "$(run_app "$system" 2> /dev/null)" = "$RECORDED_NUMBER"
+    done
+    "$bazel" --batch build --enable_bzlmod=false //:number > "$work/$name.number.log" 2>&1
+    test "$(cat bazel-bin/number.txt)" = "$RECORDED_NUMBER"
+
+    # The command now ends another way, so the compile the rules hold is
+    # not the one the builder would run. Neither system may hand over a
+    # program, to somebody who runs it or to a rule that takes it.
+    echo "$EDITED_WORD" > flag
+    for system in bazel buck2; do
+        if run_app "$system" > "$work/$name.$system.out" 2> "$work/$name.$system.log"; then
+            echo "$name: $system ran a program built on a decision that has changed: $(cat "$work/$name.$system.out")" >&2
+            exit 1
+        fi
+        grep -q "$CONVERT_AGAIN" "$work/$name.$system.log"
+    done
+    if "$bazel" --batch build --enable_bzlmod=false //:number > "$work/$name.number.log" 2>&1; then
+        echo "$name: bazel built a rule on a program whose build decision has changed" >&2
         exit 1
     fi
-    grep -q "$CONVERT_AGAIN" "$work/decided.$system.log"
-done
+    grep -q "$CONVERT_AGAIN" "$work/$name.number.log"
 
-# Converted again, both print what Nix's build of the project prints.
-"$buck" kill > /dev/null 2>&1 || true
-rm -rf buck-out
-find . -maxdepth 1 -name 'bazel-*' -type l -delete
-"$compiler" convert --source "$decided/project" "path:$decided#default" "$work/decided-recording-2"
-for system in bazel buck2; do
-    test "$(run_app "$system" 2> /dev/null)" = "$EDITED_NUMBER"
-done
-"$buck" kill > /dev/null 2>&1 || true
+    # Converted again, both print what Nix's build of the project prints.
+    "$buck" kill > /dev/null 2>&1 || true
+    rm -rf buck-out
+    find . -maxdepth 1 -name 'bazel-*' -type l -delete
+    "$compiler" convert --source "$decided/project" "path:$decided#default" "$work/$name-recording-2"
+    for system in bazel buck2; do
+        test "$(run_app "$system" 2> /dev/null)" = "$EDITED_NUMBER"
+    done
+    "$buck" kill > /dev/null 2>&1 || true
+}
+
+# A grep nothing else uses, and a script whose report is packed with the
+# program: something reads what the script wrote, and the builder still
+# decided by how the script ended.
+decided decided-grep "grep -q $RECORDED_WORD flag" "app"
+decided decided-report "perl check.pl" "app report"
 echo "Both systems refused to run a program whose build decision had changed, and ran the new one after converting again."
