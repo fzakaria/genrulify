@@ -47,7 +47,13 @@ std::string fromHex(std::string_view hex);
 // Throws a runtime error carrying `message` unless `condition` holds.
 void check(bool condition, std::string_view message);
 
-// Calls `body(i)` for every i below `count` on a small pool of threads and
+// The most threads parallelFor works on: the count in GENRULIFY_JOBS, or
+// the number of processors when the variable is not set. Throws when the
+// variable holds anything but a positive number.
+size_t workerLimit();
+
+// Calls `body(i)` for every i below `count` on a pool of at most
+// workerLimit() threads and
 // rethrows the first exception a call raised.
 void parallelFor(size_t count, const std::function<void(size_t)> &body);
 

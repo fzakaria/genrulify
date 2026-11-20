@@ -318,6 +318,9 @@ void run(std::span<char *> args) {
 
 int main(int argc, char **argv) {
   try {
+    // A worker count that is not a count is refused before any work, and
+    // not hours into a recording when the first pool starts.
+    splice_ir::workerLimit();
     run(std::span(argv + 1, argc - 1));
     return EXIT_SUCCESS;
   } catch (const std::exception &error) {

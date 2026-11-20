@@ -1,10 +1,13 @@
 #include "process.h"
+#include "absl/strings/str_cat.h"
 #include "llvm/ADT/SmallString.h"
 #include "llvm/ADT/StringExtras.h"
 #include "llvm/Support/FileSystem.h"
 #include "llvm/Support/Program.h"
 #include "llvm/Support/SHA256.h"
 #include <atomic>
+#include <charconv>
+#include <cstdlib>
 #include <fstream>
 #include <mutex>
 #include <thread>
@@ -15,6 +18,10 @@ namespace {
 // Rewind replays a run to answer each query, so queries are CPU-bound and a
 // pool the size of the machine keeps every core busy.
 constexpr unsigned kFallbackThreads = 4;
+
+// The variable that caps the pool, for running several conversions on
+// one machine.
+constexpr const char *kJobsVariable = "GENRULIFY_JOBS";
 
 // The bytes read per call while hashing a file.
 constexpr size_t kHashChunk = 64 * 1024;
@@ -138,10 +145,27 @@ std::string capture(const Arguments &args) {
   }
 }
 
+size_t workerLimit() {
+  // Without the variable the pool is the size of the machine.
+  const char *jobs = std::getenv(kJobsVariable);
+  if (jobs == nullptr) {
+    const unsigned hardware = std::thread::hardware_concurrency();
+    return hardware == 0 ? kFallbackThreads : hardware;
+  }
+
+  // The variable has to be a positive count and nothing else.
+  size_t limit = 0;
+  const std::string_view text = jobs;
+  const auto [end, error] =
+      std::from_chars(text.data(), text.data() + text.size(), limit);
+  check(error == std::errc() && end == text.data() + text.size() && limit > 0,
+        absl::StrCat(kJobsVariable, " must be a positive number, not '", text,
+                     "'"));
+  return limit;
+}
+
 void parallelFor(size_t count, const std::function<void(size_t)> &body) {
-  const unsigned hardware = std::thread::hardware_concurrency();
-  const size_t workers =
-      std::min<size_t>(count, hardware == 0 ? kFallbackThreads : hardware);
+  const size_t workers = std::min(count, workerLimit());
   std::atomic<size_t> next = 0;
   std::mutex mutex;
   std::exception_ptr failure;
