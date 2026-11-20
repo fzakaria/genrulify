@@ -48,6 +48,9 @@ FIXED_OUTPUT_MARK='is a fixed-output derivation'
 # field of its structured attributes, which the file holds as quoted JSON.
 LOCAL_BUILD_MARK='preferLocalBuild(\\":true|","1")'
 
+# Where snapshots are unpacked and replays are staged.
+export TMPDIR=$base/tmp
+
 # Settings can be changed while lanes run: each job reads this file, which
 # may assign any of the settings above.
 if [ -f "$base/config.sh" ]; then
@@ -56,7 +59,6 @@ if [ -f "$base/config.sh" ]; then
 fi
 export GENRULIFY_JOBS=${GENRULIFY_JOBS:-8}
 export PATH=$base/roots/rewind/bin:$base/roots/jq/bin:$PATH
-export TMPDIR=$base/tmp
 compiler=$base/roots/genrulify/bin/genrulify
 mkdir -p "$base/work" "$base/logs/pkg" "$base/locks" "$base/recordings" "$base/roots/inputs/$key" "$TMPDIR"
 
