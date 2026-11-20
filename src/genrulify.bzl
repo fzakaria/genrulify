@@ -194,3 +194,64 @@ def nix_archive(name, srcs, out, cmd):
         cmd = " ".join(cmd),
         tags = _TAGS,
     )
+
+# ---- the store paths of a workspace that many builds share ------------------
+#
+# A package below store/ stands for one store path. Its target `path` is
+# the path's archive, a file named `nar`, and the file `nar.sha256` with
+# the archive's digest. The three rules below differ in where the archive
+# comes from.
+
+# The files of a store path's package, and who may read them.
+_ARCHIVE = "nar"
+_DIGEST = "nar.sha256"
+_PUBLIC = ["//visibility:public"]
+
+# The script that unpacks a fetched archive.
+_SCRIPT = "//genrulify:sandbox.sh"
+
+def _store_path(name, archive):
+    """The archive of a store path and the archive's digest, as one target."""
+    native.filegroup(
+        name = name,
+        srcs = [archive, _DIGEST],
+        visibility = _PUBLIC,
+    )
+
+def _archive_link_impl(ctx):
+    """Gives another package's archive the name a store path's archive has."""
+    link = ctx.actions.declare_file(_ARCHIVE)
+    ctx.actions.symlink(output = link, target_file = ctx.file.archive)
+    return [DefaultInfo(files = depset([link]))]
+
+_archive_link = rule(
+    implementation = _archive_link_impl,
+    attrs = {
+        "archive": attr.label(allow_single_file = True, mandatory = True),
+    },
+)
+
+def nix_built(name, archive):
+    """A store path a package of the workspace builds, from that package's archive."""
+    _archive_link(name = name + "_archive", archive = archive)
+    _store_path(name, ":" + name + "_archive")
+
+def nix_fetched(name, src, compression, sha256):
+    """A store path a binary cache has: the fetched file, unpacked and held to the cache's digest."""
+    native.genrule(
+        name = name + "_archive",
+        srcs = [src, _SCRIPT],
+        outs = [_ARCHIVE],
+        cmd = "$(location {script}) import {compression} $(location {src}) $@ {sha256}".format(
+            script = _SCRIPT,
+            compression = compression,
+            src = src,
+            sha256 = sha256,
+        ),
+        tags = _TAGS,
+    )
+    _store_path(name, _ARCHIVE)
+
+def nix_source(name):
+    """A store path kept in the workspace as its archive: a source file, or a build no cache has."""
+    _store_path(name, _ARCHIVE)

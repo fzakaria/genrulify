@@ -6,6 +6,7 @@
 #include "rules.h"
 #include "action.h"
 #include "trace.h"
+#include "workspace.h"
 #include <iostream>
 #include <set>
 #include <span>
@@ -28,6 +29,7 @@ constexpr std::string_view kUsage =
     "       genrulify unpack PROGRAM [ARGUMENT...]\n"
     "       genrulify emit RECORDING GRAPH.mlir WORKSPACE\n"
     "       genrulify emit --into WORKSPACE RECORDING GRAPH.mlir\n"
+    "       genrulify link [--cache URL] [--attrs FILE] WORKSPACE\n"
     "       genrulify describe RECORDING RECORDED.mlir\n"
     "       genrulify reference RECORDING OUTPUT ARCHIVE.nar\n"
     "       genrulify verify REFERENCE.nar ARCHIVE.nar\n"
@@ -56,6 +58,13 @@ constexpr std::string_view kRecordingOption = "--recording";
 
 // The option of `emit` that names a workspace many builds share.
 constexpr std::string_view kIntoOption = "--into";
+
+// The options of `link`: the binary cache to ask about store paths, and
+// a file of attributes to name at the workspace's root. The cache every
+// Nix installation asks is the default.
+constexpr std::string_view kCacheOption = "--cache";
+constexpr std::string_view kAttributesOption = "--attrs";
+constexpr std::string_view kDefaultCache = "https://cache.nixos.org";
 
 // The separator between the process and the step of an image.
 constexpr char kImageSeparator = '@';
@@ -219,6 +228,32 @@ void run(std::span<char *> args) {
                                    std::cin)) {
       throw std::runtime_error("the build log names no rule to adjust");
     }
+    return;
+  }
+  if (command == "link") {
+    // Take the options, which leaves the workspace.
+    std::string cache(kDefaultCache);
+    std::filesystem::path attributes;
+    size_t index = 1;
+    for (; index + 1 < args.size(); index += 2) {
+      const std::string_view option = args[index];
+      if (option == kCacheOption) {
+        cache = args[index + 1];
+      } else if (option == kAttributesOption) {
+        attributes = args[index + 1];
+      } else {
+        break;
+      }
+    }
+    if (index + 1 != args.size()) {
+      throw std::runtime_error(std::string(kUsage));
+    }
+    splice_ir::linkWorkspace(args[index], cache, attributes);
+    return;
+  }
+  if (args.size() == 2 && command == "base32") {
+    // A digest in hex as Nix writes one, for reading a narinfo file.
+    llvm::outs() << splice_ir::nixBase32(args[1]) << "\n";
     return;
   }
   if (args.size() == 4 && command == "reference") {

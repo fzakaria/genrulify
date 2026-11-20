@@ -23,7 +23,7 @@ mlir_tablegen(Ops.h.inc -gen-op-decls)
 mlir_tablegen(Ops.cpp.inc -gen-op-defs)
 add_public_tablegen_target(SpliceIncGen)
 
-foreach(tool BASH COREUTILS NIX BWRAP TAR STRACE XZ ZSTD)
+foreach(tool BASH COREUTILS NIX BWRAP TAR STRACE XZ ZSTD CURL)
   set(SPLICE_${tool} "$ENV{SPLICE_${tool}}")
   if(NOT SPLICE_${tool})
     message(FATAL_ERROR "Configure inside nix develop for the pinned tool paths")
@@ -60,6 +60,7 @@ add_executable(genrulify
   src/check.cpp
   src/access.cpp
   src/emit.cpp
+  src/link.cpp
   src/describe.cpp
   src/origins.cpp
   src/verify.cpp)
@@ -68,6 +69,6 @@ target_link_libraries(genrulify PRIVATE MLIR LLVM absl::strings nlohmann_json::n
 target_compile_options(genrulify PRIVATE -Wall -Wextra -Wno-unused-parameter)
 install(TARGETS genrulify)
 enable_testing()
-foreach(test check-ir cuts groups jobs origins import opt unpack emit package store edit rules reference sandbox learn access convert project)
+foreach(test check-ir cuts groups jobs origins import opt unpack emit package store link edit rules reference sandbox learn access convert project)
   add_test(NAME ${test} COMMAND bash ${CMAKE_SOURCE_DIR}/tests/${test}.sh $<TARGET_FILE:genrulify> ${CMAKE_SOURCE_DIR}/tests/data)
 endforeach()

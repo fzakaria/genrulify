@@ -7,6 +7,7 @@
 #include "llvm/Support/raw_ostream.h"
 #include "rules.h"
 #include "rules_text.h"
+#include "workspace.h"
 #include <algorithm>
 #include <map>
 #include <optional>
@@ -60,29 +61,11 @@ constexpr std::string_view kBuckProjectInvocation =
     "$SRCDIR/genrulify/sandbox.sh --in $SRCDIR/genrulify --in $SRCDIR --out "
     "$OUTDIR";
 
-// A workspace that many recorded builds share. Each build is a package
-// below one directory, named after the store path the build makes. A
-// second directory holds what every package uses: the script, the rule
-// definitions and the guest's /bin and /etc. A third has a package for
-// each store path, which `link` writes.
-constexpr std::string_view kPackagesDirectory = "pkgs";
-constexpr std::string_view kSharedDirectory = "genrulify";
-constexpr std::string_view kStoreDirectory = "store";
-
-// The target of a store path's package that a rule is given to read the
-// store path: the path's archive and the digest of the archive.
-constexpr std::string_view kStorePathTarget = "path";
-
-// The targets of a package that stand for the store paths of its closure
-// and for the archives of all its outputs, and the file that says what
-// the package builds, which `link` reads.
-constexpr std::string_view kClosureTarget = "closure";
-constexpr std::string_view kOutputsTarget = "outputs";
-constexpr std::string_view kPackageFile = "package.json";
+// The indent of the file that says what a package builds.
+constexpr int kJsonIndent = 1;
 
 // The output a derivation has when it names none.
 constexpr std::string_view kDefaultOutput = "out";
-constexpr int kJsonIndent = 1;
 
 // What a build file of a shared workspace says first: any package may
 // read what this one builds.
@@ -1071,11 +1054,6 @@ void installPlatformFile(const Recording &recording, const Entry &entry,
   fs::copy_file(recording.blob(entry.content), partial,
                 fs::copy_options::overwrite_existing);
   fs::rename(partial, file);
-}
-
-// The last name of a store path.
-std::string storeName(const std::string &path) {
-  return fs::path(path).filename().string();
 }
 
 // The name of a recorded build's package in a shared workspace: the last

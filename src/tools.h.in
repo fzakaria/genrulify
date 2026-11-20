@@ -14,4 +14,5 @@ inline constexpr std::string_view kEnv = "@SPLICE_COREUTILS@/bin/env";
 inline constexpr std::string_view kTimeout = "@SPLICE_COREUTILS@/bin/timeout";
 inline constexpr std::string_view kStrace = "@SPLICE_STRACE@/bin/strace";
 inline constexpr std::string_view kNixStore = "@SPLICE_NIX@/bin/nix-store";
+inline constexpr std::string_view kCurl = "@SPLICE_CURL@/bin/curl";
 }

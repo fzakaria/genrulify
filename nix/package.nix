@@ -32,5 +32,8 @@ pkgs.stdenv.mkDerivation {
   # these. `bin` is the output with the programs.
   SPLICE_XZ = pkgs.xz.bin;
   SPLICE_ZSTD = pkgs.zstd.bin;
+
+  # `link` asks a binary cache what the cache has.
+  SPLICE_CURL = pkgs.curl.bin;
   doCheck = true;
 }

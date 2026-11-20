@@ -83,6 +83,7 @@
           SPLICE_STRACE
           SPLICE_XZ
           SPLICE_ZSTD
+          SPLICE_CURL
           ;
         inputsFrom = [ self.packages.${system}.default ];
       };
